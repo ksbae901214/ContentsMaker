@@ -1,8 +1,9 @@
-# Core (no external dependencies for P1 manual input)
-# Python 3.11+ standard library only
+# Core
+edge-tts>=6.1.0
 
 # Testing
 pytest>=8.0.0
+pytest-asyncio>=0.23.0
 
 # P2: Auto crawling (install when needed)
 # playwright>=1.40.0

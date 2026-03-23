@@ -1,10 +1,12 @@
 """ContentsMaker CLI - Blind post to Shorts pipeline.
 
 Usage:
+    python3 -m src.main image screenshot1.png [screenshot2.png ...]
     python3 -m src.main manual --file <path>
-    python3 -m src.main manual --interactive
     python3 -m src.main analyze --file <raw.json> [--with-tts]
     python3 -m src.main tts --file <script.json>
+    python3 -m src.main render --script <script.json> --audio <voice.mp3>
+    python3 -m src.main pipeline --file <raw.json>
 """
 from __future__ import annotations
 
@@ -26,6 +28,62 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 logger = logging.getLogger(__name__)
+
+
+def cmd_image(args: argparse.Namespace) -> int:
+    """Handle the 'image' subcommand — screenshot to video pipeline."""
+    from src.scraper.image_extractor import ImageExtractError, extract_from_images
+    from src.scraper.manual_input import save_post
+    from src.analyzer.claude_analyzer import AnalyzerError, analyze
+    from src.video.renderer import RenderError, render_video
+
+    try:
+        image_paths = [Path(p) for p in args.images]
+        for p in image_paths:
+            if not p.exists():
+                print(f"\n❌ 이미지 파일을 찾을 수 없습니다: {p}", file=sys.stderr)
+                return 1
+
+        # Step 1: Extract text from images
+        print(f"📸 Step 1/4: 이미지에서 텍스트 추출 중... ({len(image_paths)}장)")
+        post = extract_from_images(image_paths)
+        raw_path = save_post(post)
+        print(f"   제목: {post.title}")
+        print(f"   본문: {post.body[:50]}...")
+        print(f"   댓글: {len(post.comments)}개")
+        print(f"   저장: {raw_path}")
+
+        # Step 2: Analyze
+        print("📝 Step 2/4: AI 분석 중...")
+        script = analyze(post)
+        print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
+
+        # Step 3: TTS
+        print("🎙️  Step 3/4: 음성 생성 중...")
+        tts_code, voice_path = _run_tts(script)
+        if tts_code != 0:
+            print("   ⚠️  TTS 실패, 무음 영상으로 계속합니다.")
+            voice_path = None
+
+        # Step 4: Render
+        print("🎬 Step 4/4: 영상 렌더링 중...")
+        output_path = render_video(script, audio_path=voice_path)
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+
+        print(f"\n✅ 완료! 이미지 → 영상 변환 성공")
+        print(f"   영상: {output_path}")
+        print(f"   크기: {file_size_mb:.1f} MB")
+        print(f"   감정: {script.metadata.emotion_type}")
+        print(f"   길이: {script.metadata.duration}초")
+        return 0
+
+    except (ImageExtractError, AnalyzerError, RenderError) as e:
+        logger.error("오류: %s", e)
+        print(f"\n❌ 오류: {e}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\n\n취소되었습니다.")
+        return 130
 
 
 def cmd_manual(args: argparse.Namespace) -> int:
@@ -226,6 +284,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", help="사용 가능한 명령어")
 
+    # image subcommand
+    image_parser = subparsers.add_parser(
+        "image", help="블라인드 스크린샷 → 영상 자동 생성 (이미지 1장 이상)"
+    )
+    image_parser.add_argument(
+        "images", nargs="+", type=str,
+        help="블라인드 스크린샷 이미지 경로 (여러 장 가능)"
+    )
+
     # manual subcommand
     manual_parser = subparsers.add_parser(
         "manual", help="수동으로 블라인드 글 입력"
@@ -276,6 +343,7 @@ def main() -> int:
         return 0
 
     commands = {
+        "image": cmd_image,
         "manual": cmd_manual,
         "analyze": cmd_analyze,
         "tts": cmd_tts,

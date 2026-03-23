@@ -83,7 +83,8 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         print(f"   길이: {script.metadata.duration}초")
 
         if args.with_tts:
-            return _run_tts(script)
+            code, _ = _run_tts(script)
+            return code
 
         return 0
 
@@ -108,7 +109,8 @@ def cmd_tts(args: argparse.Namespace) -> int:
             return 1
 
         script = ShortsScript.load(file_path)
-        return _run_tts(script)
+        code, _ = _run_tts(script)
+        return code
 
     except Exception as e:
         logger.error("TTS 오류: %s", e)
@@ -116,8 +118,8 @@ def cmd_tts(args: argparse.Namespace) -> int:
         return 1
 
 
-def _run_tts(script) -> int:
-    """Run TTS generation on a ShortsScript."""
+def _run_tts(script):
+    """Run TTS generation on a ShortsScript. Returns (exit_code, voice_path)."""
     from src.tts.edge_tts_generator import TTSError, generate_voice
 
     try:
@@ -129,11 +131,90 @@ def _run_tts(script) -> int:
         print(f"   파일: {voice_path}")
         print(f"   크기: {file_size_kb:.1f} KB")
         print(f"   음성: {script.audio.voice}")
-        return 0
+        return 0, voice_path
 
     except TTSError as e:
         logger.error("TTS 오류: %s", e)
         print(f"\n❌ TTS 오류: {e}", file=sys.stderr)
+        return 1, None
+
+
+def cmd_render(args: argparse.Namespace) -> int:
+    """Handle the 'render' subcommand."""
+    from src.analyzer.script_models import ShortsScript
+    from src.video.renderer import RenderError, render_video
+
+    try:
+        script_path = Path(args.script)
+        if not script_path.exists():
+            print(f"\n❌ 스크립트 파일을 찾을 수 없습니다: {script_path}", file=sys.stderr)
+            return 1
+
+        script = ShortsScript.load(script_path)
+
+        audio_path = Path(args.audio) if args.audio else None
+        if audio_path and not audio_path.exists():
+            print(f"\n❌ 오디오 파일을 찾을 수 없습니다: {audio_path}", file=sys.stderr)
+            return 1
+
+        logger.info("렌더링 시작: %s", script.metadata.title)
+        output_path = render_video(script, audio_path=audio_path)
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+
+        print(f"\n✅ 영상 렌더링 완료")
+        print(f"   파일: {output_path}")
+        print(f"   크기: {file_size_mb:.1f} MB")
+        print(f"   감정: {script.metadata.emotion_type}")
+        print(f"   길이: {script.metadata.duration}초")
+        return 0
+
+    except RenderError as e:
+        logger.error("렌더링 오류: %s", e)
+        print(f"\n❌ 렌더링 오류: {e}", file=sys.stderr)
+        return 1
+
+
+def cmd_pipeline(args: argparse.Namespace) -> int:
+    """Handle the 'pipeline' subcommand — full raw → video pipeline."""
+    from src.analyzer.claude_analyzer import AnalyzerError, analyze
+    from src.scraper.models import BlindPost
+    from src.video.renderer import RenderError, render_video
+
+    try:
+        file_path = Path(args.file)
+        if not file_path.exists():
+            print(f"\n❌ 파일을 찾을 수 없습니다: {file_path}", file=sys.stderr)
+            return 1
+
+        import json
+        data = json.loads(file_path.read_text(encoding="utf-8"))
+        post = BlindPost.from_dict(data)
+
+        # Step 1: Analyze
+        print("📝 Step 1/3: AI 분석 중...")
+        script = analyze(post)
+        print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
+
+        # Step 2: TTS
+        print("🎙️  Step 2/3: 음성 생성 중...")
+        tts_code, voice_path = _run_tts(script)
+        if tts_code != 0:
+            print("⚠️  TTS 실패, 무음 영상으로 계속합니다.")
+            voice_path = None
+
+        # Step 3: Render
+        print("🎬 Step 3/3: 영상 렌더링 중...")
+        output_path = render_video(script, audio_path=voice_path)
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+
+        print(f"\n✅ 파이프라인 완료!")
+        print(f"   영상: {output_path}")
+        print(f"   크기: {file_size_mb:.1f} MB")
+        return 0
+
+    except (AnalyzerError, RenderError) as e:
+        logger.error("파이프라인 오류: %s", e)
+        print(f"\n❌ 오류: {e}", file=sys.stderr)
         return 1
 
 
@@ -166,6 +247,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tts_parser.add_argument("--file", "-f", type=str, required=True, help="script.json 경로")
 
+    # render subcommand
+    render_parser = subparsers.add_parser(
+        "render", help="스크립트 + 음성 → 영상 렌더링 (Remotion)"
+    )
+    render_parser.add_argument("--script", "-s", type=str, required=True, help="script.json 경로")
+    render_parser.add_argument("--audio", "-a", type=str, help="voice.mp3 경로 (선택)")
+
+    # pipeline subcommand
+    pipeline_parser = subparsers.add_parser(
+        "pipeline", help="전체 파이프라인: raw → 분석 → TTS → 영상"
+    )
+    pipeline_parser.add_argument("--file", "-f", type=str, required=True, help="raw_content.json 경로")
+
     # crawl subcommand (P2 placeholder)
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")
 
@@ -185,6 +279,8 @@ def main() -> int:
         "manual": cmd_manual,
         "analyze": cmd_analyze,
         "tts": cmd_tts,
+        "render": cmd_render,
+        "pipeline": cmd_pipeline,
     }
 
     handler = commands.get(args.command)

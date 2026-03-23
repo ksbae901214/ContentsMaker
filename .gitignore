@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+
+# Data (generated outputs)
+data/raw/*.json
+data/scripts/*.json
+data/audio/*.mp3
+data/outputs/*.mp4
+data/backgrounds/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Node (Remotion - Phase 3)
+node_modules/

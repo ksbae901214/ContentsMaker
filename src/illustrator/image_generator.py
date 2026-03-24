@@ -20,7 +20,7 @@ from src.illustrator.prompt_builder import (
 )
 from src.illustrator.reference_manager import (
     is_available as refs_available,
-    select_references,
+    get_all_references,
 )
 
 logger = logging.getLogger(__name__)
@@ -89,8 +89,10 @@ def generate_scene_images(
     client = OpenAI(api_key=api_key)
     results = []
 
-    # Collect scene texts for reference matching
-    scene_texts = {s.id: s.text for s in script.scenes}
+    # Pre-load ALL reference images once (reused for every scene)
+    all_ref_paths = get_all_references() if has_refs else []
+    if has_refs:
+        logger.info("레퍼런스 %d장 전체 사용: %s", len(all_ref_paths), [p.name for p in all_ref_paths])
 
     for i, prompt_data in enumerate(prompts):
         scene_id = prompt_data["scene_id"]
@@ -102,9 +104,9 @@ def generate_scene_images(
         )
 
         try:
-            if has_refs:
-                response = _generate_with_references(
-                    client, prompt, scene_texts.get(scene_id, ""),
+            if has_refs and all_ref_paths:
+                response = _generate_with_all_references(
+                    client, prompt, all_ref_paths,
                 )
             else:
                 response = client.images.generate(
@@ -150,26 +152,16 @@ def generate_scene_images(
     return results
 
 
-def _generate_with_references(client, prompt: str, scene_text: str):
-    """Generate image using images.edit() with reference images.
+def _generate_with_all_references(client, prompt: str, ref_paths: list):
+    """Generate image using images.edit() with ALL reference images.
 
-    Selects appropriate reference images based on scene context
-    and passes them alongside the prompt for style consistency.
+    Always passes every reference image to enforce consistent art style.
+    The prompt (with REFERENCE_STYLE_PREFIX) tells the model to copy
+    the exact style from these references.
     """
-    ref_set = select_references(scene_text)
-
-    if not ref_set.has_references:
-        return client.images.generate(
-            model=IMAGE_MODEL,
-            prompt=prompt,
-            n=1,
-            size=IMAGE_SIZE,
-            quality=IMAGE_QUALITY,
-        )
-
     ref_files = []
     try:
-        for ref_path in ref_set.all_paths:
+        for ref_path in ref_paths:
             ref_files.append(open(ref_path, "rb"))
 
         return client.images.edit(

@@ -32,12 +32,21 @@ STYLE_PREFIX = (
     "high quality Korean webtoon digital art"
 )
 
-REFERENCE_STYLE_SUFFIX = (
-    "IMPORTANT: Match the exact art style, character design, facial features, "
-    "hair style, body proportions, and color palette shown in the reference images. "
-    "The characters must look consistent with the reference sheets provided. "
-    "Use the same line weight, coloring technique, and shading style as the references."
+# When reference images are provided, this REPLACES STYLE_PREFIX entirely.
+# Reference style matching is the #1 priority — placed at the START of the prompt.
+REFERENCE_STYLE_PREFIX = (
+    "CRITICAL REQUIREMENT — You MUST replicate the EXACT art style from the provided reference images. "
+    "Copy the IDENTICAL line weight, coloring technique, shading method, character design, "
+    "facial proportions, eye style, hair rendering, body proportions, and color palette. "
+    "The output MUST look like it was drawn by the same artist as the reference images. "
+    "Do NOT invent a new style — ONLY use the style shown in the references. "
+    "Generate a NEW scene with NEW poses and composition, but keep the art style 100% consistent. "
+    "vertical 9:16 composition, "
+    "NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions anywhere"
 )
+
+# Legacy suffix kept for backward compatibility but no longer primary
+REFERENCE_STYLE_SUFFIX = REFERENCE_STYLE_PREFIX
 
 EMOTION_STYLE = {
     "funny": "bright cheerful pastel colors, characters with cute surprised or laughing expressions, lighthearted playful mood",
@@ -119,12 +128,15 @@ JSON만 출력하세요."""
 
     prompts = _parse_prompts(result.stdout)
 
-    # Prepend style prefix to each prompt
+    # Build final prompts: reference style takes priority when available
     use_refs = refs_available()
     for p in prompts:
-        base = f"{STYLE_PREFIX}, {emotion_style}, {p['prompt']}"
+        scene_desc = f"{emotion_style}, {p['prompt']}"
         if use_refs:
-            base = f"{base}, {REFERENCE_STYLE_SUFFIX}"
+            # Reference style is the #1 instruction — at the START
+            base = f"{REFERENCE_STYLE_PREFIX}, {scene_desc}"
+        else:
+            base = f"{STYLE_PREFIX}, {scene_desc}"
         p["prompt"] = base
 
     return prompts
@@ -160,9 +172,10 @@ def build_image_prompts_simple(script: ShortsScript) -> list[dict]:
                 "absolutely no text, no letters, no numbers, no words, no speech bubbles anywhere in the image"
             )
 
-        base = f"{STYLE_PREFIX}, {emotion_style}, {prompt}"
         if refs_available():
-            base = f"{base}, {REFERENCE_STYLE_SUFFIX}"
+            base = f"{REFERENCE_STYLE_PREFIX}, {emotion_style}, {prompt}"
+        else:
+            base = f"{STYLE_PREFIX}, {emotion_style}, {prompt}"
         prompts.append({
             "scene_id": scene.id,
             "prompt": base,

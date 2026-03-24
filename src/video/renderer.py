@@ -32,6 +32,7 @@ def render_video(
     audio_path: Path | None = None,
     scene_images: list[dict] | None = None,
     output_dir: Path | None = None,
+    use_bgm: bool = True,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
@@ -40,6 +41,7 @@ def render_video(
         audio_path: Path to voice MP3 file
         scene_images: List of {scene_id, image_path} dicts for manga backgrounds
         output_dir: Output directory (defaults to data/outputs/)
+        use_bgm: Whether to include background music
     """
     target_dir = output_dir or DATA_OUTPUTS_DIR
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -82,6 +84,20 @@ def render_video(
                     "imageFile": img_filename,
                 })
 
+    # BGM
+    bgm_filename = ""
+    if use_bgm:
+        from src.tts.voice_config import get_bgm_file
+        emotion = script.metadata.emotion_type
+        bgm_src = PROJECT_ROOT / "data" / "bgm" / get_bgm_file(emotion)
+        if bgm_src.exists():
+            bgm_filename = f"bgm_{timestamp}.mp3"
+            shutil.copy2(bgm_src, public_dir / bgm_filename)
+            temp_files.append(public_dir / bgm_filename)
+            logger.info("BGM 적용: %s (%s)", bgm_src.name, emotion)
+        else:
+            logger.warning("BGM 파일 없음: %s — BGM 없이 진행", bgm_src)
+
     script_dict = _convert_to_camel_case(script.to_dict())
     # Scale scene timings for 1.2x speed
     script_dict["metadata"]["duration"] = scaled_duration
@@ -93,6 +109,7 @@ def render_video(
         "scriptData": script_dict,
         "audioFile": audio_filename,
         "sceneImages": scene_image_props,
+        "bgmFile": bgm_filename,
     }
 
     props_path = target_dir / f"{timestamp}_props.json"

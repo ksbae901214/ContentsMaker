@@ -45,6 +45,7 @@ def analyze(post: BlindPost, output_dir: Path | None = None) -> ShortsScript:
     raw_json = _call_claude(prompt)
     script = _parse_response(raw_json)
     script = _apply_voice_config(script)
+    script = _ensure_line_breaks(script)
 
     target_dir = output_dir or DATA_SCRIPTS_DIR
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -123,6 +124,47 @@ def _parse_response(raw: str) -> ShortsScript:
 
     raise AnalyzerError(
         f"Claude Code 응답을 JSON으로 파싱할 수 없습니다.\n응답 미리보기: {raw[:300]}"
+    )
+
+
+def _ensure_line_breaks(script: ShortsScript) -> ShortsScript:
+    """Fallback: add line breaks if AI didn't insert them (15 chars max per line)."""
+    from src.analyzer.script_models import Scene
+
+    new_scenes = []
+    for scene in script.scenes:
+        text = scene.text
+        if "\n" not in text and len(text) > 15:
+            # Simple fallback: break at particles/spaces near 15-char boundary
+            words = text.replace(" ", " ").split(" ")
+            lines = []
+            current = ""
+            for word in words:
+                if current and len(current) + len(word) + 1 > 15:
+                    lines.append(current)
+                    current = word
+                else:
+                    current = f"{current} {word}" if current else word
+            if current:
+                lines.append(current)
+            text = "\n".join(lines)
+
+        new_scenes.append(Scene(
+            id=scene.id,
+            timestamp=scene.timestamp,
+            duration=scene.duration,
+            type=scene.type,
+            text=text,
+            voice_text=scene.voice_text,
+            emphasis=scene.emphasis,
+            highlight_words=scene.highlight_words,
+        ))
+
+    return ShortsScript(
+        metadata=script.metadata,
+        scenes=tuple(new_scenes),
+        audio=script.audio,
+        background=script.background,
     )
 
 

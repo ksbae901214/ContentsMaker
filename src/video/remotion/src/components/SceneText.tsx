@@ -4,6 +4,8 @@ import {
   useCurrentFrame,
   interpolate,
 } from "remotion";
+import { HIGHLIGHT_COLORS } from "../types";
+import type { EmotionType } from "../types";
 
 /** Uniform font size for all scenes (consistent throughout video). */
 const UNIFORM_FONT_SIZE = 80;
@@ -20,13 +22,51 @@ interface SceneData {
   voice_text?: string;
   voiceText?: string;
   emphasis: string;
+  highlightWords?: string[];
 }
 
 interface SceneTextProps {
   scene: SceneData;
+  emotion?: string;
 }
 
-export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
+/**
+ * Render text with highlighted keywords in emotion color.
+ * Splits text by highlight words and wraps matches in colored spans.
+ */
+const HighlightedText: React.FC<{
+  text: string;
+  highlights: string[];
+  color: string;
+}> = ({ text, highlights, color }) => {
+  if (!highlights.length) {
+    return <>{text}</>;
+  }
+
+  // Build regex from highlight words (escape special chars)
+  const escaped = highlights.map((w) =>
+    w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  );
+  const regex = new RegExp(`(${escaped.join("|")})`, "g");
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        const isHighlight = highlights.some(
+          (h) => h.toLowerCase() === part.toLowerCase()
+        );
+        return isHighlight ? (
+          <span key={i} style={{ color }}>{part}</span>
+        ) : (
+          <React.Fragment key={i}>{part}</React.Fragment>
+        );
+      })}
+    </>
+  );
+};
+
+export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
   const frame = useCurrentFrame();
 
   const opacity = interpolate(frame, [0, 15], [0, 1], {
@@ -37,6 +77,10 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
   });
 
   const isComment = scene.type === "comment";
+  const highlightWords = scene.highlightWords || [];
+  const highlightColor =
+    HIGHLIGHT_COLORS[(emotion || "relatable") as EmotionType] ||
+    HIGHLIGHT_COLORS.relatable;
 
   return (
     <AbsoluteFill
@@ -78,7 +122,11 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
             wordBreak: "keep-all",
           }}
         >
-          {scene.text}
+          <HighlightedText
+            text={scene.text}
+            highlights={highlightWords}
+            color={highlightColor}
+          />
         </div>
       </div>
     </AbsoluteFill>

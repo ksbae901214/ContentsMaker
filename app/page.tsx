@@ -18,6 +18,7 @@ export default function Home() {
   const [body, setBody] = useState("");
   const [comments, setComments] = useState([""]);
   const [stats, setStats] = useState<Stats|null>(null);
+  const [bgm, setBgm] = useState(true);
 
   const loadStats = () => { fetch("/api/stats").then(r=>r.json()).then(setStats).catch(()=>{}); };
   useEffect(()=>{ loadStats(); }, []);
@@ -117,8 +118,12 @@ export default function Home() {
                 <span className="text-sm truncate">{f.name}</span>
                 <button onClick={()=>setFiles(files.filter((_,j)=>j!==i))} className="text-red-400 ml-2">✕</button>
               </div>))}
-              <button onClick={()=>{const fd=new FormData();fd.set("mode","image");files.forEach(f=>fd.append("images",f));generate(fd)}}
-                className="w-full mt-4 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium transition">
+              <label className="flex items-center gap-2 mt-3 cursor-pointer">
+                <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
+                <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
+              </label>
+              <button onClick={()=>{const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");files.forEach(f=>fd.append("images",f));generate(fd)}}
+                className="w-full mt-3 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium transition">
                 🎬 영상 생성하기 ({files.length}장)
               </button>
             </div>
@@ -136,7 +141,11 @@ export default function Home() {
               {comments.length>1&&<button onClick={()=>setComments(comments.filter((_,j)=>j!==i))} className="text-red-400 px-2">✕</button>}
             </div>))}
             <button onClick={()=>setComments([...comments,""])} className="text-sm text-blue-400">+ 댓글 추가</button></div>
-          <button onClick={()=>{if(!title.trim()||!body.trim())return;const fd=new FormData();fd.set("mode","manual");fd.set("title",title);fd.set("body",body);fd.set("comments",JSON.stringify(comments.filter(c=>c.trim())));generate(fd)}}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
+          </label>
+          <button onClick={()=>{if(!title.trim()||!body.trim())return;const fd=new FormData();fd.set("mode","manual");fd.set("bgm",bgm?"on":"off");fd.set("title",title);fd.set("body",body);fd.set("comments",JSON.stringify(comments.filter(c=>c.trim())));generate(fd)}}
             disabled={!title.trim()||!body.trim()} className={`w-full py-3 rounded-lg font-medium transition ${title.trim()&&body.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성하기
           </button>

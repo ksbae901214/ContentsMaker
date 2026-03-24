@@ -45,12 +45,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] 웹 UI `app/page.tsx`에 "배경음악 넣기" 체크박스 추가 (기본 ON), FormData에 `bgm` 필드 전달
-- [ ] T009 [US1] `app/api/generate/route.ts`에서 `bgm` 옵션 파싱 → 렌더링 단계에 `use_bgm` 전달
-- [ ] T010 [US1] `src/video/renderer.py`에서 BGM 파일을 `public/`에 복사 + props에 `bgmFile` 추가
-- [ ] T011 [US1] `ShortsComposition.tsx`에 bgmFile prop 추가, `<Audio src={staticFile(bgmFile)} volume={0.15} loop />` 렌더링
-- [ ] T012 [US1] `src/main.py` CLI에 `--no-bgm` 옵션 추가 (image, pipeline 서브커맨드)
-- [ ] T013 [US1] BGM 파일 누락 시 경고 로그 출력 후 BGM 없이 진행하는 폴백 로직 in `renderer.py`
+- [x] T008 [US1] 웹 UI `app/page.tsx`에 "배경음악 넣기" 체크박스 추가 (기본 ON), FormData에 `bgm` 필드 전달
+- [x] T009 [US1] `app/api/generate/route.ts`에서 `bgm` 옵션 파싱 → 렌더링 단계에 `use_bgm` 전달
+- [x] T010 [US1] `src/video/renderer.py`에서 BGM 파일을 `public/`에 복사 + props에 `bgmFile` 추가
+- [x] T011 [US1] `ShortsComposition.tsx`에 bgmFile prop 추가, `<Audio src={staticFile(bgmFile)} volume={0.15} loop />` 렌더링
+- [x] T012 [US1] `src/main.py` CLI에 `--no-bgm` 옵션 추가 (image, pipeline 서브커맨드)
+- [x] T013 [US1] BGM 파일 누락 시 경고 로그 출력 후 BGM 없이 진행하는 폴백 로직 in `renderer.py`
 
 **Checkpoint**: BGM ON/OFF 영상 모두 생성 가능. TTS가 묻히지 않는 볼륨 확인.
 
@@ -64,12 +64,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] `src/analyzer/prompt_template.py` 수정 — 줄바꿈 규칙 추가 (1줄 15자, 문맥 단위, `\n` 삽입) + `highlight_words` 배열 생성 지시
-- [ ] T015 [US2] `src/analyzer/prompt_template.py` JSON 출력 형식에 `highlight_words` 필드 추가
-- [ ] T016 [US2] `src/analyzer/claude_analyzer.py`에서 `highlight_words` 파싱 + Scene 객체에 전달
-- [ ] T017 [US2] `src/video/renderer.py`의 `_convert_to_camel_case`가 `highlight_words` → `highlightWords` 변환 확인
-- [ ] T018 [US2] `SceneText.tsx` 수정 — text에서 `highlightWords` 매칭 단어를 감정별 색상 `<span>`으로 렌더링
-- [ ] T019 [US2] 줄바꿈 폴백: AI가 줄바꿈 누락 시 Python 후처리로 15자 단위 강제 줄바꿈 in `src/analyzer/claude_analyzer.py`
+- [x] T014 [US2] `src/analyzer/prompt_template.py` 수정 — 줄바꿈 규칙 추가 (1줄 15자, 문맥 단위, `\n` 삽입) + `highlight_words` 배열 생성 지시
+- [x] T015 [US2] `src/analyzer/prompt_template.py` JSON 출력 형식에 `highlight_words` 필드 추가
+- [x] T016 [US2] `src/analyzer/claude_analyzer.py`에서 `highlight_words` 파싱 + Scene 객체에 전달
+- [x] T017 [US2] `src/video/renderer.py`의 `_convert_to_camel_case`가 `highlight_words` → `highlightWords` 변환 확인
+- [x] T018 [US2] `SceneText.tsx` 수정 — text에서 `highlightWords` 매칭 단어를 감정별 색상 `<span>`으로 렌더링
+- [x] T019 [US2] 줄바꿈 폴백: AI가 줄바꿈 누락 시 Python 후처리로 15자 단위 강제 줄바꿈 in `src/analyzer/claude_analyzer.py`
 
 **Checkpoint**: 모든 씬 텍스트 1줄 15자 내외 줄바꿈, 키워드 색상 구분 확인.
 

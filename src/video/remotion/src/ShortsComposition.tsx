@@ -25,12 +25,14 @@ interface ShortsCompositionProps {
   scriptData: ShortsScriptData;
   audioFile: string;
   sceneImages?: SceneImage[];
+  bgmFile?: string;
 }
 
 export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   scriptData,
   audioFile,
   sceneImages = [],
+  bgmFile = "",
 }) => {
   const emotion =
     (scriptData.metadata as any).emotionType ||
@@ -72,7 +74,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
             {imageFile ? (
               <SceneWithImage imageFile={imageFile} scene={scene} />
             ) : (
-              <SceneText scene={scene} />
+              <SceneText scene={scene} emotion={emotion} />
             )}
           </Sequence>
         );
@@ -89,6 +91,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
       </Sequence>
 
       {audioFile && <Audio src={staticFile(audioFile)} />}
+      {bgmFile && <Audio src={staticFile(bgmFile)} volume={0.15} loop />}
     </AbsoluteFill>
   );
 };
@@ -227,7 +230,7 @@ const SceneWithImage: React.FC<{
       </AbsoluteFill>
 
       {/* Text on top of image */}
-      <SceneText scene={scene} />
+      <SceneText scene={scene} emotion={emotion} />
     </AbsoluteFill>
   );
 };

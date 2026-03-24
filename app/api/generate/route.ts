@@ -21,6 +21,7 @@ function py(code: string): Promise<string> {
 export async function POST(req: NextRequest) {
   const fd = await req.formData();
   const mode = fd.get("mode") as string;
+  const useBgm = (fd.get("bgm") as string) !== "off";
   const enc = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -114,7 +115,7 @@ s=ShortsScript.load('''${a.sp}''')
 af=sorted(Path('${ROOT}/data/audio').glob('*.mp3'))
 ap=af[-1] if af else None
 si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
-o=render_video(s,audio_path=ap,scene_images=si)
+o=render_video(s,audio_path=ap,scene_images=si,use_bgm=${useBgm})
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`));
         send("progress",{message:`✅ 완료 (${rr.size}MB)`});
         send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost}});

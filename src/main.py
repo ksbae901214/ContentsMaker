@@ -71,7 +71,8 @@ def cmd_image(args: argparse.Namespace) -> int:
 
         # Step 5: Render
         print("🎬 Step 5/5: 영상 렌더링 중...")
-        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images)
+        use_bgm = not getattr(args, "no_bgm", False)
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm)
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 완료! 이미지 → 영상 변환 성공")
@@ -300,7 +301,8 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
 
         # Step 4: Render
         print("🎬 Step 4/4: 영상 렌더링 중...")
-        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images)
+        use_bgm = not getattr(args, "no_bgm", False)
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm)
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 파이프라인 완료!")
@@ -335,6 +337,10 @@ def build_parser() -> argparse.ArgumentParser:
     image_parser.add_argument(
         "--no-references", action="store_true",
         help="레퍼런스 이미지 비활성화 (기본: data/references/ 자동 사용)"
+    )
+    image_parser.add_argument(
+        "--no-bgm", action="store_true",
+        help="배경음악 비활성화 (기본: 감정별 BGM 자동 삽입)"
     )
 
     # manual subcommand
@@ -373,6 +379,10 @@ def build_parser() -> argparse.ArgumentParser:
     pipeline_parser.add_argument(
         "--no-references", action="store_true",
         help="레퍼런스 이미지 비활성화 (기본: data/references/ 자동 사용)"
+    )
+    pipeline_parser.add_argument(
+        "--no-bgm", action="store_true",
+        help="배경음악 비활성화 (기본: 감정별 BGM 자동 삽입)"
     )
 
     # crawl subcommand (P2 placeholder)

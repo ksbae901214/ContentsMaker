@@ -45,6 +45,14 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
     imageMap.set(si.sceneId, si.imageFile);
   }
 
+  const title = scriptData.metadata.title;
+
+  // Calculate content end frame for the fixed title bar duration
+  const lastScene = scriptData.scenes[scriptData.scenes.length - 1];
+  const contentEndFrame = lastScene
+    ? Math.round((lastScene.timestamp + lastScene.duration) * FPS)
+    : 0;
+
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
       {/* Default gradient background (shows when no scene image) */}
@@ -70,20 +78,57 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         );
       })}
 
+      {/* Fixed title bar at top — visible during all content scenes */}
+      <Sequence from={0} durationInFrames={contentEndFrame}>
+        <TitleBar title={title} />
+      </Sequence>
+
       {/* Outro: Subscribe / Like / Bell */}
-      {(() => {
-        const lastScene = scriptData.scenes[scriptData.scenes.length - 1];
-        const outroStart = lastScene
-          ? Math.round((lastScene.timestamp + lastScene.duration) * FPS)
-          : 0;
-        return (
-          <Sequence from={outroStart} durationInFrames={OUTRO_DURATION_FRAMES}>
-            <OutroScene />
-          </Sequence>
-        );
-      })()}
+      <Sequence from={contentEndFrame} durationInFrames={OUTRO_DURATION_FRAMES}>
+        <OutroScene />
+      </Sequence>
 
       {audioFile && <Audio src={staticFile(audioFile)} />}
+    </AbsoluteFill>
+  );
+};
+
+const TitleBar: React.FC<{ title: string }> = ({ title }) => {
+  const frame = useCurrentFrame();
+  const opacity = interpolate(frame, [0, 15], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <AbsoluteFill
+      style={{
+        justifyContent: "flex-start",
+        alignItems: "center",
+        pointerEvents: "none",
+      }}
+    >
+      <div
+        style={{
+          opacity,
+          marginTop: 80,
+          padding: "16px 40px",
+          background: "rgba(0,0,0,0.6)",
+          borderRadius: 12,
+          maxWidth: "90%",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 42,
+            fontWeight: 800,
+            color: "#FFFFFF",
+            fontFamily: "Noto Sans KR, sans-serif",
+            textShadow: "2px 2px 6px rgba(0,0,0,0.8)",
+          }}
+        >
+          [블라인드] {title}
+        </span>
+      </div>
     </AbsoluteFill>
   );
 };

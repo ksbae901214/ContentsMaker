@@ -39,21 +39,35 @@ STYLE_PREFIX = (
 REFERENCE_STYLE_PREFIX = (
     "CRITICAL — You MUST draw in the EXACT same art style as the reference images provided. "
     "The reference style has these MANDATORY visual characteristics that you must replicate exactly: "
+    # --- EYES (highest priority) ---
+    "EYES: large round anime-style eyes, black pupils with light amber/golden-brown iris, "
+    "two small white highlight reflection dots in each eye (standard anime eye highlights), "
+    "thin clean upper eyelashes, NO realistic eye rendering, NO small/narrow eyes, "
+    "eyes must be big relative to the face (anime proportions). "
+    # --- EXPRESSIONS (only use reference expressions) ---
+    "EXPRESSIONS — ONLY use these 3 expression types from the reference sheets: "
+    "(1) SURPRISED: wide open O-shaped mouth, raised eyebrows, small sweat drop, "
+    "(2) ANGRY: V-shaped furrowed eyebrows, wide open shouting mouth, red anger mark on forehead, "
+    "(3) SAD: downturned eyebrows, small closed mouth, tear drops on cheeks. "
+    "Do NOT invent other expression styles. Pick the closest match from these 3. "
+    # --- FACE & BODY ---
+    "cute pretty female faces and handsome boyish male faces (young Korean office workers in 20s-30s), "
+    "warm healthy skin tones (NOT pale or grey), soft brown hair with warm highlights, "
+    # --- STYLE ---
     "BRIGHT warm natural lighting with soft warm tones, "
     "clean soft anime-style shading with gentle gradients (NOT heavy shadows), "
-    "large expressive anime eyes with light brown/amber iris color, "
-    "warm healthy skin tones (NOT pale or grey), "
-    "soft brown hair with warm highlights, "
     "clean thin line art (NOT thick dark outlines), "
     "bright cheerful color palette even for serious scenes, "
-    "modern Korean office setting with natural daylight, "
+    "modern Korean office/apartment/cafe setting with natural daylight, "
     "characters wearing white dress shirts and business casual, "
-    "cute pretty female faces and handsome boyish male faces (young Korean office workers in their 20s-30s), "
     "soft pastel-toned backgrounds with warm lighting. "
-    "FORBIDDEN STYLES — NEVER use: dark moody atmosphere, heavy shadows, noir aesthetic, "
+    # --- FORBIDDEN ---
+    "FORBIDDEN — NEVER use: dark moody atmosphere, heavy shadows, noir aesthetic, "
     "dark color palette, dramatic red/black skies, thriller/horror style, "
-    "harsh lighting, dark skin tones, heavy muscular builds, intimidating expressions. "
+    "harsh lighting, dark skin tones, heavy muscular builds, intimidating expressions, "
+    "realistic eyes, small narrow eyes, Western cartoon eyes. "
     "Even if the scene describes anger or sadness, keep the art style BRIGHT and SOFT like the references. "
+    # --- COMPOSITION ---
     "vertical 9:16 composition, "
     "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, "
     "NO signs with writing, NO titles, NO labels anywhere in the image, "

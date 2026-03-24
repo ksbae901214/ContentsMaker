@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { resolve } from "path";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["cmaker.store-daehaeng.com"],
   turbopack: {
     root: resolve(__dirname),
   },

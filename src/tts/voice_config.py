@@ -6,23 +6,23 @@ Each emotion type maps to a specific voice, speed, and pitch.
 
 VOICE_CONFIG: dict[str, dict[str, str]] = {
     "funny": {
-        "voice": "ko-KR-HyunsuNeural",
-        "rate": "+15%",
+        "voice": "ko-KR-SunHiNeural",
+        "rate": "+20%",
         "pitch": "+0Hz",
     },
     "touching": {
         "voice": "ko-KR-SunHiNeural",
-        "rate": "-10%",
+        "rate": "+20%",
         "pitch": "+0Hz",
     },
     "angry": {
-        "voice": "ko-KR-InJoonNeural",
-        "rate": "+5%",
+        "voice": "ko-KR-SunHiNeural",
+        "rate": "+20%",
         "pitch": "+0Hz",
     },
     "relatable": {
         "voice": "ko-KR-SunHiNeural",
-        "rate": "+0%",
+        "rate": "+20%",
         "pitch": "+0Hz",
     },
 }

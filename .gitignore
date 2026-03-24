@@ -36,3 +36,10 @@ htmlcov/
 
 # Node (Remotion - Phase 3)
 node_modules/
+.next/
+next-env.d.ts
+
+# Data (temporary/reference)
+data/temp/
+data/references/
+data/images/

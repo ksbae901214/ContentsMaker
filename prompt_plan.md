@@ -423,4 +423,43 @@ Phase 5: Automation (선택)
 
 **작성일**: 2026-03-23
 **Constitution 버전**: 1.0.0
-**다음 단계**: `/speckit.specify` → Phase 1 기능 명세 작성
+
+---
+
+## 최신 계획: 레퍼런스 이미지 기반 일러스트 생성
+
+**상태**: 구현 완료 (2026-03-24)
+
+### 요약
+기존 텍스트 프롬프트만으로 이미지를 생성하던 방식에서,
+사용자 제공 레퍼런스 이미지를 함께 전달하여 캐릭터 외모/그림체 일관성을 확보.
+
+### 구현 내용
+
+#### Phase 1: 레퍼런스 이미지 관리 모듈
+- `data/references/characters/` — 캐릭터 전신샷, 표정 시트
+- `data/references/backgrounds/` — 배경 이미지 (아파트, 사무실, 바)
+- `src/illustrator/reference_manager.py` — 씬 텍스트 기반 레퍼런스 자동 선택
+
+#### Phase 2: prompt_builder.py 수정
+- `REFERENCE_STYLE_SUFFIX` 추가 — 레퍼런스 스타일 매칭 지시
+- 레퍼런스 이미지 있을 때만 활성화
+
+#### Phase 3: image_generator.py 수정
+- `images.edit()` API 사용 (레퍼런스 있을 때)
+- `images.generate()` 유지 (레퍼런스 없을 때 — 하위호환)
+- `_generate_with_references()` 함수 추가
+
+#### Phase 4: main.py CLI 옵션
+- `--no-references` 옵션 (image, pipeline 서브커맨드)
+- 기본: `data/references/` 자동 탐색
+
+### 레퍼런스 이미지 목록
+| 파일 | 카테고리 | 용도 |
+|------|----------|------|
+| characters/fullbody.png | 캐릭터 | 남녀 전신 비율/스타일 |
+| characters/female_expressions.png | 캐릭터 | 여캐 표정 (놀람/분노/슬픔) |
+| characters/male_expressions.png | 캐릭터 | 남캐 표정 (놀람/분노/슬픔) |
+| backgrounds/apartment.jpeg | 배경 | 한국 아파트 거실 |
+| backgrounds/office.jpeg | 배경 | 한국 회사 사무실 |
+| backgrounds/bar.jpeg | 배경 | 한국 바/카페 |

@@ -59,8 +59,8 @@ def cmd_image(args: argparse.Namespace) -> int:
         print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
 
         # Step 3: Generate illustrations
-        scene_images = None
-        scene_images = _run_illustrations(script)
+        use_refs = not getattr(args, "no_references", False)
+        scene_images = _run_illustrations(script, use_references=use_refs)
 
         # Step 4: TTS
         print("🎙️  Step 4/5: 음성 생성 중...")
@@ -203,7 +203,7 @@ def _run_tts(script):
         return 1, None
 
 
-def _run_illustrations(script) -> list[dict] | None:
+def _run_illustrations(script, use_references: bool = True) -> list[dict] | None:
     """Generate manga illustrations for scenes. Returns None if unavailable."""
     import os
     if not os.environ.get("OPENAI_API_KEY"):
@@ -212,9 +212,15 @@ def _run_illustrations(script) -> list[dict] | None:
         return None
 
     from src.illustrator.image_generator import ImageGenerateError, generate_scene_images
+    from src.illustrator.reference_manager import is_available as refs_available, get_all_references
     try:
-        print(f"🎨 Step 3/5: 만화 이미지 생성 중 ({len(script.scenes)}씬)...")
-        results = generate_scene_images(script)
+        has_refs = use_references and refs_available()
+        if has_refs:
+            ref_count = len(get_all_references())
+            print(f"🎨 Step 3/5: 만화 이미지 생성 중 ({len(script.scenes)}씬, 레퍼런스 {ref_count}장)...")
+        else:
+            print(f"🎨 Step 3/5: 만화 이미지 생성 중 ({len(script.scenes)}씬)...")
+        results = generate_scene_images(script, use_references=use_references)
         cost = len(results) * 0.005
         print(f"   생성: {len(results)}장 (${cost:.3f})")
         return results
@@ -282,7 +288,8 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
         print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
 
         # Step 2: Illustrations
-        scene_images = _run_illustrations(script)
+        use_refs = not getattr(args, "no_references", False)
+        scene_images = _run_illustrations(script, use_references=use_refs)
 
         # Step 3: TTS
         print("🎙️  Step 3/4: 음성 생성 중...")
@@ -325,6 +332,10 @@ def build_parser() -> argparse.ArgumentParser:
         "images", nargs="+", type=str,
         help="블라인드 스크린샷 이미지 경로 (여러 장 가능)"
     )
+    image_parser.add_argument(
+        "--no-references", action="store_true",
+        help="레퍼런스 이미지 비활성화 (기본: data/references/ 자동 사용)"
+    )
 
     # manual subcommand
     manual_parser = subparsers.add_parser(
@@ -359,6 +370,10 @@ def build_parser() -> argparse.ArgumentParser:
         "pipeline", help="전체 파이프라인: raw → 분석 → TTS → 영상"
     )
     pipeline_parser.add_argument("--file", "-f", type=str, required=True, help="raw_content.json 경로")
+    pipeline_parser.add_argument(
+        "--no-references", action="store_true",
+        help="레퍼런스 이미지 비활성화 (기본: data/references/ 자동 사용)"
+    )
 
     # crawl subcommand (P2 placeholder)
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")

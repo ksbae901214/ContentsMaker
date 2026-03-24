@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 DATA_OUTPUTS_DIR = PROJECT_ROOT / "data" / "outputs"
 REMOTION_DIR = PROJECT_ROOT / "src" / "video" / "remotion"
 FPS = 30
+SPEED_FACTOR = 1.2  # 1.2x playback speed (TTS + video)
 
 
 class RenderError(Exception):
@@ -51,7 +52,8 @@ def render_video(
     output_filename = f"{timestamp}_{safe_title}.mp4"
     output_path = target_dir / output_filename
 
-    duration_frames = int(script.metadata.duration * FPS)
+    scaled_duration = script.metadata.duration / SPEED_FACTOR
+    duration_frames = int(scaled_duration * FPS)
 
     # Copy assets to Remotion public dir for staticFile() access
     public_dir = PROJECT_ROOT / "public"
@@ -79,8 +81,15 @@ def render_video(
                     "imageFile": img_filename,
                 })
 
+    script_dict = _convert_to_camel_case(script.to_dict())
+    # Scale scene timings for 1.2x speed
+    script_dict["metadata"]["duration"] = scaled_duration
+    for scene in script_dict["scenes"]:
+        scene["timestamp"] = scene["timestamp"] / SPEED_FACTOR
+        scene["duration"] = scene["duration"] / SPEED_FACTOR
+
     props = {
-        "scriptData": _convert_to_camel_case(script.to_dict()),
+        "scriptData": script_dict,
         "audioFile": audio_filename,
         "sceneImages": scene_image_props,
     }
@@ -90,8 +99,8 @@ def render_video(
 
     img_count = len(scene_image_props)
     logger.info(
-        "렌더링 시작: %s (%d프레임, %d초, 이미지 %d장)",
-        output_filename, duration_frames, script.metadata.duration, img_count,
+        "렌더링 시작: %s (%d프레임, %.1f초 @%.1fx, 이미지 %d장)",
+        output_filename, duration_frames, scaled_duration, SPEED_FACTOR, img_count,
     )
 
     npx_path = shutil.which("npx")

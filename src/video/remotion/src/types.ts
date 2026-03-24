@@ -38,9 +38,3 @@ export const GRADIENT_THEMES: Record<EmotionType, string[]> = {
   angry: ["#DC143C", "#8B0000", "#B22222"],
   relatable: ["#4169E1", "#1E90FF", "#87CEEB"],
 };
-
-export const FONT_SIZES: Record<Emphasis, number> = {
-  high: 52,
-  medium: 42,
-  low: 36,
-};

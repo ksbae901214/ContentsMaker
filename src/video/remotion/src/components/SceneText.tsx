@@ -4,7 +4,12 @@ import {
   useCurrentFrame,
   interpolate,
 } from "remotion";
-import { FONT_SIZES } from "../types";
+
+/** Uniform font size for all scenes (consistent throughout video). */
+const UNIFORM_FONT_SIZE = 55;
+
+/** Vertical offset: 10% below center (10% of 1920px = 192px). */
+const VERTICAL_OFFSET = 192;
 
 interface SceneData {
   id: number;
@@ -27,14 +32,11 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
   const opacity = interpolate(frame, [0, 15], [0, 1], {
     extrapolateRight: "clamp",
   });
-  const translateY = interpolate(frame, [0, 15], [40, 0], {
+  const animateY = interpolate(frame, [0, 15], [40, 0], {
     extrapolateRight: "clamp",
   });
 
-  const fontSize = FONT_SIZES[scene.emphasis] || 42;
-
   const isComment = scene.type === "comment";
-  const isTitle = scene.type === "title";
 
   return (
     <AbsoluteFill
@@ -47,7 +49,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
       <div
         style={{
           opacity,
-          transform: `translateY(${translateY}px)`,
+          transform: `translateY(${animateY + VERTICAL_OFFSET}px)`,
           textAlign: "center",
           maxWidth: "90%",
         }}
@@ -66,13 +68,12 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
         )}
         <div
           style={{
-            fontSize: isTitle ? 58 : fontSize,
-            fontWeight: isTitle || scene.emphasis === "high" ? 800 : 600,
+            fontSize: UNIFORM_FONT_SIZE,
+            fontWeight: 700,
             color: "#FFFFFF",
             fontFamily: "Noto Sans KR, sans-serif",
             lineHeight: 1.5,
             textShadow: "3px 3px 8px rgba(0,0,0,0.7)",
-            letterSpacing: isTitle ? 2 : 0,
             whiteSpace: "pre-wrap",
             wordBreak: "keep-all",
           }}

@@ -12,6 +12,9 @@ MAX_COMMENTS = 10
 MIN_BODY_LENGTH = 10
 BLIND_DOMAIN = "teamblind.com"
 
+# Reference images
+DATA_REFERENCES_DIR = DATA_DIR / "references"
+
 # Analyzer settings
 DATA_SCRIPTS_DIR = DATA_DIR / "scripts"
 DATA_AUDIO_DIR = DATA_DIR / "audio"

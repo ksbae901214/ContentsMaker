@@ -80,6 +80,7 @@ print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"du
         send("progress",{message:`✅ ${a.emotion} | ${a.scenes}씬 | ${a.duration}초`});
 
         let ic=0,cost=0;
+        let generatedImages: {scene_id:number,image_path:string}[] = [];
         const hasKey=!!process.env.OPENAI_API_KEY;
         if(hasKey){
           send("progress",{message:`🎨 만화 이미지 생성 중 (${a.scenes}씬)...`});
@@ -88,10 +89,10 @@ import sys,json;sys.path.insert(0,'${ROOT}')
 from src.analyzer.script_models import ShortsScript
 from src.illustrator.image_generator import generate_scene_images
 r=generate_scene_images(ShortsScript.load('''${a.sp}'''))
-print(json.dumps({"c":len(r),"cost":len(r)*0.005}))`));
-          ic=im.c;cost=im.cost;
+print(json.dumps({"c":len(r),"cost":len(r)*0.005,"images":[{"scene_id":x["scene_id"],"image_path":x["image_path"]} for x in r]}))`));
+          ic=im.c;cost=im.cost;generatedImages=im.images||[];
           send("progress",{message:`✅ 만화 ${ic}장 ($${cost.toFixed(3)})`});
-        } else send("progress",{message:"🎨 이미지 스킵 (API키 없음)"});
+        } else send("progress",{message:"🎨 이미지 스킵 (OPENAI_API_KEY 미설정)"});
 
         send("progress",{message:"🎙️ 음성 생성 중..."});
         await py(`
@@ -103,6 +104,7 @@ print("ok")`);
         send("progress",{message:"✅ 음성 완료"});
 
         send("progress",{message:"🎬 렌더링 중..."});
+        const imgJson=JSON.stringify(generatedImages);
         const rr=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
@@ -111,14 +113,7 @@ from src.video.renderer import render_video
 s=ShortsScript.load('''${a.sp}''')
 af=sorted(Path('${ROOT}/data/audio').glob('*.mp3'))
 ap=af[-1] if af else None
-si=None
-if ${hasKey?"True":"False"}:
- ifs=sorted(Path('${ROOT}/data/images').glob('*.png'))
- if ifs:
-  si=[]
-  for sc in s.scenes:
-   m=[f for f in ifs if f'scene_{sc.id:02d}' in f.name]
-   if m:si.append({"scene_id":sc.id,"image_path":str(m[-1])})
+si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
 o=render_video(s,audio_path=ap,scene_images=si)
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`));
         send("progress",{message:`✅ 완료 (${rr.size}MB)`});

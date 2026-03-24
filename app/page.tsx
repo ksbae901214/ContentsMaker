@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Status = "idle" | "processing" | "done" | "error";
 interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; cost: number; }
+interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
 export default function Home() {
@@ -16,6 +17,10 @@ export default function Home() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [comments, setComments] = useState([""]);
+  const [stats, setStats] = useState<Stats|null>(null);
+
+  const loadStats = () => { fetch("/api/stats").then(r=>r.json()).then(setStats).catch(()=>{}); };
+  useEffect(()=>{ loadStats(); }, []);
 
   const generate = async (fd: FormData) => {
     setStatus("processing"); setProgress([]); setResult(null); setError("");

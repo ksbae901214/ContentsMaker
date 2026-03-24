@@ -13,20 +13,30 @@ from pathlib import Path
 
 from src.analyzer.script_models import ShortsScript, Scene
 from src.config.settings import CLAUDE_TIMEOUT_SECONDS
+from src.illustrator.reference_manager import is_available as refs_available
 
 logger = logging.getLogger(__name__)
 
 STYLE_PREFIX = (
-    "Beautiful Korean webtoon romance style illustration, "
-    "attractive good-looking characters with 8-head body proportions, "
-    "pretty women and handsome men with detailed beautiful faces, "
-    "clean line art with soft pastel coloring and gentle shading, "
-    "expressive beautiful eyes and natural hair, "
-    "modern Korean everyday backgrounds (office, cafe, home, street), "
-    "vertical 9:16 composition, "
-    "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO watermarks anywhere in the image, "
-    "pure visual storytelling only, "
-    "high quality digital art, trending on webtoon"
+    "Korean webtoon style illustration, "
+    "simple clean flat coloring with bold black outlines, "
+    "realistic body proportions (not chibi), natural Korean adult characters, "
+    "very attractive pretty Korean women and very handsome Korean men, "
+    "detailed expressive faces with large beautiful eyes, "
+    "slightly simplified but realistic facial features, "
+    "flat color fills with minimal shading (socialtoon style), "
+    "Korean everyday settings (modern office, apartment, cafe, street), "
+    "vertical 9:16 composition suitable for YouTube Shorts, "
+    "NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO watermarks, NO subtitles, NO UI elements anywhere, "
+    "pure illustrated scene only, "
+    "high quality Korean webtoon digital art"
+)
+
+REFERENCE_STYLE_SUFFIX = (
+    "IMPORTANT: Match the exact art style, character design, facial features, "
+    "hair style, body proportions, and color palette shown in the reference images. "
+    "The characters must look consistent with the reference sheets provided. "
+    "Use the same line weight, coloring technique, and shading style as the references."
 )
 
 EMOTION_STYLE = {
@@ -54,15 +64,14 @@ def build_image_prompts(script: ShortsScript) -> list[dict]:
         for s in script.scenes
     )
 
-    claude_prompt = f"""다음 블라인드 쇼츠 영상의 각 씬에 대해 "사회만화 Socialtoon" 유튜브 채널 스타일의 이미지 생성 프롬프트를 만들어주세요.
+    claude_prompt = f"""다음 블라인드 쇼츠 영상의 각 씬에 대해 한국 웹툰 스타일의 이미지 생성 프롬프트를 만들어주세요.
 
-## 참고 스타일 (사회만화 Socialtoon)
-- 한국 사회/직장 이슈를 다루는 심플한 웹툰 스타일
-- 약간 리얼한 신체 비율 (치비가 아님, 머리:몸 = 1:4~5)
-- 깔끔한 아웃라인 + 플랫 컬러링
-- 과장된 표정으로 감정 전달 (핵심)
-- 한국 일상 배경 (사무실, 카페, 집, 식당, 거리)
-- 글씨/텍스트/숫자 절대 없음
+## 그림 스타일 요구사항
+- 한국 웹툰 스타일: 굵은 블랙 아웃라인 + 플랫 컬러링 (그라디언트 최소화)
+- 캐릭터: 매우 예쁜 한국 여성 / 매우 잘생긴 한국 남성 (8등신 비율)
+- 얼굴: 크고 아름다운 눈, 섬세한 이목구비, 감정이 풍부한 표정
+- 배경: 한국 일상 (현대 사무실, 아파트, 카페, 거리 등)
+- 텍스트 금지: 이미지 어디에도 글자/숫자/텍스트/말풍선 절대 없음
 
 ## 영상 정보
 제목: {script.metadata.title}
@@ -73,12 +82,13 @@ def build_image_prompts(script: ShortsScript) -> list[dict]:
 
 ## 프롬프트 작성 규칙
 1. 영어로 작성하세요
-2. 각 씬의 상황을 구체적인 장면으로 묘사하세요
-3. 캐릭터의 외모, 옷차림, 표정, 포즈를 상세히 묘사하세요
-4. 한국 문화에 맞는 배경을 구체적으로 지정하세요 (Korean apartment, Korean office, Korean wedding hall 등)
-5. 반드시 포함: "absolutely no text, no letters, no numbers, no words, no speech bubbles anywhere in the image"
-6. 인물 수와 관계를 명확히 (예: a young Korean woman and her boyfriend, Korean parents at a dinner table)
-7. 표정 묘사가 가장 중요 (frustrated, embarrassed, angry, shocked, sad 등)
+2. 각 씬 상황을 구체적 장면으로 묘사하세요
+3. 캐릭터 외모(매력적인 얼굴), 옷차림, 표정, 포즈를 구체적으로 묘사하세요
+4. 한국 문화 맞는 배경 지정 (Korean apartment interior, Korean company office 등)
+5. 반드시 포함: "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions anywhere in the image"
+6. 인물 수와 관계 명확히 (a beautiful Korean woman in her 20s, a handsome Korean man in his 30s 등)
+7. 표정이 핵심 (deeply frustrated, embarrassed, shocked, tearful, overjoyed 등)
+8. 감정에 맞는 조명/분위기도 포함 (warm lighting, dramatic shadows 등)
 
 ## 출력 형식 (JSON 배열만 출력)
 ```json
@@ -110,8 +120,12 @@ JSON만 출력하세요."""
     prompts = _parse_prompts(result.stdout)
 
     # Prepend style prefix to each prompt
+    use_refs = refs_available()
     for p in prompts:
-        p["prompt"] = f"{STYLE_PREFIX}, {emotion_style}, {p['prompt']}"
+        base = f"{STYLE_PREFIX}, {emotion_style}, {p['prompt']}"
+        if use_refs:
+            base = f"{base}, {REFERENCE_STYLE_SUFFIX}"
+        p["prompt"] = base
 
     return prompts
 
@@ -146,9 +160,12 @@ def build_image_prompts_simple(script: ShortsScript) -> list[dict]:
                 "absolutely no text, no letters, no numbers, no words, no speech bubbles anywhere in the image"
             )
 
+        base = f"{STYLE_PREFIX}, {emotion_style}, {prompt}"
+        if refs_available():
+            base = f"{base}, {REFERENCE_STYLE_SUFFIX}"
         prompts.append({
             "scene_id": scene.id,
-            "prompt": f"{STYLE_PREFIX}, {emotion_style}, {prompt}",
+            "prompt": base,
         })
 
     return prompts

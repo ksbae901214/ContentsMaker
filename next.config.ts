@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
-import { join } from "path";
+import { resolve } from "path";
 
 const nextConfig: NextConfig = {
-  distDir: ".next",
+  turbopack: {
+    root: resolve(__dirname),
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",

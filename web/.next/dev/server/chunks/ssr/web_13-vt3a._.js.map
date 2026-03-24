@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///Users/kyusik/ContentsMaker/web/app/layout.tsx"],"sourcesContent":["import type { Metadata } from \"next\";\nimport \"./globals.css\";\nexport const metadata: Metadata = { title: \"ContentsMaker\", description: \"블라인드 쇼츠 생성기\" };\nexport default function RootLayout({ children }: { children: React.ReactNode }) {\n  return (<html lang=\"ko\"><body className=\"bg-gray-950 text-white min-h-screen\">{children}</body></html>);\n}\n"],"names":["metadata","title","description","RootLayout","children","lang","className"],"mappings":";;;;;;;;;AAEO,MAAMA,WAAqB;IAAEC,OAAO;IAAiBC,aAAa;AAAc;AACxE,SAASC,WAAW,EAAEC,QAAQ,EAAiC;IAC5E,qBAAQ,qPAAC;QAAKC,MAAK;kBAAK,cAAA,qPAAC;YAAKC,WAAU;sBAAuCF;;;;;;;;;;;AACjF"}},
-    {"offset": {"line": 42, "column": 0}, "map": {"version":3,"sources":["file:///Users/kyusik/ContentsMaker/web/node_modules/next/src/server/route-modules/app-page/vendored/rsc/react-jsx-dev-runtime.ts"],"sourcesContent":["module.exports = (\n  require('../../module.compiled') as typeof import('../../module.compiled')\n).vendored['react-rsc']!.ReactJsxDevRuntime\n"],"names":["module","exports","require","vendored","ReactJsxDevRuntime"],"mappings":"AAAAA,OAAOC,OAAO,GACZC,QAAQ,gIACRC,QAAQ,CAAC,YAAY,CAAEC,kBAAkB","ignoreList":[0]}}]
-}

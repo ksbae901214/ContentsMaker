@@ -39,7 +39,10 @@ node_modules/
 .next/
 next-env.d.ts
 
-# Data (temporary/reference)
+# Data (temporary/reference/generated)
 data/temp/
 data/references/
 data/images/
+
+# Legacy web directory
+web/

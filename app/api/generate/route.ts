@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
   const mode = fd.get("mode") as string;
   const useBgm = (fd.get("bgm") as string) !== "off";
   const useYt = (fd.get("yt") as string) === "on";
+  const useTt = (fd.get("tt") as string) === "on";
   const enc = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -155,7 +156,25 @@ else:
           }catch(e:any){send("progress",{message:`⚠️ YouTube 업로드 실패: ${e.message?.slice(0,100)}`})}
         }
 
-        send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,youtubeUrl:ytUrl}});
+        let ttStatus="";
+        if(useTt){
+          send("progress",{message:"🎵 TikTok Draft 업로드 중..."});
+          try{
+            const tt=JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.upload.tiktok_uploader import upload_video, is_authenticated
+if not is_authenticated():
+ print(json.dumps({"error":"TikTok 인증 필요. python3 -m src.main tiktok-auth 실행"}))
+else:
+ pid=upload_video(Path('''${rr.path}'''),"[블라인드] ${a.title}")
+ print(json.dumps({"publish_id":pid}))`));
+            if(tt.error){send("progress",{message:`⚠️ ${tt.error}`})}
+            else{ttStatus=tt.publish_id;send("progress",{message:`✅ TikTok Draft 업로드 완료 (TikTok 앱에서 게시하세요)`})}
+          }catch(e:any){send("progress",{message:`⚠️ TikTok 업로드 실패: ${e.message?.slice(0,100)}`})}
+        }
+
+        send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,youtubeUrl:ytUrl,tiktokStatus:ttStatus?"Draft 업로드 완료":""}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

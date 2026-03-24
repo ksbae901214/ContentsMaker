@@ -455,6 +455,11 @@ def build_parser() -> argparse.ArgumentParser:
         "youtube-auth", help="YouTube API OAuth 인증 (최초 1회)"
     )
 
+    # tiktok-auth subcommand
+    subparsers.add_parser(
+        "tiktok-auth", help="TikTok API OAuth 인증 (최초 1회)"
+    )
+
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")
 
     return parser
@@ -489,6 +494,15 @@ def main() -> int:
             authenticate()
             return 0
         except UploadError as e:
+            print(f"\n❌ {e}", file=sys.stderr)
+            return 1
+
+    if args.command == "tiktok-auth":
+        from src.upload.tiktok_uploader import authenticate, TikTokUploadError
+        try:
+            authenticate()
+            return 0
+        except TikTokUploadError as e:
             print(f"\n❌ {e}", file=sys.stderr)
             return 1
 

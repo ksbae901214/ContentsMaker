@@ -34,27 +34,41 @@ STYLE_PREFIX = (
 )
 
 # When reference images are provided, this REPLACES STYLE_PREFIX entirely.
-# Reference style matching is the #1 priority — placed at the START of the prompt.
+# Describes the EXACT visual characteristics of the reference images
+# so GPT Image replicates the style even when the scene is emotional/dark.
 REFERENCE_STYLE_PREFIX = (
-    "CRITICAL REQUIREMENT — You MUST replicate the EXACT art style from the provided reference images. "
-    "Copy the IDENTICAL line weight, coloring technique, shading method, character design, "
-    "facial proportions, eye style, hair rendering, body proportions, and color palette. "
-    "The output MUST look like it was drawn by the same artist as the reference images. "
-    "Do NOT invent a new style — ONLY use the style shown in the references. "
-    "Generate a NEW scene with NEW poses and composition, but keep the art style 100% consistent. "
+    "CRITICAL — You MUST draw in the EXACT same art style as the reference images provided. "
+    "The reference style has these MANDATORY visual characteristics that you must replicate exactly: "
+    "BRIGHT warm natural lighting with soft warm tones, "
+    "clean soft anime-style shading with gentle gradients (NOT heavy shadows), "
+    "large expressive anime eyes with light brown/amber iris color, "
+    "warm healthy skin tones (NOT pale or grey), "
+    "soft brown hair with warm highlights, "
+    "clean thin line art (NOT thick dark outlines), "
+    "bright cheerful color palette even for serious scenes, "
+    "modern Korean office setting with natural daylight, "
+    "characters wearing white dress shirts and business casual, "
+    "cute pretty female faces and handsome boyish male faces (young Korean office workers in their 20s-30s), "
+    "soft pastel-toned backgrounds with warm lighting. "
+    "FORBIDDEN STYLES — NEVER use: dark moody atmosphere, heavy shadows, noir aesthetic, "
+    "dark color palette, dramatic red/black skies, thriller/horror style, "
+    "harsh lighting, dark skin tones, heavy muscular builds, intimidating expressions. "
+    "Even if the scene describes anger or sadness, keep the art style BRIGHT and SOFT like the references. "
     "vertical 9:16 composition, "
-    "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO signs with writing, NO titles, NO labels anywhere in the image, "
+    "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, "
+    "NO signs with writing, NO titles, NO labels anywhere in the image, "
     "the image must contain ZERO written characters of any language"
 )
 
-# Legacy suffix kept for backward compatibility but no longer primary
+# Legacy suffix kept for backward compatibility
 REFERENCE_STYLE_SUFFIX = REFERENCE_STYLE_PREFIX
 
+# Emotion modifiers — kept SOFT to not override the bright reference style
 EMOTION_STYLE = {
-    "funny": "bright cheerful pastel colors, characters with cute surprised or laughing expressions, lighthearted playful mood",
-    "touching": "warm golden soft lighting, characters with gentle emotional expressions, heartwarming romantic atmosphere",
-    "angry": "cool dramatic lighting, characters with sharp frustrated expressions, intense confrontational atmosphere",
-    "relatable": "soft natural everyday lighting, characters with natural thoughtful expressions, cozy slice-of-life atmosphere",
+    "funny": "characters with cute surprised or laughing expressions, lighthearted playful mood, bright warm colors",
+    "touching": "characters with gentle emotional expressions, soft warm golden tones, heartwarming atmosphere",
+    "angry": "characters with frustrated pouting expressions, furrowed brows, bright warm office setting, keep colors warm and bright",
+    "relatable": "characters with thoughtful or tired expressions, cozy everyday setting, soft natural warm lighting",
 }
 
 

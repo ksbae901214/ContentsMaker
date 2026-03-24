@@ -17,22 +17,23 @@ from src.config.settings import CLAUDE_TIMEOUT_SECONDS
 logger = logging.getLogger(__name__)
 
 STYLE_PREFIX = (
-    "Korean social commentary webtoon style illustration, "
-    "simple clean flat coloring with bold outlines, "
-    "slightly realistic body proportions (not chibi), "
-    "expressive cartoon faces with exaggerated emotions, "
+    "Beautiful Korean webtoon romance style illustration, "
+    "attractive good-looking characters with 8-head body proportions, "
+    "pretty women and handsome men with detailed beautiful faces, "
+    "clean line art with soft pastel coloring and gentle shading, "
+    "expressive beautiful eyes and natural hair, "
     "modern Korean everyday backgrounds (office, cafe, home, street), "
     "vertical 9:16 composition, "
     "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO watermarks anywhere in the image, "
     "pure visual storytelling only, "
-    "digital illustration, high quality"
+    "high quality digital art, trending on webtoon"
 )
 
 EMOTION_STYLE = {
-    "funny": "bright warm colors, comedic over-the-top facial expressions, playful lighthearted atmosphere, characters looking surprised or laughing",
-    "touching": "soft warm muted tones, characters showing empathy or sadness, gentle emotional atmosphere, warm lighting",
-    "angry": "slightly desaturated tense colors, characters with frustrated or upset expressions, dramatic confrontational poses, tense atmosphere",
-    "relatable": "natural everyday colors, characters in mundane daily situations, casual relaxed or tired expressions, cozy slice-of-life atmosphere",
+    "funny": "bright cheerful pastel colors, characters with cute surprised or laughing expressions, lighthearted playful mood",
+    "touching": "warm golden soft lighting, characters with gentle emotional expressions, heartwarming romantic atmosphere",
+    "angry": "cool dramatic lighting, characters with sharp frustrated expressions, intense confrontational atmosphere",
+    "relatable": "soft natural everyday lighting, characters with natural thoughtful expressions, cozy slice-of-life atmosphere",
 }
 
 

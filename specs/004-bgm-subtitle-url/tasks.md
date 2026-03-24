@@ -83,15 +83,15 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [P] [US3] `src/scraper/parsers/__init__.py` 생성 + 사이트 감지 라우터 함수 (`detect_site(url) → parser`)
-- [ ] T021 [P] [US3] `src/scraper/parsers/dcinside.py` — Playwright로 디시인사이드 게시글 파싱 (제목/본문/댓글)
-- [ ] T022 [P] [US3] `src/scraper/parsers/natepann.py` — Playwright로 네이트판 게시글 파싱
-- [ ] T023 [P] [US3] `src/scraper/parsers/naver_cafe.py` — Playwright로 네이버카페 게시글 파싱 (iframe 접근)
-- [ ] T024 [US3] `src/scraper/url_scraper.py` — URL 입력 → 사이트 감지 → 파서 호출 → BlindPost 반환 허브 모듈
-- [ ] T025 [US3] `src/main.py`에 `url` 서브커맨드 추가 (`python3 -m src.main url <URL>`)
-- [ ] T026 [US3] `app/page.tsx`에 "URL 입력" 탭 추가 (URL 입력 필드 + 생성 버튼)
-- [ ] T027 [US3] `app/api/generate/route.ts`에 URL 모드 추가 (url → url_scraper.py → 기존 파이프라인)
-- [ ] T028 [US3] 에러 처리: 미지원 사이트, 접근 불가, 로그인 필요, 텍스트 부족 시 명확한 에러 메시지
+- [x] T020 [P] [US3] `src/scraper/parsers/__init__.py` 생성 + 사이트 감지 라우터 함수 (`detect_site(url) → parser`)
+- [x] T021 [P] [US3] `src/scraper/parsers/dcinside.py` — Playwright로 디시인사이드 게시글 파싱 (제목/본문/댓글)
+- [x] T022 [P] [US3] `src/scraper/parsers/natepann.py` — Playwright로 네이트판 게시글 파싱
+- [x] T023 [P] [US3] `src/scraper/parsers/naver_cafe.py` — Playwright로 네이버카페 게시글 파싱 (iframe 접근)
+- [x] T024 [US3] `src/scraper/url_scraper.py` — URL 입력 → 사이트 감지 → 파서 호출 → BlindPost 반환 허브 모듈
+- [x] T025 [US3] `src/main.py`에 `url` 서브커맨드 추가 (`python3 -m src.main url <URL>`)
+- [x] T026 [US3] `app/page.tsx`에 "URL 입력" 탭 추가 (URL 입력 필드 + 생성 버튼)
+- [x] T027 [US3] `app/api/generate/route.ts`에 URL 모드 추가 (url → url_scraper.py → 기존 파이프라인)
+- [x] T028 [US3] 에러 처리: 미지원 사이트, 접근 불가, 로그인 필요, 텍스트 부족 시 명확한 에러 메시지
 
 **Checkpoint**: 3개 사이트 URL로 각 1개 영상 생성 성공.
 
@@ -101,10 +101,10 @@
 
 **Purpose**: 통합 테스트 + 문서 업데이트
 
-- [ ] T029 quickstart.md 검증 실행 — BGM ON/OFF, 줄바꿈, 3개 사이트 URL 테스트
-- [ ] T030 [P] README.md 업데이트 — BGM, 줄바꿈, URL 기능 문서 추가
-- [ ] T031 [P] prompt_plan.md 업데이트 — Phase 4-6 완료 상태 반영
-- [ ] T032 커밋 & 푸시 & PR 업데이트
+- [x] T029 quickstart.md 검증 실행 — BGM ON/OFF, 줄바꿈, 3개 사이트 URL 테스트
+- [x] T030 [P] README.md 업데이트 — BGM, 줄바꿈, URL 기능 문서 추가
+- [x] T031 [P] prompt_plan.md 업데이트 — Phase 4-6 완료 상태 반영
+- [x] T032 커밋 & 푸시 & PR 업데이트
 
 ---
 

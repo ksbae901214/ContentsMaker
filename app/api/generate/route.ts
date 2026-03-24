@@ -30,7 +30,20 @@ export async function POST(req: NextRequest) {
       try {
         let rawPath: string;
 
-        if (mode === "image") {
+        if (mode === "url") {
+          const urlVal = fd.get("url") as string;
+          if (!urlVal) { send("error",{message:"URL을 입력해주세요"}); ctrl.close(); return; }
+          send("progress",{message:`🔗 URL에서 콘텐츠 추출 중...`});
+          const r = JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.scraper.url_scraper import extract_from_url
+from src.scraper.manual_input import save_post
+post=extract_from_url('''${urlVal}''')
+s=save_post(post)
+print(json.dumps({"path":str(s),"title":post.title,"comments":len(post.comments)}))`));
+          send("progress",{message:`✅ "${r.title}" (댓글 ${r.comments}개)`});
+          rawPath = r.path;
+        } else if (mode === "image") {
           const imgs = fd.getAll("images") as File[];
           if (!imgs.length) { send("error",{message:"이미지를 업로드해주세요"}); ctrl.close(); return; }
           const tmp = join(ROOT,"data","temp",uuid());

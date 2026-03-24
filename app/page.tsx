@@ -7,7 +7,7 @@ interface Stats { imageCount: number; videoCount: number; audioCount: number; sc
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
 export default function Home() {
-  const [tab, setTab] = useState<"image"|"manual">("image");
+  const [tab, setTab] = useState<"image"|"manual"|"url">("image");
   const [status, setStatus] = useState<Status>("idle");
   const [progress, setProgress] = useState<string[]>([]);
   const [result, setResult] = useState<JobResult|null>(null);
@@ -19,6 +19,7 @@ export default function Home() {
   const [comments, setComments] = useState([""]);
   const [stats, setStats] = useState<Stats|null>(null);
   const [bgm, setBgm] = useState(true);
+  const [urlInput, setUrlInput] = useState("");
 
   const loadStats = () => { fetch("/api/stats").then(r=>r.json()).then(setStats).catch(()=>{}); };
   useEffect(()=>{ loadStats(); }, []);
@@ -94,14 +95,29 @@ export default function Home() {
         <p className="text-gray-400">블라인드 인기글 → 만화 쇼츠 자동 생성</p>
       </header>
       <div className="flex gap-2 mb-6">
-        {(["image","manual"] as const).map(t=>(
+        {(["image","manual","url"] as const).map(t=>(
           <button key={t} onClick={()=>setTab(t)} className={`flex-1 py-3 rounded-lg font-medium transition ${tab===t?"bg-blue-600":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
-            {t==="image"?"📸 스크린샷 업로드":"✏️ 직접 입력"}
+            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":"🔗 URL 입력"}
           </button>
         ))}
       </div>
 
-      {tab==="image"?(
+      {tab==="url"?(
+        <div className="space-y-4">
+          <div><label className="block text-sm font-medium text-gray-300 mb-1">게시글 URL *</label>
+            <input value={urlInput} onChange={e=>setUrlInput(e.target.value)} placeholder="https://gall.dcinside.com/... 또는 cafe.naver.com/..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/>
+            <p className="text-gray-500 text-xs mt-1">지원: 디시인사이드, 네이트판, 네이버 카페</p>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
+          </label>
+          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm",bgm?"on":"off");fd.set("url",urlInput.trim());generate(fd)}}
+            disabled={!urlInput.trim()} className={`w-full py-3 rounded-lg font-medium transition ${urlInput.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
+            🎬 영상 생성하기
+          </button>
+        </div>
+      ):tab==="image"?(
         <div>
           <div onDragOver={e=>{e.preventDefault();setDragOver(true)}} onDragLeave={()=>setDragOver(false)}
             onDrop={e=>{e.preventDefault();setDragOver(false);setFiles(p=>[...p,...Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith("image/"))])}}

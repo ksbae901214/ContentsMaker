@@ -267,6 +267,56 @@ def cmd_render(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_url(args: argparse.Namespace) -> int:
+    """Handle the 'url' subcommand — URL to video pipeline."""
+    from src.scraper.url_scraper import UrlScrapeError, extract_from_url
+    from src.scraper.manual_input import save_post
+    from src.analyzer.claude_analyzer import AnalyzerError, analyze
+    from src.video.renderer import RenderError, render_video
+
+    try:
+        # Step 1: Extract from URL
+        print(f"🔗 Step 1/5: URL에서 콘텐츠 추출 중...")
+        post = extract_from_url(args.url)
+        raw_path = save_post(post)
+        print(f"   제목: {post.title}")
+        print(f"   본문: {post.body[:50]}...")
+        print(f"   댓글: {len(post.comments)}개")
+
+        # Step 2: Analyze
+        print("📝 Step 2/5: AI 분석 중...")
+        script = analyze(post)
+        print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개")
+
+        # Step 3: Illustrations
+        use_refs = not getattr(args, "no_references", False)
+        scene_images = _run_illustrations(script, use_references=use_refs)
+
+        # Step 4: TTS
+        print("🎙️  Step 4/5: 음성 생성 중...")
+        tts_code, voice_path = _run_tts(script)
+        if tts_code != 0:
+            voice_path = None
+
+        # Step 5: Render
+        print("🎬 Step 5/5: 영상 렌더링 중...")
+        use_bgm = not getattr(args, "no_bgm", False)
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm)
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+
+        print(f"\n✅ 완료! URL → 영상 변환 성공")
+        print(f"   영상: {output_path}")
+        print(f"   크기: {file_size_mb:.1f} MB")
+        return 0
+
+    except (UrlScrapeError, AnalyzerError, RenderError) as e:
+        print(f"\n❌ 오류: {e}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\n\n취소되었습니다.")
+        return 130
+
+
 def cmd_pipeline(args: argparse.Namespace) -> int:
     """Handle the 'pipeline' subcommand — full raw → video pipeline."""
     from src.analyzer.claude_analyzer import AnalyzerError, analyze
@@ -386,6 +436,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     # crawl subcommand (P2 placeholder)
+    # url subcommand
+    url_parser = subparsers.add_parser(
+        "url", help="게시글 URL → 영상 자동 생성 (디시/네이트판/네이버카페)"
+    )
+    url_parser.add_argument("url", type=str, help="게시글 URL")
+    url_parser.add_argument(
+        "--no-references", action="store_true",
+        help="레퍼런스 이미지 비활성화"
+    )
+    url_parser.add_argument(
+        "--no-bgm", action="store_true",
+        help="배경음악 비활성화"
+    )
+
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")
 
     return parser
@@ -407,6 +471,7 @@ def main() -> int:
         "tts": cmd_tts,
         "render": cmd_render,
         "pipeline": cmd_pipeline,
+        "url": cmd_url,
     }
 
     handler = commands.get(args.command)

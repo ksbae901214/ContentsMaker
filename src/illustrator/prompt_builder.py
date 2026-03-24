@@ -27,7 +27,8 @@ STYLE_PREFIX = (
     "flat color fills with minimal shading (socialtoon style), "
     "Korean everyday settings (modern office, apartment, cafe, street), "
     "vertical 9:16 composition suitable for YouTube Shorts, "
-    "NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO watermarks, NO subtitles, NO UI elements anywhere, "
+    "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO watermarks, NO subtitles, NO UI elements, NO titles, NO labels, NO signs with writing anywhere in the image, "
+    "the image must contain ZERO written characters of any language, "
     "pure illustrated scene only, "
     "high quality Korean webtoon digital art"
 )
@@ -42,7 +43,8 @@ REFERENCE_STYLE_PREFIX = (
     "Do NOT invent a new style — ONLY use the style shown in the references. "
     "Generate a NEW scene with NEW poses and composition, but keep the art style 100% consistent. "
     "vertical 9:16 composition, "
-    "NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions anywhere"
+    "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO signs with writing, NO titles, NO labels anywhere in the image, "
+    "the image must contain ZERO written characters of any language"
 )
 
 # Legacy suffix kept for backward compatibility but no longer primary
@@ -94,7 +96,7 @@ def build_image_prompts(script: ShortsScript) -> list[dict]:
 2. 각 씬 상황을 구체적 장면으로 묘사하세요
 3. 캐릭터 외모(매력적인 얼굴), 옷차림, 표정, 포즈를 구체적으로 묘사하세요
 4. 한국 문화 맞는 배경 지정 (Korean apartment interior, Korean company office 등)
-5. 반드시 포함: "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions anywhere in the image"
+5. 반드시 포함: "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO signs with writing, NO titles, NO labels anywhere in the image, the image must contain ZERO written characters of any language"
 6. 인물 수와 관계 명확히 (a beautiful Korean woman in her 20s, a handsome Korean man in his 30s 등)
 7. 표정이 핵심 (deeply frustrated, embarrassed, shocked, tearful, overjoyed 등)
 8. 감정에 맞는 조명/분위기도 포함 (warm lighting, dramatic shadows 등)

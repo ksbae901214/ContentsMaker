@@ -6,7 +6,7 @@ import {
 } from "remotion";
 
 /** Uniform font size for all scenes (consistent throughout video). */
-const UNIFORM_FONT_SIZE = 55;
+const UNIFORM_FONT_SIZE = 80;
 
 /** Vertical offset: 10% below center (10% of 1920px = 192px). */
 const VERTICAL_OFFSET = 192;

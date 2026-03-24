@@ -53,7 +53,8 @@ def render_video(
     output_path = target_dir / output_filename
 
     scaled_duration = script.metadata.duration / SPEED_FACTOR
-    duration_frames = int(scaled_duration * FPS)
+    outro_seconds = 4  # Subscribe/like/bell outro
+    duration_frames = int((scaled_duration + outro_seconds) * FPS)
 
     # Copy assets to Remotion public dir for staticFile() access
     public_dir = PROJECT_ROOT / "public"

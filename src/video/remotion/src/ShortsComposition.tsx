@@ -14,6 +14,7 @@ import type { ShortsScriptData } from "./types";
 import { GRADIENT_THEMES } from "./types";
 
 const FPS = 30;
+const OUTRO_DURATION_FRAMES = FPS * 4; // 4-second outro
 
 interface SceneImage {
   sceneId: number;
@@ -69,7 +70,108 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         );
       })}
 
+      {/* Outro: Subscribe / Like / Bell */}
+      {(() => {
+        const lastScene = scriptData.scenes[scriptData.scenes.length - 1];
+        const outroStart = lastScene
+          ? Math.round((lastScene.timestamp + lastScene.duration) * FPS)
+          : 0;
+        return (
+          <Sequence from={outroStart} durationInFrames={OUTRO_DURATION_FRAMES}>
+            <OutroScene />
+          </Sequence>
+        );
+      })()}
+
       {audioFile && <Audio src={staticFile(audioFile)} />}
+    </AbsoluteFill>
+  );
+};
+
+const OutroScene: React.FC = () => {
+  const frame = useCurrentFrame();
+
+  const opacity = interpolate(frame, [0, 20], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+  const scale = interpolate(frame, [0, 20], [0.8, 1], {
+    extrapolateRight: "clamp",
+  });
+
+  // Pulsing animation for the icons
+  const pulse = interpolate(frame, [30, 45, 60, 75, 90, 105, 120], [1, 1.15, 1, 1.15, 1, 1.15, 1], {
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <AbsoluteFill
+      style={{
+        justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+        opacity,
+      }}
+    >
+      <div
+        style={{
+          transform: `scale(${scale})`,
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 40,
+        }}
+      >
+        {/* Icons row */}
+        <div
+          style={{
+            display: "flex",
+            gap: 60,
+            transform: `scale(${pulse})`,
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 80 }}>👍</div>
+            <div style={{ fontSize: 28, color: "#fff", fontFamily: "Noto Sans KR, sans-serif", marginTop: 8 }}>좋아요</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 80 }}>🔔</div>
+            <div style={{ fontSize: 28, color: "#fff", fontFamily: "Noto Sans KR, sans-serif", marginTop: 8 }}>알림설정</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 80 }}>💬</div>
+            <div style={{ fontSize: 28, color: "#fff", fontFamily: "Noto Sans KR, sans-serif", marginTop: 8 }}>댓글</div>
+          </div>
+        </div>
+
+        {/* Subscribe button */}
+        <div
+          style={{
+            background: "#FF0000",
+            borderRadius: 16,
+            padding: "20px 60px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div style={{ fontSize: 52, fontWeight: 800, color: "#fff", fontFamily: "Noto Sans KR, sans-serif" }}>
+            구독
+          </div>
+        </div>
+
+        {/* Bottom text */}
+        <div
+          style={{
+            fontSize: 36,
+            color: "rgba(255,255,255,0.7)",
+            fontFamily: "Noto Sans KR, sans-serif",
+            marginTop: 20,
+          }}
+        >
+          구독과 좋아요는 큰 힘이 됩니다
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

@@ -115,20 +115,21 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
           background: "rgba(0,0,0,0.6)",
           borderRadius: 12,
           maxWidth: "90%",
+          textAlign: "center",
         }}
       >
-        <span
+        <div
           style={{
             fontSize: 75,
             fontWeight: 800,
-            textAlign: "center" as const,
             color: "#FFFFFF",
             fontFamily: "Noto Sans KR, sans-serif",
             textShadow: "2px 2px 6px rgba(0,0,0,0.8)",
+            lineHeight: 1.3,
           }}
         >
-          [블라인드] {title}
-        </span>
+          [블라인드]{"\n"}{title}
+        </div>
       </div>
     </AbsoluteFill>
   );
@@ -140,84 +141,50 @@ const OutroScene: React.FC = () => {
   const opacity = interpolate(frame, [0, 20], [0, 1], {
     extrapolateRight: "clamp",
   });
-  const scale = interpolate(frame, [0, 20], [0.8, 1], {
-    extrapolateRight: "clamp",
-  });
-
-  // Pulsing animation for the icons
-  const pulse = interpolate(frame, [30, 45, 60, 75, 90, 105, 120], [1, 1.15, 1, 1.15, 1, 1.15, 1], {
-    extrapolateRight: "clamp",
-  });
 
   return (
-    <AbsoluteFill
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-        opacity,
-      }}
-    >
-      <div
+    <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      {/* Background outro image (public/outro.png) */}
+      <AbsoluteFill style={{ opacity }}>
+        <Img
+          src={staticFile("outro.png")}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      </AbsoluteFill>
+
+      {/* Overlay text at bottom */}
+      <AbsoluteFill
         style={{
-          transform: `scale(${scale})`,
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
+          justifyContent: "flex-end",
           alignItems: "center",
-          gap: 40,
+          opacity,
         }}
       >
-        {/* Icons row */}
         <div
           style={{
-            display: "flex",
-            gap: 60,
-            transform: `scale(${pulse})`,
+            marginBottom: 200,
+            padding: "16px 40px",
+            textAlign: "center",
           }}
         >
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 80 }}>👍</div>
-            <div style={{ fontSize: 28, color: "#fff", fontFamily: "Noto Sans KR, sans-serif", marginTop: 8 }}>좋아요</div>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 80 }}>🔔</div>
-            <div style={{ fontSize: 28, color: "#fff", fontFamily: "Noto Sans KR, sans-serif", marginTop: 8 }}>알림설정</div>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 80 }}>💬</div>
-            <div style={{ fontSize: 28, color: "#fff", fontFamily: "Noto Sans KR, sans-serif", marginTop: 8 }}>댓글</div>
-          </div>
-        </div>
-
-        {/* Subscribe button */}
-        <div
-          style={{
-            background: "#FF0000",
-            borderRadius: 16,
-            padding: "20px 60px",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
-          <div style={{ fontSize: 52, fontWeight: 800, color: "#fff", fontFamily: "Noto Sans KR, sans-serif" }}>
-            구독
+          <div
+            style={{
+              fontSize: 38,
+              fontWeight: 700,
+              color: "#FFFFFF",
+              fontFamily: "Noto Sans KR, sans-serif",
+              textShadow: "2px 2px 8px rgba(0,0,0,0.8)",
+              lineHeight: 1.6,
+            }}
+          >
+            구독과 좋아요를 눌러주시면{"\n"}더 많은 영상을 볼 수 있습니다
           </div>
         </div>
-
-        {/* Bottom text */}
-        <div
-          style={{
-            fontSize: 36,
-            color: "rgba(255,255,255,0.7)",
-            fontFamily: "Noto Sans KR, sans-serif",
-            marginTop: 20,
-          }}
-        >
-          구독과 좋아요는 큰 힘이 됩니다
-        </div>
-      </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

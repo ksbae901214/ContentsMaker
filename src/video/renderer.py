@@ -1,4 +1,4 @@
-"""Remotion video renderer — generates MP4 from ShortsScript + audio.
+"""Remotion video renderer — generates MP4 from ShortsScript + audio + images.
 
 Calls Remotion CLI via subprocess to render the final video.
 Constitution Principle III: Text-First Video.
@@ -29,13 +29,16 @@ class RenderError(Exception):
 def render_video(
     script: ShortsScript,
     audio_path: Path | None = None,
+    scene_images: list[dict] | None = None,
     output_dir: Path | None = None,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
-    1. Write props JSON (script data + audio path)
-    2. Call Remotion CLI to render
-    3. Return path to generated MP4
+    Args:
+        script: The ShortsScript to render
+        audio_path: Path to voice MP3 file
+        scene_images: List of {scene_id, image_path} dicts for manga backgrounds
+        output_dir: Output directory (defaults to data/outputs/)
     """
     target_dir = output_dir or DATA_OUTPUTS_DIR
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -50,25 +53,47 @@ def render_video(
 
     duration_frames = int(script.metadata.duration * FPS)
 
-    # Copy audio to Remotion public dir for staticFile() access
+    # Copy assets to Remotion public dir for staticFile() access
     public_dir = PROJECT_ROOT / "public"
     public_dir.mkdir(parents=True, exist_ok=True)
+    temp_files: list[Path] = []
+
+    # Audio
     audio_filename = ""
     if audio_path and audio_path.exists():
         audio_filename = f"audio_{timestamp}.mp3"
         shutil.copy2(audio_path, public_dir / audio_filename)
+        temp_files.append(public_dir / audio_filename)
+
+    # Scene images
+    scene_image_props = []
+    if scene_images:
+        for img_data in scene_images:
+            src_path = Path(img_data["image_path"])
+            if src_path.exists():
+                img_filename = f"img_{timestamp}_scene_{img_data['scene_id']:02d}.png"
+                shutil.copy2(src_path, public_dir / img_filename)
+                temp_files.append(public_dir / img_filename)
+                scene_image_props.append({
+                    "sceneId": img_data["scene_id"],
+                    "imageFile": img_filename,
+                })
 
     props = {
         "scriptData": _convert_to_camel_case(script.to_dict()),
         "audioFile": audio_filename,
+        "sceneImages": scene_image_props,
     }
 
     props_path = target_dir / f"{timestamp}_props.json"
     props_path.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
 
-    logger.info("렌더링 시작: %s (%d프레임, %d초)", output_filename, duration_frames, script.metadata.duration)
+    img_count = len(scene_image_props)
+    logger.info(
+        "렌더링 시작: %s (%d프레임, %d초, 이미지 %d장)",
+        output_filename, duration_frames, script.metadata.duration, img_count,
+    )
 
-    # Check npx availability
     npx_path = shutil.which("npx")
     if not npx_path:
         raise RenderError("npx를 찾을 수 없습니다. Node.js가 설치되어 있는지 확인하세요.")
@@ -91,14 +116,13 @@ def render_video(
             cwd=str(PROJECT_ROOT),
         )
     except subprocess.TimeoutExpired:
-        raise RenderError("렌더링 시간 초과 (5분). 영상 길이를 줄여보세요.")
+        raise RenderError("렌더링 시간 초과 (5분).")
     finally:
         if props_path.exists():
             props_path.unlink()
-        if audio_filename:
-            audio_public = public_dir / audio_filename
-            if audio_public.exists():
-                audio_public.unlink()
+        for f in temp_files:
+            if f.exists():
+                f.unlink()
 
     if result.returncode != 0:
         error_msg = result.stderr[:500] if result.stderr else result.stdout[:500]
@@ -113,14 +137,10 @@ def render_video(
     return output_path
 
 
-def _convert_to_camel_case(data: dict) -> dict:
+def _convert_to_camel_case(data):
     """Convert snake_case keys to camelCase for Remotion props."""
     if isinstance(data, dict):
-        result = {}
-        for key, value in data.items():
-            camel_key = _snake_to_camel(key)
-            result[camel_key] = _convert_to_camel_case(value)
-        return result
+        return {_snake_to_camel(k): _convert_to_camel_case(v) for k, v in data.items()}
     if isinstance(data, list):
         return [_convert_to_camel_case(item) for item in data]
     return data

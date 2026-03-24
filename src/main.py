@@ -58,16 +58,20 @@ def cmd_image(args: argparse.Namespace) -> int:
         script = analyze(post)
         print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
 
-        # Step 3: TTS
-        print("🎙️  Step 3/4: 음성 생성 중...")
+        # Step 3: Generate illustrations
+        scene_images = None
+        scene_images = _run_illustrations(script)
+
+        # Step 4: TTS
+        print("🎙️  Step 4/5: 음성 생성 중...")
         tts_code, voice_path = _run_tts(script)
         if tts_code != 0:
             print("   ⚠️  TTS 실패, 무음 영상으로 계속합니다.")
             voice_path = None
 
-        # Step 4: Render
-        print("🎬 Step 4/4: 영상 렌더링 중...")
-        output_path = render_video(script, audio_path=voice_path)
+        # Step 5: Render
+        print("🎬 Step 5/5: 영상 렌더링 중...")
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images)
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 완료! 이미지 → 영상 변환 성공")
@@ -75,6 +79,8 @@ def cmd_image(args: argparse.Namespace) -> int:
         print(f"   크기: {file_size_mb:.1f} MB")
         print(f"   감정: {script.metadata.emotion_type}")
         print(f"   길이: {script.metadata.duration}초")
+        if scene_images:
+            print(f"   만화: {len(scene_images)}장")
         return 0
 
     except (ImageExtractError, AnalyzerError, RenderError) as e:
@@ -197,6 +203,28 @@ def _run_tts(script):
         return 1, None
 
 
+def _run_illustrations(script) -> list[dict] | None:
+    """Generate manga illustrations for scenes. Returns None if unavailable."""
+    import os
+    if not os.environ.get("OPENAI_API_KEY"):
+        print("🎨 Step 3/5: 만화 이미지 생성 스킵 (OPENAI_API_KEY 미설정)")
+        print("   그라데이션 배경으로 대체합니다.")
+        return None
+
+    from src.illustrator.image_generator import ImageGenerateError, generate_scene_images
+    try:
+        print(f"🎨 Step 3/5: 만화 이미지 생성 중 ({len(script.scenes)}씬)...")
+        results = generate_scene_images(script)
+        cost = len(results) * 0.005
+        print(f"   생성: {len(results)}장 (${cost:.3f})")
+        return results
+    except ImageGenerateError as e:
+        logger.warning("이미지 생성 실패, 그라데이션으로 대체: %s", e)
+        print(f"   ⚠️  이미지 생성 실패: {e}")
+        print("   그라데이션 배경으로 대체합니다.")
+        return None
+
+
 def cmd_render(args: argparse.Namespace) -> int:
     """Handle the 'render' subcommand."""
     from src.analyzer.script_models import ShortsScript
@@ -249,25 +277,30 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
         post = BlindPost.from_dict(data)
 
         # Step 1: Analyze
-        print("📝 Step 1/3: AI 분석 중...")
+        print("📝 Step 1/4: AI 분석 중...")
         script = analyze(post)
         print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
 
-        # Step 2: TTS
-        print("🎙️  Step 2/3: 음성 생성 중...")
+        # Step 2: Illustrations
+        scene_images = _run_illustrations(script)
+
+        # Step 3: TTS
+        print("🎙️  Step 3/4: 음성 생성 중...")
         tts_code, voice_path = _run_tts(script)
         if tts_code != 0:
             print("⚠️  TTS 실패, 무음 영상으로 계속합니다.")
             voice_path = None
 
-        # Step 3: Render
-        print("🎬 Step 3/3: 영상 렌더링 중...")
-        output_path = render_video(script, audio_path=voice_path)
+        # Step 4: Render
+        print("🎬 Step 4/4: 영상 렌더링 중...")
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images)
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 파이프라인 완료!")
         print(f"   영상: {output_path}")
         print(f"   크기: {file_size_mb:.1f} MB")
+        if scene_images:
+            print(f"   만화: {len(scene_images)}장")
         return 0
 
     except (AnalyzerError, RenderError) as e:

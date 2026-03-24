@@ -119,8 +119,9 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
       >
         <span
           style={{
-            fontSize: 42,
+            fontSize: 75,
             fontWeight: 800,
+            textAlign: "center" as const,
             color: "#FFFFFF",
             fontFamily: "Noto Sans KR, sans-serif",
             textShadow: "2px 2px 6px rgba(0,0,0,0.8)",

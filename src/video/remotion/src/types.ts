@@ -10,7 +10,15 @@ export interface SceneData {
   text: string;
   voice_text: string;
   emphasis: Emphasis;
+  highlightWords?: string[];
 }
+
+export const HIGHLIGHT_COLORS: Record<EmotionType, string> = {
+  funny: "#FFD700",
+  touching: "#FF69B4",
+  angry: "#FF4444",
+  relatable: "#87CEEB",
+};
 
 export interface ShortsScriptData {
   metadata: {

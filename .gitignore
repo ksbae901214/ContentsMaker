@@ -43,6 +43,7 @@ next-env.d.ts
 data/temp/
 data/references/
 data/images/
+data/bgm/
 
 # Legacy web directory
 web/

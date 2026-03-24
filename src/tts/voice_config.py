@@ -34,6 +34,20 @@ GRADIENT_THEMES: dict[str, list[str]] = {
     "relatable": ["#4169E1", "#1E90FF", "#87CEEB"],
 }
 
+BGM_FILES: dict[str, str] = {
+    "funny": "funny.mp3",
+    "touching": "touching.mp3",
+    "angry": "angry.mp3",
+    "relatable": "relatable.mp3",
+}
+
+HIGHLIGHT_COLORS: dict[str, str] = {
+    "funny": "#FFD700",
+    "touching": "#FF69B4",
+    "angry": "#FF4444",
+    "relatable": "#87CEEB",
+}
+
 DEFAULT_EMOTION = "relatable"
 
 
@@ -45,3 +59,13 @@ def get_voice_config(emotion_type: str) -> dict[str, str]:
 def get_gradient(emotion_type: str) -> list[str]:
     """Get gradient colors for an emotion type."""
     return GRADIENT_THEMES.get(emotion_type, GRADIENT_THEMES[DEFAULT_EMOTION])
+
+
+def get_bgm_file(emotion_type: str) -> str:
+    """Get BGM filename for an emotion type."""
+    return BGM_FILES.get(emotion_type, BGM_FILES[DEFAULT_EMOTION])
+
+
+def get_highlight_color(emotion_type: str) -> str:
+    """Get highlight color for an emotion type."""
+    return HIGHLIGHT_COLORS.get(emotion_type, HIGHLIGHT_COLORS[DEFAULT_EMOTION])

@@ -24,12 +24,16 @@ class Scene:
     text: str
     voice_text: str
     emphasis: str = "medium"  # Emphasis
+    highlight_words: tuple[str, ...] = ()
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        d = asdict(self)
+        d["highlight_words"] = list(self.highlight_words)
+        return d
 
     @classmethod
     def from_dict(cls, data: dict) -> Scene:
+        raw_hw = data.get("highlight_words", data.get("highlightWords", []))
         return cls(
             id=data["id"],
             timestamp=float(data["timestamp"]),
@@ -38,6 +42,7 @@ class Scene:
             text=data["text"],
             voice_text=data.get("voice_text", data.get("voiceText", data["text"])),
             emphasis=data.get("emphasis", "medium"),
+            highlight_words=tuple(raw_hw) if raw_hw else (),
         )
 
 

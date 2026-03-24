@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
   const fd = await req.formData();
   const mode = fd.get("mode") as string;
   const useBgm = (fd.get("bgm") as string) !== "off";
+  const useYt = (fd.get("yt") as string) === "on";
   const enc = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -130,8 +131,31 @@ ap=af[-1] if af else None
 si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
 o=render_video(s,audio_path=ap,scene_images=si,use_bgm=${useBgm})
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`));
-        send("progress",{message:`✅ 완료 (${rr.size}MB)`});
-        send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost}});
+        send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
+
+        let ytUrl="";
+        if(useYt){
+          send("progress",{message:"📺 YouTube 업로드 중..."});
+          try{
+            const yt=JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.script_models import ShortsScript
+from src.upload.youtube_uploader import upload_video, is_authenticated
+from src.upload.metadata_generator import generate_metadata
+if not is_authenticated():
+ print(json.dumps({"error":"YouTube 인증 필요. python3 -m src.main youtube-auth 실행"}))
+else:
+ s=ShortsScript.load('''${a.sp}''')
+ m=generate_metadata(s)
+ url=upload_video(Path('''${rr.path}'''),m["title"],m["description"],m["tags"])
+ print(json.dumps({"url":url}))`));
+            if(yt.error){send("progress",{message:`⚠️ ${yt.error}`})}
+            else{ytUrl=yt.url;send("progress",{message:`✅ YouTube 업로드 완료: ${ytUrl}`})}
+          }catch(e:any){send("progress",{message:`⚠️ YouTube 업로드 실패: ${e.message?.slice(0,100)}`})}
+        }
+
+        send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,youtubeUrl:ytUrl}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

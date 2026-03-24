@@ -450,6 +450,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="배경음악 비활성화"
     )
 
+    # youtube-auth subcommand
+    subparsers.add_parser(
+        "youtube-auth", help="YouTube API OAuth 인증 (최초 1회)"
+    )
+
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")
 
     return parser
@@ -477,6 +482,15 @@ def main() -> int:
     handler = commands.get(args.command)
     if handler:
         return handler(args)
+
+    if args.command == "youtube-auth":
+        from src.upload.youtube_uploader import authenticate, UploadError
+        try:
+            authenticate()
+            return 0
+        except UploadError as e:
+            print(f"\n❌ {e}", file=sys.stderr)
+            return 1
 
     if args.command == "crawl":
         print("⚠️  자동 크롤링은 아직 구현되지 않았습니다")

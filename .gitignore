@@ -12,6 +12,10 @@ build/
 .env
 .env.*
 
+# YouTube OAuth tokens
+data/.youtube_token.json
+data/.youtube_credentials.json
+
 # Data (generated outputs)
 data/raw/*.json
 data/scripts/*.json

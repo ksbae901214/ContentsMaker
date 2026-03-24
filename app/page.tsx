@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 
 type Status = "idle" | "processing" | "done" | "error";
-interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; cost: number; }
+interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; cost: number; youtubeUrl?: string; }
 interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
@@ -19,6 +19,7 @@ export default function Home() {
   const [comments, setComments] = useState([""]);
   const [stats, setStats] = useState<Stats|null>(null);
   const [bgm, setBgm] = useState(true);
+  const [ytUpload, setYtUpload] = useState(false);
   const [urlInput, setUrlInput] = useState("");
 
   const loadStats = () => { fetch("/api/stats").then(r=>r.json()).then(setStats).catch(()=>{}); };
@@ -79,6 +80,7 @@ export default function Home() {
           <div className="flex justify-between"><span className="text-gray-400">길이</span><span>{result.duration}초</span></div>
           <div className="flex justify-between"><span className="text-gray-400">만화</span><span>{result.imageCount}장</span></div>
           <div className="flex justify-between"><span className="text-gray-400">GPT API 비용</span><span className="text-green-400">${result.cost.toFixed(3)}</span></div>
+          {result.youtubeUrl&&<div className="flex justify-between"><span className="text-gray-400">YouTube</span><a href={result.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{result.youtubeUrl}</a></div>}
         </div>
         <div className="flex gap-3">
           <a href={url} download className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium text-center transition">⬇️ 다운로드</a>
@@ -112,7 +114,11 @@ export default function Home() {
             <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
             <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
           </label>
-          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm",bgm?"on":"off");fd.set("url",urlInput.trim());generate(fd)}}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">📺 YouTube 자동 업로드</span>
+          </label>
+          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("url",urlInput.trim());generate(fd)}}
             disabled={!urlInput.trim()} className={`w-full py-3 rounded-lg font-medium transition ${urlInput.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성하기
           </button>
@@ -138,7 +144,7 @@ export default function Home() {
                 <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
                 <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
               </label>
-              <button onClick={()=>{const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");files.forEach(f=>fd.append("images",f));generate(fd)}}
+              <button onClick={()=>{const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");files.forEach(f=>fd.append("images",f));generate(fd)}}
                 className="w-full mt-3 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium transition">
                 🎬 영상 생성하기 ({files.length}장)
               </button>
@@ -161,7 +167,11 @@ export default function Home() {
             <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
             <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
           </label>
-          <button onClick={()=>{if(!title.trim()||!body.trim())return;const fd=new FormData();fd.set("mode","manual");fd.set("bgm",bgm?"on":"off");fd.set("title",title);fd.set("body",body);fd.set("comments",JSON.stringify(comments.filter(c=>c.trim())));generate(fd)}}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">📺 YouTube 자동 업로드</span>
+          </label>
+          <button onClick={()=>{if(!title.trim()||!body.trim())return;const fd=new FormData();fd.set("mode","manual");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("title",title);fd.set("body",body);fd.set("comments",JSON.stringify(comments.filter(c=>c.trim())));generate(fd)}}
             disabled={!title.trim()||!body.trim()} className={`w-full py-3 rounded-lg font-medium transition ${title.trim()&&body.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성하기
           </button>

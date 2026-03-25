@@ -1,20 +1,20 @@
-"""Claude Code analyzer — converts BlindPost to ShortsScript.
+"""AI analyzer — converts BlindPost to ShortsScript.
 
-Calls Claude Code via subprocess to analyze content and generate
+Uses OpenAI GPT-4o-mini to analyze content and generate
 a structured ShortsScript JSON.
 """
 from __future__ import annotations
 
 import json
 import logging
+import os
 import re
-import subprocess
 from datetime import datetime
 from pathlib import Path
 
 from src.analyzer.prompt_template import build_prompt
 from src.analyzer.script_models import ShortsScript, AudioConfig, BackgroundConfig
-from src.config.settings import DATA_SCRIPTS_DIR, CLAUDE_TIMEOUT_SECONDS
+from src.config.settings import DATA_SCRIPTS_DIR
 from src.scraper.models import BlindPost
 from src.tts.voice_config import get_voice_config, get_gradient
 
@@ -41,8 +41,8 @@ def analyze(post: BlindPost, output_dir: Path | None = None) -> ShortsScript:
         comments=[c.to_dict() for c in post.comments],
     )
 
-    logger.info("Claude Code 분석 시작: %s", post.title)
-    raw_json = _call_claude(prompt)
+    logger.info("AI 분석 시작: %s", post.title)
+    raw_json = _call_openai(prompt)
     script = _parse_response(raw_json)
     script = _apply_voice_config(script)
     script = _ensure_line_breaks(script)
@@ -62,45 +62,46 @@ def analyze(post: BlindPost, output_dir: Path | None = None) -> ShortsScript:
     return script
 
 
-def _call_claude(prompt: str) -> str:
-    """Call Claude Code headless mode and return raw output."""
+def _call_openai(prompt: str) -> str:
+    """Call OpenAI GPT-4o-mini to analyze content."""
     try:
-        result = subprocess.run(
-            ["claude", "-p", prompt, "--output-format", "json"],
-            capture_output=True,
-            text=True,
-            timeout=CLAUDE_TIMEOUT_SECONDS,
-        )
-    except FileNotFoundError:
-        raise AnalyzerError(
-            "Claude Code가 설치되지 않았습니다. "
-            "'claude' 명령어가 PATH에 있는지 확인하세요."
-        )
-    except subprocess.TimeoutExpired:
-        raise AnalyzerError(
-            f"Claude Code 응답 시간 초과 ({CLAUDE_TIMEOUT_SECONDS}초). "
-            "네트워크 상태를 확인하세요."
-        )
+        from openai import OpenAI
+    except ImportError:
+        raise AnalyzerError("openai 패키지가 필요합니다: pip install openai")
 
-    if result.returncode != 0:
-        raise AnalyzerError(f"Claude Code 실행 실패 (exit {result.returncode}): {result.stderr[:200]}")
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise AnalyzerError("OPENAI_API_KEY 환경변수가 설정되지 않았습니다.")
 
-    return result.stdout
+    client = OpenAI(api_key=api_key)
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "당신은 블라인드 커뮤니티 게시글을 유튜브 쇼츠 영상 스크립트로 변환하는 전문가입니다. JSON만 출력하세요."},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=4000,
+            temperature=0.3,
+        )
+        result = response.choices[0].message.content or ""
+        logger.info("GPT-4o-mini 분석 완료 (%d자)", len(result))
+        return result
+    except Exception as e:
+        raise AnalyzerError(f"OpenAI API 호출 실패: {e}")
 
 
 def _parse_response(raw: str) -> ShortsScript:
-    """Parse Claude Code's response into a ShortsScript."""
+    """Parse API response into a ShortsScript."""
+    if not raw or not raw.strip():
+        raise AnalyzerError("AI 응답이 비어있습니다.")
+
     # Try direct JSON parse first
     try:
         data = json.loads(raw)
-        # Handle Claude Code --output-format json wrapper
-        if isinstance(data, dict) and "result" in data:
-            inner = data["result"]
-            if isinstance(inner, str):
-                return _parse_response(inner)
-            if isinstance(inner, dict):
-                data = inner
-        return ShortsScript.from_dict(data)
+        if isinstance(data, dict) and "metadata" in data:
+            return ShortsScript.from_dict(data)
     except (json.JSONDecodeError, KeyError):
         pass
 
@@ -123,7 +124,7 @@ def _parse_response(raw: str) -> ShortsScript:
             pass
 
     raise AnalyzerError(
-        f"Claude Code 응답을 JSON으로 파싱할 수 없습니다.\n응답 미리보기: {raw[:300]}"
+        f"AI 응답을 JSON으로 파싱할 수 없습니다.\n응답 미리보기: {raw[:300]}"
     )
 
 

@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 from src.analyzer.claude_analyzer import (
-    analyze, _ensure_line_breaks, _apply_voice_config, _call_claude,
+    analyze, _ensure_line_breaks, _apply_voice_config, _call_openai,
     AnalyzerError,
 )
 from src.analyzer.script_models import (
@@ -84,31 +84,20 @@ class TestEnsureLineBreaks:
         assert "\n" in result.scenes[1].text
 
 
-class TestCallClaude:
-    @patch("src.analyzer.claude_analyzer.subprocess.run")
-    def test_success(self, mock_run, sample_script_dict):
-        mock_run.return_value = MagicMock(
-            returncode=0,
-            stdout=json.dumps(sample_script_dict),
-            stderr="",
-        )
-        result = _call_claude("test prompt")
-        assert "metadata" in result or "테스트" in result
-
-    @patch("src.analyzer.claude_analyzer.subprocess.run", side_effect=FileNotFoundError)
-    def test_missing_claude_raises(self, _):
-        with pytest.raises(AnalyzerError, match="설치되지 않았습니다"):
-            _call_claude("test prompt")
-
-    @patch("src.analyzer.claude_analyzer.subprocess.run")
-    def test_nonzero_exit_raises(self, mock_run):
-        mock_run.return_value = MagicMock(returncode=1, stderr="error", stdout="")
-        with pytest.raises(AnalyzerError, match="실행 실패"):
-            _call_claude("test prompt")
+class TestCallOpenAI:
+    def test_missing_api_key_raises(self):
+        import os
+        old = os.environ.pop("OPENAI_API_KEY", None)
+        try:
+            with pytest.raises(AnalyzerError, match="OPENAI_API_KEY"):
+                _call_openai("test prompt")
+        finally:
+            if old:
+                os.environ["OPENAI_API_KEY"] = old
 
 
 class TestAnalyzeIntegration:
-    @patch("src.analyzer.claude_analyzer._call_claude")
+    @patch("src.analyzer.claude_analyzer._call_openai")
     def test_full_pipeline(self, mock_claude, sample_post, sample_script_dict, tmp_data_dir):
         mock_claude.return_value = json.dumps(sample_script_dict)
         result = analyze(sample_post, output_dir=tmp_data_dir / "scripts")
@@ -120,7 +109,7 @@ class TestAnalyzeIntegration:
         scripts = list((tmp_data_dir / "scripts").glob("*.json"))
         assert len(scripts) == 1
 
-    @patch("src.analyzer.claude_analyzer._call_claude")
+    @patch("src.analyzer.claude_analyzer._call_openai")
     def test_saved_script_is_loadable(self, mock_claude, sample_post, sample_script_dict, tmp_data_dir):
         mock_claude.return_value = json.dumps(sample_script_dict)
         result = analyze(sample_post, output_dir=tmp_data_dir / "scripts")

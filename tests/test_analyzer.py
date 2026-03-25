@@ -57,11 +57,6 @@ class TestParseResponse:
         script = _parse_response(raw)
         assert script.metadata.title == "테스트"
 
-    def test_claude_output_wrapper(self):
-        wrapped = json.dumps({"result": self._make_valid_json()})
-        script = _parse_response(wrapped)
-        assert script.metadata.title == "테스트"
-
     def test_invalid_json(self):
         with pytest.raises(AnalyzerError, match="파싱할 수 없습니다"):
             _parse_response("This is not JSON at all")

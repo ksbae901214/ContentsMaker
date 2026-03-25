@@ -1,8 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
+import { SceneEditor } from "./components/SceneEditor";
 
 type Status = "idle" | "processing" | "done" | "error";
-interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; cost: number; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; }
+interface SceneImage { scene_id: number; image_path: string; prompt: string; }
+interface SceneData { id: number; timestamp: number; duration: number; type: string; text: string; voice_text: string; emphasis: string; }
+interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; cost: number; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; scriptPath?: string; sceneImages?: SceneImage[]; scenes?: SceneData[]; }
 interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
@@ -73,7 +76,7 @@ export default function Home() {
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="text-center mb-6"><div className="text-5xl mb-3">🎉</div><h2 className="text-2xl font-bold">영상 생성 완료!</h2></div>
         <div className="bg-gray-900 rounded-xl overflow-hidden flex justify-center mb-6">
-          <video src={url} controls className="max-h-[500px]" style={{aspectRatio:"9/16",maxWidth:"300px"}}/>
+          <video key={result.videoPath} src={url} controls className="max-h-[500px]" style={{aspectRatio:"9/16",maxWidth:"300px"}}/>
         </div>
         <div className="bg-gray-800 rounded-lg p-4 space-y-2 text-sm mb-6">
           <div className="flex justify-between"><span className="text-gray-400">제목</span><span>{result.title}</span></div>
@@ -84,6 +87,19 @@ export default function Home() {
           {result.youtubeUrl&&<div className="flex justify-between"><span className="text-gray-400">YouTube</span><a href={result.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{result.youtubeUrl}</a></div>}
           {result.tiktokStatus&&<div className="flex justify-between"><span className="text-gray-400">TikTok</span><span className="text-purple-400">{result.tiktokStatus}</span></div>}
         </div>
+        {result.scenes && result.scriptPath && (
+          <div className="mb-6">
+            <SceneEditor
+              scenes={result.scenes}
+              sceneImages={result.sceneImages || []}
+              scriptPath={result.scriptPath}
+              useBgm={bgm}
+              onScenesChange={(scenes) => setResult({...result, scenes})}
+              onImagesChange={(images) => setResult({...result, sceneImages: images})}
+              onVideoUpdate={(videoPath) => setResult({...result, videoPath})}
+            />
+          </div>
+        )}
         {result.summary&&(
           <div className="bg-gray-800 rounded-lg p-4 mb-6">
             <div className="text-sm font-medium text-gray-400 mb-2">📋 3줄 요약 (복사용)</div>

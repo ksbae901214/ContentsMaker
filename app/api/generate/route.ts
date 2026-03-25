@@ -183,7 +183,14 @@ s=ShortsScript.load('''${a.sp}''')
 m=generate_metadata(s)
 print(json.dumps({"summary":m["summary"],"hashtags":m["hashtags"]}))`));
 
-        send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,youtubeUrl:ytUrl,tiktokStatus:ttStatus?"Draft 업로드 완료":"",summary:meta.summary,hashtags:meta.hashtags}});
+        // Load full scene data for editing
+        const scriptData=JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+s=json.loads(Path('''${a.sp}''').read_text())
+print(json.dumps({"scenes":s["scenes"]}))`));
+
+        send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,youtubeUrl:ytUrl,tiktokStatus:ttStatus?"Draft 업로드 완료":"",summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,sceneImages:generatedImages,scenes:scriptData.scenes}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

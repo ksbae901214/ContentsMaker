@@ -67,9 +67,9 @@ def generate_metadata(script: ShortsScript) -> dict:
     line2 = sentences[0] if sentences else ""
     line3 = sentences[1] if len(sentences) > 1 else (sentences[0] if sentences else "")
     summary = (
-        "다양한 커뮤니티의 핫한 게시글을 영상으로 보여드립니다.\n"
-        f"{line2}\n"
-        f"{line3}"
+        "다양한 커뮤니티의 핫한 게시글을 영상으로 보여드립니다\n"
+        f"{line2.rstrip('.')}\n"
+        f"{line3.rstrip('.')}"
     )
 
     hashtags_str = " ".join(hashtags)

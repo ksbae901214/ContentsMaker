@@ -225,9 +225,13 @@ def _snake_to_camel(name: str) -> str:
 def _get_audio_duration(audio_path: Path) -> float | None:
     """Get MP3 audio duration in seconds by reading MPEG frame headers.
 
-    Returns None if duration cannot be determined.
+    Handles MPEG1 and MPEG2/2.5 bitrate tables correctly.
+    edge-tts outputs MPEG2 Layer3 at 24kHz/48kbps.
     """
     import struct
+
+    MPEG1_L3 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0]
+    MPEG2_L3 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0]
 
     try:
         file_size = audio_path.stat().st_size
@@ -237,17 +241,21 @@ def _get_audio_duration(audio_path: Path) -> float | None:
         with open(audio_path, "rb") as f:
             data = f.read(8192)
 
-        # Find first valid MPEG audio frame header (sync word: 0xFFE0+)
-        bitrate_table = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0]
         for i in range(len(data) - 4):
             if data[i] == 0xFF and (data[i + 1] & 0xE0) == 0xE0:
                 header = struct.unpack(">I", data[i : i + 4])[0]
+                version_bits = (header >> 19) & 0x3
                 bitrate_idx = (header >> 12) & 0xF
                 if 0 < bitrate_idx < 15:
-                    bitrate_bps = bitrate_table[bitrate_idx] * 1000
-                    duration = (file_size * 8) / bitrate_bps
-                    logger.info("오디오 길이 측정: %.1fs (%dkbps, %.0fKB)", duration, bitrate_bps // 1000, file_size / 1024)
-                    return duration
+                    if version_bits == 3:
+                        bitrate_kbps = MPEG1_L3[bitrate_idx]
+                    else:
+                        bitrate_kbps = MPEG2_L3[bitrate_idx]
+                    if bitrate_kbps > 0:
+                        duration = (file_size * 8) / (bitrate_kbps * 1000)
+                        logger.info("오디오 길이: %.1fs (%dkbps MPEG%s)", duration, bitrate_kbps,
+                                    "1" if version_bits == 3 else "2")
+                        return duration
 
         logger.warning("오디오 프레임 헤더를 찾을 수 없습니다: %s", audio_path)
         return None

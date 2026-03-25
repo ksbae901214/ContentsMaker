@@ -162,7 +162,15 @@ def generate_voice_with_timing(
 
 
 def _get_mp3_duration_ms(path: Path) -> int:
-    """Get MP3 duration in milliseconds from MPEG frame header."""
+    """Get MP3 duration in milliseconds from MPEG frame header.
+
+    Correctly handles both MPEG1 and MPEG2/2.5 bitrate tables.
+    edge-tts outputs MPEG2 Layer3 at 24kHz/48kbps.
+    """
+    # Bitrate tables: [index] → kbps
+    MPEG1_L3 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0]
+    MPEG2_L3 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0]
+
     try:
         file_size = path.stat().st_size
         if file_size < 100:
@@ -171,14 +179,20 @@ def _get_mp3_duration_ms(path: Path) -> int:
         with open(path, "rb") as f:
             data = f.read(8192)
 
-        bitrate_table = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0]
         for i in range(len(data) - 4):
             if data[i] == 0xFF and (data[i + 1] & 0xE0) == 0xE0:
                 header = struct.unpack(">I", data[i : i + 4])[0]
+                version_bits = (header >> 19) & 0x3  # 11=MPEG1, 10=MPEG2, 00=MPEG2.5
                 bitrate_idx = (header >> 12) & 0xF
+
                 if 0 < bitrate_idx < 15:
-                    bitrate_bps = bitrate_table[bitrate_idx] * 1000
-                    return int((file_size * 8 * 1000) / bitrate_bps)
+                    if version_bits == 3:  # MPEG1
+                        bitrate_kbps = MPEG1_L3[bitrate_idx]
+                    else:  # MPEG2 or MPEG2.5
+                        bitrate_kbps = MPEG2_L3[bitrate_idx]
+
+                    if bitrate_kbps > 0:
+                        return int((file_size * 8 * 1000) / (bitrate_kbps * 1000))
 
         return 0
     except Exception:

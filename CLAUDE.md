@@ -25,6 +25,7 @@ Python 3.11+ (백엔드), TypeScript + React (Remotion 영상): Follow standard 
 ## Recent Changes
 
 - 004-bgm-subtitle-url: Added Python 3.11+ (백엔드), TypeScript + React (Remotion 영상) + edge-tts, Remotion, Playwright, Next.js 16
+- Scene editing: SceneEditor/SceneCard/ImageReplaceModal components, /api/scene/image, /api/scene/script, /api/rerender endpoints
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

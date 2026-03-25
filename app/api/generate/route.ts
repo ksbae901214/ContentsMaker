@@ -113,6 +113,7 @@ print("ok")`);
         let ic=0,cost=0;
         let generatedImages: {scene_id:number,image_path:string}[] = [];
         let videoPath = "";
+        let ttsResult: {audio_path:string,timings:any[]}|null = null;
 
         if (dryRun) {
           send("progress",{message:"🎨 [드라이런] 이미지 생성 스킵"});
@@ -133,24 +134,24 @@ print(json.dumps({"c":len(r),"cost":len(r)*0.005,"images":[{"scene_id":x["scene_
           } else send("progress",{message:"🎨 이미지 스킵 (OPENAI_API_KEY 미설정)"});
 
           send("progress",{message:"🎙️ 음성 생성 중 (타이밍 추출)..."});
-          const ttsResult=JSON.parse(await py(`
+          ttsResult=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from src.analyzer.script_models import ShortsScript
 from src.tts.edge_tts_generator import generate_voice_with_timing
 ap,timings=generate_voice_with_timing(ShortsScript.load('''${a.sp}'''))
 print(json.dumps({"audio_path":str(ap),"timings":timings}))`));
-          send("progress",{message:`✅ 음성 완료 (${ttsResult.timings.length}씬 타이밍)`});
+          send("progress",{message:`✅ 음성 완료 (${ttsResult!.timings.length}씬 타이밍)`});
 
           send("progress",{message:"🎬 렌더링 중..."});
           const imgJson=JSON.stringify(generatedImages);
-          const timingsJson=JSON.stringify(ttsResult.timings);
+          const timingsJson=JSON.stringify(ttsResult!.timings);
           const rr=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.analyzer.script_models import ShortsScript
 from src.video.renderer import render_video
 s=ShortsScript.load('''${a.sp}''')
-ap=Path('''${ttsResult.audio_path}''')
+ap=Path('''${ttsResult!.audio_path}''')
 si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
 timings=json.loads('''${timingsJson}''')
 o=render_video(s,audio_path=ap,scene_images=si,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings)
@@ -208,12 +209,20 @@ s=ShortsScript.load('''${a.sp}''')
 m=generate_metadata(s)
 print(json.dumps({"summary":m["summary"],"hashtags":m["hashtags"]}))`));
 
-        // Load full scene data for editing
-        const scriptData=JSON.parse(await py(`
+        // Load scene data with TTS timing applied
+        const scriptRaw=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 s=json.loads(Path('''${a.sp}''').read_text())
 print(json.dumps({"scenes":s["scenes"]}))`));
+        // Apply TTS timing to scene data for UI display
+        const ttsTimings = ttsResult?.timings ?? [];
+        const ttsMap = Object.fromEntries(ttsTimings.filter((t:any)=>t.scene_id!==-1).map((t:any)=>[t.scene_id, t]));
+        const scriptData = {scenes: scriptRaw.scenes.map((sc:any) => {
+          const t = ttsMap[sc.id];
+          if (t) return {...sc, timestamp: t.start_ms / 1000, duration: (t.end_ms - t.start_ms) / 1000};
+          return sc;
+        })};
 
         send("done",{result:{videoPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,sceneImages:generatedImages,scenes:scriptData.scenes,dryRun}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }

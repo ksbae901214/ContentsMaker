@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 
 type Status = "idle" | "processing" | "done" | "error";
-interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; cost: number; youtubeUrl?: string; }
+interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; cost: number; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; }
 interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
@@ -82,7 +82,20 @@ export default function Home() {
           <div className="flex justify-between"><span className="text-gray-400">만화</span><span>{result.imageCount}장</span></div>
           <div className="flex justify-between"><span className="text-gray-400">GPT API 비용</span><span className="text-green-400">${result.cost.toFixed(3)}</span></div>
           {result.youtubeUrl&&<div className="flex justify-between"><span className="text-gray-400">YouTube</span><a href={result.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{result.youtubeUrl}</a></div>}
+          {result.tiktokStatus&&<div className="flex justify-between"><span className="text-gray-400">TikTok</span><span className="text-purple-400">{result.tiktokStatus}</span></div>}
         </div>
+        {result.summary&&(
+          <div className="bg-gray-800 rounded-lg p-4 mb-6">
+            <div className="text-sm font-medium text-gray-400 mb-2">📋 3줄 요약 (복사용)</div>
+            <p className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">{result.summary}</p>
+          </div>
+        )}
+        {result.hashtags&&(
+          <div className="bg-gray-800 rounded-lg p-4 mb-6">
+            <div className="text-sm font-medium text-gray-400 mb-2"># 해시태그 (복사용)</div>
+            <p className="text-sm text-blue-400 leading-relaxed select-all cursor-pointer">{result.hashtags}</p>
+          </div>
+        )}
         <div className="flex gap-3">
           <a href={url} download className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium text-center transition">⬇️ 다운로드</a>
           <button onClick={reset} className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition">🔄 새로 만들기</button>

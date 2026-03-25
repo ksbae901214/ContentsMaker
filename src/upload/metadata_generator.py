@@ -56,8 +56,17 @@ def generate_metadata(script: ShortsScript) -> dict:
             if len(tags) >= 20:
                 break
 
+    # 3-line summary from scene texts
+    scene_texts = [s.text.replace("\n", " ").strip() for s in script.scenes if s.type != "title"]
+    summary_lines = scene_texts[:3]
+    summary = "\n".join(f"{i+1}. {line}" for i, line in enumerate(summary_lines))
+
+    hashtags_str = " ".join(hashtags)
+
     return {
         "title": title[:100],
         "description": "\n".join(description_lines),
         "tags": tags[:30],
+        "summary": summary,
+        "hashtags": hashtags_str,
     }

@@ -174,7 +174,16 @@ else:
           }catch(e:any){send("progress",{message:`⚠️ TikTok 업로드 실패: ${e.message?.slice(0,100)}`})}
         }
 
-        send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,youtubeUrl:ytUrl,tiktokStatus:ttStatus?"Draft 업로드 완료":""}});
+        // Generate summary + hashtags for display
+        const meta=JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.analyzer.script_models import ShortsScript
+from src.upload.metadata_generator import generate_metadata
+s=ShortsScript.load('''${a.sp}''')
+m=generate_metadata(s)
+print(json.dumps({"summary":m["summary"],"hashtags":m["hashtags"]}))`));
+
+        send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,youtubeUrl:ytUrl,tiktokStatus:ttStatus?"Draft 업로드 완료":"",summary:meta.summary,hashtags:meta.hashtags}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

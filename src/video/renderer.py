@@ -101,7 +101,7 @@ def render_video(
 
     script_dict = _convert_to_camel_case(script.to_dict())
 
-    # Apply scene timings from TTS WordBoundary data (most accurate)
+    # Apply scene timings from per-scene TTS (most accurate)
     if scene_timings:
         timing_map = {t["scene_id"]: t for t in scene_timings if t["scene_id"] != -1}
         outro_timing = next((t for t in scene_timings if t["scene_id"] == -1), None)
@@ -113,25 +113,25 @@ def render_video(
                 scene["timestamp"] = t["start_ms"] / 1000.0
                 scene["duration"] = (t["end_ms"] - t["start_ms"]) / 1000.0
 
-        # Calculate content duration from actual timing
-        last_timing = max(
+        # Content ends when last non-outro scene's audio ends
+        last_content = max(
             (t for t in scene_timings if t["scene_id"] != -1),
             key=lambda x: x["end_ms"],
             default=None,
         )
-        if last_timing:
-            content_dur = last_timing["end_ms"] / 1000.0
-            script_dict["metadata"]["duration"] = content_dur
+        content_end_s = last_content["end_ms"] / 1000.0 if last_content else scaled_duration
+        script_dict["metadata"]["duration"] = content_end_s
 
-        # Outro duration from TTS timing
+        # Outro comes right after content, lasts at least 4 seconds
+        outro_dur_s = 4.0
         if outro_timing:
-            outro_dur = (outro_timing["end_ms"] - outro_timing["start_ms"]) / 1000.0
-            outro_seconds = max(outro_dur + 1.0, 4)  # at least 4s for outro visuals
+            outro_dur_s = max((outro_timing["end_ms"] - outro_timing["start_ms"]) / 1000.0 + 1.0, 4.0)
 
-        total_audio_dur = (outro_timing["end_ms"] if outro_timing else last_timing["end_ms"]) / 1000.0 if last_timing else scaled_duration
-        duration_frames = int((total_audio_dur + 1.0) * FPS)  # +1s buffer
+        total_video_dur = content_end_s + outro_dur_s
+        duration_frames = int(total_video_dur * FPS)
 
-        logger.info("TTS 타이밍 적용: %d씬, 총 %.1fs", len(timing_map), total_audio_dur)
+        logger.info("TTS 타이밍: %d씬, content=%.1fs, outro=%.1fs, total=%.1fs",
+                     len(timing_map), content_end_s, outro_dur_s, total_video_dur)
     else:
         # Fallback: measure audio duration or use SPEED_FACTOR
         actual_audio_dur = _get_audio_duration(audio_path) if audio_path and audio_path.exists() else None

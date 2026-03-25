@@ -104,8 +104,10 @@ print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+      "CF-Cache-Status": "DYNAMIC",
     },
   });
 }

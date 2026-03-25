@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
   const useBgm = (fd.get("bgm") as string) !== "off";
   const useYt = (fd.get("yt") as string) === "on";
   const useTt = (fd.get("tt") as string) === "on";
+  const dryRun = (fd.get("dryRun") as string) === "on";
   const enc = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -97,31 +98,38 @@ print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"du
 
         let ic=0,cost=0;
         let generatedImages: {scene_id:number,image_path:string}[] = [];
-        const hasKey=!!process.env.OPENAI_API_KEY;
-        if(hasKey){
-          send("progress",{message:`🎨 만화 이미지 생성 중 (${a.scenes}씬)...`});
-          const im=JSON.parse(await py(`
+        let videoPath = "";
+
+        if (dryRun) {
+          send("progress",{message:"🎨 [드라이런] 이미지 생성 스킵"});
+          send("progress",{message:"🎙️ [드라이런] 음성 생성 스킵"});
+          send("progress",{message:"🎬 [드라이런] 렌더링 스킵"});
+        } else {
+          const hasKey=!!process.env.OPENAI_API_KEY;
+          if(hasKey){
+            send("progress",{message:`🎨 만화 이미지 생성 중 (${a.scenes}씬)...`});
+            const im=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from src.analyzer.script_models import ShortsScript
 from src.illustrator.image_generator import generate_scene_images
 r=generate_scene_images(ShortsScript.load('''${a.sp}'''))
 print(json.dumps({"c":len(r),"cost":len(r)*0.005,"images":[{"scene_id":x["scene_id"],"image_path":x["image_path"]} for x in r]}))`));
-          ic=im.c;cost=im.cost;generatedImages=im.images||[];
-          send("progress",{message:`✅ 만화 ${ic}장 ($${cost.toFixed(3)})`});
-        } else send("progress",{message:"🎨 이미지 스킵 (OPENAI_API_KEY 미설정)"});
+            ic=im.c;cost=im.cost;generatedImages=im.images||[];
+            send("progress",{message:`✅ 만화 ${ic}장 ($${cost.toFixed(3)})`});
+          } else send("progress",{message:"🎨 이미지 스킵 (OPENAI_API_KEY 미설정)"});
 
-        send("progress",{message:"🎙️ 음성 생성 중..."});
-        await py(`
+          send("progress",{message:"🎙️ 음성 생성 중..."});
+          await py(`
 import sys;sys.path.insert(0,'${ROOT}')
 from src.analyzer.script_models import ShortsScript
 from src.tts.edge_tts_generator import generate_voice
 generate_voice(ShortsScript.load('''${a.sp}'''))
 print("ok")`);
-        send("progress",{message:"✅ 음성 완료"});
+          send("progress",{message:"✅ 음성 완료"});
 
-        send("progress",{message:"🎬 렌더링 중..."});
-        const imgJson=JSON.stringify(generatedImages);
-        const rr=JSON.parse(await py(`
+          send("progress",{message:"🎬 렌더링 중..."});
+          const imgJson=JSON.stringify(generatedImages);
+          const rr=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.analyzer.script_models import ShortsScript
@@ -132,13 +140,14 @@ ap=af[-1] if af else None
 si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
 o=render_video(s,audio_path=ap,scene_images=si,use_bgm=${useBgm ? "True" : "False"})
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`));
-        send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
+          send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
+          videoPath = rr.path;
 
-        let ytUrl="";
-        if(useYt){
-          send("progress",{message:"📺 YouTube 업로드 중..."});
-          try{
-            const yt=JSON.parse(await py(`
+          let ytUrl="";
+          if(useYt){
+            send("progress",{message:"📺 YouTube 업로드 중..."});
+            try{
+              const yt=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.analyzer.script_models import ShortsScript
@@ -151,16 +160,16 @@ else:
  m=generate_metadata(s)
  url=upload_video(Path('''${rr.path}'''),m["title"],m["description"],m["tags"])
  print(json.dumps({"url":url}))`));
-            if(yt.error){send("progress",{message:`⚠️ ${yt.error}`})}
-            else{ytUrl=yt.url;send("progress",{message:`✅ YouTube 업로드 완료: ${ytUrl}`})}
-          }catch(e:any){send("progress",{message:`⚠️ YouTube 업로드 실패: ${e.message?.slice(0,100)}`})}
-        }
+              if(yt.error){send("progress",{message:`⚠️ ${yt.error}`})}
+              else{ytUrl=yt.url;send("progress",{message:`✅ YouTube 업로드 완료: ${ytUrl}`})}
+            }catch(e:any){send("progress",{message:`⚠️ YouTube 업로드 실패: ${e.message?.slice(0,100)}`})}
+          }
 
-        let ttStatus="";
-        if(useTt){
-          send("progress",{message:"🎵 TikTok Draft 업로드 중..."});
-          try{
-            const tt=JSON.parse(await py(`
+          let ttStatus="";
+          if(useTt){
+            send("progress",{message:"🎵 TikTok Draft 업로드 중..."});
+            try{
+              const tt=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.upload.tiktok_uploader import upload_video, is_authenticated
@@ -169,9 +178,10 @@ if not is_authenticated():
 else:
  pid=upload_video(Path('''${rr.path}'''),"[블라인드] ${a.title}")
  print(json.dumps({"publish_id":pid}))`));
-            if(tt.error){send("progress",{message:`⚠️ ${tt.error}`})}
-            else{ttStatus=tt.publish_id;send("progress",{message:`✅ TikTok Draft 업로드 완료 (TikTok 앱에서 게시하세요)`})}
-          }catch(e:any){send("progress",{message:`⚠️ TikTok 업로드 실패: ${e.message?.slice(0,100)}`})}
+              if(tt.error){send("progress",{message:`⚠️ ${tt.error}`})}
+              else{ttStatus=tt.publish_id;send("progress",{message:`✅ TikTok Draft 업로드 완료 (TikTok 앱에서 게시하세요)`})}
+            }catch(e:any){send("progress",{message:`⚠️ TikTok 업로드 실패: ${e.message?.slice(0,100)}`})}
+          }
         }
 
         // Generate summary + hashtags for display
@@ -190,7 +200,7 @@ from pathlib import Path
 s=json.loads(Path('''${a.sp}''').read_text())
 print(json.dumps({"scenes":s["scenes"]}))`));
 
-        send("done",{result:{videoPath:rr.path,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,youtubeUrl:ytUrl,tiktokStatus:ttStatus?"Draft 업로드 완료":"",summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,sceneImages:generatedImages,scenes:scriptData.scenes}});
+        send("done",{result:{videoPath,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,sceneImages:generatedImages,scenes:scriptData.scenes,dryRun}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

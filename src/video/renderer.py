@@ -99,11 +99,36 @@ def render_video(
             logger.warning("BGM 파일 없음: %s — BGM 없이 진행", bgm_src)
 
     script_dict = _convert_to_camel_case(script.to_dict())
-    # Scale scene timings for 1.2x speed
-    script_dict["metadata"]["duration"] = scaled_duration
-    for scene in script_dict["scenes"]:
-        scene["timestamp"] = scene["timestamp"] / SPEED_FACTOR
-        scene["duration"] = scene["duration"] / SPEED_FACTOR
+
+    # Measure actual audio duration and rescale scene timings to match
+    actual_audio_dur = _get_audio_duration(audio_path) if audio_path and audio_path.exists() else None
+
+    if actual_audio_dur and actual_audio_dur > 0:
+        # Use actual audio as the source of truth for timing
+        script_total = script.metadata.duration
+        if script_total > 0:
+            ratio = actual_audio_dur / script_total
+            logger.info(
+                "타이밍 보정: 스크립트 %.1fs → 오디오 %.1fs (비율 %.2f)",
+                script_total, actual_audio_dur, ratio,
+            )
+            scaled_duration = actual_audio_dur
+            duration_frames = int((actual_audio_dur + outro_seconds) * FPS)
+            script_dict["metadata"]["duration"] = actual_audio_dur
+            for scene in script_dict["scenes"]:
+                scene["timestamp"] = scene["timestamp"] * ratio
+                scene["duration"] = scene["duration"] * ratio
+        else:
+            script_dict["metadata"]["duration"] = scaled_duration
+            for scene in script_dict["scenes"]:
+                scene["timestamp"] = scene["timestamp"] / SPEED_FACTOR
+                scene["duration"] = scene["duration"] / SPEED_FACTOR
+    else:
+        # Fallback: use SPEED_FACTOR scaling
+        script_dict["metadata"]["duration"] = scaled_duration
+        for scene in script_dict["scenes"]:
+            scene["timestamp"] = scene["timestamp"] / SPEED_FACTOR
+            scene["duration"] = scene["duration"] / SPEED_FACTOR
 
     props = {
         "scriptData": script_dict,
@@ -177,3 +202,37 @@ def _snake_to_camel(name: str) -> str:
     """Convert snake_case to camelCase."""
     components = name.split("_")
     return components[0] + "".join(x.title() for x in components[1:])
+
+
+def _get_audio_duration(audio_path: Path) -> float | None:
+    """Get MP3 audio duration in seconds by reading MPEG frame headers.
+
+    Returns None if duration cannot be determined.
+    """
+    import struct
+
+    try:
+        file_size = audio_path.stat().st_size
+        if file_size < 100:
+            return None
+
+        with open(audio_path, "rb") as f:
+            data = f.read(8192)
+
+        # Find first valid MPEG audio frame header (sync word: 0xFFE0+)
+        bitrate_table = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0]
+        for i in range(len(data) - 4):
+            if data[i] == 0xFF and (data[i + 1] & 0xE0) == 0xE0:
+                header = struct.unpack(">I", data[i : i + 4])[0]
+                bitrate_idx = (header >> 12) & 0xF
+                if 0 < bitrate_idx < 15:
+                    bitrate_bps = bitrate_table[bitrate_idx] * 1000
+                    duration = (file_size * 8) / bitrate_bps
+                    logger.info("오디오 길이 측정: %.1fs (%dkbps, %.0fKB)", duration, bitrate_bps // 1000, file_size / 1024)
+                    return duration
+
+        logger.warning("오디오 프레임 헤더를 찾을 수 없습니다: %s", audio_path)
+        return None
+    except Exception as e:
+        logger.warning("오디오 길이 측정 실패: %s", e)
+        return None

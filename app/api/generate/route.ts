@@ -130,7 +130,7 @@ s=ShortsScript.load('''${a.sp}''')
 af=sorted(Path('${ROOT}/data/audio').glob('*.mp3'))
 ap=af[-1] if af else None
 si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
-o=render_video(s,audio_path=ap,scene_images=si,use_bgm=${useBgm})
+o=render_video(s,audio_path=ap,scene_images=si,use_bgm=${useBgm ? "True" : "False"})
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`));
         send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
 

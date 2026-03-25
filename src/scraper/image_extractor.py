@@ -142,33 +142,46 @@ def _call_claude_with_images(image_paths: list[Path]) -> str:
 
 def _parse_response(raw: str) -> dict:
     """Parse Claude Code's response into a dict."""
+    if not raw or not raw.strip():
+        raise ImageExtractError("Claude Code 응답이 비어있습니다.")
+
     # Direct JSON
     try:
         data = json.loads(raw)
         if isinstance(data, dict) and "result" in data:
             inner = data["result"]
-            if isinstance(inner, str):
+            if isinstance(inner, str) and inner.strip():
                 return _parse_response(inner)
-            if isinstance(inner, dict):
+            if isinstance(inner, dict) and "title" in inner:
                 return inner
-        if "title" in data:
+        if isinstance(data, dict) and "title" in data:
             return data
     except (json.JSONDecodeError, KeyError):
         pass
 
     # JSON in code block
-    json_match = re.search(r"```(?:json)?\s*\n(.*?)\n```", raw, re.DOTALL)
-    if json_match:
-        try:
-            return json.loads(json_match.group(1))
-        except json.JSONDecodeError:
-            pass
+    for pattern in [
+        r"```(?:json)?\s*\n(.*?)\n```",
+        r"```(.*?)```",
+    ]:
+        json_match = re.search(pattern, raw, re.DOTALL)
+        if json_match:
+            try:
+                parsed = json.loads(json_match.group(1))
+                if isinstance(parsed, dict) and "title" in parsed:
+                    return parsed
+            except json.JSONDecodeError:
+                continue
 
-    # Raw JSON in text
-    brace_match = re.search(r"\{[\s\S]*\}", raw)
+    # Raw JSON object in text
+    brace_match = re.search(r"\{[^{}]*\"title\"[^{}]*\}", raw, re.DOTALL)
+    if not brace_match:
+        brace_match = re.search(r"\{[\s\S]*\}", raw)
     if brace_match:
         try:
-            return json.loads(brace_match.group(0))
+            parsed = json.loads(brace_match.group(0))
+            if isinstance(parsed, dict):
+                return parsed
         except json.JSONDecodeError:
             pass
 

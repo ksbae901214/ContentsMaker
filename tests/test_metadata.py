@@ -15,8 +15,7 @@ class TestGenerateMetadata:
 
     def test_title_format(self, sample_script):
         meta = generate_metadata(sample_script)
-        assert meta["title"].startswith("[블라인드]")
-        assert sample_script.metadata.title in meta["title"]
+        assert meta["title"] == sample_script.metadata.title
 
     def test_title_max_length(self, sample_script):
         meta = generate_metadata(sample_script)

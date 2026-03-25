@@ -25,6 +25,7 @@ export default function Home() {
   const [ytUpload, setYtUpload] = useState(false);
   const [ttUpload, setTtUpload] = useState(false);
   const [urlInput, setUrlInput] = useState("");
+  const [customTitle, setCustomTitle] = useState("");
 
   const loadStats = () => { fetch("/api/stats").then(r=>r.json()).then(setStats).catch(()=>{}); };
   useEffect(()=>{ loadStats(); }, []);
@@ -140,6 +141,14 @@ export default function Home() {
         ))}
       </div>
 
+      {/* Common title field for image/url tabs */}
+      {(tab==="image"||tab==="url")&&(
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-300 mb-1">영상 제목 (선택)</label>
+          <input value={customTitle} onChange={e=>setCustomTitle(e.target.value)} placeholder="비워두면 AI가 자동 생성" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/>
+        </div>
+      )}
+
       {/* Image tab */}
       <div className="space-y-4" style={{display:tab==="image"?"block":"none"}}>
         <div onDragOver={e=>{e.preventDefault();setDragOver(true)}} onDragLeave={()=>setDragOver(false)}
@@ -163,11 +172,11 @@ export default function Home() {
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
         <div className="flex gap-2">
-          <button onClick={()=>{if(!files.length)return;const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");files.forEach(f=>fd.append("images",f));generate(fd)}}
+          <button onClick={()=>{if(!files.length)return;const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");if(customTitle.trim())fd.set("customTitle",customTitle.trim());files.forEach(f=>fd.append("images",f));generate(fd)}}
             disabled={!files.length} className={`flex-1 py-3 rounded-lg font-medium transition ${files.length?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성 {files.length>0?`(${files.length}장)`:""}
           </button>
-          <button onClick={()=>{if(!files.length)return;const fd=new FormData();fd.set("mode","image");fd.set("bgm","off");fd.set("yt","off");fd.set("tt","off");fd.set("dryRun","on");files.forEach(f=>fd.append("images",f));generate(fd)}}
+          <button onClick={()=>{if(!files.length)return;const fd=new FormData();fd.set("mode","image");fd.set("bgm","off");fd.set("yt","off");fd.set("tt","off");fd.set("dryRun","on");if(customTitle.trim())fd.set("customTitle",customTitle.trim());files.forEach(f=>fd.append("images",f));generate(fd)}}
             disabled={!files.length} className={`py-3 px-4 rounded-lg font-medium transition ${files.length?"bg-yellow-600 hover:bg-yellow-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🧪 테스트
           </button>
@@ -211,11 +220,11 @@ export default function Home() {
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
         <div className="flex gap-2">
-          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("url",urlInput.trim());generate(fd)}}
+          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("url",urlInput.trim());if(customTitle.trim())fd.set("customTitle",customTitle.trim());generate(fd)}}
             disabled={!urlInput.trim()} className={`flex-1 py-3 rounded-lg font-medium transition ${urlInput.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성
           </button>
-          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm","off");fd.set("yt","off");fd.set("tt","off");fd.set("dryRun","on");fd.set("url",urlInput.trim());generate(fd)}}
+          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm","off");fd.set("yt","off");fd.set("tt","off");fd.set("dryRun","on");fd.set("url",urlInput.trim());if(customTitle.trim())fd.set("customTitle",customTitle.trim());generate(fd)}}
             disabled={!urlInput.trim()} className={`py-3 px-4 rounded-lg font-medium transition ${urlInput.trim()?"bg-yellow-600 hover:bg-yellow-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🧪 테스트
           </button>

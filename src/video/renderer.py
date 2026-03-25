@@ -33,6 +33,7 @@ def render_video(
     scene_images: list[dict] | None = None,
     output_dir: Path | None = None,
     use_bgm: bool = True,
+    scene_timings: list[dict] | None = None,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
@@ -100,35 +101,56 @@ def render_video(
 
     script_dict = _convert_to_camel_case(script.to_dict())
 
-    # Measure actual audio duration and rescale scene timings to match
-    actual_audio_dur = _get_audio_duration(audio_path) if audio_path and audio_path.exists() else None
+    # Apply scene timings from TTS WordBoundary data (most accurate)
+    if scene_timings:
+        timing_map = {t["scene_id"]: t for t in scene_timings if t["scene_id"] != -1}
+        outro_timing = next((t for t in scene_timings if t["scene_id"] == -1), None)
 
-    if actual_audio_dur and actual_audio_dur > 0:
-        # Use actual audio as the source of truth for timing
-        script_total = script.metadata.duration
-        if script_total > 0:
-            ratio = actual_audio_dur / script_total
-            logger.info(
-                "타이밍 보정: 스크립트 %.1fs → 오디오 %.1fs (비율 %.2f)",
-                script_total, actual_audio_dur, ratio,
-            )
-            scaled_duration = actual_audio_dur
-            duration_frames = int((actual_audio_dur + outro_seconds) * FPS)
-            script_dict["metadata"]["duration"] = actual_audio_dur
-            for scene in script_dict["scenes"]:
-                scene["timestamp"] = scene["timestamp"] * ratio
-                scene["duration"] = scene["duration"] * ratio
+        for scene in script_dict["scenes"]:
+            sid = scene["id"]
+            if sid in timing_map:
+                t = timing_map[sid]
+                scene["timestamp"] = t["start_ms"] / 1000.0
+                scene["duration"] = (t["end_ms"] - t["start_ms"]) / 1000.0
+
+        # Calculate content duration from actual timing
+        last_timing = max(
+            (t for t in scene_timings if t["scene_id"] != -1),
+            key=lambda x: x["end_ms"],
+            default=None,
+        )
+        if last_timing:
+            content_dur = last_timing["end_ms"] / 1000.0
+            script_dict["metadata"]["duration"] = content_dur
+
+        # Outro duration from TTS timing
+        if outro_timing:
+            outro_dur = (outro_timing["end_ms"] - outro_timing["start_ms"]) / 1000.0
+            outro_seconds = max(outro_dur + 1.0, 4)  # at least 4s for outro visuals
+
+        total_audio_dur = (outro_timing["end_ms"] if outro_timing else last_timing["end_ms"]) / 1000.0 if last_timing else scaled_duration
+        duration_frames = int((total_audio_dur + 1.0) * FPS)  # +1s buffer
+
+        logger.info("TTS 타이밍 적용: %d씬, 총 %.1fs", len(timing_map), total_audio_dur)
+    else:
+        # Fallback: measure audio duration or use SPEED_FACTOR
+        actual_audio_dur = _get_audio_duration(audio_path) if audio_path and audio_path.exists() else None
+        if actual_audio_dur and actual_audio_dur > 0:
+            script_total = script.metadata.duration
+            if script_total > 0:
+                ratio = actual_audio_dur / script_total
+                logger.info("타이밍 보정 (비율): %.1fs → %.1fs (%.2f)", script_total, actual_audio_dur, ratio)
+                scaled_duration = actual_audio_dur
+                duration_frames = int((actual_audio_dur + outro_seconds) * FPS)
+                script_dict["metadata"]["duration"] = actual_audio_dur
+                for scene in script_dict["scenes"]:
+                    scene["timestamp"] = scene["timestamp"] * ratio
+                    scene["duration"] = scene["duration"] * ratio
         else:
             script_dict["metadata"]["duration"] = scaled_duration
             for scene in script_dict["scenes"]:
                 scene["timestamp"] = scene["timestamp"] / SPEED_FACTOR
                 scene["duration"] = scene["duration"] / SPEED_FACTOR
-    else:
-        # Fallback: use SPEED_FACTOR scaling
-        script_dict["metadata"]["duration"] = scaled_duration
-        for scene in script_dict["scenes"]:
-            scene["timestamp"] = scene["timestamp"] / SPEED_FACTOR
-            scene["duration"] = scene["duration"] / SPEED_FACTOR
 
     props = {
         "scriptData": script_dict,

@@ -20,7 +20,7 @@ def generate_metadata(script: ShortsScript) -> dict:
     Returns dict with title, description, tags.
     """
     emotion = script.metadata.emotion_type
-    title = f"[블라인드] {script.metadata.title}"
+    title = script.metadata.title
 
     hashtags = EMOTION_HASHTAGS.get(emotion, EMOTION_HASHTAGS["relatable"])
 

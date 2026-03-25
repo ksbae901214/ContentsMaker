@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
   const useYt = (fd.get("yt") as string) === "on";
   const useTt = (fd.get("tt") as string) === "on";
   const dryRun = (fd.get("dryRun") as string) === "on";
+  const customTitle = (fd.get("customTitle") as string) || "";
   const enc = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -96,6 +97,19 @@ sp=sorted(Path('${ROOT}/data/scripts').glob('*.json'))
 print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp[-1])}))`));
         send("progress",{message:`✅ ${a.emotion} | ${a.scenes}씬 | ${a.duration}초`});
 
+        // Apply custom title if provided
+        const finalTitle = customTitle || a.title;
+        if (customTitle) {
+          await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+s=json.loads(Path('''${a.sp}''').read_text())
+s["metadata"]["title"]=${JSON.stringify(customTitle)}
+Path('''${a.sp}''').write_text(json.dumps(s,ensure_ascii=False,indent=2))
+print("ok")`);
+          send("progress",{message:`✅ 제목 설정: ${customTitle}`});
+        }
+
         let ic=0,cost=0;
         let generatedImages: {scene_id:number,image_path:string}[] = [];
         let videoPath = "";
@@ -118,27 +132,28 @@ print(json.dumps({"c":len(r),"cost":len(r)*0.005,"images":[{"scene_id":x["scene_
             send("progress",{message:`✅ 만화 ${ic}장 ($${cost.toFixed(3)})`});
           } else send("progress",{message:"🎨 이미지 스킵 (OPENAI_API_KEY 미설정)"});
 
-          send("progress",{message:"🎙️ 음성 생성 중..."});
-          await py(`
-import sys;sys.path.insert(0,'${ROOT}')
+          send("progress",{message:"🎙️ 음성 생성 중 (타이밍 추출)..."});
+          const ttsResult=JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
 from src.analyzer.script_models import ShortsScript
-from src.tts.edge_tts_generator import generate_voice
-generate_voice(ShortsScript.load('''${a.sp}'''))
-print("ok")`);
-          send("progress",{message:"✅ 음성 완료"});
+from src.tts.edge_tts_generator import generate_voice_with_timing
+ap,timings=generate_voice_with_timing(ShortsScript.load('''${a.sp}'''))
+print(json.dumps({"audio_path":str(ap),"timings":timings}))`));
+          send("progress",{message:`✅ 음성 완료 (${ttsResult.timings.length}씬 타이밍)`});
 
           send("progress",{message:"🎬 렌더링 중..."});
           const imgJson=JSON.stringify(generatedImages);
+          const timingsJson=JSON.stringify(ttsResult.timings);
           const rr=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.analyzer.script_models import ShortsScript
 from src.video.renderer import render_video
 s=ShortsScript.load('''${a.sp}''')
-af=sorted(Path('${ROOT}/data/audio').glob('*.mp3'))
-ap=af[-1] if af else None
+ap=Path('''${ttsResult.audio_path}''')
 si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
-o=render_video(s,audio_path=ap,scene_images=si,use_bgm=${useBgm ? "True" : "False"})
+timings=json.loads('''${timingsJson}''')
+o=render_video(s,audio_path=ap,scene_images=si,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings)
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`));
           send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
           videoPath = rr.path;
@@ -200,7 +215,7 @@ from pathlib import Path
 s=json.loads(Path('''${a.sp}''').read_text())
 print(json.dumps({"scenes":s["scenes"]}))`));
 
-        send("done",{result:{videoPath,title:a.title,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,sceneImages:generatedImages,scenes:scriptData.scenes,dryRun}});
+        send("done",{result:{videoPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,sceneImages:generatedImages,scenes:scriptData.scenes,dryRun}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

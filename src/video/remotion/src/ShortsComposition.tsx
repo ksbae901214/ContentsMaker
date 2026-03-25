@@ -131,7 +131,7 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
             lineHeight: 1.3,
           }}
         >
-          [블라인드]{"\n"}{title}
+          {title}
         </div>
       </div>
     </AbsoluteFill>

@@ -138,28 +138,28 @@ def extract_from_images(image_paths: list[Path]) -> BlindPost:
 
 
 def _call_claude_with_images(image_paths: list[Path]) -> str:
-    """Call Claude Code with images by having it read them directly.
+    """Call Claude Code with base64-encoded images in the prompt.
 
-    Creates a temporary script that asks Claude Code to read the images
-    and extract text. Uses the Read tool built into Claude Code.
+    Encodes images as data URIs and includes them directly in the prompt
+    so Claude can see them without needing the Read tool.
     """
-    # Build a prompt that references image paths for Claude to read
-    image_refs = "\n".join(
-        f"- 이미지 {i+1}: {path.resolve()}" for i, path in enumerate(image_paths)
-    )
+    image_parts = []
+    for i, path in enumerate(image_paths):
+        img_data = base64.b64encode(path.read_bytes()).decode("ascii")
+        suffix = path.suffix.lower().lstrip(".")
+        mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+                "webp": "image/webp", "gif": "image/gif"}.get(suffix, "image/png")
+        image_parts.append(f"![이미지 {i+1}](data:{mime};base64,{img_data})")
 
-    prompt = f"""다음 이미지 파일들을 읽고 블라인드 게시글 내용을 추출하세요.
+    images_block = "\n\n".join(image_parts)
 
-이미지 파일 경로:
-{image_refs}
-
-각 이미지 파일을 Read 도구로 읽은 후, 아래 규칙에 따라 JSON을 생성하세요.
+    prompt = f"""{images_block}
 
 {IMAGE_EXTRACT_PROMPT}"""
 
     try:
         result = subprocess.run(
-            ["claude", "-p", prompt, "--output-format", "json", "--allowedTools", "Read"],
+            ["claude", "-p", prompt, "--output-format", "json"],
             capture_output=True,
             text=True,
             timeout=CLAUDE_TIMEOUT_SECONDS,
@@ -196,8 +196,16 @@ def _parse_response(raw: str) -> dict:
                 return _parse_response(inner)
             if isinstance(inner, dict) and "title" in inner:
                 return inner
+            # result is empty — Claude didn't produce output
+            if not inner or (isinstance(inner, str) and not inner.strip()):
+                raise ImageExtractError(
+                    "Claude Code가 이미지에서 텍스트를 추출하지 못했습니다. "
+                    "이미지가 블라인드 게시글 스크린샷인지 확인해주세요."
+                )
         if isinstance(data, dict) and "title" in data:
             return data
+    except ImageExtractError:
+        raise
     except (json.JSONDecodeError, KeyError):
         pass
 

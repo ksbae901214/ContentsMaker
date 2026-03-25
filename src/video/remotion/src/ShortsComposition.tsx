@@ -72,7 +72,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
             durationInFrames={durationFrames}
           >
             {imageFile ? (
-              <SceneWithImage imageFile={imageFile} scene={scene} />
+              <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} />
             ) : (
               <SceneText scene={scene} emotion={emotion} />
             )}
@@ -195,7 +195,8 @@ const OutroScene: React.FC = () => {
 const SceneWithImage: React.FC<{
   imageFile: string;
   scene: any;
-}> = ({ imageFile, scene }) => {
+  emotion: string;
+}> = ({ imageFile, scene, emotion }) => {
   const frame = useCurrentFrame();
 
   const opacity = interpolate(frame, [0, 15], [0, 1], {

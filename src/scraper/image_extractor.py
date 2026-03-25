@@ -61,6 +61,45 @@ class ImageExtractError(Exception):
     """Raised when image extraction fails."""
 
 
+def _normalize_keys(data: dict) -> dict:
+    """Normalize common key variations from Claude responses."""
+    KEY_MAP = {
+        "제목": "title",
+        "본문": "body",
+        "작성자": "author",
+        "댓글": "comments",
+        "content": "body",
+        "text": "body",
+        "post_title": "title",
+        "post_body": "body",
+    }
+    normalized = {}
+    for k, v in data.items():
+        mapped = KEY_MAP.get(k, k)
+        normalized[mapped] = v
+
+    # If body is missing but there's a long string field, use it
+    if "body" not in normalized and "title" in normalized:
+        for k, v in normalized.items():
+            if k not in ("title", "author", "url", "comments") and isinstance(v, str) and len(v) > 20:
+                normalized["body"] = v
+                break
+
+    # Ensure comments is a list
+    if "comments" in normalized and not isinstance(normalized["comments"], list):
+        normalized["comments"] = []
+
+    # Default empty fields
+    if "author" not in normalized:
+        normalized["author"] = ""
+    if "url" not in normalized:
+        normalized["url"] = ""
+    if "comments" not in normalized:
+        normalized["comments"] = []
+
+    return normalized
+
+
 def extract_from_images(image_paths: list[Path]) -> BlindPost:
     """Extract BlindPost data from Blind screenshot images.
 
@@ -80,6 +119,9 @@ def extract_from_images(image_paths: list[Path]) -> BlindPost:
 
     raw_json = _call_claude_with_images(image_paths)
     data = _parse_response(raw_json)
+    data = _normalize_keys(data)
+
+    logger.info("추출된 데이터 키: %s", list(data.keys()))
 
     result = validate_blind_post(data)
     if not result.is_valid:

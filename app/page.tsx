@@ -149,6 +149,14 @@ export default function Home() {
                 <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
                 <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
               </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/>
+                <span className="text-sm text-gray-300">📺 YouTube 업로드</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/>
+                <span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span>
+              </label>
               <button onClick={()=>{const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");files.forEach(f=>fd.append("images",f));generate(fd)}}
                 className="w-full mt-3 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium transition">
                 🎬 영상 생성하기 ({files.length}장)

@@ -56,10 +56,21 @@ def generate_metadata(script: ShortsScript) -> dict:
             if len(tags) >= 20:
                 break
 
-    # 3-line summary from scene texts
-    scene_texts = [s.text.replace("\n", " ").strip() for s in script.scenes if s.type != "title"]
-    summary_lines = scene_texts[:3]
-    summary = "\n".join(f"{i+1}. {line}" for i, line in enumerate(summary_lines))
+    # 3-line summary: fixed intro + 2 sentences summarizing full content
+    body_texts = " ".join(
+        s.text.replace("\n", " ").strip()
+        for s in script.scenes
+        if s.type in ("body", "comment")
+    )
+    # Take first ~2 meaningful chunks as summary sentences
+    sentences = [seg.strip() for seg in body_texts.replace(".", ".||").replace("?", "?||").replace("!", "!||").split("||") if seg.strip()]
+    line2 = sentences[0] if sentences else ""
+    line3 = sentences[1] if len(sentences) > 1 else (sentences[0] if sentences else "")
+    summary = (
+        "다양한 커뮤니티의 핫한 게시글을 영상으로 보여드립니다.\n"
+        f"{line2}\n"
+        f"{line3}"
+    )
 
     hashtags_str = " ".join(hashtags)
 

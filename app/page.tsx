@@ -129,7 +129,7 @@ export default function Home() {
           </button>
         </div>
       ):tab==="image"?(
-        <div>
+        <div className="space-y-4">
           <div onDragOver={e=>{e.preventDefault();setDragOver(true)}} onDragLeave={()=>setDragOver(false)}
             onDrop={e=>{e.preventDefault();setDragOver(false);setFiles(p=>[...p,...Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith("image/"))])}}
             onClick={()=>document.getElementById("fi")?.click()}
@@ -140,29 +140,29 @@ export default function Home() {
             <input id="fi" type="file" accept="image/*" multiple onChange={e=>{if(e.target.files)setFiles(p=>[...p,...Array.from(e.target.files!)])}} className="hidden"/>
           </div>
           {files.length>0&&(
-            <div className="mt-4 space-y-2">
+            <div className="space-y-2">
               {files.map((f,i)=>(<div key={i} className="flex items-center justify-between bg-gray-800 rounded-lg px-4 py-2">
                 <span className="text-sm truncate">{f.name}</span>
                 <button onClick={()=>setFiles(files.filter((_,j)=>j!==i))} className="text-red-400 ml-2">✕</button>
               </div>))}
-              <label className="flex items-center gap-2 mt-3 cursor-pointer">
-                <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
-                <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/>
-                <span className="text-sm text-gray-300">📺 YouTube 업로드</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/>
-                <span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span>
-              </label>
-              <button onClick={()=>{const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");files.forEach(f=>fd.append("images",f));generate(fd)}}
-                className="w-full mt-3 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium transition">
-                🎬 영상 생성하기 ({files.length}장)
-              </button>
             </div>
           )}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">📺 YouTube 업로드</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span>
+          </label>
+          <button onClick={()=>{if(!files.length)return;const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");files.forEach(f=>fd.append("images",f));generate(fd)}}
+            disabled={!files.length} className={`w-full py-3 rounded-lg font-medium transition ${files.length?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
+            🎬 영상 생성하기 {files.length>0?`(${files.length}장)`:""}
+          </button>
         </div>
       ):(
         <div className="space-y-4">

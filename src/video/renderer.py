@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 DATA_OUTPUTS_DIR = PROJECT_ROOT / "data" / "outputs"
 REMOTION_DIR = PROJECT_ROOT / "src" / "video" / "remotion"
 FPS = 30
-SPEED_FACTOR = 1.2  # 1.2x playback speed (TTS + video)
 
 
 class RenderError(Exception):
@@ -55,9 +54,9 @@ def render_video(
     output_filename = f"{timestamp}_{safe_title}.mp4"
     output_path = target_dir / output_filename
 
-    scaled_duration = script.metadata.duration / SPEED_FACTOR
+    base_duration = script.metadata.duration
     outro_seconds = 4  # Subscribe/like/bell outro
-    duration_frames = int((scaled_duration + outro_seconds) * FPS)
+    duration_frames = int((base_duration + outro_seconds) * FPS)
 
     # Copy assets to Remotion public dir for staticFile() access
     public_dir = PROJECT_ROOT / "public"
@@ -133,24 +132,21 @@ def render_video(
         logger.info("TTS 타이밍: %d씬, content=%.1fs, outro=%.1fs, total=%.1fs",
                      len(timing_map), content_end_s, outro_dur_s, total_video_dur)
     else:
-        # Fallback: measure audio duration or use SPEED_FACTOR
+        # Fallback: measure actual audio duration and rescale
         actual_audio_dur = _get_audio_duration(audio_path) if audio_path and audio_path.exists() else None
         if actual_audio_dur and actual_audio_dur > 0:
             script_total = script.metadata.duration
             if script_total > 0:
                 ratio = actual_audio_dur / script_total
                 logger.info("타이밍 보정 (비율): %.1fs → %.1fs (%.2f)", script_total, actual_audio_dur, ratio)
-                scaled_duration = actual_audio_dur
+                base_duration = actual_audio_dur
                 duration_frames = int((actual_audio_dur + outro_seconds) * FPS)
                 script_dict["metadata"]["duration"] = actual_audio_dur
                 for scene in script_dict["scenes"]:
                     scene["timestamp"] = scene["timestamp"] * ratio
                     scene["duration"] = scene["duration"] * ratio
         else:
-            script_dict["metadata"]["duration"] = scaled_duration
-            for scene in script_dict["scenes"]:
-                scene["timestamp"] = scene["timestamp"] / SPEED_FACTOR
-                scene["duration"] = scene["duration"] / SPEED_FACTOR
+            script_dict["metadata"]["duration"] = base_duration
 
     props = {
         "scriptData": script_dict,
@@ -164,8 +160,8 @@ def render_video(
 
     img_count = len(scene_image_props)
     logger.info(
-        "렌더링 시작: %s (%d프레임, %.1f초 @%.1fx, 이미지 %d장)",
-        output_filename, duration_frames, scaled_duration, SPEED_FACTOR, img_count,
+        "렌더링 시작: %s (%d프레임, %.1f초, 이미지 %d장)",
+        output_filename, duration_frames, base_duration, img_count,
     )
 
     npx_path = shutil.which("npx")

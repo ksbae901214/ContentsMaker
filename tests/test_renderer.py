@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 from src.video.renderer import (
     render_video, RenderError,
     _convert_to_camel_case, _snake_to_camel,
-    FPS, SPEED_FACTOR,
+    FPS,
 )
 
 
@@ -50,11 +50,10 @@ class TestRenderVideoPrep:
 
     def test_duration_frames_calculation(self, sample_script):
         duration = sample_script.metadata.duration
-        scaled = duration / SPEED_FACTOR
         outro = 4
-        expected = int((scaled + outro) * FPS)
+        expected = int((duration + outro) * FPS)
         assert expected > 0
-        assert expected == int((45.0 / 1.2 + 4) * 30)
+        assert expected == int((45.0 + 4) * 30)
 
     def test_safe_title_generation(self):
         from src.video.renderer import render_video
@@ -153,10 +152,6 @@ class TestRenderVideoPrep:
 
         mock_run.side_effect = side_effect
         render_video(sample_script, scene_images=scene_images, output_dir=output_dir, use_bgm=False)
-
-    def test_speed_factor_is_positive(self):
-        assert SPEED_FACTOR > 0
-        assert SPEED_FACTOR == 1.2
 
     def test_fps_is_30(self):
         assert FPS == 30

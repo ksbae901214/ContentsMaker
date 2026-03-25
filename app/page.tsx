@@ -94,10 +94,12 @@ export default function Home() {
         {result.scenes && result.scriptPath && (
           <div className="mb-6">
             <SceneEditor
+              title={result.title}
               scenes={result.scenes}
               sceneImages={result.sceneImages || []}
               scriptPath={result.scriptPath}
               useBgm={bgm}
+              onTitleChange={(title) => setResult({...result, title})}
               onScenesChange={(scenes) => setResult({...result, scenes})}
               onImagesChange={(images) => setResult({...result, sceneImages: images})}
               onVideoUpdate={(videoPath) => setResult({...result, videoPath})}

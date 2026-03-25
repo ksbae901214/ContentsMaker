@@ -20,11 +20,13 @@ interface SceneData {
 interface Props {
   scene: SceneData;
   image: SceneImage | undefined;
+  selected: boolean;
+  onSelect: (sceneId: number, selected: boolean) => void;
   onImageClick: (sceneId: number) => void;
   onTextSave: (sceneId: number, text: string, voiceText: string) => void;
 }
 
-export function SceneCard({ scene, image, onImageClick, onTextSave }: Props) {
+export function SceneCard({ scene, image, selected, onSelect, onImageClick, onTextSave }: Props) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(scene.text);
   const [editVoice, setEditVoice] = useState(scene.voice_text);
@@ -60,8 +62,18 @@ export function SceneCard({ scene, image, onImageClick, onTextSave }: Props) {
         : "bg-blue-600";
 
   return (
-    <div className="bg-gray-800 rounded-lg overflow-hidden">
+    <div className={`bg-gray-800 rounded-lg overflow-hidden ${selected ? "ring-2 ring-blue-500" : ""}`}>
       <div className="flex gap-3 p-3">
+        {/* Checkbox */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(e) => onSelect(scene.id, e.target.checked)}
+            className="w-4 h-4 rounded"
+          />
+        </div>
+
         {/* Image thumbnail */}
         <div
           className="w-20 h-28 flex-shrink-0 rounded-md overflow-hidden cursor-pointer bg-gray-700 flex items-center justify-center hover:ring-2 hover:ring-blue-500 transition"

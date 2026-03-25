@@ -1,18 +1,18 @@
-"""Image extractor — OCR Blind post screenshots via OpenAI GPT-4o Vision.
+"""Image extractor — OCR Blind post screenshots via Claude Code.
 
 Takes one or more screenshots of a Blind post and extracts
 title, author, body, and comments into a BlindPost.
-Uses GPT-4o-mini Vision API for cost-effective OCR.
 """
 from __future__ import annotations
 
 import base64
 import json
 import logging
-import os
 import re
+import subprocess
 from pathlib import Path
 
+from src.config.settings import CLAUDE_TIMEOUT_SECONDS
 from src.scraper.models import BlindPost
 from src.scraper.validator import validate_blind_post
 
@@ -61,45 +61,11 @@ class ImageExtractError(Exception):
     """Raised when image extraction fails."""
 
 
-def _normalize_keys(data: dict) -> dict:
-    """Normalize common key variations from API responses."""
-    KEY_MAP = {
-        "제목": "title",
-        "본문": "body",
-        "작성자": "author",
-        "댓글": "comments",
-        "content": "body",
-        "text": "body",
-        "post_title": "title",
-        "post_body": "body",
-    }
-    normalized = {}
-    for k, v in data.items():
-        mapped = KEY_MAP.get(k, k)
-        normalized[mapped] = v
-
-    if "body" not in normalized and "title" in normalized:
-        for k, v in normalized.items():
-            if k not in ("title", "author", "url", "comments") and isinstance(v, str) and len(v) > 20:
-                normalized["body"] = v
-                break
-
-    if "comments" in normalized and not isinstance(normalized["comments"], list):
-        normalized["comments"] = []
-    if "author" not in normalized:
-        normalized["author"] = ""
-    if "url" not in normalized:
-        normalized["url"] = ""
-    if "comments" not in normalized:
-        normalized["comments"] = []
-
-    return normalized
-
-
 def extract_from_images(image_paths: list[Path]) -> BlindPost:
     """Extract BlindPost data from Blind screenshot images.
 
-    Uses OpenAI GPT-4o-mini Vision API for OCR.
+    Uses Claude Code's multimodal capability to OCR the images.
+    Supports multiple images of the same post (scrolled screenshots).
     """
     for path in image_paths:
         if not path.exists():
@@ -112,11 +78,8 @@ def extract_from_images(image_paths: list[Path]) -> BlindPost:
 
     logger.info("이미지 %d장에서 텍스트 추출 중...", len(image_paths))
 
-    raw_json = _call_openai_vision(image_paths)
+    raw_json = _call_claude_with_images(image_paths)
     data = _parse_response(raw_json)
-    data = _normalize_keys(data)
-
-    logger.info("추출된 데이터 키: %s", list(data.keys()))
 
     result = validate_blind_post(data)
     if not result.is_valid:
@@ -132,84 +95,80 @@ def extract_from_images(image_paths: list[Path]) -> BlindPost:
     return post
 
 
-def _call_openai_vision(image_paths: list[Path]) -> str:
-    """Call OpenAI GPT-4o-mini Vision API to extract text from images."""
-    try:
-        from openai import OpenAI
-    except ImportError:
-        raise ImageExtractError("openai 패키지가 필요합니다: pip install openai")
+def _call_claude_with_images(image_paths: list[Path]) -> str:
+    """Call Claude Code with images by having it read them directly.
 
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
+    Creates a temporary script that asks Claude Code to read the images
+    and extract text. Uses the Read tool built into Claude Code.
+    """
+    # Build a prompt that references image paths for Claude to read
+    image_refs = "\n".join(
+        f"- 이미지 {i+1}: {path.resolve()}" for i, path in enumerate(image_paths)
+    )
+
+    prompt = f"""다음 이미지 파일들을 읽고 블라인드 게시글 내용을 추출하세요.
+
+이미지 파일 경로:
+{image_refs}
+
+각 이미지 파일을 Read 도구로 읽은 후, 아래 규칙에 따라 JSON을 생성하세요.
+
+{IMAGE_EXTRACT_PROMPT}"""
+
+    try:
+        result = subprocess.run(
+            ["claude", "-p", prompt, "--output-format", "json", "--allowedTools", "Read"],
+            capture_output=True,
+            text=True,
+            timeout=CLAUDE_TIMEOUT_SECONDS,
+        )
+    except FileNotFoundError:
         raise ImageExtractError(
-            "OPENAI_API_KEY 환경변수가 설정되지 않았습니다.\n"
-            "이미지 OCR에 OpenAI GPT-4o-mini Vision API를 사용합니다."
+            "Claude Code가 설치되지 않았습니다. "
+            "'claude' 명령어가 PATH에 있는지 확인하세요."
+        )
+    except subprocess.TimeoutExpired:
+        raise ImageExtractError(
+            f"Claude Code 응답 시간 초과 ({CLAUDE_TIMEOUT_SECONDS}초)"
         )
 
-    client = OpenAI(api_key=api_key)
-
-    # Build message content with images
-    content: list[dict] = []
-    for path in image_paths:
-        img_b64 = base64.b64encode(path.read_bytes()).decode("ascii")
-        suffix = path.suffix.lower().lstrip(".")
-        mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
-                "webp": "image/webp", "gif": "image/gif"}.get(suffix, "image/png")
-        content.append({
-            "type": "image_url",
-            "image_url": {"url": f"data:{mime};base64,{img_b64}"},
-        })
-
-    content.append({"type": "text", "text": IMAGE_EXTRACT_PROMPT})
-
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": content}],
-            max_tokens=2000,
-            temperature=0,
+    if result.returncode != 0:
+        raise ImageExtractError(
+            f"Claude Code 실행 실패 (exit {result.returncode}): {result.stderr[:300]}"
         )
-        result = response.choices[0].message.content or ""
-        logger.info("GPT-4o-mini Vision 응답 (%d자)", len(result))
-        return result
-    except Exception as e:
-        raise ImageExtractError(f"OpenAI Vision API 호출 실패: {e}")
+
+    return result.stdout
 
 
 def _parse_response(raw: str) -> dict:
-    """Parse API response into a dict."""
-    if not raw or not raw.strip():
-        raise ImageExtractError("API 응답이 비어있습니다.")
-
+    """Parse Claude Code's response into a dict."""
     # Direct JSON
     try:
         data = json.loads(raw)
-        if isinstance(data, dict) and "title" in data:
+        if isinstance(data, dict) and "result" in data:
+            inner = data["result"]
+            if isinstance(inner, str):
+                return _parse_response(inner)
+            if isinstance(inner, dict):
+                return inner
+        if "title" in data:
             return data
     except (json.JSONDecodeError, KeyError):
         pass
 
     # JSON in code block
-    for pattern in [
-        r"```(?:json)?\s*\n(.*?)\n```",
-        r"```(.*?)```",
-    ]:
-        json_match = re.search(pattern, raw, re.DOTALL)
-        if json_match:
-            try:
-                parsed = json.loads(json_match.group(1))
-                if isinstance(parsed, dict):
-                    return parsed
-            except json.JSONDecodeError:
-                continue
+    json_match = re.search(r"```(?:json)?\s*\n(.*?)\n```", raw, re.DOTALL)
+    if json_match:
+        try:
+            return json.loads(json_match.group(1))
+        except json.JSONDecodeError:
+            pass
 
-    # Raw JSON object in text
+    # Raw JSON in text
     brace_match = re.search(r"\{[\s\S]*\}", raw)
     if brace_match:
         try:
-            parsed = json.loads(brace_match.group(0))
-            if isinstance(parsed, dict):
-                return parsed
+            return json.loads(brace_match.group(0))
         except json.JSONDecodeError:
             pass
 

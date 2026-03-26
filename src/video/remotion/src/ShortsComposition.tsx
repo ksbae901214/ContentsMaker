@@ -10,7 +10,8 @@ import {
 } from "remotion";
 import { Background } from "./components/Background";
 import { SceneText } from "./components/SceneText";
-import type { ShortsScriptData } from "./types";
+import { Transition } from "./components/Transition";
+import type { ShortsScriptData, TransitionType } from "./types";
 import { GRADIENT_THEMES } from "./types";
 
 const FPS = 30;
@@ -64,6 +65,15 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         const startFrame = Math.round(scene.timestamp * FPS);
         const durationFrames = Math.round(scene.duration * FPS);
         const imageFile = imageMap.get(scene.id);
+        const transition = scene.transition;
+        const transitionType: TransitionType = (transition?.type as TransitionType) ?? "fade";
+        const transitionDur = Math.round((transition?.duration ?? 0.5) * FPS);
+
+        const content = imageFile ? (
+          <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} />
+        ) : (
+          <SceneText scene={scene} emotion={emotion} />
+        );
 
         return (
           <Sequence
@@ -71,10 +81,12 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
             from={startFrame}
             durationInFrames={durationFrames}
           >
-            {imageFile ? (
-              <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} />
+            {transition ? (
+              <Transition type={transitionType} durationFrames={transitionDur}>
+                {content}
+              </Transition>
             ) : (
-              <SceneText scene={scene} emotion={emotion} />
+              content
             )}
           </Sequence>
         );

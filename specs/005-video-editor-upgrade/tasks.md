@@ -111,12 +111,12 @@
 
 **Independent Test**: 각 씬에 서로 다른 트랜지션을 적용 후 렌더링하여 효과 확인
 
-- [ ] T040 [US4] Create Transition component in src/video/remotion/src/components/Transition.tsx — 6 effects (fade, slide-left, slide-up, zoom, dissolve, wipe) using interpolate/spring
-- [ ] T041 [US4] Integrate Transition component into ShortsComposition.tsx — apply between consecutive scenes based on scene.transition config
-- [ ] T042 [US4] Create TransitionPicker component in app/components/TransitionPicker.tsx — visual selector for 6 effect types + duration slider
-- [ ] T043 [US4] Create PUT /api/scene/transition endpoint in app/api/scene/transition/route.ts — updates scene transition config
-- [ ] T044 [US4] Add "전체 적용" button to TransitionPicker — applies same transition to all scenes
-- [ ] T045 [US4] Pass transition config through renderer.py to Remotion props
+- [x] T040 [US4] Create Transition component in src/video/remotion/src/components/Transition.tsx — 6 effects (fade, slide-left, slide-up, zoom, dissolve, wipe) using interpolate/spring
+- [x] T041 [US4] Integrate Transition component into ShortsComposition.tsx — apply between consecutive scenes based on scene.transition config
+- [x] T042 [US4] Create TransitionPicker component in app/components/TransitionPicker.tsx — visual selector for 6 effect types + duration slider
+- [x] T043 [US4] Create PUT /api/scene/transition endpoint in app/api/scene/transition/route.ts — updates scene transition config
+- [x] T044 [US4] Add "전체 적용" button to TransitionPicker — applies same transition to all scenes
+- [x] T045 [US4] Pass transition config through renderer.py to Remotion props
 
 **Checkpoint**: 트랜지션 효과 완료 — 6종 효과 모두 렌더링 가능
 
@@ -128,10 +128,10 @@
 
 **Independent Test**: 다른 음성 선택 후 렌더링하여 변경된 음성 확인
 
-- [ ] T046 [US5] Add Korean voice list with metadata (gender, tone, description) to src/tts/voice_config.py
-- [ ] T047 [US5] Create POST /api/tts/preview endpoint in app/api/tts/preview/route.ts — generates short sample audio for selected voice
-- [ ] T048 [US5] Create VoicePicker component in app/components/VoicePicker.tsx — voice list with play preview button, gender/tone filters
-- [ ] T049 [US5] Add VoicePicker to SceneEditor in app/components/SceneEditor.tsx — voice selection applies to entire script
+- [x] T046 [US5] Add Korean voice list with metadata (gender, tone, description) to src/tts/voice_config.py
+- [x] T047 [US5] Create POST /api/tts/preview endpoint in app/api/tts/preview/route.ts — generates short sample audio for selected voice
+- [x] T048 [US5] Create VoicePicker component in app/components/VoicePicker.tsx — voice list with play preview button, gender/tone filters
+- [x] T049 [US5] Add VoicePicker to SceneEditor in app/components/SceneEditor.tsx — voice selection applies to entire script
 
 **Checkpoint**: 음성 선택 완료 — 미리듣기 및 적용 동작
 
@@ -159,13 +159,13 @@
 
 **Independent Test**: 프로젝트 저장 → 브라우저 닫기 → 불러오기 → 편집 상태 100% 복원
 
-- [ ] T055 [US7] Create Project dataclass in src/editor/project.py — id, name, script, paths, timestamps
-- [ ] T056 [US7] Implement save_project() and load_project() in src/editor/project.py — JSON serialize to data/projects/{id}.json
-- [ ] T057 [US7] Create POST /api/project/save endpoint in app/api/project/save/route.ts
-- [ ] T058 [P] [US7] Create GET /api/project/load endpoint in app/api/project/load/route.ts
-- [ ] T059 [P] [US7] Create GET /api/project/list endpoint in app/api/project/list/route.ts
-- [ ] T060 [P] [US7] Create DELETE /api/project/delete endpoint in app/api/project/delete/route.ts
-- [ ] T061 [US7] Create ProjectList component in app/components/ProjectList.tsx — shows recent projects with name, date, thumbnail
+- [x] T055 [US7] Create Project dataclass in src/editor/project.py — id, name, script, paths, timestamps
+- [x] T056 [US7] Implement save_project() and load_project() in src/editor/project.py — JSON serialize to data/projects/{id}.json
+- [x] T057 [US7] Create POST /api/project/save endpoint in app/api/project/save/route.ts
+- [x] T058 [P] [US7] Create GET /api/project/load endpoint in app/api/project/load/route.ts
+- [x] T059 [P] [US7] Create GET /api/project/list endpoint in app/api/project/list/route.ts
+- [x] T060 [P] [US7] Create DELETE /api/project/delete endpoint in app/api/project/delete/route.ts
+- [x] T061 [US7] Create ProjectList component in app/components/ProjectList.tsx — shows recent projects with name, date, thumbnail
 - [ ] T062 [US7] Add "프로젝트 저장" and "불러오기" buttons to app/page.tsx
 
 **Checkpoint**: 프로젝트 관리 완료 — 저장/불러오기/삭제 동작

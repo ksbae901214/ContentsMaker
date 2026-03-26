@@ -28,6 +28,7 @@ interface Props {
   onSplit: (sceneId: number) => void;
   onMerge: (sceneId: number) => void;
   onStyleClick?: (sceneId: number) => void;
+  onTransitionClick?: (sceneId: number) => void;
 }
 
 export function SceneCard({
@@ -41,6 +42,7 @@ export function SceneCard({
   onSplit,
   onMerge,
   onStyleClick,
+  onTransitionClick,
 }: Props) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(scene.text);
@@ -158,6 +160,15 @@ export function SceneCard({
                   title="자막 스타일"
                 >
                   Aa 스타일
+                </button>
+              )}
+              {onTransitionClick && (
+                <button
+                  onClick={() => onTransitionClick(scene.id)}
+                  className="px-2 py-0.5 text-[10px] bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition"
+                  title="트랜지션"
+                >
+                  ◐ 전환
                 </button>
               )}
             </div>

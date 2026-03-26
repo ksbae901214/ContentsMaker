@@ -50,6 +50,63 @@ HIGHLIGHT_COLORS: dict[str, str] = {
 
 DEFAULT_EMOTION = "relatable"
 
+# Korean voice catalog for edge-tts with metadata
+KOREAN_VOICES: list[dict[str, str]] = [
+    {
+        "name": "ko-KR-SunHiNeural",
+        "gender": "female",
+        "tone": "bright",
+        "description": "밝고 활기찬 여성 음성 (기본값)",
+    },
+    {
+        "name": "ko-KR-InJoonNeural",
+        "gender": "male",
+        "tone": "calm",
+        "description": "차분하고 신뢰감 있는 남성 음성",
+    },
+    {
+        "name": "ko-KR-BongJinNeural",
+        "gender": "male",
+        "tone": "deep",
+        "description": "깊고 무게감 있는 남성 음성",
+    },
+    {
+        "name": "ko-KR-GookMinNeural",
+        "gender": "male",
+        "tone": "neutral",
+        "description": "중립적이고 안정감 있는 남성 음성",
+    },
+    {
+        "name": "ko-KR-JiMinNeural",
+        "gender": "female",
+        "tone": "soft",
+        "description": "부드럽고 감성적인 여성 음성",
+    },
+    {
+        "name": "ko-KR-SeoHyeonNeural",
+        "gender": "female",
+        "tone": "professional",
+        "description": "전문적이고 또렷한 여성 음성",
+    },
+    {
+        "name": "ko-KR-SoonBokNeural",
+        "gender": "female",
+        "tone": "warm",
+        "description": "따뜻하고 친근한 여성 음성",
+    },
+    {
+        "name": "ko-KR-YuJinNeural",
+        "gender": "female",
+        "tone": "clear",
+        "description": "맑고 깨끗한 여성 음성",
+    },
+]
+
+
+def get_korean_voices() -> list[dict[str, str]]:
+    """Get all available Korean TTS voices with metadata."""
+    return KOREAN_VOICES
+
 
 def get_voice_config(emotion_type: str) -> dict[str, str]:
     """Get voice config for an emotion type, falling back to default."""

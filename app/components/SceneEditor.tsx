@@ -4,6 +4,8 @@ import { SceneCard } from "./SceneCard";
 import { ImageReplaceModal } from "./ImageReplaceModal";
 import { Timeline } from "./Timeline";
 import { SubtitleStyleEditor, type SubtitleStyle } from "./SubtitleStyleEditor";
+import { TransitionPicker } from "./TransitionPicker";
+import { VoicePicker } from "./VoicePicker";
 
 interface SceneImage {
   scene_id: number;
@@ -57,6 +59,9 @@ export function SceneEditor({
   const [titleDraft, setTitleDraft] = useState(title);
   const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [styleSceneId, setStyleSceneId] = useState<number | null>(null);
+  const [transitionSceneId, setTransitionSceneId] = useState<number | null>(null);
+  const [showVoicePicker, setShowVoicePicker] = useState(false);
+  const [currentVoice, setCurrentVoice] = useState("ko-KR-SunHiNeural");
 
   const imageMap = new Map(sceneImages.map((img) => [img.scene_id, img]));
 
@@ -394,6 +399,12 @@ export function SceneEditor({
               ? "더블클릭: 대본 편집 | 이미지 클릭: 교체"
               : "드래그: 순서 변경 | 우측 핸들: 길이 조절"}
           </span>
+          <button
+            onClick={() => setShowVoicePicker(true)}
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-md text-gray-400 hover:text-white transition"
+          >
+            🎙 음성
+          </button>
           <div className="flex bg-gray-800 rounded-md overflow-hidden">
             <button
               onClick={() => setViewMode("card")}
@@ -427,6 +438,7 @@ export function SceneEditor({
               onSplit={handleSplit}
               onMerge={handleMerge}
               onStyleClick={handleStyleClick}
+              onTransitionClick={(id) => setTransitionSceneId(id)}
             />
           ))}
         </div>
@@ -489,6 +501,28 @@ export function SceneEditor({
           scriptPath={scriptPath}
           onStyleChange={handleStyleChange}
           onClose={() => setStyleSceneId(null)}
+        />
+      )}
+
+      {transitionSceneId !== null && (
+        <TransitionPicker
+          transition={{ type: "fade", duration: 0.5 }}
+          sceneId={transitionSceneId}
+          scriptPath={scriptPath}
+          onTransitionChange={() => setHasChanges(true)}
+          onClose={() => setTransitionSceneId(null)}
+        />
+      )}
+
+      {showVoicePicker && (
+        <VoicePicker
+          currentVoice={currentVoice}
+          scriptPath={scriptPath}
+          onVoiceChange={(voice) => {
+            setCurrentVoice(voice);
+            setHasChanges(true);
+          }}
+          onClose={() => setShowVoicePicker(false)}
         />
       )}
     </div>

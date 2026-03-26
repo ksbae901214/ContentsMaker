@@ -1,0 +1,19 @@
+{
+  "name": "감성형",
+  "subtitle_style": {
+    "font_family": "Noto Sans KR",
+    "font_size": 52,
+    "font_weight": "500",
+    "color": "#FFFFFF",
+    "shadow": "2px 2px 6px rgba(0,0,0,0.6)",
+    "position_y": 0.7,
+    "bg_color": "#1a1a2e",
+    "bg_opacity": 0.5
+  },
+  "transition": {
+    "type": "dissolve",
+    "duration": 0.7
+  },
+  "voice": "ko-KR-JiMinNeural",
+  "bgm_enabled": true
+}

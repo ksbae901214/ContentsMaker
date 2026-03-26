@@ -23,6 +23,8 @@ interface SceneData {
   highlightWords?: string[];
   subtitleStyle?: SubtitleStyle;
   subtitle_style?: SubtitleStyle;
+  translatedText?: string;
+  translated_text?: string;
 }
 
 interface SceneTextProps {
@@ -98,6 +100,8 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
     HIGHLIGHT_COLORS[(emotion || "relatable") as EmotionType] ||
     HIGHLIGHT_COLORS.relatable;
 
+  const translatedText = scene.translatedText || scene.translated_text;
+
   return (
     <AbsoluteFill
       style={{
@@ -160,6 +164,25 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
             color={highlightColor}
           />
         </div>
+
+        {/* Dual subtitle (translated text) */}
+        {translatedText && (
+          <div
+            style={{
+              position: "relative",
+              fontSize: Math.round(fontSize * 0.55),
+              fontWeight: "400",
+              color: "rgba(255,255,255,0.8)",
+              fontFamily,
+              lineHeight: 1.4,
+              textShadow: "2px 2px 6px rgba(0,0,0,0.7)",
+              whiteSpace: "pre-wrap",
+              marginTop: 12,
+            }}
+          >
+            {translatedText}
+          </div>
+        )}
       </div>
     </AbsoluteFill>
   );

@@ -11,6 +11,7 @@ import {
 import { Background } from "./components/Background";
 import { SceneText } from "./components/SceneText";
 import { Transition } from "./components/Transition";
+import { SceneWithVideo } from "./components/SceneWithVideo";
 import type { ShortsScriptData, TransitionType } from "./types";
 import { GRADIENT_THEMES } from "./types";
 
@@ -22,10 +23,16 @@ interface SceneImage {
   imageFile: string; // filename in public/
 }
 
+interface SceneVideo {
+  sceneId: number;
+  videoFile: string;
+}
+
 interface ShortsCompositionProps {
   scriptData: ShortsScriptData;
   audioFile: string;
   sceneImages?: SceneImage[];
+  sceneVideos?: SceneVideo[];
   bgmFile?: string;
 }
 
@@ -33,6 +40,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   scriptData,
   audioFile,
   sceneImages = [],
+  sceneVideos = [],
   bgmFile = "",
 }) => {
   const emotion =
@@ -46,6 +54,11 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   const imageMap = new Map<number, string>();
   for (const si of sceneImages) {
     imageMap.set(si.sceneId, si.imageFile);
+  }
+
+  const videoMap = new Map<number, string>();
+  for (const sv of sceneVideos) {
+    videoMap.set(sv.sceneId, sv.videoFile);
   }
 
   const title = scriptData.metadata.title;
@@ -65,11 +78,14 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         const startFrame = Math.round(scene.timestamp * FPS);
         const durationFrames = Math.round(scene.duration * FPS);
         const imageFile = imageMap.get(scene.id);
+        const videoFile = videoMap.get(scene.id);
         const transition = scene.transition;
         const transitionType: TransitionType = (transition?.type as TransitionType) ?? "fade";
         const transitionDur = Math.round((transition?.duration ?? 0.5) * FPS);
 
-        const content = imageFile ? (
+        const content = videoFile ? (
+          <SceneWithVideo videoFile={videoFile} scene={scene} emotion={emotion} />
+        ) : imageFile ? (
           <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} />
         ) : (
           <SceneText scene={scene} emotion={emotion} />

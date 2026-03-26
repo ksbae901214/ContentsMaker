@@ -121,6 +121,26 @@ export default function Home() {
         )}
         <div className="flex gap-3">
           {result.videoPath && <a href={url} download className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium text-center transition">⬇️ 다운로드</a>}
+          {result.scriptPath && (
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/project/save", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    name: result.title,
+                    script_path: result.scriptPath,
+                    image_paths: Object.fromEntries((result.sceneImages || []).map(i => [i.scene_id, i.image_path])),
+                    output_path: result.videoPath || null,
+                  }),
+                });
+                if (res.ok) { const d = await res.json(); alert(`프로젝트 저장 완료 (ID: ${d.project_id})`); }
+              }}
+              className="py-3 px-4 bg-green-600 hover:bg-green-500 rounded-lg font-medium transition"
+            >
+              💾 저장
+            </button>
+          )}
           <button onClick={reset} className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition">🔄 새로 만들기</button>
         </div>
       </main>

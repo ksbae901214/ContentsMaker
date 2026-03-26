@@ -90,15 +90,15 @@
 
 **Independent Test**: "영상 모드" 선택 후 생성하여 움직이는 배경이 재생되는지 확인
 
-- [ ] T030 [US3] Create VideoGeneratorBase ABC in src/video_gen/base.py — generate(), get_status(), download() abstract methods
-- [ ] T031 [US3] Implement SeedanceGenerator in src/video_gen/seedance_gen.py — Seedance 2.0 API integration (async POST/GET/download)
-- [ ] T032 [US3] Create generator factory in src/video_gen/factory.py — returns SeedanceGenerator by default based on config
-- [ ] T033 [US3] Create POST /api/video-gen endpoint in app/api/video-gen/route.ts — SSE streaming for per-scene generation status
+- [x] T030 [US3] Create VideoGeneratorBase ABC in src/video_gen/base.py — generate(), get_status(), download() abstract methods
+- [x] T031 [US3] Implement SeedanceGenerator in src/video_gen/seedance_gen.py — Seedance 2.0 API integration (async POST/GET/download)
+- [x] T032 [US3] Create generator factory in src/video_gen/factory.py — returns SeedanceGenerator by default based on config
+- [x] T033 [US3] Create POST /api/video-gen endpoint in app/api/video-gen/route.ts — SSE streaming for per-scene generation status
 - [ ] T034 [US3] Add visual mode selector (image/video/hybrid) to app/page.tsx generation form
-- [ ] T035 [US3] Create SceneWithVideo component in src/video/remotion/src/components/SceneWithVideo.tsx — renders <OffthreadVideo> for video clips
-- [ ] T036 [US3] Update ShortsComposition.tsx to conditionally render SceneWithImage or SceneWithVideo based on scene.visual_type
+- [x] T035 [US3] Create SceneWithVideo component in src/video/remotion/src/components/SceneWithVideo.tsx — renders <OffthreadVideo> for video clips
+- [x] T036 [US3] Update ShortsComposition.tsx to conditionally render SceneWithImage or SceneWithVideo based on scene.visual_type
 - [ ] T037 [US3] Update renderer.py to copy video clips to Remotion public dir and pass video paths as props
-- [ ] T038 [US3] Add cost estimation display before video generation — show estimated cost per scene and total
+- [x] T038 [US3] Add cost estimation display before video generation — show estimated cost per scene and total
 - [ ] T039 [US3] Implement auto-fallback to static image when video generation fails in src/video_gen/seedance_gen.py
 
 **Checkpoint**: AI 영상 클립 생성 완료 — Seedance I2V/T2V 모두 동작, 폴백 작동
@@ -166,7 +166,7 @@
 - [x] T059 [P] [US7] Create GET /api/project/list endpoint in app/api/project/list/route.ts
 - [x] T060 [P] [US7] Create DELETE /api/project/delete endpoint in app/api/project/delete/route.ts
 - [x] T061 [US7] Create ProjectList component in app/components/ProjectList.tsx — shows recent projects with name, date, thumbnail
-- [ ] T062 [US7] Add "프로젝트 저장" and "불러오기" buttons to app/page.tsx
+- [x] T062 [US7] Add "프로젝트 저장" and "불러오기" buttons to app/page.tsx
 
 **Checkpoint**: 프로젝트 관리 완료 — 저장/불러오기/삭제 동작
 
@@ -194,10 +194,10 @@
 
 **Independent Test**: 3개 URL 입력 → 일괄 생성 → 3개 영상 순차 생성 확인
 
-- [ ] T068 [US9] Create BatchJob dataclass in src/editor/batch.py — id, input_type, input_data, status, progress, error
-- [ ] T069 [US9] Implement batch_processor() in src/editor/batch.py — sequential processing with per-job error isolation
-- [ ] T070 [US9] Create POST /api/batch endpoint in app/api/batch/route.ts — SSE streaming for batch progress
-- [ ] T071 [US9] Create BatchQueue component in app/components/BatchQueue.tsx — input list, per-job status, progress bars
+- [x] T068 [US9] Create BatchJob dataclass in src/editor/batch.py — id, input_type, input_data, status, progress, error
+- [x] T069 [US9] Implement batch_processor() in src/editor/batch.py — sequential processing with per-job error isolation
+- [x] T070 [US9] Create POST /api/batch endpoint in app/api/batch/route.ts — SSE streaming for batch progress
+- [x] T071 [US9] Create BatchQueue component in app/components/BatchQueue.tsx — input list, per-job status, progress bars
 
 **Checkpoint**: 일괄 생성 완료 — 다수 작업 순차 처리, 개별 실패 격리
 
@@ -209,10 +209,10 @@
 
 **Independent Test**: 템플릿 생성 → 새 영상에 적용 → 스타일 자동 적용 확인
 
-- [ ] T072 [US10] Create Template dataclass in src/editor/template.py — name, subtitle_style, transition, voice, bgm_enabled
-- [ ] T073 [US10] Implement save_template() and load_templates() in src/editor/template.py — JSON to data/templates/
-- [ ] T074 [US10] Create 3 built-in templates (humor, emotional, news) in data/templates/
-- [ ] T075 [US10] Create TemplatePicker component in app/components/TemplatePicker.tsx — preset list + custom save
+- [x] T072 [US10] Create Template dataclass in src/editor/template.py — name, subtitle_style, transition, voice, bgm_enabled
+- [x] T073 [US10] Implement save_template() and load_templates() in src/editor/template.py — JSON to data/templates/
+- [x] T074 [US10] Create 3 built-in templates (humor, emotional, news) in data/templates/
+- [x] T075 [US10] Create TemplatePicker component in app/components/TemplatePicker.tsx — preset list + custom save
 - [ ] T076 [US10] Integrate TemplatePicker into generation flow in app/page.tsx — apply template before rendering
 
 **Checkpoint**: 템플릿 시스템 완료 — 기본 3종 + 커스텀 저장/적용
@@ -225,9 +225,9 @@
 
 **Independent Test**: 영어 자막 추가 옵션 ON → 렌더링 → 이중 자막 표시 확인
 
-- [ ] T077 [US11] Implement translate_subtitles() in src/editor/translator.py — calls OpenAI GPT-4o-mini for en/ja translation
-- [ ] T078 [US11] Create POST /api/translate endpoint in app/api/translate/route.ts — translates scene texts
-- [ ] T079 [US11] Add dual subtitle rendering to SceneText in src/video/remotion/src/components/SceneText.tsx — secondary subtitle below primary
+- [x] T077 [US11] Implement translate_subtitles() in src/editor/translator.py — calls OpenAI GPT-4o-mini for en/ja translation
+- [x] T078 [US11] Create POST /api/translate endpoint in app/api/translate/route.ts — translates scene texts
+- [x] T079 [US11] Add dual subtitle rendering to SceneText in src/video/remotion/src/components/SceneText.tsx — secondary subtitle below primary
 - [ ] T080 [US11] Add language selection UI to SceneEditor in app/components/SceneEditor.tsx — enable/disable + language picker (en/ja)
 - [ ] T081 [US11] Allow manual edit of translated text in SceneCard
 

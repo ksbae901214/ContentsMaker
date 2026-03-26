@@ -143,11 +143,11 @@
 
 **Independent Test**: 텍스트 수정 후 플레이어에서 3초 이내 반영 확인
 
-- [ ] T050 [US6] Install @remotion/player in package.json
-- [ ] T051 [US6] Create VideoPreview component in app/components/VideoPreview.tsx — wraps Remotion Player with current script props
-- [ ] T052 [US6] Integrate VideoPreview into SceneEditor page in app/components/SceneEditor.tsx — side-by-side with edit panel
-- [ ] T053 [US6] Wire edit state changes to VideoPreview props — text, subtitle style, transition changes reflect in player immediately
-- [ ] T054 [US6] Add "최종 렌더링" button separate from preview — triggers actual MP4 render via existing /api/rerender
+- [x] T050 [US6] Install @remotion/player in package.json
+- [x] T051 [US6] Create VideoPreview component in app/components/VideoPreview.tsx — wraps Remotion Player with current script props
+- [x] T052 [US6] Integrate VideoPreview into SceneEditor page in app/components/SceneEditor.tsx — side-by-side with edit panel
+- [x] T053 [US6] Wire edit state changes to VideoPreview props — text, subtitle style, transition changes reflect in player immediately
+- [x] T054 [US6] Add "최종 렌더링" button separate from preview — triggers actual MP4 render via existing /api/rerender
 
 **Checkpoint**: 실시간 미리보기 완료 — 편집 내용이 플레이어에 즉시 반영
 
@@ -179,10 +179,10 @@
 **Independent Test**: 특정 씬에 효과음 추가 후 렌더링하여 재생 확인
 
 - [ ] T063 [US8] Download and place 13 royalty-free sound effects in data/sfx/ (surprise×3, laugh×3, touching×2, emphasis×3, ui×2)
-- [ ] T064 [US8] Create sfx manifest file data/sfx/manifest.json — name, category, filename, duration_ms for each effect
-- [ ] T065 [US8] Create SfxPicker component in app/components/SfxPicker.tsx — category filter, preview playback, volume slider
-- [ ] T066 [US8] Add <Audio> component rendering to ShortsComposition.tsx — play sfx at scene.sfx[].offset_ms timing
-- [ ] T067 [US8] Update renderer.py to copy sfx files to Remotion public dir and pass sfx config as props
+- [x] T064 [US8] Create sfx manifest file data/sfx/manifest.json — name, category, filename, duration_ms for each effect
+- [x] T065 [US8] Create SfxPicker component in app/components/SfxPicker.tsx — category filter, preview playback, volume slider
+- [x] T066 [US8] Add <Audio> component rendering to ShortsComposition.tsx — play sfx at scene.sfx[].offset_ms timing
+- [x] T067 [US8] Update renderer.py to copy sfx files to Remotion public dir and pass sfx config as props
 
 **Checkpoint**: 효과음 완료 — 카테고리 선택, 미리듣기, 영상 내 재생 동작
 
@@ -213,7 +213,7 @@
 - [x] T073 [US10] Implement save_template() and load_templates() in src/editor/template.py — JSON to data/templates/
 - [x] T074 [US10] Create 3 built-in templates (humor, emotional, news) in data/templates/
 - [x] T075 [US10] Create TemplatePicker component in app/components/TemplatePicker.tsx — preset list + custom save
-- [ ] T076 [US10] Integrate TemplatePicker into generation flow in app/page.tsx — apply template before rendering
+- [x] T076 [US10] Integrate TemplatePicker into generation flow in app/page.tsx — apply template before rendering
 
 **Checkpoint**: 템플릿 시스템 완료 — 기본 3종 + 커스텀 저장/적용
 
@@ -228,8 +228,8 @@
 - [x] T077 [US11] Implement translate_subtitles() in src/editor/translator.py — calls OpenAI GPT-4o-mini for en/ja translation
 - [x] T078 [US11] Create POST /api/translate endpoint in app/api/translate/route.ts — translates scene texts
 - [x] T079 [US11] Add dual subtitle rendering to SceneText in src/video/remotion/src/components/SceneText.tsx — secondary subtitle below primary
-- [ ] T080 [US11] Add language selection UI to SceneEditor in app/components/SceneEditor.tsx — enable/disable + language picker (en/ja)
-- [ ] T081 [US11] Allow manual edit of translated text in SceneCard
+- [x] T080 [US11] Add language selection UI to SceneEditor in app/components/SceneEditor.tsx — enable/disable + language picker (en/ja)
+- [x] T081 [US11] Allow manual edit of translated text in SceneCard
 
 **Checkpoint**: 다국어 자막 완료 — 한/영 또는 한/일 이중 자막 렌더링
 

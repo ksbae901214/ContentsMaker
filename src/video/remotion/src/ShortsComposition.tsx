@@ -49,7 +49,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   const colors =
     scriptData.background.colors.length > 0
       ? scriptData.background.colors
-      : GRADIENT_THEMES[emotion] || GRADIENT_THEMES.relatable;
+      : GRADIENT_THEMES[emotion as keyof typeof GRADIENT_THEMES] || GRADIENT_THEMES.relatable;
 
   const imageMap = new Map<number, string>();
   for (const si of sceneImages) {
@@ -120,6 +120,27 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
 
       {audioFile && <Audio src={staticFile(audioFile)} />}
       {bgmFile && <Audio src={staticFile(bgmFile)} volume={0.15} loop />}
+
+      {/* Per-scene sound effects */}
+      {scriptData.scenes.map((scene) => {
+        const sfxList = scene.sfx || [];
+        const sceneStart = Math.round(scene.timestamp * FPS);
+        return sfxList.map((sfx, idx) => {
+          const offsetFrames = Math.round((sfx.offset_ms || 0) / 1000 * FPS);
+          return (
+            <Sequence
+              key={`sfx-${scene.id}-${idx}`}
+              from={sceneStart + offsetFrames}
+              durationInFrames={Math.round(scene.duration * FPS)}
+            >
+              <Audio
+                src={staticFile(sfx.name + ".mp3")}
+                volume={sfx.volume ?? 0.2}
+              />
+            </Sequence>
+          );
+        });
+      })}
     </AbsoluteFill>
   );
 };

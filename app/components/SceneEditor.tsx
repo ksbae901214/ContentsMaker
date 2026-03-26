@@ -6,6 +6,7 @@ import { Timeline } from "./Timeline";
 import { SubtitleStyleEditor, type SubtitleStyle } from "./SubtitleStyleEditor";
 import { TransitionPicker } from "./TransitionPicker";
 import { VoicePicker } from "./VoicePicker";
+import { VideoPreview } from "./VideoPreview";
 
 interface SceneImage {
   scene_id: number;
@@ -31,6 +32,7 @@ interface Props {
   sceneImages: SceneImage[];
   scriptPath: string;
   useBgm: boolean;
+  emotionType?: string;
   onTitleChange: (title: string) => void;
   onScenesChange: (scenes: SceneData[]) => void;
   onImagesChange: (images: SceneImage[]) => void;
@@ -43,6 +45,7 @@ export function SceneEditor({
   sceneImages,
   scriptPath,
   useBgm,
+  emotionType = "relatable",
   onTitleChange,
   onScenesChange,
   onImagesChange,
@@ -62,6 +65,9 @@ export function SceneEditor({
   const [transitionSceneId, setTransitionSceneId] = useState<number | null>(null);
   const [showVoicePicker, setShowVoicePicker] = useState(false);
   const [currentVoice, setCurrentVoice] = useState("ko-KR-SunHiNeural");
+  const [showPreview, setShowPreview] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [targetLang, setTargetLang] = useState<"en" | "ja" | null>(null);
 
   const imageMap = new Map(sceneImages.map((img) => [img.scene_id, img]));
 
@@ -378,6 +384,38 @@ export function SceneEditor({
         )}
       </div>
 
+      {/* Preview toggle + panel */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setShowPreview(!showPreview)}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
+            showPreview ? "bg-indigo-600 hover:bg-indigo-500" : "bg-gray-800 hover:bg-gray-700 text-gray-400"
+          }`}
+        >
+          {showPreview ? "▼ 미리보기 숨기기" : "▶ 미리보기"}
+        </button>
+        <button
+          onClick={handleRerender}
+          disabled={rendering || !hasChanges}
+          className={`py-2 px-4 rounded-lg text-sm font-medium transition ${
+            hasChanges && !rendering
+              ? "bg-orange-600 hover:bg-orange-500"
+              : "bg-gray-800 text-gray-500 cursor-not-allowed"
+          }`}
+        >
+          {rendering ? renderProgress : "최종 렌더링"}
+        </button>
+      </div>
+
+      {showPreview && (
+        <VideoPreview
+          title={title}
+          emotionType={emotionType}
+          scenes={scenes}
+          sceneImages={sceneImages}
+        />
+      )}
+
       {/* Scene list header with view toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -405,6 +443,63 @@ export function SceneEditor({
           >
             🎙 음성
           </button>
+          <div className="flex bg-gray-800 rounded-md overflow-hidden">
+            <button
+              onClick={async () => {
+                if (translating) return;
+                setTranslating(true);
+                try {
+                  const res = await fetch("/api/translate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      scenes: scenes.map((s) => ({ id: s.id, text: s.text })),
+                      target_language: "en",
+                    }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setTargetLang("en");
+                    setHasChanges(true);
+                  }
+                } catch {}
+                setTranslating(false);
+              }}
+              disabled={translating}
+              className={`px-2 py-1 text-xs transition ${
+                targetLang === "en" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"
+              }`}
+            >
+              {translating ? "..." : "EN"}
+            </button>
+            <button
+              onClick={async () => {
+                if (translating) return;
+                setTranslating(true);
+                try {
+                  const res = await fetch("/api/translate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      scenes: scenes.map((s) => ({ id: s.id, text: s.text })),
+                      target_language: "ja",
+                    }),
+                  });
+                  if (res.ok) {
+                    setTargetLang("ja");
+                    setHasChanges(true);
+                  }
+                } catch {}
+                setTranslating(false);
+              }}
+              disabled={translating}
+              className={`px-2 py-1 text-xs transition ${
+                targetLang === "ja" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"
+              }`}
+            >
+              {translating ? "..." : "JP"}
+            </button>
+          </div>
           <div className="flex bg-gray-800 rounded-md overflow-hidden">
             <button
               onClick={() => setViewMode("card")}
@@ -467,22 +562,6 @@ export function SceneEditor({
             : `선택한 ${selectedScenes.size}개 씬 이미지 재생성`}
         </button>
       )}
-
-      <button
-        onClick={handleRerender}
-        disabled={rendering || !hasChanges}
-        className={`w-full py-3 rounded-lg font-medium transition ${
-          hasChanges && !rendering
-            ? "bg-orange-600 hover:bg-orange-500"
-            : "bg-gray-700 text-gray-500 cursor-not-allowed"
-        }`}
-      >
-        {rendering
-          ? renderProgress
-          : hasChanges
-            ? "영상 재렌더링"
-            : "변경사항 없음"}
-      </button>
 
       {modalSceneId !== null && (
         <ImageReplaceModal

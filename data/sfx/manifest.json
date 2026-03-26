@@ -1,0 +1,25 @@
+{
+  "effects": [
+    { "name": "surprise_ding", "category": "surprise", "filename": "surprise_ding.mp3", "duration_ms": 1200, "description": "띠링" },
+    { "name": "surprise_boom", "category": "surprise", "filename": "surprise_boom.mp3", "duration_ms": 1500, "description": "두둥" },
+    { "name": "surprise_huh", "category": "surprise", "filename": "surprise_huh.mp3", "duration_ms": 800, "description": "어!?" },
+    { "name": "laugh_haha", "category": "laugh", "filename": "laugh_haha.mp3", "duration_ms": 2000, "description": "하하하" },
+    { "name": "laugh_kkk", "category": "laugh", "filename": "laugh_kkk.mp3", "duration_ms": 1500, "description": "크크크" },
+    { "name": "laugh_burst", "category": "laugh", "filename": "laugh_burst.mp3", "duration_ms": 1800, "description": "빵터짐" },
+    { "name": "touching_bell", "category": "touching", "filename": "touching_bell.mp3", "duration_ms": 2500, "description": "잔잔한 종소리" },
+    { "name": "touching_warm", "category": "touching", "filename": "touching_warm.mp3", "duration_ms": 2000, "description": "훈훈한 효과음" },
+    { "name": "emphasis_drumroll", "category": "emphasis", "filename": "emphasis_drumroll.mp3", "duration_ms": 2000, "description": "두구두구" },
+    { "name": "emphasis_tada", "category": "emphasis", "filename": "emphasis_tada.mp3", "duration_ms": 1500, "description": "짜잔" },
+    { "name": "emphasis_reveal", "category": "emphasis", "filename": "emphasis_reveal.mp3", "duration_ms": 1200, "description": "타다" },
+    { "name": "ui_transition", "category": "ui", "filename": "ui_transition.mp3", "duration_ms": 600, "description": "전환 효과음" },
+    { "name": "ui_click", "category": "ui", "filename": "ui_click.mp3", "duration_ms": 300, "description": "클릭" }
+  ],
+  "categories": [
+    { "id": "surprise", "label": "놀람" },
+    { "id": "laugh", "label": "웃음" },
+    { "id": "touching", "label": "감동" },
+    { "id": "emphasis", "label": "강조" },
+    { "id": "ui", "label": "UI" }
+  ],
+  "note": "MP3 파일은 Pixabay Sound Effects에서 로열티프리로 다운로드하여 이 디렉토리에 배치하세요."
+}

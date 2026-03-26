@@ -98,6 +98,17 @@ def render_video(
         else:
             logger.warning("BGM 파일 없음: %s — BGM 없이 진행", bgm_src)
 
+    # Copy SFX files to public dir for Remotion staticFile() access
+    sfx_dir = PROJECT_ROOT / "data" / "sfx"
+    for scene in script.scenes:
+        for sfx in (scene.sfx or ()):
+            sfx_src = sfx_dir / (sfx.name + ".mp3")
+            if sfx_src.exists():
+                sfx_dst = public_dir / (sfx.name + ".mp3")
+                if not sfx_dst.exists():
+                    shutil.copy2(sfx_src, sfx_dst)
+                    temp_files.append(sfx_dst)
+
     script_dict = _convert_to_camel_case(script.to_dict())
 
     # Apply scene timings from per-scene TTS (most accurate)

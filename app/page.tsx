@@ -100,6 +100,7 @@ export default function Home() {
               sceneImages={result.sceneImages || []}
               scriptPath={result.scriptPath}
               useBgm={bgm}
+              emotionType={result.emotion}
               onTitleChange={(title) => setResult({...result, title})}
               onScenesChange={(scenes) => setResult({...result, scenes})}
               onImagesChange={(images) => setResult({...result, sceneImages: images})}

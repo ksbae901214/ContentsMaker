@@ -1,8 +1,7 @@
 "use client";
 import { useMemo } from "react";
 import { Player } from "@remotion/player";
-import { ShortsComposition } from "../../src/video/remotion/src/ShortsComposition";
-import type { ShortsScriptData } from "../../src/video/remotion/src/types";
+import { PreviewComposition } from "./PreviewComposition";
 
 const FPS = 30;
 
@@ -40,72 +39,41 @@ export function VideoPreview({
   sceneImages,
   bgmFile = "",
 }: Props) {
-  const scriptData: ShortsScriptData = useMemo(() => {
-    const lastScene = scenes[scenes.length - 1];
-    const duration = lastScene
-      ? lastScene.timestamp + lastScene.duration
-      : 30;
-
-    return {
+  const scriptData = useMemo(
+    () => ({
       metadata: {
         title,
-        emotion_type: emotionType as any,
-        duration,
-        source_url: "",
+        emotion_type: emotionType,
+        duration: scenes.reduce((sum, s) => sum + s.duration, 0),
       },
       scenes: scenes.map((s) => ({
         id: s.id,
         timestamp: s.timestamp,
         duration: s.duration,
-        type: s.type as any,
+        type: s.type,
         text: s.text,
-        voice_text: s.voice_text,
-        emphasis: s.emphasis as any,
+        emphasis: s.emphasis,
         highlightWords: s.highlight_words,
-        subtitle_style: s.subtitle_style as any,
+        subtitleStyle: s.subtitle_style as any,
         transition: s.transition as any,
       })),
-      audio: {
-        tts_script: "",
-        voice: "",
-        rate: "",
-        pitch: "",
-      },
       background: {
-        type: "gradient",
-        colors: [],
+        colors: [] as string[],
       },
-    };
-  }, [title, emotionType, scenes]);
-
-  const imageProps = useMemo(
-    () =>
-      sceneImages
-        .filter((img) => img.image_path)
-        .map((img) => ({
-          sceneId: img.scene_id,
-          imageFile: img.image_path,
-        })),
-    [sceneImages]
+    }),
+    [title, emotionType, scenes]
   );
 
   const lastScene = scenes[scenes.length - 1];
-  const contentDur = lastScene
-    ? lastScene.timestamp + lastScene.duration
-    : 30;
-  const totalDur = contentDur + 4; // + outro
-  const durationFrames = Math.round(totalDur * FPS);
+  const contentDur = lastScene ? lastScene.timestamp + lastScene.duration : 30;
+  const totalDur = contentDur + 4;
+  const durationFrames = Math.max(Math.round(totalDur * FPS), 1);
 
   return (
     <div className="bg-gray-900 rounded-lg overflow-hidden">
       <Player
-        component={ShortsComposition}
-        inputProps={{
-          scriptData,
-          audioFile: "",
-          sceneImages: imageProps,
-          bgmFile,
-        }}
+        component={PreviewComposition}
+        inputProps={{ scriptData }}
         durationInFrames={durationFrames}
         fps={FPS}
         compositionWidth={1080}

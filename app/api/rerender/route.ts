@@ -60,15 +60,15 @@ export async function POST(req: NextRequest) {
         send("progress", { message: "🎙️ 음성 재생성 중..." });
 
         const ttsArgs = JSON.stringify({ script_path: scriptPath });
-        await pyWithStdin(`
+        const ttsResult = JSON.parse(await pyWithStdin(`
 import sys,json
 sys.path.insert(0,${JSON.stringify(ROOT)})
 from src.analyzer.script_models import ShortsScript
-from src.tts.edge_tts_generator import generate_voice
+from src.tts.edge_tts_generator import generate_voice_with_timing
 args=json.loads(sys.stdin.read())
-generate_voice(ShortsScript.load(args["script_path"]))
-print("ok")`, ttsArgs);
-        send("progress", { message: "✅ 음성 완료" });
+ap,timings=generate_voice_with_timing(ShortsScript.load(args["script_path"]))
+print(json.dumps({"audio_path":str(ap),"timings":timings}))`, ttsArgs));
+        send("progress", { message: `✅ 음성 완료 (${ttsResult.timings.length}씬 타이밍)` });
 
         send("progress", { message: "🎬 영상 재렌더링 중..." });
 
@@ -76,7 +76,8 @@ print("ok")`, ttsArgs);
           script_path: scriptPath,
           scene_images: validImages,
           use_bgm: safeBgm,
-          root: ROOT,
+          audio_path: ttsResult.audio_path,
+          timings: ttsResult.timings,
         });
         const rr = JSON.parse(await pyWithStdin(`
 import sys,json
@@ -86,10 +87,10 @@ from src.analyzer.script_models import ShortsScript
 from src.video.renderer import render_video
 args=json.loads(sys.stdin.read())
 s=ShortsScript.load(args["script_path"])
-af=sorted(Path(args["root"]+"/data/audio").glob("*.mp3"))
-ap=af[-1] if af else None
+ap=Path(args["audio_path"])
 si=args["scene_images"] if args["scene_images"] else None
-o=render_video(s,audio_path=ap,scene_images=si,use_bgm=args["use_bgm"])
+timings=args.get("timings")
+o=render_video(s,audio_path=ap,scene_images=si,use_bgm=args["use_bgm"],scene_timings=timings)
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`, renderArgs));
         send("progress", { message: `✅ 렌더링 완료 (${rr.size}MB)` });
 

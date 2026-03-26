@@ -46,7 +46,7 @@ def generate_voice(script: ShortsScript, output_dir: Path | None = None) -> Path
 
     Returns path to the generated MP3 file.
     """
-    tts_text = script.audio.tts_script
+    tts_text = _strip_ssml_tags(script.audio.tts_script)
     if not tts_text or not tts_text.strip():
         raise TTSError("TTS 스크립트가 비어있습니다")
 

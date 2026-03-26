@@ -64,15 +64,16 @@ def cmd_image(args: argparse.Namespace) -> int:
 
         # Step 4: TTS
         print("🎙️  Step 4/5: 음성 생성 중...")
-        tts_code, voice_path = _run_tts(script)
+        tts_code, voice_path, scene_timings = _run_tts(script)
         if tts_code != 0:
             print("   ⚠️  TTS 실패, 무음 영상으로 계속합니다.")
             voice_path = None
+            scene_timings = None
 
         # Step 5: Render
         print("🎬 Step 5/5: 영상 렌더링 중...")
         use_bgm = not getattr(args, "no_bgm", False)
-        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm)
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm, scene_timings=scene_timings)
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 완료! 이미지 → 영상 변환 성공")
@@ -148,7 +149,7 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         print(f"   길이: {script.metadata.duration}초")
 
         if args.with_tts:
-            code, _ = _run_tts(script)
+            code, _, _ = _run_tts(script)
             return code
 
         return 0
@@ -174,7 +175,7 @@ def cmd_tts(args: argparse.Namespace) -> int:
             return 1
 
         script = ShortsScript.load(file_path)
-        code, _ = _run_tts(script)
+        code, _, _ = _run_tts(script)
         return code
 
     except Exception as e:
@@ -184,24 +185,29 @@ def cmd_tts(args: argparse.Namespace) -> int:
 
 
 def _run_tts(script):
-    """Run TTS generation on a ShortsScript. Returns (exit_code, voice_path)."""
-    from src.tts.edge_tts_generator import TTSError, generate_voice
+    """Run TTS generation with per-scene timing.
+
+    Returns (exit_code, voice_path, scene_timings).
+    scene_timings is a list of {scene_id, start_ms, end_ms} dicts for
+    precise audio-to-scene synchronization.
+    """
+    from src.tts.edge_tts_generator import TTSError, generate_voice_with_timing
 
     try:
         logger.info("TTS 생성 시작...")
-        voice_path = generate_voice(script)
+        voice_path, scene_timings = generate_voice_with_timing(script)
         file_size_kb = voice_path.stat().st_size / 1024
 
         print(f"\n✅ 음성 생성 완료")
         print(f"   파일: {voice_path}")
         print(f"   크기: {file_size_kb:.1f} KB")
         print(f"   음성: {script.audio.voice}")
-        return 0, voice_path
+        return 0, voice_path, scene_timings
 
     except TTSError as e:
         logger.error("TTS 오류: %s", e)
         print(f"\n❌ TTS 오류: {e}", file=sys.stderr)
-        return 1, None
+        return 1, None, None
 
 
 def _run_illustrations(script, use_references: bool = True) -> list[dict] | None:
@@ -294,14 +300,15 @@ def cmd_url(args: argparse.Namespace) -> int:
 
         # Step 4: TTS
         print("🎙️  Step 4/5: 음성 생성 중...")
-        tts_code, voice_path = _run_tts(script)
+        tts_code, voice_path, scene_timings = _run_tts(script)
         if tts_code != 0:
             voice_path = None
+            scene_timings = None
 
         # Step 5: Render
         print("🎬 Step 5/5: 영상 렌더링 중...")
         use_bgm = not getattr(args, "no_bgm", False)
-        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm)
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm, scene_timings=scene_timings)
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 완료! URL → 영상 변환 성공")
@@ -344,15 +351,16 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
 
         # Step 3: TTS
         print("🎙️  Step 3/4: 음성 생성 중...")
-        tts_code, voice_path = _run_tts(script)
+        tts_code, voice_path, scene_timings = _run_tts(script)
         if tts_code != 0:
             print("⚠️  TTS 실패, 무음 영상으로 계속합니다.")
             voice_path = None
+            scene_timings = None
 
         # Step 4: Render
         print("🎬 Step 4/4: 영상 렌더링 중...")
         use_bgm = not getattr(args, "no_bgm", False)
-        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm)
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm, scene_timings=scene_timings)
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 파이프라인 완료!")

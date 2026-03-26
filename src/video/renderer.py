@@ -118,7 +118,7 @@ def render_video(
             key=lambda x: x["end_ms"],
             default=None,
         )
-        content_end_s = last_content["end_ms"] / 1000.0 if last_content else scaled_duration
+        content_end_s = last_content["end_ms"] / 1000.0 if last_content else base_duration
         script_dict["metadata"]["duration"] = content_end_s
 
         # Outro comes right after content, lasts at least 4 seconds

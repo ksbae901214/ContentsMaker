@@ -224,7 +224,7 @@ print(json.dumps({"scenes":s["scenes"]}))`));
           return sc;
         })};
 
-        send("done",{result:{videoPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,sceneImages:generatedImages,scenes:scriptData.scenes,dryRun}});
+        send("done",{result:{videoPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,audioPath:ttsResult?.audio_path||"",sceneImages:generatedImages,scenes:scriptData.scenes,dryRun}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

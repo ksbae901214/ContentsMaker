@@ -33,6 +33,7 @@ interface Props {
   scriptPath: string;
   useBgm: boolean;
   emotionType?: string;
+  audioPath?: string;
   onTitleChange: (title: string) => void;
   onScenesChange: (scenes: SceneData[]) => void;
   onImagesChange: (images: SceneImage[]) => void;
@@ -46,6 +47,7 @@ export function SceneEditor({
   scriptPath,
   useBgm,
   emotionType = "relatable",
+  audioPath,
   onTitleChange,
   onScenesChange,
   onImagesChange,
@@ -413,6 +415,7 @@ export function SceneEditor({
           emotionType={emotionType}
           scenes={scenes}
           sceneImages={sceneImages}
+          audioPath={audioPath}
         />
       )}
 

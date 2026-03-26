@@ -2,6 +2,7 @@
 import React from "react";
 import {
   AbsoluteFill,
+  Audio,
   Sequence,
   useCurrentFrame,
   interpolate,
@@ -64,10 +65,11 @@ interface ScriptData {
 
 interface PreviewProps {
   scriptData: ScriptData;
+  audioUrl?: string;
 }
 
-/** Lightweight composition for @remotion/player (no staticFile/Audio). */
-export const PreviewComposition: React.FC<PreviewProps> = ({ scriptData }) => {
+/** Lightweight composition for @remotion/player — uses URL-based audio. */
+export const PreviewComposition: React.FC<PreviewProps> = ({ scriptData, audioUrl }) => {
   const emotion = (scriptData.metadata.emotion_type || "relatable") as EmotionType;
   const colors =
     scriptData.background.colors.length > 0
@@ -129,6 +131,9 @@ export const PreviewComposition: React.FC<PreviewProps> = ({ scriptData }) => {
           </div>
         </AbsoluteFill>
       </Sequence>
+
+      {/* TTS voice audio */}
+      {audioUrl && <Audio src={audioUrl} />}
     </AbsoluteFill>
   );
 };

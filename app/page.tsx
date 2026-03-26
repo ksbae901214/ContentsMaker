@@ -5,7 +5,7 @@ import { SceneEditor } from "./components/SceneEditor";
 type Status = "idle" | "processing" | "done" | "error";
 interface SceneImage { scene_id: number; image_path: string; prompt: string; }
 interface SceneData { id: number; timestamp: number; duration: number; type: string; text: string; voice_text: string; emphasis: string; }
-interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; cost: number; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; scriptPath?: string; sceneImages?: SceneImage[]; scenes?: SceneData[]; dryRun?: boolean; }
+interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; cost: number; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; scriptPath?: string; audioPath?: string; sceneImages?: SceneImage[]; scenes?: SceneData[]; dryRun?: boolean; }
 interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
@@ -101,6 +101,7 @@ export default function Home() {
               scriptPath={result.scriptPath}
               useBgm={bgm}
               emotionType={result.emotion}
+              audioPath={result.audioPath}
               onTitleChange={(title) => setResult({...result, title})}
               onScenesChange={(scenes) => setResult({...result, scenes})}
               onImagesChange={(images) => setResult({...result, sceneImages: images})}

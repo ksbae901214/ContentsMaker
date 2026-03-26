@@ -29,6 +29,7 @@ interface Props {
   emotionType: string;
   scenes: SceneData[];
   sceneImages: SceneImage[];
+  audioPath?: string;
   bgmFile?: string;
 }
 
@@ -37,8 +38,14 @@ export function VideoPreview({
   emotionType,
   scenes,
   sceneImages,
+  audioPath,
   bgmFile = "",
 }: Props) {
+  // Build audio URL via /api/download route
+  const audioUrl = audioPath
+    ? `/api/download?path=${encodeURIComponent(audioPath)}`
+    : undefined;
+
   const scriptData = useMemo(
     () => ({
       metadata: {
@@ -73,7 +80,7 @@ export function VideoPreview({
     <div className="bg-gray-900 rounded-lg overflow-hidden">
       <Player
         component={PreviewComposition}
-        inputProps={{ scriptData }}
+        inputProps={{ scriptData, audioUrl }}
         durationInFrames={durationFrames}
         fps={FPS}
         compositionWidth={1080}

@@ -241,8 +241,8 @@
 
 - [ ] T082 Update README.md with new features documentation
 - [ ] T083 [P] Update CLAUDE.md with new commands and project structure
-- [ ] T084 [P] Add error handling for all new API endpoints — consistent error response format
-- [ ] T085 Run full pipeline test with all features enabled — generate test video (no GPT images)
+- [x] T084 [P] Add error handling for all new API endpoints — consistent error response format
+- [x] T085 Run full pipeline test with all features enabled — generate test video (no GPT images)
 - [ ] T086 Performance check — verify preview updates within 3 seconds
 
 ---

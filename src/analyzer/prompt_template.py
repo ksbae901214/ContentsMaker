@@ -31,6 +31,15 @@ ANALYZE_PROMPT = """다음 블라인드 게시글을 유튜브 쇼츠 영상용 
    - 예: text가 "월급이 200도 안 돼요"면 highlight_words: ["200", "안 돼요"]
    - 숫자, 금액, 감정 표현, 핵심 명사를 우선 선택
 10. **마무리 씬 필수**: 마지막 씬은 반드시 영상을 깔끔하게 마무리하는 한 줄 멘트로 끝내세요. 원본 글이 마무리가 부족해도 AI가 자연스러운 결론을 만들어주세요.
+11. **자연스러운 발화 리듬 (필수)**: voice_text에 SSML break 태그와 구두점을 삽입하여 사람처럼 말하게 만드세요:
+   - 쉼표(,) 뒤에는 짧은 pause 삽입: <break time='300ms'/>
+   - 마침표(.) 뒤에는 중간 pause: <break time='500ms'/>
+   - 씬 전환 시 긴 pause (마지막에 필수): <break time='1000ms'/>
+   - 예: "나는 선넘네라는 말, <break time='300ms'/> 친한 친구한테도 안 쓰거든요. <break time='1000ms'/>"
+   - 예: "아무리 서운해도, <break time='300ms'/> 어른한테 선넘네는, <break time='300ms'/> 좀 아니지. <break time='1000ms'/>"
+   - 예: "월급이 200도 안 돼요. <break time='500ms'/> 이직하고 싶은데, <break time='300ms'/> 용기가 안 나네요. <break time='1000ms'/>"
+   - 누군가에게 이야기를 설명하듯 자연스러운 템포로 만드세요
+   - 랩처럼 빠르게 이어지지 않도록 적절한 쉼을 반드시 넣으세요
 
 ## 원본 데이터
 
@@ -59,7 +68,7 @@ ANALYZE_PROMPT = """다음 블라인드 게시글을 유튜브 쇼츠 영상용 
       "duration": 5,
       "type": "title",
       "text": "화면에 표시할 텍스트\\n줄바꿈 포함",
-      "voice_text": "TTS가 읽을 텍스트",
+      "voice_text": "TTS가 읽을 텍스트, <break time='300ms'/> 쉼표 뒤 짧은 pause. <break time='500ms'/> 마침표 뒤 중간 pause. <break time='1000ms'/>",
       "emphasis": "high",
       "highlight_words": ["핵심단어1", "핵심단어2"]
     }}

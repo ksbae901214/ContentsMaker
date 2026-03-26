@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 import struct
 from datetime import datetime
 from pathlib import Path
@@ -21,6 +22,19 @@ from src.config.settings import DATA_AUDIO_DIR
 logger = logging.getLogger(__name__)
 
 OUTRO_TEXT = "구독과 좋아요를 눌러주시면 더 많은 영상을 볼 수 있습니다."
+
+_SSML_BREAK_RE = re.compile(r"<break\s+time=['\"][^'\"]*['\"]\s*/?>")
+
+
+def _strip_ssml_tags(text: str) -> str:
+    """Remove SSML break tags from text for edge-tts compatibility.
+
+    edge-tts escapes XML tags, causing them to be read aloud.
+    Punctuation already provides natural pauses in edge-tts.
+    """
+    cleaned = _SSML_BREAK_RE.sub("", text)
+    cleaned = re.sub(r"  +", " ", cleaned)
+    return cleaned.strip()
 
 
 class TTSError(Exception):
@@ -87,7 +101,7 @@ def generate_voice_with_timing(
     temp_files: list[Path] = []
 
     for scene in script.scenes:
-        text = scene.voice_text.strip()
+        text = _strip_ssml_tags(scene.voice_text)
         if not text:
             continue
 

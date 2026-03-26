@@ -5,13 +5,11 @@ import {
   interpolate,
 } from "remotion";
 import { HIGHLIGHT_COLORS } from "../types";
-import type { EmotionType } from "../types";
+import type { EmotionType, SubtitleStyle } from "../types";
 
-/** Uniform font size for all scenes (consistent throughout video). */
-const UNIFORM_FONT_SIZE = 80;
-
-/** Vertical offset: 10% below center (10% of 1920px = 192px). */
-const VERTICAL_OFFSET = 192;
+/** Default values when no SubtitleStyle is provided. */
+const DEFAULT_FONT_SIZE = 80;
+const DEFAULT_POSITION_Y = 192; // 10% below center of 1920px
 
 interface SceneData {
   id: number;
@@ -23,6 +21,8 @@ interface SceneData {
   voiceText?: string;
   emphasis: string;
   highlightWords?: string[];
+  subtitleStyle?: SubtitleStyle;
+  subtitle_style?: SubtitleStyle;
 }
 
 interface SceneTextProps {
@@ -43,7 +43,6 @@ const HighlightedText: React.FC<{
     return <>{text}</>;
   }
 
-  // Build regex from highlight words (escape special chars)
   const escaped = highlights.map((w) =>
     w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
   );
@@ -76,6 +75,23 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
     extrapolateRight: "clamp",
   });
 
+  // Support both camelCase and snake_case from props
+  const style: SubtitleStyle | undefined =
+    scene.subtitleStyle || scene.subtitle_style;
+
+  const fontSize = style?.font_size ?? DEFAULT_FONT_SIZE;
+  const fontWeight = style?.font_weight ?? "700";
+  const fontFamily = style?.font_family ?? "Noto Sans KR, sans-serif";
+  const textColor = style?.color ?? "#FFFFFF";
+  const textShadow = style?.shadow ?? "3px 3px 8px rgba(0,0,0,0.7)";
+  const positionY = style?.position_y ?? 0.6;
+  const bgColor = style?.bg_color ?? null;
+  const bgOpacity = style?.bg_opacity ?? 0;
+
+  // Convert position_y (0-1) to pixel offset from center
+  // 0.5 = center, 0 = top, 1 = bottom
+  const verticalOffset = (positionY - 0.5) * 1920;
+
   const isComment = scene.type === "comment";
   const highlightWords = scene.highlightWords || [];
   const highlightColor =
@@ -93,14 +109,29 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
       <div
         style={{
           opacity,
-          transform: `translateY(${animateY + VERTICAL_OFFSET}px)`,
+          transform: `translateY(${animateY + verticalOffset}px)`,
           textAlign: "center",
           maxWidth: "90%",
+          position: "relative",
         }}
       >
+        {/* Background overlay for subtitle */}
+        {bgColor && bgOpacity > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              inset: -16,
+              backgroundColor: bgColor,
+              opacity: bgOpacity,
+              borderRadius: 12,
+            }}
+          />
+        )}
+
         {isComment && (
           <div
             style={{
+              position: "relative",
               fontSize: 28,
               color: "rgba(255,255,255,0.7)",
               marginBottom: 16,
@@ -112,12 +143,13 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
         )}
         <div
           style={{
-            fontSize: UNIFORM_FONT_SIZE,
-            fontWeight: 700,
-            color: "#FFFFFF",
-            fontFamily: "Noto Sans KR, sans-serif",
+            position: "relative",
+            fontSize,
+            fontWeight: fontWeight as any,
+            color: textColor,
+            fontFamily,
             lineHeight: 1.5,
-            textShadow: "3px 3px 8px rgba(0,0,0,0.7)",
+            textShadow,
             whiteSpace: "pre-wrap",
             wordBreak: "keep-all",
           }}

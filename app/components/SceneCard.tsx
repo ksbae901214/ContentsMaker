@@ -21,15 +21,31 @@ interface Props {
   scene: SceneData;
   image: SceneImage | undefined;
   selected: boolean;
+  isLast: boolean;
   onSelect: (sceneId: number, selected: boolean) => void;
   onImageClick: (sceneId: number) => void;
   onTextSave: (sceneId: number, text: string, voiceText: string) => void;
+  onSplit: (sceneId: number) => void;
+  onMerge: (sceneId: number) => void;
+  onStyleClick?: (sceneId: number) => void;
 }
 
-export function SceneCard({ scene, image, selected, onSelect, onImageClick, onTextSave }: Props) {
+export function SceneCard({
+  scene,
+  image,
+  selected,
+  isLast,
+  onSelect,
+  onImageClick,
+  onTextSave,
+  onSplit,
+  onMerge,
+  onStyleClick,
+}: Props) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(scene.text);
   const [editVoice, setEditVoice] = useState(scene.voice_text);
+  const [showSplitPicker, setShowSplitPicker] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -48,6 +64,18 @@ export function SceneCard({ scene, image, selected, onSelect, onImageClick, onTe
     setEditing(false);
   };
 
+  const handleSplitClick = () => {
+    const text = scene.text.replace(/\\n/g, "\n");
+    if (text.length < 4) return;
+    // Default split at midpoint
+    const mid = Math.floor(text.length / 2);
+    // Find nearest newline or space
+    const nlIdx = text.indexOf("\n", Math.floor(mid * 0.7));
+    const splitPos =
+      nlIdx > 0 && nlIdx < mid * 1.3 ? nlIdx : mid;
+    onSplit(scene.id);
+  };
+
   const typeLabel =
     scene.type === "title"
       ? "제목"
@@ -62,7 +90,9 @@ export function SceneCard({ scene, image, selected, onSelect, onImageClick, onTe
         : "bg-blue-600";
 
   return (
-    <div className={`bg-gray-800 rounded-lg overflow-hidden ${selected ? "ring-2 ring-blue-500" : ""}`}>
+    <div
+      className={`bg-gray-800 rounded-lg overflow-hidden ${selected ? "ring-2 ring-blue-500" : ""}`}
+    >
       <div className="flex gap-3 p-3">
         {/* Checkbox */}
         <div className="flex items-center">
@@ -99,8 +129,38 @@ export function SceneCard({ scene, image, selected, onSelect, onImageClick, onTe
               {typeLabel}
             </span>
             <span className="text-xs text-gray-500">
-              씬 {scene.id} | {scene.timestamp.toFixed(1)}s
+              씬 {scene.id} | {scene.timestamp.toFixed(1)}s |{" "}
+              {scene.duration.toFixed(1)}s
             </span>
+
+            {/* Split/Merge buttons */}
+            <div className="ml-auto flex gap-1">
+              <button
+                onClick={handleSplitClick}
+                className="px-2 py-0.5 text-[10px] bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition"
+                title="씬 분할"
+              >
+                ✂ 분할
+              </button>
+              {!isLast && (
+                <button
+                  onClick={() => onMerge(scene.id)}
+                  className="px-2 py-0.5 text-[10px] bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition"
+                  title="다음 씬과 병합"
+                >
+                  ⊕ 병합
+                </button>
+              )}
+              {onStyleClick && (
+                <button
+                  onClick={() => onStyleClick(scene.id)}
+                  className="px-2 py-0.5 text-[10px] bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition"
+                  title="자막 스타일"
+                >
+                  Aa 스타일
+                </button>
+              )}
+            </div>
           </div>
 
           {editing ? (

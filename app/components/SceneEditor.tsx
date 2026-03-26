@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { SceneCard } from "./SceneCard";
 import { ImageReplaceModal } from "./ImageReplaceModal";
+import { Timeline } from "./Timeline";
+import { SubtitleStyleEditor, type SubtitleStyle } from "./SubtitleStyleEditor";
 
 interface SceneImage {
   scene_id: number;
@@ -18,6 +20,8 @@ interface SceneData {
   voice_text: string;
   emphasis: string;
 }
+
+type ViewMode = "card" | "timeline";
 
 interface Props {
   title: string;
@@ -51,6 +55,8 @@ export function SceneEditor({
   const [regenProgress, setRegenProgress] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(title);
+  const [viewMode, setViewMode] = useState<ViewMode>("card");
+  const [styleSceneId, setStyleSceneId] = useState<number | null>(null);
 
   const imageMap = new Map(sceneImages.map((img) => [img.scene_id, img]));
 
@@ -87,7 +93,11 @@ export function SceneEditor({
     const updated = sceneImages.filter((img) => img.scene_id !== sceneId);
     onImagesChange([
       ...updated,
-      { scene_id: data.sceneId ?? data.scene_id, image_path: data.imagePath ?? data.image_path, prompt: data.prompt },
+      {
+        scene_id: data.sceneId ?? data.scene_id,
+        image_path: data.imagePath ?? data.image_path,
+        prompt: data.prompt,
+      },
     ]);
     setHasChanges(true);
   };
@@ -105,7 +115,11 @@ export function SceneEditor({
     const updated = sceneImages.filter((img) => img.scene_id !== sceneId);
     onImagesChange([
       ...updated,
-      { scene_id: data.sceneId ?? data.scene_id, image_path: data.imagePath ?? data.image_path, prompt: data.prompt ?? "(uploaded)" },
+      {
+        scene_id: data.sceneId ?? data.scene_id,
+        image_path: data.imagePath ?? data.image_path,
+        prompt: data.prompt ?? "(uploaded)",
+      },
     ]);
     setHasChanges(true);
   };
@@ -121,7 +135,9 @@ export function SceneEditor({
       const prompt = existing?.prompt || "";
       if (!prompt || prompt === "(uploaded)") {
         done++;
-        setRegenProgress(`${done}/${ids.length} (씬 ${sceneId} 프롬프트 없음 — 스킵)`);
+        setRegenProgress(
+          `${done}/${ids.length} (씬 ${sceneId} 프롬프트 없음 — 스킵)`
+        );
         continue;
       }
       setRegenProgress(`${done}/${ids.length} 씬 ${sceneId} 생성 중...`);
@@ -140,7 +156,7 @@ export function SceneEditor({
   const handleTextSave = async (
     sceneId: number,
     text: string,
-    voiceText: string,
+    voiceText: string
   ) => {
     const res = await fetch("/api/scene/script", {
       method: "POST",
@@ -155,6 +171,67 @@ export function SceneEditor({
     });
     onScenesChange(updatedScenes);
     setHasChanges(true);
+  };
+
+  const handleSplit = async (sceneId: number) => {
+    const scene = scenes.find((s) => s.id === sceneId);
+    if (!scene) return;
+    const text = scene.text.replace(/\\n/g, "\n");
+    const mid = Math.floor(text.length / 2);
+
+    try {
+      const res = await fetch("/api/scene/split", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scene_id: sceneId,
+          split_position: mid,
+          script_path: scriptPath,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Split failed:", err.error);
+        return;
+      }
+      const data = await res.json();
+      if (data.scenes) {
+        onScenesChange(data.scenes);
+        setHasChanges(true);
+      }
+    } catch (e) {
+      console.error("Split error:", e);
+    }
+  };
+
+  const handleMerge = async (sceneId: number) => {
+    const idx = scenes.findIndex((s) => s.id === sceneId);
+    if (idx === -1 || idx >= scenes.length - 1) return;
+    const nextScene = scenes[idx + 1];
+
+    try {
+      const res = await fetch("/api/scene/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scene_id_1: sceneId,
+          scene_id_2: nextScene.id,
+          script_path: scriptPath,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Merge failed:", err.error);
+        return;
+      }
+      const data = await res.json();
+      if (data.scenes) {
+        onScenesChange(data.scenes);
+        setHasChanges(true);
+      }
+    } catch (e) {
+      console.error("Merge error:", e);
+    }
   };
 
   const handleTitleSave = async () => {
@@ -224,7 +301,27 @@ export function SceneEditor({
     }
   };
 
-  const modalImage = modalSceneId !== null ? imageMap.get(modalSceneId) : null;
+  const handleStyleClick = (sceneId: number) => {
+    setStyleSceneId(sceneId);
+  };
+
+  const handleStyleChange = (newStyle: SubtitleStyle) => {
+    setHasChanges(true);
+  };
+
+  const modalImage =
+    modalSceneId !== null ? imageMap.get(modalSceneId) : null;
+
+  const DEFAULT_SUBTITLE_STYLE: SubtitleStyle = {
+    font_family: "Noto Sans KR",
+    font_size: 55,
+    font_weight: "bold",
+    color: "#FFFFFF",
+    shadow: "3px 3px 8px rgba(0,0,0,0.7)",
+    position_y: 0.6,
+    bg_color: null,
+    bg_opacity: 0.0,
+  };
 
   return (
     <div className="space-y-3">
@@ -238,14 +335,36 @@ export function SceneEditor({
               onChange={(e) => setTitleDraft(e.target.value)}
               className="flex-1 px-2 py-1 bg-gray-900 border border-gray-600 rounded text-sm focus:border-blue-500 focus:outline-none"
               autoFocus
-              onKeyDown={(e) => { if (e.key === "Enter") handleTitleSave(); if (e.key === "Escape") { setEditingTitle(false); setTitleDraft(title); } }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleTitleSave();
+                if (e.key === "Escape") {
+                  setEditingTitle(false);
+                  setTitleDraft(title);
+                }
+              }}
             />
-            <button onClick={handleTitleSave} className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-xs font-medium">저장</button>
-            <button onClick={() => { setEditingTitle(false); setTitleDraft(title); }} className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded text-xs font-medium">취소</button>
+            <button
+              onClick={handleTitleSave}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-xs font-medium"
+            >
+              저장
+            </button>
+            <button
+              onClick={() => {
+                setEditingTitle(false);
+                setTitleDraft(title);
+              }}
+              className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded text-xs font-medium"
+            >
+              취소
+            </button>
           </div>
         ) : (
           <div
-            onClick={() => { setEditingTitle(true); setTitleDraft(title); }}
+            onClick={() => {
+              setEditingTitle(true);
+              setTitleDraft(title);
+            }}
             className="text-sm font-medium cursor-pointer hover:bg-gray-700/50 rounded px-1 -mx-1 py-0.5 transition"
             title="클릭하여 제목 수정"
           >
@@ -254,38 +373,78 @@ export function SceneEditor({
         )}
       </div>
 
-      {/* Scene list header */}
+      {/* Scene list header with view toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-gray-400">씬 편집</h3>
-          <button
-            onClick={handleSelectAll}
-            className="text-xs text-blue-400 hover:text-blue-300"
-          >
-            {selectedScenes.size === scenes.length ? "전체 해제" : "전체 선택"}
-          </button>
+          {viewMode === "card" && (
+            <button
+              onClick={handleSelectAll}
+              className="text-xs text-blue-400 hover:text-blue-300"
+            >
+              {selectedScenes.size === scenes.length
+                ? "전체 해제"
+                : "전체 선택"}
+            </button>
+          )}
         </div>
-        <span className="text-xs text-gray-500">
-          더블클릭: 대본 편집 | 이미지 클릭: 교체
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">
+            {viewMode === "card"
+              ? "더블클릭: 대본 편집 | 이미지 클릭: 교체"
+              : "드래그: 순서 변경 | 우측 핸들: 길이 조절"}
+          </span>
+          <div className="flex bg-gray-800 rounded-md overflow-hidden">
+            <button
+              onClick={() => setViewMode("card")}
+              className={`px-2 py-1 text-xs transition ${viewMode === "card" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              카드
+            </button>
+            <button
+              onClick={() => setViewMode("timeline")}
+              className={`px-2 py-1 text-xs transition ${viewMode === "timeline" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              타임라인
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-2">
-        {scenes.map((scene) => (
-          <SceneCard
-            key={scene.id}
-            scene={scene}
-            image={imageMap.get(scene.id)}
-            selected={selectedScenes.has(scene.id)}
-            onSelect={handleSelect}
-            onImageClick={handleImageClick}
-            onTextSave={handleTextSave}
-          />
-        ))}
-      </div>
+      {/* View: Card or Timeline */}
+      {viewMode === "card" ? (
+        <div className="space-y-2">
+          {scenes.map((scene, idx) => (
+            <SceneCard
+              key={scene.id}
+              scene={scene}
+              image={imageMap.get(scene.id)}
+              selected={selectedScenes.has(scene.id)}
+              isLast={idx === scenes.length - 1}
+              onSelect={handleSelect}
+              onImageClick={handleImageClick}
+              onTextSave={handleTextSave}
+              onSplit={handleSplit}
+              onMerge={handleMerge}
+              onStyleClick={handleStyleClick}
+            />
+          ))}
+        </div>
+      ) : (
+        <Timeline
+          scenes={scenes}
+          scriptPath={scriptPath}
+          onScenesChange={(newScenes) => {
+            onScenesChange(newScenes);
+            setHasChanges(true);
+          }}
+          onSplit={handleSplit}
+          onMerge={handleMerge}
+        />
+      )}
 
       {/* Batch regenerate button */}
-      {selectedScenes.size > 0 && (
+      {selectedScenes.size > 0 && viewMode === "card" && (
         <button
           onClick={handleBatchRegenerate}
           disabled={regenerating}
@@ -320,6 +479,16 @@ export function SceneEditor({
           onClose={() => setModalSceneId(null)}
           onRegenerate={handleRegenerate}
           onUpload={handleUpload}
+        />
+      )}
+
+      {styleSceneId !== null && (
+        <SubtitleStyleEditor
+          style={DEFAULT_SUBTITLE_STYLE}
+          sceneId={styleSceneId}
+          scriptPath={scriptPath}
+          onStyleChange={handleStyleChange}
+          onClose={() => setStyleSceneId(null)}
         />
       )}
     </div>

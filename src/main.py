@@ -55,7 +55,7 @@ def cmd_image(args: argparse.Namespace) -> int:
 
         # Step 2: Analyze
         print("📝 Step 2/4: AI 분석 중...")
-        script = analyze(post)
+        script, _ = analyze(post)
         print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
 
         # Step 3: Generate illustrations
@@ -140,7 +140,7 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         post = BlindPost.from_dict(data)
 
         logger.info("분석 시작: %s", post.title)
-        script = analyze(post)
+        script, _ = analyze(post)
 
         print(f"\n✅ 스크립트 생성 완료")
         print(f"   제목: {script.metadata.title}")
@@ -291,7 +291,7 @@ def cmd_url(args: argparse.Namespace) -> int:
 
         # Step 2: Analyze
         print("📝 Step 2/5: AI 분석 중...")
-        script = analyze(post)
+        script, _ = analyze(post)
         print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개")
 
         # Step 3: Illustrations
@@ -342,7 +342,7 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
 
         # Step 1: Analyze
         print("📝 Step 1/4: AI 분석 중...")
-        script = analyze(post)
+        script, _ = analyze(post)
         print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
 
         # Step 2: Illustrations

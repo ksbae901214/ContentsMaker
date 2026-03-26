@@ -59,7 +59,7 @@ def analyze(post: BlindPost, output_dir: Path | None = None) -> ShortsScript:
     script.save(file_path)
     logger.info("스크립트 저장: %s", file_path)
 
-    return script
+    return script, file_path
 
 
 def _call_claude(prompt: str) -> str:

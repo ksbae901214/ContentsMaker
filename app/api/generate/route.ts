@@ -92,9 +92,8 @@ from pathlib import Path
 from src.scraper.models import BlindPost
 from src.analyzer.claude_analyzer import analyze
 post=BlindPost.from_dict(json.loads(Path('''${rawPath}''').read_text()))
-s=analyze(post)
-sp=sorted(Path('${ROOT}/data/scripts').glob('*.json'))
-print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp[-1])}))`));
+s,sp=analyze(post)
+print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp)}))`));
         send("progress",{message:`✅ ${a.emotion} | ${a.scenes}씬 | ${a.duration}초`});
 
         // Apply custom title if provided

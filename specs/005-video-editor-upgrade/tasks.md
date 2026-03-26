@@ -178,7 +178,7 @@
 
 **Independent Test**: 특정 씬에 효과음 추가 후 렌더링하여 재생 확인
 
-- [ ] T063 [US8] Download and place 13 royalty-free sound effects in data/sfx/ (surprise×3, laugh×3, touching×2, emphasis×3, ui×2)
+- [x] T063 [US8] Download and place 13 royalty-free sound effects in data/sfx/ (surprise×3, laugh×3, touching×2, emphasis×3, ui×2)
 - [x] T064 [US8] Create sfx manifest file data/sfx/manifest.json — name, category, filename, duration_ms for each effect
 - [x] T065 [US8] Create SfxPicker component in app/components/SfxPicker.tsx — category filter, preview playback, volume slider
 - [x] T066 [US8] Add <Audio> component rendering to ShortsComposition.tsx — play sfx at scene.sfx[].offset_ms timing

@@ -117,7 +117,7 @@ def _call_claude_with_images(image_paths: list[Path]) -> str:
 
     try:
         result = subprocess.run(
-            ["claude", "-p", prompt, "--output-format", "json", "--allowedTools", "Read"],
+            ["claude", "-p", prompt, "--allowedTools", "Read"],
             capture_output=True,
             text=True,
             timeout=CLAUDE_TIMEOUT_SECONDS,

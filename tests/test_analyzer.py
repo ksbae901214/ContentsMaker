@@ -79,8 +79,8 @@ class TestApplyVoiceConfig:
             audio=AudioConfig(tts_script="text"),
         )
         result = _apply_voice_config(script)
-        assert result.audio.voice == "ko-KR-HyunsuNeural"
-        assert result.audio.rate == "+15%"
+        assert result.audio.voice == "ko-KR-SunHiNeural"
+        assert result.audio.rate == "+20%"
         assert result.background.colors == ("#FF6B6B", "#FFA500", "#FFD93D")
 
     def test_touching(self):
@@ -91,7 +91,8 @@ class TestApplyVoiceConfig:
         )
         result = _apply_voice_config(script)
         assert result.audio.voice == "ko-KR-SunHiNeural"
-        assert result.audio.rate == "-10%"
+        assert result.audio.rate == "+20%"
+        assert result.background.colors == ("#6A5ACD", "#9370DB", "#DDA0DD")
 
     def test_unknown_emotion_defaults_to_relatable(self):
         script = ShortsScript(
@@ -101,3 +102,4 @@ class TestApplyVoiceConfig:
         )
         result = _apply_voice_config(script)
         assert result.audio.voice == "ko-KR-SunHiNeural"
+        assert result.audio.rate == "+20%"

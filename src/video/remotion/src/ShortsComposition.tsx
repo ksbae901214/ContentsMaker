@@ -10,7 +10,9 @@ import {
 } from "remotion";
 import { Background } from "./components/Background";
 import { SceneText } from "./components/SceneText";
-import type { ShortsScriptData } from "./types";
+import { Transition } from "./components/Transition";
+import { SceneWithVideo } from "./components/SceneWithVideo";
+import type { ShortsScriptData, TransitionType } from "./types";
 import { GRADIENT_THEMES } from "./types";
 
 const FPS = 30;
@@ -21,16 +23,25 @@ interface SceneImage {
   imageFile: string; // filename in public/
 }
 
+interface SceneVideo {
+  sceneId: number;
+  videoFile: string;
+}
+
 interface ShortsCompositionProps {
   scriptData: ShortsScriptData;
   audioFile: string;
   sceneImages?: SceneImage[];
+  sceneVideos?: SceneVideo[];
+  bgmFile?: string;
 }
 
 export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   scriptData,
   audioFile,
   sceneImages = [],
+  sceneVideos = [],
+  bgmFile = "",
 }) => {
   const emotion =
     (scriptData.metadata as any).emotionType ||
@@ -38,11 +49,16 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   const colors =
     scriptData.background.colors.length > 0
       ? scriptData.background.colors
-      : GRADIENT_THEMES[emotion] || GRADIENT_THEMES.relatable;
+      : GRADIENT_THEMES[emotion as keyof typeof GRADIENT_THEMES] || GRADIENT_THEMES.relatable;
 
   const imageMap = new Map<number, string>();
   for (const si of sceneImages) {
     imageMap.set(si.sceneId, si.imageFile);
+  }
+
+  const videoMap = new Map<number, string>();
+  for (const sv of sceneVideos) {
+    videoMap.set(sv.sceneId, sv.videoFile);
   }
 
   const title = scriptData.metadata.title;
@@ -62,6 +78,18 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         const startFrame = Math.round(scene.timestamp * FPS);
         const durationFrames = Math.round(scene.duration * FPS);
         const imageFile = imageMap.get(scene.id);
+        const videoFile = videoMap.get(scene.id);
+        const transition = scene.transition;
+        const transitionType: TransitionType = (transition?.type as TransitionType) ?? "fade";
+        const transitionDur = Math.round((transition?.duration ?? 0.5) * FPS);
+
+        const content = videoFile ? (
+          <SceneWithVideo videoFile={videoFile} scene={scene} emotion={emotion} />
+        ) : imageFile ? (
+          <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} />
+        ) : (
+          <SceneText scene={scene} emotion={emotion} />
+        );
 
         return (
           <Sequence
@@ -69,10 +97,12 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
             from={startFrame}
             durationInFrames={durationFrames}
           >
-            {imageFile ? (
-              <SceneWithImage imageFile={imageFile} scene={scene} />
+            {transition ? (
+              <Transition type={transitionType} durationFrames={transitionDur}>
+                {content}
+              </Transition>
             ) : (
-              <SceneText scene={scene} />
+              content
             )}
           </Sequence>
         );
@@ -89,6 +119,28 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
       </Sequence>
 
       {audioFile && <Audio src={staticFile(audioFile)} />}
+      {bgmFile && <Audio src={staticFile(bgmFile)} volume={0.15} loop />}
+
+      {/* Per-scene sound effects */}
+      {scriptData.scenes.map((scene) => {
+        const sfxList = scene.sfx || [];
+        const sceneStart = Math.round(scene.timestamp * FPS);
+        return sfxList.map((sfx, idx) => {
+          const offsetFrames = Math.round((sfx.offset_ms || 0) / 1000 * FPS);
+          return (
+            <Sequence
+              key={`sfx-${scene.id}-${idx}`}
+              from={sceneStart + offsetFrames}
+              durationInFrames={Math.round(scene.duration * FPS)}
+            >
+              <Audio
+                src={staticFile(sfx.name + ".mp3")}
+                volume={sfx.volume ?? 0.2}
+              />
+            </Sequence>
+          );
+        });
+      })}
     </AbsoluteFill>
   );
 };
@@ -128,7 +180,7 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
             lineHeight: 1.3,
           }}
         >
-          [블라인드]{"\n"}{title}
+          {title}
         </div>
       </div>
     </AbsoluteFill>
@@ -192,7 +244,8 @@ const OutroScene: React.FC = () => {
 const SceneWithImage: React.FC<{
   imageFile: string;
   scene: any;
-}> = ({ imageFile, scene }) => {
+  emotion: string;
+}> = ({ imageFile, scene, emotion }) => {
   const frame = useCurrentFrame();
 
   const opacity = interpolate(frame, [0, 15], [0, 1], {
@@ -227,7 +280,7 @@ const SceneWithImage: React.FC<{
       </AbsoluteFill>
 
       {/* Text on top of image */}
-      <SceneText scene={scene} />
+      <SceneText scene={scene} emotion={emotion} />
     </AbsoluteFill>
   );
 };

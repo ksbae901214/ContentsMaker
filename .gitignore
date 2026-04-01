@@ -12,6 +12,12 @@ build/
 .env
 .env.*
 
+# OAuth tokens (YouTube, TikTok)
+data/.youtube_token.json
+data/.youtube_credentials.json
+data/.tiktok_token.json
+data/.tiktok_credentials.json
+
 # Data (generated outputs)
 data/raw/*.json
 data/scripts/*.json
@@ -43,6 +49,7 @@ next-env.d.ts
 data/temp/
 data/references/
 data/images/
+data/bgm/
 
 # Legacy web directory
 web/

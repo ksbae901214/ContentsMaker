@@ -1,6 +1,37 @@
 export type EmotionType = "funny" | "touching" | "angry" | "relatable";
 export type SceneType = "title" | "body" | "comment";
 export type Emphasis = "high" | "medium" | "low";
+export type VisualType = "image" | "video" | "none";
+export type TransitionType =
+  | "fade"
+  | "slide-left"
+  | "slide-up"
+  | "zoom"
+  | "dissolve"
+  | "wipe";
+
+export interface SubtitleStyle {
+  font_family: string;
+  font_size: number;
+  font_weight: string;
+  color: string;
+  shadow: string;
+  position_y: number;
+  bg_color: string | null;
+  bg_opacity: number;
+}
+
+export interface TransitionConfig {
+  type: TransitionType;
+  duration: number;
+}
+
+export interface SfxConfig {
+  name: string;
+  category: string;
+  offset_ms: number;
+  volume: number;
+}
 
 export interface SceneData {
   id: number;
@@ -10,7 +41,20 @@ export interface SceneData {
   text: string;
   voice_text: string;
   emphasis: Emphasis;
+  highlightWords?: string[];
+  visual_type?: VisualType;
+  motion_prompt?: string;
+  subtitle_style?: SubtitleStyle;
+  transition?: TransitionConfig;
+  sfx?: SfxConfig[];
 }
+
+export const HIGHLIGHT_COLORS: Record<EmotionType, string> = {
+  funny: "#FFD700",
+  touching: "#FF69B4",
+  angry: "#FF4444",
+  relatable: "#87CEEB",
+};
 
 export interface ShortsScriptData {
   metadata: {

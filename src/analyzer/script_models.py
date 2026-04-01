@@ -12,6 +12,89 @@ from typing import Literal
 EmotionType = Literal["funny", "touching", "angry", "relatable"]
 SceneType = Literal["title", "body", "comment"]
 Emphasis = Literal["high", "medium", "low"]
+VisualType = Literal["image", "video", "none"]
+TransitionType = Literal["fade", "slide-left", "slide-up", "zoom", "dissolve", "wipe"]
+
+
+@dataclass(frozen=True)
+class SubtitleStyle:
+    """Customizable subtitle appearance for a scene."""
+    font_family: str = "Noto Sans KR"
+    font_size: int = 55
+    font_weight: str = "bold"
+    color: str = "#FFFFFF"
+    shadow: str = "3px 3px 8px rgba(0,0,0,0.7)"
+    position_y: float = 0.6
+    bg_color: str | None = None
+    bg_opacity: float = 0.0
+
+    def to_dict(self) -> dict:
+        return {
+            "font_family": self.font_family,
+            "font_size": self.font_size,
+            "font_weight": self.font_weight,
+            "color": self.color,
+            "shadow": self.shadow,
+            "position_y": self.position_y,
+            "bg_color": self.bg_color,
+            "bg_opacity": self.bg_opacity,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> SubtitleStyle:
+        return cls(
+            font_family=data.get("font_family", "Noto Sans KR"),
+            font_size=int(data.get("font_size", 55)),
+            font_weight=data.get("font_weight", "bold"),
+            color=data.get("color", "#FFFFFF"),
+            shadow=data.get("shadow", "3px 3px 8px rgba(0,0,0,0.7)"),
+            position_y=float(data.get("position_y", 0.6)),
+            bg_color=data.get("bg_color"),
+            bg_opacity=float(data.get("bg_opacity", 0.0)),
+        )
+
+
+@dataclass(frozen=True)
+class TransitionConfig:
+    """Scene transition effect configuration."""
+    type: str = "fade"  # TransitionType
+    duration: float = 0.5
+
+    def to_dict(self) -> dict:
+        return {"type": self.type, "duration": self.duration}
+
+    @classmethod
+    def from_dict(cls, data: dict) -> TransitionConfig:
+        return cls(
+            type=data.get("type", "fade"),
+            duration=max(0.3, min(1.0, float(data.get("duration", 0.5)))),
+        )
+
+
+@dataclass(frozen=True)
+class SfxConfig:
+    """Sound effect configuration for a scene."""
+    name: str
+    category: str  # surprise, laugh, touching, emphasis
+    offset_ms: int = 0
+    volume: float = 0.2
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "category": self.category,
+            "offset_ms": self.offset_ms,
+            "volume": self.volume,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> SfxConfig:
+        return cls(
+            name=data["name"],
+            category=data.get("category", "emphasis"),
+            offset_ms=int(data.get("offset_ms", 0)),
+            volume=max(0.0, min(1.0, float(data.get("volume", 0.2)))),
+        )
 
 
 @dataclass(frozen=True)
@@ -24,12 +107,50 @@ class Scene:
     text: str
     voice_text: str
     emphasis: str = "medium"  # Emphasis
+    highlight_words: tuple[str, ...] = ()
+    visual_type: str = "image"  # VisualType
+    motion_prompt: str | None = None
+    subtitle_style: SubtitleStyle | None = None
+    transition: TransitionConfig | None = None
+    sfx: tuple[SfxConfig, ...] = ()
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        d = {
+            "id": self.id,
+            "timestamp": self.timestamp,
+            "duration": self.duration,
+            "type": self.type,
+            "text": self.text,
+            "voice_text": self.voice_text,
+            "emphasis": self.emphasis,
+            "highlight_words": list(self.highlight_words),
+        }
+        if self.visual_type != "image":
+            d["visual_type"] = self.visual_type
+        if self.motion_prompt is not None:
+            d["motion_prompt"] = self.motion_prompt
+        if self.subtitle_style is not None:
+            d["subtitle_style"] = self.subtitle_style.to_dict()
+        if self.transition is not None:
+            d["transition"] = self.transition.to_dict()
+        if self.sfx:
+            d["sfx"] = [s.to_dict() for s in self.sfx]
+        return d
 
     @classmethod
     def from_dict(cls, data: dict) -> Scene:
+        raw_hw = data.get("highlight_words", data.get("highlightWords", []))
+        sub_style = (
+            SubtitleStyle.from_dict(data["subtitle_style"])
+            if data.get("subtitle_style")
+            else None
+        )
+        transition = (
+            TransitionConfig.from_dict(data["transition"])
+            if data.get("transition")
+            else None
+        )
+        raw_sfx = data.get("sfx", [])
         return cls(
             id=data["id"],
             timestamp=float(data["timestamp"]),
@@ -38,6 +159,12 @@ class Scene:
             text=data["text"],
             voice_text=data.get("voice_text", data.get("voiceText", data["text"])),
             emphasis=data.get("emphasis", "medium"),
+            highlight_words=tuple(raw_hw) if raw_hw else (),
+            visual_type=data.get("visual_type", "image"),
+            motion_prompt=data.get("motion_prompt"),
+            subtitle_style=sub_style,
+            transition=transition,
+            sfx=tuple(SfxConfig.from_dict(s) for s in raw_sfx),
         )
 
 

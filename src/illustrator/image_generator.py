@@ -152,6 +152,76 @@ def generate_scene_images(
     return results
 
 
+def regenerate_single_image(
+    scene_id: int,
+    prompt: str,
+    output_dir: Path | None = None,
+    use_references: bool = True,
+) -> dict:
+    """Regenerate a single scene image with the given prompt.
+
+    Returns {"scene_id": int, "image_path": str, "prompt": str}.
+    """
+    try:
+        from openai import OpenAI
+    except ImportError:
+        raise ImageGenerateError(
+            "openai 패키지가 필요합니다: pip install openai"
+        )
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise ImageGenerateError("OPENAI_API_KEY 환경변수가 설정되지 않았습니다.")
+
+    client = OpenAI(api_key=api_key)
+    target_dir = output_dir or DATA_IMAGES_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    has_refs = use_references and refs_available()
+    all_ref_paths = get_all_references() if has_refs else []
+
+    logger.info("단일 이미지 재생성 (씬 %d): %s...", scene_id, prompt[:60])
+
+    try:
+        if has_refs and all_ref_paths:
+            response = _generate_with_all_references(client, prompt, all_ref_paths)
+        else:
+            response = client.images.generate(
+                model=IMAGE_MODEL,
+                prompt=prompt,
+                n=1,
+                size=IMAGE_SIZE,
+                quality=IMAGE_QUALITY,
+            )
+
+        image_data = response.data[0]
+        filename = f"{timestamp}_scene_{scene_id:02d}.png"
+        image_path = target_dir / filename
+
+        if hasattr(image_data, "b64_json") and image_data.b64_json:
+            img_bytes = base64.b64decode(image_data.b64_json)
+            image_path.write_bytes(img_bytes)
+        elif hasattr(image_data, "url") and image_data.url:
+            import urllib.request
+            urllib.request.urlretrieve(image_data.url, str(image_path))
+        else:
+            raise ImageGenerateError(f"씬 {scene_id}: 이미지 데이터 없음")
+
+        logger.info("  저장: %s (%.1f KB)", image_path.name, image_path.stat().st_size / 1024)
+        return {
+            "scene_id": scene_id,
+            "image_path": str(image_path),
+            "prompt": prompt,
+        }
+
+    except ImageGenerateError:
+        raise
+    except Exception as e:
+        raise ImageGenerateError(f"씬 {scene_id} 이미지 재생성 실패: {e}")
+
+
 def _generate_with_all_references(client, prompt: str, ref_paths: list):
     """Generate image using images.edit() with ALL reference images.
 

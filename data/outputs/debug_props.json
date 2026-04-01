@@ -1,0 +1,106 @@
+{
+  "scriptData": {
+    "metadata": {
+      "title": "[블라인드 인기글] 상대방 부모님한테 '선넘네' 라는 표현은 좀 아니지 않아?",
+      "emotionType": "relatable",
+      "duration": 40.0,
+      "sourceUrl": ""
+    },
+    "scenes": [
+      {
+        "id": 1,
+        "timestamp": 0.0,
+        "duration": 1.368,
+        "type": "title",
+        "text": "부모님한테\n'선넘네'라고요?",
+        "voiceText": "부모님한테 선넘네라고요?",
+        "emphasis": "high",
+        "highlightWords": [
+          "선넘네"
+        ]
+      },
+      {
+        "id": 2,
+        "timestamp": 1.368,
+        "duration": 2.491,
+        "type": "body",
+        "text": "나는 선넘네라는 말\n친한 친구한테도\n안 쓰는 말인데",
+        "voiceText": "나는 선넘네라는 말, 친한 친구한테도 안 쓰는 말인데요.",
+        "emphasis": "high",
+        "highlightWords": [
+          "선넘네",
+          "친구"
+        ]
+      },
+      {
+        "id": 3,
+        "timestamp": 3.859,
+        "duration": 2.275,
+        "type": "body",
+        "text": "그런데 상대방이\n우리 부모님한테\n선넘는다고 한 거예요",
+        "voiceText": "그런데 상대방이 우리 부모님한테 선넘는다고 한 거예요.",
+        "emphasis": "high",
+        "highlightWords": [
+          "부모님",
+          "선넘는다"
+        ]
+      },
+      {
+        "id": 4,
+        "timestamp": 6.134,
+        "duration": 2.851,
+        "type": "body",
+        "text": "너무 당황스러운 거예요\n아니 이런 말을\n부모님한테?",
+        "voiceText": "너무 당황스러운 거예요. 아니 이런 말을 부모님한테 한다고?",
+        "emphasis": "medium",
+        "highlightWords": [
+          "당황스러운",
+          "부모님"
+        ]
+      },
+      {
+        "id": 5,
+        "timestamp": 8.985,
+        "duration": 3.081,
+        "type": "body",
+        "text": "내가 예민한 건가요?\n다들 시부모님이나\n장인어른한테 이래요?",
+        "voiceText": "내가 예민한 건가요? 다들 시부모님이나 장인어른한테 이런 말 해요?",
+        "emphasis": "medium",
+        "highlightWords": [
+          "예민한",
+          "이런 말"
+        ]
+      },
+      {
+        "id": 6,
+        "timestamp": 12.066,
+        "duration": 2.289,
+        "type": "comment",
+        "text": "어떤 상황이든\n부모님한테 그 표현은\n좀 아니죠",
+        "voiceText": "어떤 상황이든 부모님한테 그 표현은 좀 아니죠.",
+        "emphasis": "low",
+        "highlightWords": [
+          "부모님",
+          "아니죠"
+        ]
+      }
+    ],
+    "audio": {
+      "ttsScript": "부모님한테 선넘네라고요? 나는 선넘네라는 말, 친한 친구한테도 안 쓰는 말인데요. 그런데 상대방이 우리 부모님한테 선넘는다고 한 거예요. 너무 당황스러운 거예요. 아니 이런 말을 부모님한테 한다고? 내가 예민한 건가요? 다들 시부모님이나 장인어른한테 이런 말 해요? 어떤 상황이든 부모님한테 그 표현은 좀 아니죠.",
+      "voice": "ko-KR-SunHiNeural",
+      "rate": "+20%",
+      "pitch": "+0Hz"
+    },
+    "background": {
+      "type": "gradient",
+      "colors": [
+        "#4169E1",
+        "#1E90FF",
+        "#87CEEB"
+      ]
+    }
+  },
+  "audioFile": "audio_debug_20260325_154252.mp3",
+  "sceneImages": [],
+  "bgmFile": ""
+}

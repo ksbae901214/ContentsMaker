@@ -1,6 +1,6 @@
 """Claude Code analyzer — converts BlindPost to ShortsScript.
 
-Calls Claude Code via subprocess to analyze content and generate
+Calls Claude Code CLI via subprocess to analyze content and generate
 a structured ShortsScript JSON.
 """
 from __future__ import annotations
@@ -25,14 +25,10 @@ class AnalyzerError(Exception):
     """Raised when analysis fails."""
 
 
-def analyze(post: BlindPost, output_dir: Path | None = None) -> ShortsScript:
+def analyze(post: BlindPost, output_dir: Path | None = None) -> tuple[ShortsScript, Path]:
     """Analyze a BlindPost and generate a ShortsScript.
 
-    1. Build prompt from post data
-    2. Call Claude Code via subprocess
-    3. Parse JSON response
-    4. Fill in voice config and gradient based on emotion
-    5. Save and return ShortsScript
+    Returns (ShortsScript, file_path) tuple.
     """
     prompt = build_prompt(
         title=post.title,
@@ -45,6 +41,7 @@ def analyze(post: BlindPost, output_dir: Path | None = None) -> ShortsScript:
     raw_json = _call_claude(prompt)
     script = _parse_response(raw_json)
     script = _apply_voice_config(script)
+    script = _ensure_line_breaks(script)
 
     target_dir = output_dir or DATA_SCRIPTS_DIR
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -58,17 +55,19 @@ def analyze(post: BlindPost, output_dir: Path | None = None) -> ShortsScript:
     script.save(file_path)
     logger.info("스크립트 저장: %s", file_path)
 
-    return script
+    return script, file_path
 
 
 def _call_claude(prompt: str) -> str:
     """Call Claude Code headless mode and return raw output."""
     try:
         result = subprocess.run(
-            ["claude", "-p", prompt, "--output-format", "json"],
+            ["claude", "-p", prompt],
             capture_output=True,
             text=True,
             timeout=CLAUDE_TIMEOUT_SECONDS,
+            env={"PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin",
+                 "HOME": str(Path.home())},
         )
     except FileNotFoundError:
         raise AnalyzerError(
@@ -82,9 +81,14 @@ def _call_claude(prompt: str) -> str:
         )
 
     if result.returncode != 0:
-        raise AnalyzerError(f"Claude Code 실행 실패 (exit {result.returncode}): {result.stderr[:200]}")
+        stderr = result.stderr[:300] if result.stderr else ""
+        raise AnalyzerError(f"Claude Code 실행 실패 (exit {result.returncode}): {stderr}")
 
-    return result.stdout
+    output = result.stdout.strip()
+    if not output:
+        raise AnalyzerError("Claude Code가 빈 응답을 반환했습니다.")
+
+    return output
 
 
 def _parse_response(raw: str) -> ShortsScript:
@@ -123,6 +127,46 @@ def _parse_response(raw: str) -> ShortsScript:
 
     raise AnalyzerError(
         f"Claude Code 응답을 JSON으로 파싱할 수 없습니다.\n응답 미리보기: {raw[:300]}"
+    )
+
+
+def _ensure_line_breaks(script: ShortsScript) -> ShortsScript:
+    """Fallback: add line breaks if AI didn't insert them (15 chars max per line)."""
+    from src.analyzer.script_models import Scene
+
+    new_scenes = []
+    for scene in script.scenes:
+        text = scene.text
+        if "\n" not in text and len(text) > 15:
+            words = text.replace(" ", " ").split(" ")
+            lines = []
+            current = ""
+            for word in words:
+                if current and len(current) + len(word) + 1 > 15:
+                    lines.append(current)
+                    current = word
+                else:
+                    current = f"{current} {word}" if current else word
+            if current:
+                lines.append(current)
+            text = "\n".join(lines)
+
+        new_scenes.append(Scene(
+            id=scene.id,
+            timestamp=scene.timestamp,
+            duration=scene.duration,
+            type=scene.type,
+            text=text,
+            voice_text=scene.voice_text,
+            emphasis=scene.emphasis,
+            highlight_words=scene.highlight_words,
+        ))
+
+    return ShortsScript(
+        metadata=script.metadata,
+        scenes=tuple(new_scenes),
+        audio=script.audio,
+        background=script.background,
     )
 
 

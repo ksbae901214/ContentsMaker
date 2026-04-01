@@ -1,0 +1,32 @@
+[
+  {
+    "scene_id": 1,
+    "start_ms": 0,
+    "end_ms": 2476
+  },
+  {
+    "scene_id": 2,
+    "start_ms": 2476,
+    "end_ms": 4909
+  },
+  {
+    "scene_id": 3,
+    "start_ms": 4909,
+    "end_ms": 7342
+  },
+  {
+    "scene_id": 4,
+    "start_ms": 7342,
+    "end_ms": 9833
+  },
+  {
+    "scene_id": 5,
+    "start_ms": 9833,
+    "end_ms": 12309
+  },
+  {
+    "scene_id": -1,
+    "start_ms": 12309,
+    "end_ms": 14901
+  }
+]

@@ -55,7 +55,7 @@ def cmd_image(args: argparse.Namespace) -> int:
 
         # Step 2: Analyze
         print("📝 Step 2/4: AI 분석 중...")
-        script = analyze(post)
+        script, _ = analyze(post)
         print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
 
         # Step 3: Generate illustrations
@@ -64,14 +64,16 @@ def cmd_image(args: argparse.Namespace) -> int:
 
         # Step 4: TTS
         print("🎙️  Step 4/5: 음성 생성 중...")
-        tts_code, voice_path = _run_tts(script)
+        tts_code, voice_path, scene_timings = _run_tts(script)
         if tts_code != 0:
             print("   ⚠️  TTS 실패, 무음 영상으로 계속합니다.")
             voice_path = None
+            scene_timings = None
 
         # Step 5: Render
         print("🎬 Step 5/5: 영상 렌더링 중...")
-        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images)
+        use_bgm = not getattr(args, "no_bgm", False)
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm, scene_timings=scene_timings)
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 완료! 이미지 → 영상 변환 성공")
@@ -138,7 +140,7 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         post = BlindPost.from_dict(data)
 
         logger.info("분석 시작: %s", post.title)
-        script = analyze(post)
+        script, _ = analyze(post)
 
         print(f"\n✅ 스크립트 생성 완료")
         print(f"   제목: {script.metadata.title}")
@@ -147,7 +149,7 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         print(f"   길이: {script.metadata.duration}초")
 
         if args.with_tts:
-            code, _ = _run_tts(script)
+            code, _, _ = _run_tts(script)
             return code
 
         return 0
@@ -173,7 +175,7 @@ def cmd_tts(args: argparse.Namespace) -> int:
             return 1
 
         script = ShortsScript.load(file_path)
-        code, _ = _run_tts(script)
+        code, _, _ = _run_tts(script)
         return code
 
     except Exception as e:
@@ -183,24 +185,29 @@ def cmd_tts(args: argparse.Namespace) -> int:
 
 
 def _run_tts(script):
-    """Run TTS generation on a ShortsScript. Returns (exit_code, voice_path)."""
-    from src.tts.edge_tts_generator import TTSError, generate_voice
+    """Run TTS generation with per-scene timing.
+
+    Returns (exit_code, voice_path, scene_timings).
+    scene_timings is a list of {scene_id, start_ms, end_ms} dicts for
+    precise audio-to-scene synchronization.
+    """
+    from src.tts.edge_tts_generator import TTSError, generate_voice_with_timing
 
     try:
         logger.info("TTS 생성 시작...")
-        voice_path = generate_voice(script)
+        voice_path, scene_timings = generate_voice_with_timing(script)
         file_size_kb = voice_path.stat().st_size / 1024
 
         print(f"\n✅ 음성 생성 완료")
         print(f"   파일: {voice_path}")
         print(f"   크기: {file_size_kb:.1f} KB")
         print(f"   음성: {script.audio.voice}")
-        return 0, voice_path
+        return 0, voice_path, scene_timings
 
     except TTSError as e:
         logger.error("TTS 오류: %s", e)
         print(f"\n❌ TTS 오류: {e}", file=sys.stderr)
-        return 1, None
+        return 1, None, None
 
 
 def _run_illustrations(script, use_references: bool = True) -> list[dict] | None:
@@ -266,6 +273,57 @@ def cmd_render(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_url(args: argparse.Namespace) -> int:
+    """Handle the 'url' subcommand — URL to video pipeline."""
+    from src.scraper.url_scraper import UrlScrapeError, extract_from_url
+    from src.scraper.manual_input import save_post
+    from src.analyzer.claude_analyzer import AnalyzerError, analyze
+    from src.video.renderer import RenderError, render_video
+
+    try:
+        # Step 1: Extract from URL
+        print(f"🔗 Step 1/5: URL에서 콘텐츠 추출 중...")
+        post = extract_from_url(args.url)
+        raw_path = save_post(post)
+        print(f"   제목: {post.title}")
+        print(f"   본문: {post.body[:50]}...")
+        print(f"   댓글: {len(post.comments)}개")
+
+        # Step 2: Analyze
+        print("📝 Step 2/5: AI 분석 중...")
+        script, _ = analyze(post)
+        print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개")
+
+        # Step 3: Illustrations
+        use_refs = not getattr(args, "no_references", False)
+        scene_images = _run_illustrations(script, use_references=use_refs)
+
+        # Step 4: TTS
+        print("🎙️  Step 4/5: 음성 생성 중...")
+        tts_code, voice_path, scene_timings = _run_tts(script)
+        if tts_code != 0:
+            voice_path = None
+            scene_timings = None
+
+        # Step 5: Render
+        print("🎬 Step 5/5: 영상 렌더링 중...")
+        use_bgm = not getattr(args, "no_bgm", False)
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm, scene_timings=scene_timings)
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+
+        print(f"\n✅ 완료! URL → 영상 변환 성공")
+        print(f"   영상: {output_path}")
+        print(f"   크기: {file_size_mb:.1f} MB")
+        return 0
+
+    except (UrlScrapeError, AnalyzerError, RenderError) as e:
+        print(f"\n❌ 오류: {e}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\n\n취소되었습니다.")
+        return 130
+
+
 def cmd_pipeline(args: argparse.Namespace) -> int:
     """Handle the 'pipeline' subcommand — full raw → video pipeline."""
     from src.analyzer.claude_analyzer import AnalyzerError, analyze
@@ -284,7 +342,7 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
 
         # Step 1: Analyze
         print("📝 Step 1/4: AI 분석 중...")
-        script = analyze(post)
+        script, _ = analyze(post)
         print(f"   감정: {script.metadata.emotion_type} | 씬: {len(script.scenes)}개 | 길이: {script.metadata.duration}초")
 
         # Step 2: Illustrations
@@ -293,14 +351,16 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
 
         # Step 3: TTS
         print("🎙️  Step 3/4: 음성 생성 중...")
-        tts_code, voice_path = _run_tts(script)
+        tts_code, voice_path, scene_timings = _run_tts(script)
         if tts_code != 0:
             print("⚠️  TTS 실패, 무음 영상으로 계속합니다.")
             voice_path = None
+            scene_timings = None
 
         # Step 4: Render
         print("🎬 Step 4/4: 영상 렌더링 중...")
-        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images)
+        use_bgm = not getattr(args, "no_bgm", False)
+        output_path = render_video(script, audio_path=voice_path, scene_images=scene_images, use_bgm=use_bgm, scene_timings=scene_timings)
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 파이프라인 완료!")
@@ -335,6 +395,10 @@ def build_parser() -> argparse.ArgumentParser:
     image_parser.add_argument(
         "--no-references", action="store_true",
         help="레퍼런스 이미지 비활성화 (기본: data/references/ 자동 사용)"
+    )
+    image_parser.add_argument(
+        "--no-bgm", action="store_true",
+        help="배경음악 비활성화 (기본: 감정별 BGM 자동 삽입)"
     )
 
     # manual subcommand
@@ -374,8 +438,36 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-references", action="store_true",
         help="레퍼런스 이미지 비활성화 (기본: data/references/ 자동 사용)"
     )
+    pipeline_parser.add_argument(
+        "--no-bgm", action="store_true",
+        help="배경음악 비활성화 (기본: 감정별 BGM 자동 삽입)"
+    )
 
     # crawl subcommand (P2 placeholder)
+    # url subcommand
+    url_parser = subparsers.add_parser(
+        "url", help="게시글 URL → 영상 자동 생성 (디시/네이트판/네이버카페)"
+    )
+    url_parser.add_argument("url", type=str, help="게시글 URL")
+    url_parser.add_argument(
+        "--no-references", action="store_true",
+        help="레퍼런스 이미지 비활성화"
+    )
+    url_parser.add_argument(
+        "--no-bgm", action="store_true",
+        help="배경음악 비활성화"
+    )
+
+    # youtube-auth subcommand
+    subparsers.add_parser(
+        "youtube-auth", help="YouTube API OAuth 인증 (최초 1회)"
+    )
+
+    # tiktok-auth subcommand
+    subparsers.add_parser(
+        "tiktok-auth", help="TikTok API OAuth 인증 (최초 1회)"
+    )
+
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")
 
     return parser
@@ -397,11 +489,30 @@ def main() -> int:
         "tts": cmd_tts,
         "render": cmd_render,
         "pipeline": cmd_pipeline,
+        "url": cmd_url,
     }
 
     handler = commands.get(args.command)
     if handler:
         return handler(args)
+
+    if args.command == "youtube-auth":
+        from src.upload.youtube_uploader import authenticate, UploadError
+        try:
+            authenticate()
+            return 0
+        except UploadError as e:
+            print(f"\n❌ {e}", file=sys.stderr)
+            return 1
+
+    if args.command == "tiktok-auth":
+        from src.upload.tiktok_uploader import authenticate, TikTokUploadError
+        try:
+            authenticate()
+            return 0
+        except TikTokUploadError as e:
+            print(f"\n❌ {e}", file=sys.stderr)
+            return 1
 
     if args.command == "crawl":
         print("⚠️  자동 크롤링은 아직 구현되지 않았습니다")

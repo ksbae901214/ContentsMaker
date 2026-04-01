@@ -1,13 +1,15 @@
 <!--
   Sync Impact Report
-  Version change: 0.0.0 → 1.0.0 (initial ratification)
-  Added principles: I–VII (all new)
-  Added sections: Quality Gates, Technical Standards, Development Workflow, Governance
+  Version change: 1.1.0 → 1.2.0 (test video generation mandate)
+  Modified principles:
+    - VII. Evidence-Based Completion — Added automated test video generation requirement
+  Added sections: None
+  Removed sections: None
   Templates requiring updates:
-    ✅ plan-template.md — Constitution Check section aligns with 7 principles
+    ✅ plan-template.md — No change needed (principle expansion, not new principle)
     ✅ spec-template.md — No structural change needed
     ✅ tasks-template.md — No structural change needed
-  Follow-up TODOs: none
+  Follow-up TODOs: None
 -->
 
 # ContentsMaker Constitution
@@ -102,8 +104,13 @@
 - 영상 품질 확인: 생성된 MP4 파일의 재생 시간, 해상도, 음성 동기화 육안 확인
 - 빌드 검증: TypeScript 타입 체크 통과, ESLint 경고 0개
 - 커밋 전: 전체 파이프라인 1회 이상 성공 실행 증거 필수
+- **테스트 영상 자동 생성 (MANDATORY)**: 작업 완료 시 GPT API 이미지 생성을 제외한 테스트 영상을 생성하여 변경사항 검증
+  - 실행: `python3 -m src.main manual --file data/raw/sample.json --no-images`
+  - 목적: TTS 음성, 씬 타이밍, 텍스트 표시 등 이미지 외 모든 요소 검증
+  - 비용 절감: GPT Image API 비용 발생 방지 (원칙 I 준수)
+  - 증거: 생성된 MP4 파일 경로와 재생 시간 출력 MUST 첨부
 
-**근거**: LLM은 실행 없이 "완료"를 선언하는 경향이 있다. 추측성 완료 선언은 디버깅 비용을 10배로 증가시킨다.
+**근거**: LLM은 실행 없이 "완료"를 선언하는 경향이 있다. 추측성 완료 선언은 디버깅 비용을 10배로 증가시킨다. 테스트 영상 생성은 변경사항이 실제로 작동하는지 즉시 확인할 수 있는 가장 빠른 방법이다.
 
 ## Quality Gates (품질 관문)
 
@@ -196,4 +203,4 @@
 - 콘텐츠 안전 관련 의사결정은 원칙 IV가 다른 모든 기능 요구보다 우선한다.
 - 새 기능 머지 전 Full Test Gate (원칙 VIII) 통과 증거를 PR에 첨부한다.
 
-**Version**: 1.1.0 | **Ratified**: 2026-03-23 | **Last Amended**: 2026-03-25
+**Version**: 1.2.0 | **Ratified**: 2026-03-23 | **Last Amended**: 2026-03-26

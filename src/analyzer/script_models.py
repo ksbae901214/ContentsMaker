@@ -168,6 +168,9 @@ class Scene:
         )
 
 
+SourceType = Literal["blind", "topic"]
+
+
 @dataclass(frozen=True)
 class Metadata:
     """Script metadata."""
@@ -175,6 +178,7 @@ class Metadata:
     emotion_type: str  # EmotionType
     duration: float
     source_url: str = ""
+    source_type: str = "blind"  # SourceType
 
     def to_dict(self) -> dict:
         return {
@@ -182,6 +186,7 @@ class Metadata:
             "emotion_type": self.emotion_type,
             "duration": self.duration,
             "source_url": self.source_url,
+            "source_type": self.source_type,
         }
 
     @classmethod
@@ -191,6 +196,7 @@ class Metadata:
             emotion_type=data.get("emotion_type", data.get("emotionType", "relatable")),
             duration=float(data.get("duration", 45)),
             source_url=data.get("source_url", data.get("sourceUrl", "")),
+            source_type=data.get("source_type", data.get("sourceType", "blind")),
         )
 
 

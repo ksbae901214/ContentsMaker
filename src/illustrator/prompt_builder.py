@@ -77,6 +77,45 @@ REFERENCE_STYLE_PREFIX = (
 # Legacy suffix kept for backward compatibility
 REFERENCE_STYLE_SUFFIX = REFERENCE_STYLE_PREFIX
 
+IMAGE_STYLE_PRESETS = {
+    "webtoon": STYLE_PREFIX,
+    "3d_pixar": (
+        "3D Pixar-style rendered character, soft diffused lighting, cute proportions, "
+        "highly detailed 3D render, Pixar/Disney animation quality, "
+        "smooth skin textures, expressive cartoon eyes with thick eyelashes, "
+        "round friendly faces, colorful saturated palette, "
+        "vertical 9:16 composition suitable for YouTube Shorts, "
+        "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, "
+        "NO watermarks, NO subtitles, NO UI elements, NO titles, NO labels, NO signs with writing, "
+        "the image must contain ZERO written characters of any language, "
+        "high quality 3D animated render"
+    ),
+    "realistic": (
+        "Photorealistic digital illustration, natural soft lighting, "
+        "detailed skin texture, cinematic composition, "
+        "Korean drama style photography aesthetic, "
+        "attractive Korean adults in modern settings, "
+        "warm natural color grading, shallow depth of field, "
+        "vertical 9:16 composition suitable for YouTube Shorts, "
+        "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, "
+        "NO watermarks, NO subtitles, NO UI elements, NO titles, NO labels, NO signs with writing, "
+        "the image must contain ZERO written characters of any language, "
+        "high quality photorealistic digital art"
+    ),
+    "anime": (
+        "Japanese anime style illustration, large expressive eyes, "
+        "vibrant colors, detailed hair shading, "
+        "anime-style character design with clean line art, "
+        "bright color palette, dynamic poses, "
+        "modern Japanese animation quality, "
+        "vertical 9:16 composition suitable for YouTube Shorts, "
+        "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, "
+        "NO watermarks, NO subtitles, NO UI elements, NO titles, NO labels, NO signs with writing, "
+        "the image must contain ZERO written characters of any language, "
+        "high quality anime digital art"
+    ),
+}
+
 # Emotion modifiers — kept SOFT to not override the bright reference style
 EMOTION_STYLE = {
     "funny": "characters with cute surprised or laughing expressions, lighthearted playful mood, bright warm colors",
@@ -90,7 +129,7 @@ class PromptBuildError(Exception):
     """Raised when prompt generation fails."""
 
 
-def build_image_prompts(script: ShortsScript) -> list[dict]:
+def build_image_prompts(script: ShortsScript, image_style: str = "webtoon") -> list[dict]:
     """Generate image prompts for each scene using Claude Code.
 
     Returns list of {scene_id, prompt, scene_type} dicts.
@@ -158,27 +197,29 @@ JSON만 출력하세요."""
 
     prompts = _parse_prompts(result.stdout)
 
-    # Build final prompts: reference style takes priority when available
-    use_refs = refs_available()
+    # Build final prompts: reference style only for webtoon
+    style_prefix = IMAGE_STYLE_PRESETS.get(image_style, IMAGE_STYLE_PRESETS["webtoon"])
+    use_refs = refs_available() and image_style == "webtoon"
     for p in prompts:
         scene_desc = f"{emotion_style}, {p['prompt']}"
         if use_refs:
-            # Reference style is the #1 instruction — at the START
             base = f"{REFERENCE_STYLE_PREFIX}, {scene_desc}"
         else:
-            base = f"{STYLE_PREFIX}, {scene_desc}"
+            base = f"{style_prefix}, {scene_desc}"
         p["prompt"] = base
 
     return prompts
 
 
-def build_image_prompts_simple(script: ShortsScript) -> list[dict]:
+def build_image_prompts_simple(script: ShortsScript, image_style: str = "webtoon") -> list[dict]:
     """Generate image prompts without Claude Code (fallback).
 
     Uses simple rule-based prompt generation.
     """
     emotion = script.metadata.emotion_type
     emotion_style = EMOTION_STYLE.get(emotion, EMOTION_STYLE["relatable"])
+    style_prefix = IMAGE_STYLE_PRESETS.get(image_style, IMAGE_STYLE_PRESETS["webtoon"])
+    use_refs = refs_available() and image_style == "webtoon"
     prompts = []
 
     for scene in script.scenes:
@@ -202,10 +243,10 @@ def build_image_prompts_simple(script: ShortsScript) -> list[dict]:
                 "absolutely no text, no letters, no numbers, no words, no speech bubbles anywhere in the image"
             )
 
-        if refs_available():
+        if use_refs:
             base = f"{REFERENCE_STYLE_PREFIX}, {emotion_style}, {prompt}"
         else:
-            base = f"{STYLE_PREFIX}, {emotion_style}, {prompt}"
+            base = f"{style_prefix}, {emotion_style}, {prompt}"
         prompts.append({
             "scene_id": scene.id,
             "prompt": base,

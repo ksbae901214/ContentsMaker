@@ -12,8 +12,8 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-from src.analyzer.prompt_template import build_prompt
-from src.analyzer.script_models import ShortsScript, AudioConfig, BackgroundConfig
+from src.analyzer.prompt_template import build_prompt, build_topic_prompt
+from src.analyzer.script_models import ShortsScript, Metadata, AudioConfig, BackgroundConfig
 from src.config.settings import DATA_SCRIPTS_DIR, CLAUDE_TIMEOUT_SECONDS
 from src.scraper.models import BlindPost
 from src.tts.voice_config import get_voice_config, get_gradient
@@ -54,6 +54,60 @@ def analyze(post: BlindPost, output_dir: Path | None = None) -> tuple[ShortsScri
 
     script.save(file_path)
     logger.info("스크립트 저장: %s", file_path)
+
+    return script, file_path
+
+
+def analyze_topic(
+    topic_input,
+    output_dir: Path | None = None,
+) -> tuple[ShortsScript, Path]:
+    """Analyze a TopicInput and generate a ShortsScript.
+
+    Returns (ShortsScript, file_path) tuple.
+    """
+    prompt = build_topic_prompt(
+        topic=topic_input.topic,
+        style=topic_input.style,
+        tone=topic_input.tone,
+        details=topic_input.details,
+    )
+
+    logger.info("Claude Code 주제 분석 시작: %s", topic_input.topic)
+    raw_json = _call_claude(prompt)
+    script = _parse_response(raw_json)
+
+    # Ensure source_type is "topic"
+    if script.metadata.source_type != "topic":
+        script = ShortsScript(
+            metadata=Metadata(
+                title=script.metadata.title,
+                emotion_type=script.metadata.emotion_type,
+                duration=script.metadata.duration,
+                source_url=script.metadata.source_url,
+                source_type="topic",
+            ),
+            scenes=script.scenes,
+            audio=script.audio,
+            background=script.background,
+        )
+
+    script = _apply_voice_config(script)
+    script = _ensure_line_breaks(script)
+
+    target_dir = output_dir or DATA_SCRIPTS_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_topic = "".join(
+        c for c in topic_input.topic[:30] if c.isalnum() or c in " _-"
+    )
+    safe_topic = safe_topic.strip().replace(" ", "_") or "topic"
+    filename = f"{timestamp}_{safe_topic}.json"
+    file_path = target_dir / filename
+
+    script.save(file_path)
+    logger.info("주제 스크립트 저장: %s", file_path)
 
     return script, file_path
 

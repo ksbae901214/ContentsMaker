@@ -111,11 +111,11 @@ class TestAnalyzeIntegration:
     @patch("src.analyzer.claude_analyzer._call_claude")
     def test_full_pipeline(self, mock_claude, sample_post, sample_script_dict, tmp_data_dir):
         mock_claude.return_value = json.dumps(sample_script_dict)
-        result = analyze(sample_post, output_dir=tmp_data_dir / "scripts")
-        assert isinstance(result, ShortsScript)
-        assert result.metadata.title == "테스트 제목"
+        script, file_path = analyze(sample_post, output_dir=tmp_data_dir / "scripts")
+        assert isinstance(script, ShortsScript)
+        assert script.metadata.title == "테스트 제목"
         # Voice config should be applied
-        assert result.audio.voice == "ko-KR-SunHiNeural"
+        assert script.audio.voice == "ko-KR-SunHiNeural"
         # Script should be saved
         scripts = list((tmp_data_dir / "scripts").glob("*.json"))
         assert len(scripts) == 1
@@ -123,7 +123,7 @@ class TestAnalyzeIntegration:
     @patch("src.analyzer.claude_analyzer._call_claude")
     def test_saved_script_is_loadable(self, mock_claude, sample_post, sample_script_dict, tmp_data_dir):
         mock_claude.return_value = json.dumps(sample_script_dict)
-        result = analyze(sample_post, output_dir=tmp_data_dir / "scripts")
+        script, file_path = analyze(sample_post, output_dir=tmp_data_dir / "scripts")
         scripts = list((tmp_data_dir / "scripts").glob("*.json"))
         loaded = ShortsScript.load(scripts[0])
-        assert loaded.metadata.title == result.metadata.title
+        assert loaded.metadata.title == script.metadata.title

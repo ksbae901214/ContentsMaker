@@ -70,6 +70,21 @@ s=save_post(post)
 print(json.dumps({"path":str(s),"title":post.title,"comments":len(post.comments)}))`));
           send("progress",{message:`✅ "${r.title}" (댓글 ${r.comments}개)`});
           rawPath = r.path;
+        } else if (mode === "topic") {
+          const topic = fd.get("topic") as string;
+          const contentStyle = (fd.get("contentStyle") as string) || "narration";
+          const tone = (fd.get("tone") as string) || "";
+          const details = (fd.get("details") as string) || "";
+          if (!topic || topic.length < 5) { send("error",{message:"주제를 5자 이상 입력해주세요"}); ctrl.close(); return; }
+          send("progress",{message:"📝 주제 저장 중..."});
+          const r = JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.scraper.topic_input import TopicInput,save_topic
+ti=TopicInput(topic=${JSON.stringify(topic)},style=${JSON.stringify(contentStyle)},tone=${JSON.stringify(tone)},details=${JSON.stringify(details)})
+p=save_topic(ti)
+print(json.dumps({"path":str(p),"topic":ti.topic}))`));
+          send("progress",{message:`✅ "${r.topic}"`});
+          rawPath = r.path;
         } else {
           const t=fd.get("title") as string, b=fd.get("body") as string, c=fd.get("comments") as string||"[]";
           if(!t||!b){send("error",{message:"제목과 본문 필수"});ctrl.close();return;}
@@ -85,8 +100,24 @@ print(json.dumps({"path":str(save_post(post)),"title":post.title}))`));
           rawPath=r.path;
         }
 
+        const imageStyle = (fd.get("imageStyle") as string) || "webtoon";
+
+        // Analysis: topic mode uses analyze_topic, others use analyze
         send("progress",{message:"📝 AI 분석 중..."});
-        const a=JSON.parse(await py(`
+        let a: any;
+        if (mode === "topic") {
+          const contentStyle = (fd.get("contentStyle") as string) || "narration";
+          const tone = (fd.get("tone") as string) || "";
+          const details = (fd.get("details") as string) || "";
+          a = JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.scraper.topic_input import TopicInput
+from src.analyzer.claude_analyzer import analyze_topic
+ti=TopicInput(topic=${JSON.stringify(fd.get("topic") as string)},style=${JSON.stringify(contentStyle)},tone=${JSON.stringify(tone)},details=${JSON.stringify(details)})
+s,sp=analyze_topic(ti)
+print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp)}))`));
+        } else {
+          a = JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.scraper.models import BlindPost
@@ -94,6 +125,7 @@ from src.analyzer.claude_analyzer import analyze
 post=BlindPost.from_dict(json.loads(Path('''${rawPath}''').read_text()))
 s,sp=analyze(post)
 print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp)}))`));
+        }
         send("progress",{message:`✅ ${a.emotion} | ${a.scenes}씬 | ${a.duration}초`});
 
         // Apply custom title if provided
@@ -109,15 +141,52 @@ print("ok")`);
           send("progress",{message:`✅ 제목 설정: ${customTitle}`});
         }
 
-        let ic=0,cost=0;
+        const visualMode = (fd.get("visualMode") as string) || "manga";
+        let ic=0,vc=0,cost=0;
         let generatedImages: {scene_id:number,image_path:string}[] = [];
+        let generatedVideos: {scene_id:number,video_path:string}[] = [];
         let videoPath = "";
         let ttsResult: {audio_path:string,timings:any[]}|null = null;
 
         if (dryRun) {
-          send("progress",{message:"🎨 [드라이런] 이미지 생성 스킵"});
+          send("progress",{message:"🎨 [드라이런] 이미지/영상 생성 스킵"});
           send("progress",{message:"🎙️ [드라이런] 음성 생성 스킵"});
           send("progress",{message:"🎬 [드라이런] 렌더링 스킵"});
+        } else if (visualMode === "video") {
+          // AI Video clip mode (Seedance)
+          const hasSeedanceKey = !!process.env.SEEDANCE_API_KEY;
+          if (!hasSeedanceKey) {
+            send("error",{message:"SEEDANCE_API_KEY가 설정되지 않았습니다. 이미지 모드를 사용해주세요."});
+            ctrl.close(); return;
+          }
+          send("progress",{message:`🎥 AI 영상 클립 생성 중 (${a.scenes}씬)...`});
+          try {
+            const vidResult = JSON.parse(await py(`
+import sys,json,asyncio;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.script_models import ShortsScript
+from src.video_gen.seedance_gen import SeedanceGenerator
+from src.config.settings import DATA_VIDEOS_DIR
+s=ShortsScript.load('''${a.sp}''')
+gen=SeedanceGenerator()
+results=[]
+DATA_VIDEOS_DIR.mkdir(parents=True,exist_ok=True)
+for scene in s.scenes:
+ mp=scene.motion_prompt or scene.voice_text[:100]
+ out=str(DATA_VIDEOS_DIR/f"scene_{scene.id:02d}.mp4")
+ try:
+  vr=asyncio.run(gen.generate_and_wait(prompt=mp,duration=5.0,output_path=out))
+  results.append({"scene_id":scene.id,"video_path":vr.path})
+ except Exception as e:
+  results.append({"scene_id":scene.id,"video_path":"","error":str(e)})
+print(json.dumps({"results":results,"cost":gen.estimate_cost()*len(s.scenes)}))`));
+            for (const r of vidResult.results) {
+              if (r.video_path) { generatedVideos.push({scene_id:r.scene_id,video_path:r.video_path}); vc++; }
+              else send("progress",{message:`⚠️ 씬 ${r.scene_id} 영상 생성 실패 → 이미지 폴백`});
+            }
+            cost = vidResult.cost;
+            send("progress",{message:`✅ AI 영상 ${vc}개 ($${cost.toFixed(3)})`});
+          } catch(e:any) { send("progress",{message:`⚠️ 영상 생성 실패: ${e.message?.slice(0,100)}. 이미지 모드로 진행합니다.`}); }
         } else {
           const hasKey=!!process.env.OPENAI_API_KEY;
           if(hasKey){
@@ -126,7 +195,7 @@ print("ok")`);
 import sys,json;sys.path.insert(0,'${ROOT}')
 from src.analyzer.script_models import ShortsScript
 from src.illustrator.image_generator import generate_scene_images
-r=generate_scene_images(ShortsScript.load('''${a.sp}'''))
+r=generate_scene_images(ShortsScript.load('''${a.sp}'''),image_style='''${imageStyle}''')
 print(json.dumps({"c":len(r),"cost":len(r)*0.005,"images":[{"scene_id":x["scene_id"],"image_path":x["image_path"]} for x in r]}))`));
             ic=im.c;cost=im.cost;generatedImages=im.images||[];
             send("progress",{message:`✅ 만화 ${ic}장 ($${cost.toFixed(3)})`});
@@ -143,6 +212,7 @@ print(json.dumps({"audio_path":str(ap),"timings":timings}))`));
 
           send("progress",{message:"🎬 렌더링 중..."});
           const imgJson=JSON.stringify(generatedImages);
+          const vidJson=JSON.stringify(generatedVideos);
           const timingsJson=JSON.stringify(ttsResult!.timings);
           const rr=JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
@@ -152,8 +222,9 @@ from src.video.renderer import render_video
 s=ShortsScript.load('''${a.sp}''')
 ap=Path('''${ttsResult!.audio_path}''')
 si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
+sv=json.loads('''${vidJson}''') if '''${vidJson}'''!='[]' else None
 timings=json.loads('''${timingsJson}''')
-o=render_video(s,audio_path=ap,scene_images=si,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings)
+o=render_video(s,audio_path=ap,scene_images=si,scene_videos=sv,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings)
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`));
           send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
           videoPath = rr.path;
@@ -223,7 +294,7 @@ print(json.dumps({"scenes":s["scenes"]}))`));
           return sc;
         })};
 
-        send("done",{result:{videoPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,cost,summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,audioPath:ttsResult?.audio_path||"",sceneImages:generatedImages,scenes:scriptData.scenes,dryRun}});
+        send("done",{result:{videoPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,videoCount:vc,cost,visualMode,imageStyle,sourceType:mode==="topic"?"topic":"blind",summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,audioPath:ttsResult?.audio_path||"",sceneImages:generatedImages,sceneVideos:generatedVideos,scenes:scriptData.scenes,dryRun}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

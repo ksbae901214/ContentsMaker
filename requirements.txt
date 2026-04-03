@@ -1,6 +1,7 @@
 # Core
 edge-tts>=6.1.0
 openai>=1.0.0
+httpx>=0.27.0
 
 # Testing
 pytest>=8.0.0

@@ -155,3 +155,150 @@ class TestRenderVideoPrep:
 
     def test_fps_is_30(self):
         assert FPS == 30
+
+
+class TestSceneVideos:
+    """Test scene_videos parameter in render_video."""
+
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_scene_videos_in_props(self, mock_which, mock_run, sample_script, tmp_data_dir):
+        """When scene_videos is passed, props JSON should include sceneVideos."""
+        output_dir = tmp_data_dir / "outputs"
+        vid_dir = tmp_data_dir / "videos"
+        vid_dir.mkdir(exist_ok=True)
+        vid_path = vid_dir / "scene_01.mp4"
+        vid_path.write_bytes(b"fake mp4 video")
+
+        scene_videos = [{"scene_id": 1, "video_path": str(vid_path)}]
+        props_captured = {}
+
+        def capture_props(*args, **kwargs):
+            cmd = args[0]
+            props_idx = cmd.index("--props") + 1
+            props_path = Path(cmd[props_idx])
+            props_captured["data"] = json.loads(props_path.read_text())
+            out_path = Path(cmd[5])
+            out_path.write_bytes(b"fake")
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = capture_props
+        render_video(
+            sample_script,
+            scene_videos=scene_videos,
+            output_dir=output_dir,
+            use_bgm=False,
+        )
+
+        props = props_captured["data"]
+        assert "sceneVideos" in props
+        assert len(props["sceneVideos"]) == 1
+        assert props["sceneVideos"][0]["sceneId"] == 1
+        assert "videoFile" in props["sceneVideos"][0]
+        assert props["sceneVideos"][0]["videoFile"].endswith(".mp4")
+
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_scene_images_and_videos_both_in_props(
+        self, mock_which, mock_run, sample_script, tmp_data_dir
+    ):
+        """When both scene_images and scene_videos are passed, both appear in props."""
+        output_dir = tmp_data_dir / "outputs"
+
+        img_dir = tmp_data_dir / "images"
+        img_path = img_dir / "scene_01.png"
+        img_path.write_bytes(b"PNG fake")
+
+        vid_dir = tmp_data_dir / "videos"
+        vid_dir.mkdir(exist_ok=True)
+        vid_path = vid_dir / "scene_02.mp4"
+        vid_path.write_bytes(b"fake mp4 video")
+
+        scene_images = [{"scene_id": 1, "image_path": str(img_path)}]
+        scene_videos = [{"scene_id": 2, "video_path": str(vid_path)}]
+        props_captured = {}
+
+        def capture_props(*args, **kwargs):
+            cmd = args[0]
+            props_idx = cmd.index("--props") + 1
+            props_path = Path(cmd[props_idx])
+            props_captured["data"] = json.loads(props_path.read_text())
+            out_path = Path(cmd[5])
+            out_path.write_bytes(b"fake")
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = capture_props
+        render_video(
+            sample_script,
+            scene_images=scene_images,
+            scene_videos=scene_videos,
+            output_dir=output_dir,
+            use_bgm=False,
+        )
+
+        props = props_captured["data"]
+        assert "sceneImages" in props
+        assert "sceneVideos" in props
+        assert len(props["sceneImages"]) == 1
+        assert len(props["sceneVideos"]) == 1
+        assert props["sceneImages"][0]["sceneId"] == 1
+        assert props["sceneVideos"][0]["sceneId"] == 2
+
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_scene_videos_none_gives_empty_list(
+        self, mock_which, mock_run, sample_script, tmp_data_dir
+    ):
+        """When scene_videos is None, sceneVideos should be an empty list in props."""
+        output_dir = tmp_data_dir / "outputs"
+        props_captured = {}
+
+        def capture_props(*args, **kwargs):
+            cmd = args[0]
+            props_idx = cmd.index("--props") + 1
+            props_path = Path(cmd[props_idx])
+            props_captured["data"] = json.loads(props_path.read_text())
+            out_path = Path(cmd[5])
+            out_path.write_bytes(b"fake")
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = capture_props
+        render_video(sample_script, output_dir=output_dir, use_bgm=False)
+
+        props = props_captured["data"]
+        assert "sceneVideos" in props
+        assert props["sceneVideos"] == []
+
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_scene_video_file_copied_to_public(
+        self, mock_which, mock_run, sample_script, tmp_data_dir
+    ):
+        """Video files should be copied to public/ directory."""
+        output_dir = tmp_data_dir / "outputs"
+        vid_dir = tmp_data_dir / "videos"
+        vid_dir.mkdir(exist_ok=True)
+        vid_path = vid_dir / "scene_03.mp4"
+        vid_content = b"real mp4 video content"
+        vid_path.write_bytes(vid_content)
+
+        scene_videos = [{"scene_id": 3, "video_path": str(vid_path)}]
+        copied_files = []
+
+        def capture_and_check(*args, **kwargs):
+            cmd = args[0]
+            # Check that the video was copied to public dir
+            public_dir = Path(cmd[3]).parent.parent.parent / "public"
+            for f in public_dir.glob("vid_*.mp4"):
+                copied_files.append(f)
+            out_path = Path(cmd[5])
+            out_path.write_bytes(b"fake")
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = capture_and_check
+        render_video(
+            sample_script,
+            scene_videos=scene_videos,
+            output_dir=output_dir,
+            use_bgm=False,
+        )

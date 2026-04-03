@@ -60,6 +60,35 @@ class TestMetadata:
         assert m.emotion_type == "relatable"
         assert m.duration == 45
 
+    def test_source_type_default_blind(self):
+        """source_type 없는 기존 데이터 → 기본값 'blind' (역호환)"""
+        m = Metadata.from_dict({"title": "t", "emotion_type": "funny", "duration": 30})
+        assert m.source_type == "blind"
+
+    def test_source_type_topic(self):
+        """source_type='topic' 라운드트립"""
+        m = Metadata(title="과자", emotion_type="funny", duration=40, source_type="topic")
+        d = m.to_dict()
+        assert d["source_type"] == "topic"
+        restored = Metadata.from_dict(d)
+        assert restored.source_type == "topic"
+
+    def test_source_type_camel_case(self):
+        """camelCase sourceType 지원"""
+        m = Metadata.from_dict({"title": "t", "sourceType": "topic"})
+        assert m.source_type == "topic"
+
+    def test_source_type_in_script_roundtrip(self):
+        """ShortsScript 전체 라운드트립에서 source_type 보존"""
+        script = ShortsScript(
+            metadata=Metadata(title="토픽", emotion_type="relatable", duration=45, source_type="topic"),
+            scenes=(Scene(id=1, timestamp=0, duration=5, type="title", text="t", voice_text="t"),),
+            audio=AudioConfig(tts_script="t"),
+        )
+        json_str = script.to_json()
+        restored = ShortsScript.from_json(json_str)
+        assert restored.metadata.source_type == "topic"
+
 
 class TestAudioConfig:
     def test_from_dict_camel_case(self):

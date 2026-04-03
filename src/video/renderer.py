@@ -30,6 +30,7 @@ def render_video(
     script: ShortsScript,
     audio_path: Path | None = None,
     scene_images: list[dict] | None = None,
+    scene_videos: list[dict] | None = None,
     output_dir: Path | None = None,
     use_bgm: bool = True,
     scene_timings: list[dict] | None = None,
@@ -40,8 +41,10 @@ def render_video(
         script: The ShortsScript to render
         audio_path: Path to voice MP3 file
         scene_images: List of {scene_id, image_path} dicts for manga backgrounds
+        scene_videos: List of {scene_id, video_path} dicts for AI video clips
         output_dir: Output directory (defaults to data/outputs/)
         use_bgm: Whether to include background music
+        scene_timings: Per-scene TTS timing data for audio-video sync
     """
     target_dir = output_dir or DATA_OUTPUTS_DIR
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -82,6 +85,20 @@ def render_video(
                 scene_image_props.append({
                     "sceneId": img_data["scene_id"],
                     "imageFile": img_filename,
+                })
+
+    # Scene videos (AI video clips)
+    scene_video_props = []
+    if scene_videos:
+        for vid_data in scene_videos:
+            src_path = Path(vid_data["video_path"])
+            if src_path.exists():
+                vid_filename = f"vid_{timestamp}_scene_{vid_data['scene_id']:02d}.mp4"
+                shutil.copy2(src_path, public_dir / vid_filename)
+                temp_files.append(public_dir / vid_filename)
+                scene_video_props.append({
+                    "sceneId": vid_data["scene_id"],
+                    "videoFile": vid_filename,
                 })
 
     # BGM
@@ -163,6 +180,7 @@ def render_video(
         "scriptData": script_dict,
         "audioFile": audio_filename,
         "sceneImages": scene_image_props,
+        "sceneVideos": scene_video_props,
         "bgmFile": bgm_filename,
     }
 
@@ -170,9 +188,10 @@ def render_video(
     props_path.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
 
     img_count = len(scene_image_props)
+    vid_count = len(scene_video_props)
     logger.info(
-        "렌더링 시작: %s (%d프레임, %.1f초, 이미지 %d장)",
-        output_filename, duration_frames, base_duration, img_count,
+        "렌더링 시작: %s (%d프레임, %.1f초, 이미지 %d장, 비디오 %d개)",
+        output_filename, duration_frames, base_duration, img_count, vid_count,
     )
 
     npx_path = shutil.which("npx")

@@ -42,12 +42,14 @@ def generate_scene_images(
     output_dir: Path | None = None,
     use_simple_prompts: bool = False,
     use_references: bool = True,
+    image_style: str = "webtoon",
 ) -> list[dict]:
     """Generate manga-style images for each scene.
 
     When reference images are available and use_references=True,
     uses images.edit() API to maintain consistent art style and characters.
     Falls back to images.generate() when no references exist.
+    For non-webtoon styles, always uses images.generate().
 
     Returns list of {scene_id, image_path, prompt} dicts.
     """
@@ -65,15 +67,19 @@ def generate_scene_images(
             "export OPENAI_API_KEY='sk-...' 로 설정해주세요."
         )
 
+    # Non-webtoon styles never use references
+    if image_style != "webtoon":
+        use_references = False
+
     # Build prompts
     try:
         if use_simple_prompts:
-            prompts = build_image_prompts_simple(script)
+            prompts = build_image_prompts_simple(script, image_style=image_style)
         else:
-            prompts = build_image_prompts(script)
+            prompts = build_image_prompts(script, image_style=image_style)
     except PromptBuildError as e:
         logger.warning("Claude 프롬프트 생성 실패, 단순 모드로 전환: %s", e)
-        prompts = build_image_prompts_simple(script)
+        prompts = build_image_prompts_simple(script, image_style=image_style)
 
     # Check reference availability
     has_refs = use_references and refs_available()
@@ -157,6 +163,7 @@ def regenerate_single_image(
     prompt: str,
     output_dir: Path | None = None,
     use_references: bool = True,
+    image_style: str = "webtoon",
 ) -> dict:
     """Regenerate a single scene image with the given prompt.
 

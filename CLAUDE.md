@@ -59,7 +59,7 @@ Input (screenshot/URL/text/topic) → BlindPost or TopicInput JSON (data/raw/)
 | `illustrator/` | Manga image generation | GPT Image API (`gpt-image-1`), 4 image styles (webtoon/3d_pixar/realistic/anime) |
 | `tts/` | Voice synthesis | `edge-tts` (free, async); `voice_config.py` maps emotion → voice/colors/gradient |
 | `video/` | Video rendering | `renderer.py` wraps Remotion CLI; copies images/videos/audio to `public/` |
-| `video_gen/` | AI video generation | `seedance_gen.py` (Seedance API), `base.py` (abstract + `generate_and_wait()`) |
+| `video_gen/` | AI video generation | `seedance_gen.py` (API), `deevid_gen.py` (browser automation, Veo 3.1), `factory.py` (provider selection), `base.py` (abstract) |
 | `editor/` | Scene editing | `scene_ops.py` (split/merge/reorder/resize), `batch.py`, `project.py`, `translator.py` |
 | `config/settings.py` | Global paths & constants | `PROJECT_ROOT`, `DATA_*_DIR`, `CLAUDE_TIMEOUT_SECONDS=300` |
 
@@ -120,7 +120,16 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 | Mode | Generator | Output | Cost |
 |------|-----------|--------|------|
 | `manga` | GPT Image API | PNG per scene | ~$0.005/scene |
-| `video` | Seedance API | MP4 per scene | ~$0.05/scene |
+| `video` | Seedance API or deevid.ai | MP4 per scene | $0.05/scene (Seedance) or free (deevid 20 credits) |
+
+### Video Providers (video mode)
+
+| Provider | Type | Cost | Setup |
+|----------|------|------|-------|
+| `seedance` | API | ~$0.05/scene 720p | `SEEDANCE_API_KEY` env var |
+| `deevid` | Browser automation (Playwright) | Free (20 credits) | Run `python3 -m src.main deevid_login` once |
+
+deevid.ai uses Veo 3.1 ("Master V2.0" tier). Free tier has 720p, watermark, ~3 videos worth of credits. Selectors live in `src/video_gen/deevid_selectors.py` for easy updates when the UI changes.
 
 ### Image Styles (manga mode)
 
@@ -134,10 +143,18 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 ## Environment Variables
 
 - `OPENAI_API_KEY` — required for GPT Image generation
-- `SEEDANCE_API_KEY` — optional, for AI video clip generation (video mode)
+- `SEEDANCE_API_KEY` — optional, for Seedance API video provider
 - `SEEDANCE_API_BASE` — optional, Seedance API base URL (default: `https://api.seedance.ai/v1`)
+- (no env vars needed for `deevid` provider — uses persistent browser profile at `.cache/deevid_profile/`)
 
 ## Recent Changes
+- 007: Phase 7 deevid.ai 브라우저 자동화 (Veo 3.1)
+  - DeevidGenerator (Playwright 기반, generate_and_wait 오버라이드)
+  - deevid_selectors.py (UI selector 외부화)
+  - factory.py에 deevid 등록 (lazy import)
+  - `python3 -m src.main deevid_login` CLI 추가
+  - UI: videoProvider 토글 (deevid / seedance)
+  - 12개 신규 테스트 (197 total passing)
 - 006: Phase 6 영상 쇼츠 모드 구현 완료
   - 범용 주제 입력 (TopicInput, analyze_topic, TOPIC_ANALYZE_PROMPT)
   - 이미지 스타일 프리셋 4종 (webtoon/3d_pixar/realistic/anime)

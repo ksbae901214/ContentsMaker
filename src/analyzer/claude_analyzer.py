@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import subprocess
 from datetime import datetime
@@ -115,13 +116,16 @@ def analyze_topic(
 def _call_claude(prompt: str) -> str:
     """Call Claude Code headless mode and return raw output."""
     try:
+        env = {
+            **os.environ,
+            "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:" + os.environ.get("PATH", ""),
+        }
         result = subprocess.run(
             ["claude", "-p", prompt],
             capture_output=True,
             text=True,
             timeout=CLAUDE_TIMEOUT_SECONDS,
-            env={"PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin",
-                 "HOME": str(Path.home())},
+            env=env,
         )
     except FileNotFoundError:
         raise AnalyzerError(

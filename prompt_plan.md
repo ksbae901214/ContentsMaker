@@ -244,6 +244,86 @@
 
 ---
 
+## Phase 7: deevid.ai 브라우저 자동화 (Veo 3.1) ✅ 구현 완료
+
+**배경**: Seedance 2.0 API는 2026-03 할리우드 저작권 이슈로 해외 채널이 대거 중단됨 (laozhang.ai 503, 공식 Volcengine은 중국 ID 필요). deevid.ai는 무료 20 크레딧으로 Veo 3.1 (Master V2.0)을 제공하므로 브라우저 자동화로 활용한다.
+
+**제약**: 무료 티어 (워터마크 + 720p, 20 크레딧 일회성), 1회 수동 로그인 필요, ToS 미명시 (개인용 사용 전제).
+
+### 7-1. 기반 설정 ✅
+- [x] `playwright>=1.49.0` 의존성 추가
+- [x] `DEEVID_PROFILE_DIR`, `DEEVID_URL`, `DEEVID_HEADLESS` 설정 추가
+- [x] `.gitignore`에 `.cache/` 추가
+
+### 7-2. DeevidGenerator ✅
+- [x] `src/video_gen/deevid_gen.py` (신규) — `generate_and_wait()` 직접 오버라이드 방식
+- [x] `src/video_gen/deevid_selectors.py` (신규) — UI selector 외부화 (Mantine framework 기반)
+- [x] 추상 메서드 `generate/get_status/download`는 `NotImplementedError` (브라우저 세션은 호출당 단일)
+- [x] `_ensure_logged_in`, `_submit_prompt`, `_wait_for_completion`, `_download_video` 헬퍼
+- [x] 9:16 aspect ratio 자동 선택 시도, 실패 시 16:9로 진행
+- [x] "Out of credits" 감지 → 친절한 에러 메시지
+
+### 7-3. CLI 로그인 도우미 ✅
+- [x] `python3 -m src.main deevid_login` 서브커맨드
+- [x] headed 브라우저로 deevid.ai 열기 → 사용자 수동 로그인 → Enter로 종료
+- [x] persistent context를 `.cache/deevid_profile/`에 저장
+
+### 7-4. 팩토리 + 파이프라인 통합 ✅
+- [x] `src/video_gen/factory.py` — lazy import로 `deevid` 등록 (playwright는 무거우니 필요할 때만)
+- [x] `app/api/generate/route.ts` — `videoProvider` FormData 분기, deevid 선택 시 프로필 존재 확인
+- [x] `app/page.tsx` — 영상 모드 시 provider 토글 UI (deevid / seedance)
+- [x] 모든 탭(image/manual/url/topic) FormData에 `videoProvider` 전달
+
+### 7-5. 테스트 ✅
+- [x] `tests/test_deevid_gen.py` (신규, 12개)
+  - estimate_cost 0.0 검증
+  - stub 메서드 NotImplementedError 검증
+  - precondition (output_path, profile_dir) 검증
+  - playwright 완전 mock으로 success flow + no_credits flow E2E
+  - selectors 모듈 임포트 가능 검증
+- [x] `tests/test_seedance_gen.py` 수정 — `asyncio.get_event_loop()` → `asyncio.run()` (deprecation 정리)
+- [x] **197/197 통과** (기존 185 + 신규 12)
+
+### 7-6. 사용 흐름
+
+```bash
+# 1. 의존성 설치 (최초 1회)
+pip install -r requirements.txt
+playwright install chromium
+
+# 2. deevid.ai 로그인 (최초 1회)
+python3 -m src.main deevid_login
+# → 브라우저 창에서 Google OAuth 로그인 → 터미널에서 Enter
+
+# 3. 영상 생성
+# 웹 UI: 비주얼 모드 "영상" → 제공업체 "deevid.ai" 선택 → 생성
+```
+
+### 수정/신규 파일 요약
+
+| 파일 | 변경 |
+|------|------|
+| `requirements.txt` | + playwright>=1.49.0 |
+| `.gitignore` | + .cache/ |
+| `src/config/settings.py` | + DEEVID_PROFILE_DIR, DEEVID_URL, DEEVID_HEADLESS |
+| `src/video_gen/deevid_gen.py` | **신규** — DeevidGenerator + interactive_login |
+| `src/video_gen/deevid_selectors.py` | **신규** — UI selector dict |
+| `src/video_gen/factory.py` | + deevid lazy import 등록 |
+| `src/main.py` | + deevid_login 서브커맨드 |
+| `app/api/generate/route.ts` | + videoProvider 분기, profile 존재 사전 체크 |
+| `app/page.tsx` | + videoProvider 토글 UI (영상 모드 시) |
+| `tests/test_deevid_gen.py` | **신규** — 12개 mocked tests |
+| `tests/test_seedance_gen.py` | asyncio.run() 마이그레이션 |
+
+### 알려진 제약 / 후속 작업
+
+- **Selector 안정성**: deevid.ai UI 변경 시 `deevid_selectors.py`만 수정하면 됨
+- **Cloudflare/봇 탐지**: 현재는 미적용. 문제 발생 시 `playwright-stealth` 통합 검토
+- **download_button selector**: 로그인 + 실제 생성 후 검증 필요 (현재는 best-guess)
+- **무료 크레딧 소진**: 20 크레딧 → 약 3개 영상 분량. 소진 시 재가입 또는 유료 전환
+
+---
+
 ## Phase 4: 자동화 + 업로드 📋 미착수
 
 ### 계획 항목

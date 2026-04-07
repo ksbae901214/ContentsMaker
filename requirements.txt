@@ -7,5 +7,5 @@ httpx>=0.27.0
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
 
-# P2: Auto crawling (install when needed)
-# playwright>=1.40.0
+# Browser automation (deevid.ai video generation)
+playwright>=1.49.0

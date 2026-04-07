@@ -53,3 +53,6 @@ data/bgm/
 
 # Legacy web directory
 web/
+
+# Browser automation profile (deevid.ai)
+.cache/

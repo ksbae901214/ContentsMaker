@@ -153,22 +153,38 @@ print("ok")`);
           send("progress",{message:"🎙️ [드라이런] 음성 생성 스킵"});
           send("progress",{message:"🎬 [드라이런] 렌더링 스킵"});
         } else if (visualMode === "video") {
-          // AI Video clip mode (Seedance)
-          const hasSeedanceKey = !!process.env.SEEDANCE_API_KEY;
-          if (!hasSeedanceKey) {
-            send("error",{message:"SEEDANCE_API_KEY가 설정되지 않았습니다. 이미지 모드를 사용해주세요."});
+          // AI Video clip mode — provider selectable
+          const videoProvider = (fd.get("videoProvider") as string) || "seedance";
+
+          // Provider-specific pre-checks
+          if (videoProvider === "seedance" && !process.env.SEEDANCE_API_KEY) {
+            send("error",{message:"SEEDANCE_API_KEY가 설정되지 않았습니다. deevid.ai를 선택하거나 이미지 모드를 사용해주세요."});
             ctrl.close(); return;
           }
-          send("progress",{message:`🎥 AI 영상 클립 생성 중 (${a.scenes}씬)...`});
+          if (videoProvider === "deevid") {
+            // Check that the user has run `python3 -m src.main deevid_login` at least once
+            const profileExists = JSON.parse(await py(`
+import json
+from src.config.settings import DEEVID_PROFILE_DIR
+print(json.dumps({"exists": DEEVID_PROFILE_DIR.exists()}))`));
+            if (!profileExists.exists) {
+              send("error",{message:"deevid.ai 로그인 세션이 없습니다. 터미널에서 'python3 -m src.main deevid_login'을 먼저 실행해주세요."});
+              ctrl.close(); return;
+            }
+          }
+
+          const providerLabel = videoProvider === "deevid" ? "deevid.ai (Veo 3.1)" : "Seedance API";
+          send("progress",{message:`🎥 ${providerLabel}로 영상 클립 생성 중 (${a.scenes}씬)...`});
+
           try {
             const vidResult = JSON.parse(await py(`
 import sys,json,asyncio;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.analyzer.script_models import ShortsScript
-from src.video_gen.seedance_gen import SeedanceGenerator
+from src.video_gen.factory import create_generator
 from src.config.settings import DATA_VIDEOS_DIR
 s=ShortsScript.load('''${a.sp}''')
-gen=SeedanceGenerator()
+gen=create_generator('${videoProvider}')
 results=[]
 DATA_VIDEOS_DIR.mkdir(parents=True,exist_ok=True)
 for scene in s.scenes:

@@ -60,7 +60,7 @@ class TestApiKeyMissing:
     def test_generate_raises_without_api_key(self):
         gen = SeedanceGenerator()
         with pytest.raises(SeedanceError, match="SEEDANCE_API_KEY"):
-            asyncio.get_event_loop().run_until_complete(
+            asyncio.run(
                 gen.generate("test prompt")
             )
 
@@ -68,7 +68,7 @@ class TestApiKeyMissing:
     def test_get_status_raises_without_api_key(self):
         gen = SeedanceGenerator()
         with pytest.raises(SeedanceError, match="SEEDANCE_API_KEY"):
-            asyncio.get_event_loop().run_until_complete(
+            asyncio.run(
                 gen.get_status("task-123")
             )
 
@@ -76,7 +76,7 @@ class TestApiKeyMissing:
     def test_download_raises_without_api_key(self):
         gen = SeedanceGenerator()
         with pytest.raises(SeedanceError, match="SEEDANCE_API_KEY"):
-            asyncio.get_event_loop().run_until_complete(
+            asyncio.run(
                 gen.download("task-123", "/tmp/out.mp4")
             )
 

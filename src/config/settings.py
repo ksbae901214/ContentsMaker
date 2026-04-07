@@ -26,6 +26,11 @@ TARGET_DURATION_MAX = 60
 # Video generation
 DATA_VIDEOS_DIR = DATA_DIR / "videos"
 
+# deevid.ai browser automation
+DEEVID_PROFILE_DIR = PROJECT_ROOT / ".cache" / "deevid_profile"
+DEEVID_URL = "https://deevid.ai/"
+DEEVID_HEADLESS = False  # headed by default; set true after stable
+
 # Auto crawler settings (P2)
 CRAWL_DELAY_SECONDS = 5
 CRAWL_TIMEOUT_SECONDS = 30

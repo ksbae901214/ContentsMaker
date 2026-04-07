@@ -470,6 +470,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")
 
+    # deevid_login subcommand
+    subparsers.add_parser(
+        "deevid_login",
+        help="deevid.ai 1회 수동 로그인 (브라우저 자동화 영상 생성용)",
+    )
+
     return parser
 
 
@@ -517,6 +523,10 @@ def main() -> int:
     if args.command == "crawl":
         print("⚠️  자동 크롤링은 아직 구현되지 않았습니다")
         return 1
+
+    if args.command == "deevid_login":
+        from src.video_gen.deevid_gen import run_interactive_login
+        return run_interactive_login()
 
     return 0
 

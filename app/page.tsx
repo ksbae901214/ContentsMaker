@@ -17,7 +17,7 @@ export default function Home() {
   const [details, setDetails] = useState("");
   const [imageStyle, setImageStyle] = useState<"webtoon"|"3d_pixar"|"realistic"|"anime">("webtoon");
   const [visualMode, setVisualMode] = useState<"manga"|"video">("manga");
-  const [videoProvider, setVideoProvider] = useState<"seedance"|"deevid">("deevid");
+  const [videoProvider, setVideoProvider] = useState<"seedance"|"deevid"|"freepik">("freepik");
   const [status, setStatus] = useState<Status>("idle");
   const [progress, setProgress] = useState<string[]>([]);
   const [result, setResult] = useState<JobResult|null>(null);
@@ -194,10 +194,12 @@ export default function Home() {
       {/* Video provider selector (video mode only) */}
       {visualMode==="video"&&<div className="mb-4">
         <label className="block text-sm font-medium text-gray-300 mb-2">영상 생성 제공업체</label>
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={()=>setVideoProvider("deevid")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="deevid"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🌐 deevid.ai (Veo 3.1, 무료)</button>
-          <button onClick={()=>setVideoProvider("seedance")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="seedance"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>⚡ Seedance API ($0.05/씬)</button>
+        <div className="grid grid-cols-3 gap-2">
+          <button onClick={()=>setVideoProvider("freepik")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="freepik"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎨 Freepik (구독)</button>
+          <button onClick={()=>setVideoProvider("deevid")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="deevid"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🌐 deevid.ai (무료)</button>
+          <button onClick={()=>setVideoProvider("seedance")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="seedance"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>⚡ Seedance API</button>
         </div>
+        {videoProvider==="freepik"&&<p className="mt-2 text-xs text-gray-500">⚠️ 사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main freepik_login</code> 실행 필요</p>}
         {videoProvider==="deevid"&&<p className="mt-2 text-xs text-gray-500">⚠️ 사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main deevid_login</code> 실행 필요</p>}
       </div>}
 

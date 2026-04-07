@@ -16,7 +16,10 @@ def create_generator(provider: str = "seedance") -> VideoGeneratorBase:
     if provider == "deevid":
         from src.video_gen.deevid_gen import DeevidGenerator
         return DeevidGenerator()
+    if provider == "freepik":
+        from src.video_gen.freepik_gen import FreepikBrowserGenerator
+        return FreepikBrowserGenerator()
     raise ValueError(
         f"Unknown video generator: {provider!r}. "
-        f"Available: 'seedance', 'deevid'"
+        f"Available: 'seedance', 'deevid', 'freepik'"
     )

@@ -476,6 +476,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="deevid.ai 1회 수동 로그인 (브라우저 자동화 영상 생성용)",
     )
 
+    # freepik_login subcommand
+    subparsers.add_parser(
+        "freepik_login",
+        help="Freepik 1회 수동 로그인 (브라우저 자동화 영상 생성용)",
+    )
+
     return parser
 
 
@@ -527,6 +533,10 @@ def main() -> int:
     if args.command == "deevid_login":
         from src.video_gen.deevid_gen import run_interactive_login
         return run_interactive_login()
+
+    if args.command == "freepik_login":
+        from src.video_gen.freepik_gen import run_interactive_login as freepik_login
+        return freepik_login()
 
     return 0
 

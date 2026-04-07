@@ -31,6 +31,11 @@ DEEVID_PROFILE_DIR = PROJECT_ROOT / ".cache" / "deevid_profile"
 DEEVID_URL = "https://deevid.ai/"
 DEEVID_HEADLESS = False  # headed by default; set true after stable
 
+# freepik.com browser automation
+FREEPIK_PROFILE_DIR = PROJECT_ROOT / ".cache" / "freepik_profile"
+FREEPIK_VIDEO_URL = "https://www.freepik.com/ai/video-generator"
+FREEPIK_HEADLESS = False  # headed by default; set true after stable
+
 # Auto crawler settings (P2)
 CRAWL_DELAY_SECONDS = 5
 CRAWL_TIMEOUT_SECONDS = 30

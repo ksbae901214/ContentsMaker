@@ -172,8 +172,19 @@ print(json.dumps({"exists": DEEVID_PROFILE_DIR.exists()}))`));
               ctrl.close(); return;
             }
           }
+          if (videoProvider === "freepik") {
+            // Check that the user has run `python3 -m src.main freepik_login` at least once
+            const profileExists = JSON.parse(await py(`
+import json
+from src.config.settings import FREEPIK_PROFILE_DIR
+print(json.dumps({"exists": FREEPIK_PROFILE_DIR.exists()}))`));
+            if (!profileExists.exists) {
+              send("error",{message:"Freepik 로그인 세션이 없습니다. 터미널에서 'python3 -m src.main freepik_login'을 먼저 실행해주세요."});
+              ctrl.close(); return;
+            }
+          }
 
-          const providerLabel = videoProvider === "deevid" ? "deevid.ai (Veo 3.1)" : "Seedance API";
+          const providerLabel = videoProvider === "deevid" ? "deevid.ai (Veo 3.1)" : videoProvider === "freepik" ? "Freepik" : "Seedance API";
           send("progress",{message:`🎥 ${providerLabel}로 영상 클립 생성 중 (${a.scenes}씬)...`});
 
           try {

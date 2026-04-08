@@ -23,6 +23,15 @@ MAX_SCENES = 15
 TARGET_DURATION_MIN = 30
 TARGET_DURATION_MAX = 60
 
+# Maximum seconds per scene — constrained so each scene fits in one Kling 2.5
+# clip (5-10s range). We use 5.0s as a hard ceiling because:
+#   1. It gives the shortest lowest-common-denominator across all Premium+
+#      unlimited video models (Kling 2.5 / Wan 2.2 / MiniMax 2.3).
+#   2. Shorter scenes → more visual variety, faster pacing for shorts.
+# Scripts generated via build_shorts_script() must obey this ceiling. Pre-
+# existing scripts can be split via scene_ops.split_scenes_to_max_duration().
+MAX_SCENE_DURATION_SECONDS = 5.0
+
 # Video generation
 DATA_VIDEOS_DIR = DATA_DIR / "videos"
 

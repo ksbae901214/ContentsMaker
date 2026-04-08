@@ -1,10 +1,15 @@
-"""GPT Image Mini API — generates manga-style illustrations.
+"""Scene image generation — two backends:
 
-Constitution Principle I: $0.005/image, minimal cost.
-Constitution Principle III: Images support text-first video as backgrounds.
+1. GPT Image Mini API ($0.005/image) — default for non-Freepik users.
+2. Freepik browser automation (free on Premium+) — unlimited Nano Banana Pro
+   etc. via src/illustrator/freepik_image_gen.py.
+
+The `provider` parameter on `generate_scene_images()` picks between them.
+`DEFAULT_IMAGE_PROVIDER` in settings.py controls the fallback.
 """
 from __future__ import annotations
 
+import asyncio
 import base64
 import logging
 import os
@@ -12,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 
 from src.analyzer.script_models import ShortsScript
-from src.config.settings import PROJECT_ROOT
+from src.config.settings import DEFAULT_IMAGE_PROVIDER, PROJECT_ROOT
 from src.illustrator.prompt_builder import (
     PromptBuildError,
     build_image_prompts,
@@ -43,16 +48,35 @@ def generate_scene_images(
     use_simple_prompts: bool = False,
     use_references: bool = True,
     image_style: str = "webtoon",
+    provider: str | None = None,
 ) -> list[dict]:
     """Generate manga-style images for each scene.
 
-    When reference images are available and use_references=True,
+    Backends (selected via `provider`):
+      - "gpt"     → OpenAI GPT Image API ($0.005/image, reference images supported)
+      - "freepik" → Freepik browser automation ($0/image on Premium+, unlimited)
+
+    If provider is None, uses settings.DEFAULT_IMAGE_PROVIDER.
+
+    When reference images are available and use_references=True (GPT only),
     uses images.edit() API to maintain consistent art style and characters.
     Falls back to images.generate() when no references exist.
     For non-webtoon styles, always uses images.generate().
 
     Returns list of {scene_id, image_path, prompt} dicts.
     """
+    chosen_provider = provider or DEFAULT_IMAGE_PROVIDER
+
+    # ─── Freepik browser automation branch ───
+    if chosen_provider == "freepik":
+        return _generate_via_freepik(
+            script=script,
+            output_dir=output_dir,
+            use_simple_prompts=use_simple_prompts,
+            image_style=image_style,
+        )
+
+    # ─── GPT Image API branch (default, legacy) ───
     try:
         from openai import OpenAI
     except ImportError:
@@ -252,3 +276,49 @@ def _generate_with_all_references(client, prompt: str, ref_paths: list):
     finally:
         for f in ref_files:
             f.close()
+
+
+def _generate_via_freepik(
+    script: ShortsScript,
+    output_dir: Path | None,
+    use_simple_prompts: bool,
+    image_style: str,
+) -> list[dict]:
+    """Generate scene images via Freepik browser automation.
+
+    Uses FREEPIK_IMAGE_MODEL_PRIORITY (Nano Banana Pro → GPT Image 1.5 → Flux.2 Max)
+    with per-model fallback. All models are unlimited on Premium+.
+
+    Reference images are not used here — the browser generator doesn't support
+    images.edit()-style consistency. For reference-based consistency, use
+    provider='gpt' instead.
+    """
+    from src.illustrator.freepik_image_gen import FreepikImageGenerator
+
+    # Build prompts (same as GPT path — the prompt_builder output is provider-agnostic)
+    try:
+        if use_simple_prompts:
+            prompt_list = build_image_prompts_simple(script, image_style=image_style)
+        else:
+            prompt_list = build_image_prompts(script, image_style=image_style)
+    except PromptBuildError as e:
+        logger.warning("Claude 프롬프트 생성 실패, 단순 모드 전환: %s", e)
+        prompt_list = build_image_prompts_simple(script, image_style=image_style)
+
+    target_dir = output_dir or DATA_IMAGES_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.info(
+        "Freepik 브라우저로 이미지 %d장 생성 시작 (Premium+ 무제한)",
+        len(prompt_list),
+    )
+
+    gen = FreepikImageGenerator()
+    results = asyncio.run(
+        gen.generate_scene_images(
+            prompts=prompt_list,
+            output_dir=target_dir,
+        )
+    )
+    logger.info("Freepik 이미지 생성 완료: %d장 (변동비 $0)", len(results))
+    return results

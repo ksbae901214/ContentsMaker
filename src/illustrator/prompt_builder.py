@@ -90,17 +90,37 @@ IMAGE_STYLE_PRESETS = {
         "the image must contain ZERO written characters of any language, "
         "high quality 3D animated render"
     ),
+    # CRITICAL: the word "illustration" is FORBIDDEN here — it triggers
+    # stylized output on Nano Banana / GPT Image. We want camera photography.
     "realistic": (
-        "Photorealistic digital illustration, natural soft lighting, "
-        "detailed skin texture, cinematic composition, "
-        "Korean drama style photography aesthetic, "
-        "attractive Korean adults in modern settings, "
-        "warm natural color grading, shallow depth of field, "
-        "vertical 9:16 composition suitable for YouTube Shorts, "
+        # ─── Photography vocabulary (must come first to anchor the model) ───
+        "Professional DSLR photograph, photorealistic, shot on Sony A7R IV, "
+        "85mm prime lens, f/1.8 shallow depth of field, "
+        "Korean drama cinematography style, "
+        "natural daylight with soft window light or golden hour, "
+        "true-to-life skin texture with visible pores and micro-details, "
+        "attractive Korean adults in their 20s-30s in modern Korean settings, "
+        "cinematic color grading (Sony Venice / ARRI Alexa look), "
+        "high dynamic range, sharp focus on subject, tasteful bokeh background, "
+        # ─── Anatomy correctness (CRITICAL — diffusion models fail this often) ───
+        "anatomically correct human body, "
+        "EXACTLY two arms, EXACTLY two hands, EXACTLY five fingers per hand, "
+        "EXACTLY two legs, EXACTLY one head, EXACTLY two eyes, "
+        "natural realistic hand positioning and proportions, "
+        "hands and fingers in clear well-defined positions (not overlapping or merged), "
+        "NO extra limbs, NO extra hands, NO extra fingers, NO extra arms, NO extra legs, "
+        "NO duplicated body parts, NO mutant anatomy, NO deformed hands, "
+        "NO floating hands disconnected from arms, NO hands with wrong thumb orientation, "
+        "NO mirrored body parts, NO three hands, NO two left hands, NO two right hands, "
+        # ─── Aspect ratio + text removal ───
+        "vertical 9:16 aspect ratio for YouTube Shorts, "
         "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, "
         "NO watermarks, NO subtitles, NO UI elements, NO titles, NO labels, NO signs with writing, "
-        "the image must contain ZERO written characters of any language, "
-        "high quality photorealistic digital art"
+        # ─── Style guard (anti-cartoon) ───
+        "NO cartoon, NO anime, NO illustration, NO painting, NO drawing, NO webtoon, NO manga, "
+        "NO 3D render, NO CGI look, "
+        "this is a REAL PHOTOGRAPH not a drawing, "
+        "the image must contain ZERO written characters of any language"
     ),
     "anime": (
         "Japanese anime style illustration, large expressive eyes, "
@@ -114,6 +134,60 @@ IMAGE_STYLE_PRESETS = {
         "the image must contain ZERO written characters of any language, "
         "high quality anime digital art"
     ),
+}
+
+# Style-specific instructions for the Claude scene-description generator.
+# These replace the hard-coded "한국 웹툰 스타일" prompt when non-webtoon style.
+STYLE_INSTRUCTIONS_FOR_CLAUDE = {
+    "webtoon": {
+        "style_name": "한국 웹툰 (Korean webtoon)",
+        "requirements": (
+            "- 한국 웹툰 스타일: 굵은 블랙 아웃라인 + 플랫 컬러링 (그라디언트 최소화)\n"
+            "- 캐릭터: 매우 예쁜 한국 여성 / 매우 잘생긴 한국 남성 (8등신 비율)\n"
+            "- 얼굴: 크고 아름다운 눈, 섬세한 이목구비, 감정이 풍부한 표정\n"
+            "- 배경: 한국 일상 (현대 사무실, 아파트, 카페, 거리 등)\n"
+            "- 텍스트 금지: 이미지 어디에도 글자/숫자/텍스트/말풍선 절대 없음"
+        ),
+    },
+    "realistic": {
+        "style_name": "사진 실사 (Photorealistic DSLR photography)",
+        "requirements": (
+            "- ⚠️ CRITICAL: 이것은 실제 사진입니다. 일러스트/그림/웹툰/애니메이션 절대 아님\n"
+            "- DSLR 카메라로 찍은 사진 느낌: 85mm prime lens, f/1.8, shallow depth of field\n"
+            "- 한국 드라마 시네마토그래피 스타일\n"
+            "- 자연스러운 피부 텍스처 (모공까지 보이는 디테일)\n"
+            "- 매력적인 한국인 20-30대 (사실적 외모)\n"
+            "- 자연광 또는 골든아워, 부드러운 조명\n"
+            "- 한국 현대 배경 (아파트, 오피스, 카페 등)\n"
+            "- ⚠️ ANATOMY CRITICAL: 정확히 손 2개, 손가락 5개씩, 팔 2개, 다리 2개\n"
+            "  - 절대 금지: 손이 3개, 왼손이 2개, 손가락 6개, 팔 3개, 신체 부위 중복, 기형 손\n"
+            "  - 손의 위치를 명확히 묘사 (예: 'left hand covering mouth, right hand resting on table')\n"
+            "  - 손이 보이지 않을 경우 'hands not visible' 또는 'hidden behind back'으로 명시\n"
+            "- 절대 포함 금지 단어: 'illustration', 'drawing', 'cartoon', 'anime', 'webtoon', 'painting'\n"
+            "- 반드시 포함 단어: 'photograph', 'photorealistic', 'DSLR', 'shot on', 'bokeh', 'anatomically correct'\n"
+            "- 텍스트 금지: 이미지 어디에도 글자/숫자/텍스트/말풍선 절대 없음"
+        ),
+    },
+    "3d_pixar": {
+        "style_name": "3D Pixar 애니메이션",
+        "requirements": (
+            "- Pixar/Disney 3D 렌더 스타일\n"
+            "- 부드러운 피부 텍스처, 큰 표정있는 눈, 둥글고 친근한 얼굴\n"
+            "- 컬러풀한 채도 높은 팔레트, 부드러운 조명\n"
+            "- 현대 한국 배경\n"
+            "- 텍스트 금지"
+        ),
+    },
+    "anime": {
+        "style_name": "일본 애니메이션",
+        "requirements": (
+            "- Japanese anime 스타일, 크고 표정 있는 눈\n"
+            "- 활기찬 컬러, 섬세한 머리 쉐이딩\n"
+            "- 깨끗한 라인아트\n"
+            "- 한국 배경\n"
+            "- 텍스트 금지"
+        ),
+    },
 }
 
 # Emotion modifiers — kept SOFT to not override the bright reference style
@@ -142,14 +216,35 @@ def build_image_prompts(script: ShortsScript, image_style: str = "webtoon") -> l
         for s in script.scenes
     )
 
-    claude_prompt = f"""다음 블라인드 쇼츠 영상의 각 씬에 대해 한국 웹툰 스타일의 이미지 생성 프롬프트를 만들어주세요.
+    # Style-specific instruction block (was hardcoded to webtoon before)
+    style_info = STYLE_INSTRUCTIONS_FOR_CLAUDE.get(
+        image_style, STYLE_INSTRUCTIONS_FOR_CLAUDE["webtoon"]
+    )
+    style_name = style_info["style_name"]
+    style_requirements = style_info["requirements"]
+
+    # Extra rule-6 content varies by style (photo vs illustration)
+    if image_style == "realistic":
+        rule_6 = (
+            "6. 캐릭터 묘사는 실제 사진 찍는 것처럼: 'a Korean woman in her 20s with shoulder-length "
+            "black hair, wearing a beige cardigan, looking shocked', 'captured in natural window light' 등\n"
+            "   ⚠️ ANATOMY (CRITICAL): 손/팔/다리의 위치를 명확히 묘사. "
+            "예: 'her left hand covering her mouth, her right hand resting at her side', "
+            "'both hands holding a smartphone', 'hands clasped together in front of chest'. "
+            "손이 보이지 않을 경우 'hands hidden behind back' 또는 'hands out of frame'. "
+            "반드시 'anatomically correct, exactly two hands with five fingers each' 포함.\n"
+            "   ⚠️ 절대 사용 금지 단어: illustration, drawing, cartoon, anime, manga, webtoon, painting, artwork\n"
+            "   ✅ 반드시 사용: photograph, photo, photorealistic, shot on DSLR, 85mm lens, bokeh, cinematic, anatomically correct"
+        )
+    else:
+        rule_6 = (
+            "6. 캐릭터 외모(매력적인 얼굴), 옷차림, 표정, 포즈를 구체적으로 묘사하세요"
+        )
+
+    claude_prompt = f"""다음 블라인드 쇼츠 영상의 각 씬에 대해 {style_name} 스타일의 이미지 생성 프롬프트를 만들어주세요.
 
 ## 그림 스타일 요구사항
-- 한국 웹툰 스타일: 굵은 블랙 아웃라인 + 플랫 컬러링 (그라디언트 최소화)
-- 캐릭터: 매우 예쁜 한국 여성 / 매우 잘생긴 한국 남성 (8등신 비율)
-- 얼굴: 크고 아름다운 눈, 섬세한 이목구비, 감정이 풍부한 표정
-- 배경: 한국 일상 (현대 사무실, 아파트, 카페, 거리 등)
-- 텍스트 금지: 이미지 어디에도 글자/숫자/텍스트/말풍선 절대 없음
+{style_requirements}
 
 ## 영상 정보
 제목: {script.metadata.title}
@@ -161,10 +256,10 @@ def build_image_prompts(script: ShortsScript, image_style: str = "webtoon") -> l
 ## 프롬프트 작성 규칙
 1. 영어로 작성하세요
 2. 각 씬 상황을 구체적 장면으로 묘사하세요
-3. 캐릭터 외모(매력적인 얼굴), 옷차림, 표정, 포즈를 구체적으로 묘사하세요
-4. 한국 문화 맞는 배경 지정 (Korean apartment interior, Korean company office 등)
-5. 반드시 포함: "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO signs with writing, NO titles, NO labels anywhere in the image, the image must contain ZERO written characters of any language"
-6. 인물 수와 관계 명확히 (a beautiful Korean woman in her 20s, a handsome Korean man in his 30s 등)
+3. 한국 문화 맞는 배경 지정 (Korean apartment interior, Korean company office 등)
+4. 반드시 포함: "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, NO signs with writing, NO titles, NO labels anywhere in the image, the image must contain ZERO written characters of any language"
+5. 인물 수와 관계 명확히 (a Korean woman in her 20s, a Korean man in his 30s 등)
+{rule_6}
 7. 표정이 핵심 (deeply frustrated, embarrassed, shocked, tearful, overjoyed 등)
 8. 감정에 맞는 조명/분위기도 포함 (warm lighting, dramatic shadows 등)
 

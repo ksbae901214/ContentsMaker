@@ -46,10 +46,11 @@ FREEPIK_VIDEO_MODEL_PRIORITY = [
 ]
 
 # Premium+ unlimited image models for manga mode (Freepik browser automation).
+# Names must match IMAGE_MODEL_DATA_CY keys in freepik_image_selectors.py.
 FREEPIK_IMAGE_MODEL_PRIORITY = [
-    "Google Nano Banana Pro",    # 1K/2K unlimited
-    "GPT Image 1.5",
-    "Flux.2 Max 1K",
+    "Google Nano Banana Pro",    # 1K/2K unlimited — top quality
+    "GPT Image 1.5",             # high quality fallback
+    "Flux.2 Max",                # fallback
 ]
 
 # Default image generation backend. "freepik" uses browser automation (unlimited

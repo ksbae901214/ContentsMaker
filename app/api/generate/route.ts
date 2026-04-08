@@ -215,18 +215,52 @@ print(json.dumps({"results":results,"cost":gen.estimate_cost()*len(s.scenes)}))`
             send("progress",{message:`✅ AI 영상 ${vc}개 ($${cost.toFixed(3)})`});
           } catch(e:any) { send("progress",{message:`⚠️ 영상 생성 실패: ${e.message?.slice(0,100)}. 이미지 모드로 진행합니다.`}); }
         } else {
-          const hasKey=!!process.env.OPENAI_API_KEY;
-          if(hasKey){
-            send("progress",{message:`🎨 만화 이미지 생성 중 (${a.scenes}씬)...`});
-            const im=JSON.parse(await py(`
+          // Manga (image) mode — provider selectable (gpt | freepik)
+          const imageProvider = (fd.get("imageProvider") as string) || "freepik";
+
+          // Provider-specific pre-checks
+          let canProceed = false;
+          let providerLabel = "";
+          if (imageProvider === "freepik") {
+            const profileExists = JSON.parse(await py(`
+import json
+from src.config.settings import FREEPIK_PROFILE_DIR
+print(json.dumps({"exists": FREEPIK_PROFILE_DIR.exists()}))`));
+            if (!profileExists.exists) {
+              send("progress",{message:"⚠️ Freepik 세션 없음 → GPT 이미지 API로 폴백"});
+            } else {
+              canProceed = true;
+              providerLabel = "Freepik (Nano Banana Pro, 무제한)";
+            }
+          }
+
+          // Fall back to GPT if freepik not set up, or if user chose gpt
+          const useGpt = imageProvider === "gpt" || (imageProvider === "freepik" && !canProceed);
+          const hasKey = !!process.env.OPENAI_API_KEY;
+
+          if (canProceed && imageProvider === "freepik") {
+            send("progress",{message:`🎨 ${providerLabel}로 이미지 생성 중 (${a.scenes}씬)...`});
+            const im = JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from src.analyzer.script_models import ShortsScript
 from src.illustrator.image_generator import generate_scene_images
-r=generate_scene_images(ShortsScript.load('''${a.sp}'''),image_style='''${imageStyle}''')
+r=generate_scene_images(ShortsScript.load('''${a.sp}'''),image_style='''${imageStyle}''',provider='freepik')
+print(json.dumps({"c":len(r),"cost":0.0,"images":[{"scene_id":x["scene_id"],"image_path":x["image_path"]} for x in r]}))`));
+            ic = im.c; cost = im.cost; generatedImages = im.images || [];
+            send("progress",{message:`✅ 이미지 ${ic}장 (Premium+ 무제한, 변동비 $0)`});
+          } else if (useGpt && hasKey) {
+            send("progress",{message:`🎨 GPT 이미지 생성 중 (${a.scenes}씬)...`});
+            const im = JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.analyzer.script_models import ShortsScript
+from src.illustrator.image_generator import generate_scene_images
+r=generate_scene_images(ShortsScript.load('''${a.sp}'''),image_style='''${imageStyle}''',provider='gpt')
 print(json.dumps({"c":len(r),"cost":len(r)*0.005,"images":[{"scene_id":x["scene_id"],"image_path":x["image_path"]} for x in r]}))`));
-            ic=im.c;cost=im.cost;generatedImages=im.images||[];
-            send("progress",{message:`✅ 만화 ${ic}장 ($${cost.toFixed(3)})`});
-          } else send("progress",{message:"🎨 이미지 스킵 (OPENAI_API_KEY 미설정)"});
+            ic = im.c; cost = im.cost; generatedImages = im.images || [];
+            send("progress",{message:`✅ GPT 이미지 ${ic}장 ($${cost.toFixed(3)})`});
+          } else {
+            send("progress",{message:"🎨 이미지 스킵 (Freepik 세션 없음 + OPENAI_API_KEY 미설정)"});
+          }
 
           send("progress",{message:"🎙️ 음성 생성 중 (타이밍 추출)..."});
           ttsResult=JSON.parse(await py(`

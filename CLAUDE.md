@@ -117,19 +117,31 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 
 ### Visual Modes
 
-| Mode | Generator | Output | Cost |
+| Mode | Generators | Output | Cost |
 |------|-----------|--------|------|
-| `manga` | GPT Image API | PNG per scene | ~$0.005/scene |
-| `video` | Seedance API or deevid.ai | MP4 per scene | $0.05/scene (Seedance) or free (deevid 20 credits) |
+| `manga` | Freepik (Nano Banana Pro / GPT 1.5 / Flux.2 Max) **or** OpenAI GPT Image API | PNG per scene | $0 (Premium+ unlimited) or $0.005/scene (GPT API) |
+| `video` | Freepik (Kling 2.5 / MiniMax / Wan 2.2) **or** deevid.ai **or** Seedance API | MP4 per scene | $0 (Premium+ unlimited) or free (deevid 20 credits) or $0.05/scene (Seedance) |
+
+### Image Providers (manga mode)
+
+| Provider | Type | Cost | Setup |
+|----------|------|------|-------|
+| `freepik` (default) | Browser automation (Playwright) | $0 on Premium+ (`FREEPIK_IMAGE_MODEL_PRIORITY` = Nano Banana Pro → GPT Image 1.5 → Flux.2 Max) | Run `python3 -m src.main freepik_login` once |
+| `gpt` | OpenAI API | $0.005/image, supports reference images for consistent style | `OPENAI_API_KEY` env var |
+
+`FreepikImageGenerator` reuses a single browser session for all N scene images — selects model + 9:16 once, then clears/retypes the prompt per scene. On model failure it falls back down the priority list. Selectors in `src/illustrator/freepik_image_selectors.py`.
 
 ### Video Providers (video mode)
 
 | Provider | Type | Cost | Setup |
 |----------|------|------|-------|
+| `freepik` (default) | Browser automation (Playwright) | $0 on Premium+ (`FREEPIK_VIDEO_MODEL_PRIORITY` = Kling 2.5 → MiniMax Hailuo 2.3 Fast → Wan 2.2) | Run `python3 -m src.main freepik_login` once |
+| `deevid` | Browser automation (Playwright) | Free (20 credits, Veo 3.1) | Run `python3 -m src.main deevid_login` once |
 | `seedance` | API | ~$0.05/scene 720p | `SEEDANCE_API_KEY` env var |
-| `deevid` | Browser automation (Playwright) | Free (20 credits) | Run `python3 -m src.main deevid_login` once |
 
-deevid.ai uses Veo 3.1 ("Master V2.0" tier). Free tier has 720p, watermark, ~3 videos worth of credits. Selectors live in `src/video_gen/deevid_selectors.py` for easy updates when the UI changes.
+**Premium+ unlimited**: Kling 2.5 720p, MiniMax Hailuo 2.3 Fast, Wan 2.2 are unlimited under the Freepik Premium+ plan ($34/month annual) — monthly 90-clip goal (3 videos/day × 30 days) stays at $0 variable cost. The generator tries each model in priority order, falling back on per-scene failures.
+
+**Model slug discovery**: `MODEL_DATA_CY` in `freepik_selectors.py` maps 41 video models and `IMAGE_MODEL_DATA_CY` in `freepik_image_selectors.py` maps 29 image models to their stable `ai-model-item-<slug>` data-cy attributes. To update after UI change: run `freepik_login`, open the All models modal, and inspect `data-cy` via DevTools.
 
 ### Image Styles (manga mode)
 
@@ -142,12 +154,20 @@ deevid.ai uses Veo 3.1 ("Master V2.0" tier). Free tier has 720p, watermark, ~3 v
 
 ## Environment Variables
 
-- `OPENAI_API_KEY` — required for GPT Image generation
+- `OPENAI_API_KEY` — required for GPT Image generation (only if using `provider='gpt'`)
 - `SEEDANCE_API_KEY` — optional, for Seedance API video provider
 - `SEEDANCE_API_BASE` — optional, Seedance API base URL (default: `https://api.seedance.ai/v1`)
-- (no env vars needed for `deevid` provider — uses persistent browser profile at `.cache/deevid_profile/`)
+- (no env vars needed for `freepik` or `deevid` providers — they use persistent browser profiles at `.cache/freepik_profile/` and `.cache/deevid_profile/`)
 
 ## Recent Changes
+- 008: Freepik Premium+ 무제한 최적화
+  - 영상: `MODEL_DATA_CY` 맵 41개 모델 + `_select_model()` + 폴백 체인 (Kling 2.5 → MiniMax → Wan 2.2)
+  - 이미지: `FreepikImageGenerator` 신규 — 1 세션 N 이미지 + Nano Banana Pro 무제한 + `_generate_via_freepik()` 분기
+  - UI: 만화 모드에 `imageProvider` 토글 (freepik/gpt)
+  - Freepik 세션 없으면 GPT로 자동 폴백
+  - 월 90편 변동비 $0 (Premium+ $34/월 고정비만)
+  - 18개 신규 테스트 (228 total passing), Next.js 빌드 통과
+  - E2E 검증: Kling 2.5 영상 50초 생성, Nano Banana Pro 이미지 2장 140초 생성
 - 007: Phase 7 deevid.ai 브라우저 자동화 (Veo 3.1)
   - DeevidGenerator (Playwright 기반, generate_and_wait 오버라이드)
   - deevid_selectors.py (UI selector 외부화)

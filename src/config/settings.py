@@ -18,7 +18,9 @@ DATA_REFERENCES_DIR = DATA_DIR / "references"
 # Analyzer settings
 DATA_SCRIPTS_DIR = DATA_DIR / "scripts"
 DATA_AUDIO_DIR = DATA_DIR / "audio"
-CLAUDE_TIMEOUT_SECONDS = 300
+# Claude CLI timeout. 본문이 길거나 11씬 분할 요구가 복잡하면 Claude가 10분
+# 이상 걸리기도 한다. 사용자 피드백으로 매우 길게 설정 (2026-04-08).
+CLAUDE_TIMEOUT_SECONDS = 1800  # 30분
 MAX_SCENES = 15
 TARGET_DURATION_MIN = 30
 TARGET_DURATION_MAX = 60

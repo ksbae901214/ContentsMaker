@@ -5,7 +5,13 @@ import { join } from "path";
 import { v4 as uuid } from "uuid";
 
 const ROOT = process.cwd();
-export const maxDuration = 300;
+// Next.js Route Handler max duration. The full pipeline can take a LONG time:
+//   - Claude CLI 분석 (5~10분)
+//   - Freepik 이미지 6장 생성 (각 30~120초 = 3~12분)
+//   - Kling 2.5 영상 6개 생성 (각 60~120초 = 6~12분)
+//   - Remotion 렌더 (1~2분)
+// 총합: 30~40분 정도 걸릴 수 있어 3600초 (60분)로 설정.
+export const maxDuration = 3600;
 
 function py(code: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -173,13 +179,23 @@ print(json.dumps({"exists": DEEVID_PROFILE_DIR.exists()}))`));
             }
           }
           if (videoProvider === "freepik") {
-            // Check that the user has run `python3 -m src.main freepik_login` at least once
+            // Verify the persistent Chrome profile actually has session data.
+            // We check for `Default/Cookies` (Chrome's session cookies file)
+            // rather than just `.exists()` which would pass for an empty dir.
             const profileExists = JSON.parse(await py(`
 import json
 from src.config.settings import FREEPIK_PROFILE_DIR
-print(json.dumps({"exists": FREEPIK_PROFILE_DIR.exists()}))`));
-            if (!profileExists.exists) {
-              send("error",{message:"Freepik 로그인 세션이 없습니다. 터미널에서 'python3 -m src.main freepik_login'을 먼저 실행해주세요."});
+default_dir = FREEPIK_PROFILE_DIR / "Default"
+cookies = default_dir / "Cookies"
+print(json.dumps({
+  "ok": FREEPIK_PROFILE_DIR.exists() and default_dir.exists(),
+  "dir_exists": FREEPIK_PROFILE_DIR.exists(),
+  "default_exists": default_dir.exists(),
+  "cookies_exists": cookies.exists(),
+  "path": str(FREEPIK_PROFILE_DIR),
+}))`));
+            if (!profileExists.ok) {
+              send("error",{message:`Freepik 로그인 세션이 없습니다. 터미널에서 'python3 -m src.main freepik_login'을 먼저 실행해주세요. (path=${profileExists.path}, dir=${profileExists.dir_exists}, default=${profileExists.default_exists})`});
               ctrl.close(); return;
             }
           }
@@ -225,9 +241,13 @@ print(json.dumps({"results":results,"cost":gen.estimate_cost()*len(s.scenes)}))`
             const profileExists = JSON.parse(await py(`
 import json
 from src.config.settings import FREEPIK_PROFILE_DIR
-print(json.dumps({"exists": FREEPIK_PROFILE_DIR.exists()}))`));
-            if (!profileExists.exists) {
-              send("progress",{message:"⚠️ Freepik 세션 없음 → GPT 이미지 API로 폴백"});
+default_dir = FREEPIK_PROFILE_DIR / "Default"
+print(json.dumps({
+  "ok": FREEPIK_PROFILE_DIR.exists() and default_dir.exists(),
+  "path": str(FREEPIK_PROFILE_DIR),
+}))`));
+            if (!profileExists.ok) {
+              send("progress",{message:`⚠️ Freepik 세션 없음 (${profileExists.path}) → GPT 이미지 API로 폴백`});
             } else {
               canProceed = true;
               providerLabel = "Freepik (Nano Banana Pro, 무제한)";

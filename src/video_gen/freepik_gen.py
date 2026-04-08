@@ -103,7 +103,7 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
         source_image: str | None = None,
         output_path: str | None = None,
         poll_interval: float = 10.0,
-        max_wait: float = 600.0,
+        max_wait: float = 1200.0,  # 20분 — Kling 2.5는 보통 60~120s, 여유롭게
         allow_paid: bool = False,
     ) -> VideoResult:
         """Generate one video clip via Freepik and download it.

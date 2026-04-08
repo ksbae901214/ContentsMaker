@@ -107,6 +107,7 @@ class TestGenerateAndWaitFlow:
     def _make_gen_btn(self, after_click_text="Generate"):
         btn = MagicMock()
         btn.inner_text = AsyncMock(return_value=after_click_text)
+        btn.get_attribute = AsyncMock(return_value=None)  # not disabled
         btn.click = AsyncMock()
         return btn
 
@@ -141,6 +142,9 @@ class TestGenerateAndWaitFlow:
         page.keyboard = MagicMock()
         page.keyboard.press = AsyncMock()
         page.wait_for_selector = AsyncMock(return_value=MagicMock())
+        # _select_model now uses page.evaluate for JS click on the model item.
+        # Returns True if model_selectable=True, False otherwise.
+        page.evaluate = AsyncMock(return_value=model_selectable)
 
         prompt_el = self._make_prompt_el()
         ar_btn = self._make_ar_btn(current_ratio="9:16")
@@ -274,6 +278,125 @@ class TestGenerateAndWaitFlow:
                     )
 
 
+class TestCheckGenerateCost:
+    """_check_generate_cost should parse Generate button text accurately."""
+
+    def _make_page(self, button_text: str):
+        gen_btn = MagicMock()
+        gen_btn.inner_text = AsyncMock(return_value=button_text)
+        gen_btn.get_attribute = AsyncMock(return_value=None)  # not disabled
+        page = MagicMock()
+        page.query_selector = AsyncMock(return_value=gen_btn)
+        page.wait_for_timeout = AsyncMock()
+        return page
+
+    def test_bare_generate_is_free(self):
+        gen = FreepikBrowserGenerator()
+        page = self._make_page("Generate")
+        assert asyncio.run(gen._check_generate_cost(page)) == 0
+
+    def test_unlimited_label_is_free(self):
+        gen = FreepikBrowserGenerator()
+        page = self._make_page("Generate\nUnlimited")
+        assert asyncio.run(gen._check_generate_cost(page)) == 0
+
+    def test_korean_unlimited_is_free(self):
+        gen = FreepikBrowserGenerator()
+        page = self._make_page("Generate\n무제한")
+        assert asyncio.run(gen._check_generate_cost(page)) == 0
+
+    def test_numeric_cost_is_paid(self):
+        gen = FreepikBrowserGenerator()
+        page = self._make_page("Generate\n160")
+        assert asyncio.run(gen._check_generate_cost(page)) == 160
+
+    def test_high_cost_veo(self):
+        gen = FreepikBrowserGenerator()
+        page = self._make_page("Generate\n2080")
+        assert asyncio.run(gen._check_generate_cost(page)) == 2080
+
+    def test_k_suffix_thousand_credits(self):
+        gen = FreepikBrowserGenerator()
+        page = self._make_page("Generate\n1.2K")
+        assert asyncio.run(gen._check_generate_cost(page)) == 1200
+
+    def test_upgrade_button_raises(self):
+        gen = FreepikBrowserGenerator()
+        page = self._make_page("Upgrade")
+        with pytest.raises(FreepikError, match="Upgrade"):
+            asyncio.run(gen._check_generate_cost(page))
+
+    def test_unparseable_returns_negative(self):
+        gen = FreepikBrowserGenerator()
+        page = self._make_page("Generate\nProcessing")
+        assert asyncio.run(gen._check_generate_cost(page)) == -1
+
+
+class TestSubmitPromptCostGuard:
+    """_submit_prompt should refuse to click Generate when cost > 0 and allow_paid=False."""
+
+    def _make_mock_page_with_cost(self, cost_text: str):
+        prompt_el = MagicMock()
+        prompt_el.click = AsyncMock()
+        prompt_el.type = AsyncMock()
+
+        ar_btn = MagicMock()
+        ar_btn.inner_text = AsyncMock(return_value="9:16")
+        ar_btn.click = AsyncMock()
+
+        gen_btn = MagicMock()
+        gen_btn.inner_text = AsyncMock(return_value=cost_text)
+        gen_btn.get_attribute = AsyncMock(return_value=None)  # not disabled
+        gen_btn.click = AsyncMock()
+
+        async def query_selector(selector):
+            if "contenteditable" in selector or "image-prompt" in selector:
+                return prompt_el
+            if "aspect-ratio" in selector:
+                return ar_btn
+            if "generate-button" in selector:
+                return gen_btn
+            return None
+
+        page = MagicMock()
+        page.query_selector = AsyncMock(side_effect=query_selector)
+        page.click = AsyncMock()
+        page.wait_for_timeout = AsyncMock()
+        page.keyboard = MagicMock()
+        page.keyboard.press = AsyncMock()
+        return page, gen_btn
+
+    def test_aborts_when_paid_and_not_allowed(self):
+        gen = FreepikBrowserGenerator()
+        page, gen_btn = self._make_mock_page_with_cost("Generate\n160")
+        with pytest.raises(FreepikError, match="160 크레딧"):
+            asyncio.run(
+                gen._submit_prompt(page, "test", 5.0, "720p", allow_paid=False)
+            )
+        assert not gen_btn.click.called
+
+    def test_proceeds_when_paid_and_allowed(self):
+        gen = FreepikBrowserGenerator()
+        page, gen_btn = self._make_mock_page_with_cost("Generate\n160")
+        asyncio.run(
+            gen._submit_prompt(page, "test", 5.0, "720p", allow_paid=True)
+        )
+        # Now uses page.click() instead of element.click()
+        page.click.assert_any_call(
+            "[data-cy='generate-button']", timeout=15000
+        )
+
+    def test_proceeds_when_free(self):
+        gen = FreepikBrowserGenerator()
+        page, gen_btn = self._make_mock_page_with_cost("Generate")
+        asyncio.run(
+            gen._submit_prompt(page, "test", 5.0, "720p", allow_paid=False)
+        )
+        page.click.assert_any_call(
+            "[data-cy='generate-button']", timeout=15000
+        )
+
+
 class TestUploadStartImage:
     """_upload_start_image should set_input_files on the first image input."""
 
@@ -336,28 +459,27 @@ class TestSelectModel:
             asyncio.run(gen._select_model(page, "NonExistentModel 99"))
 
     def test_known_model_uses_data_cy(self):
-        """_select_model should look up the slug in MODEL_DATA_CY and click
-        the corresponding [data-cy='ai-model-item-<slug>'] element."""
+        """_select_model should look up the slug in MODEL_DATA_CY and call
+        page.evaluate with the JS click for [data-cy='ai-model-item-<slug>']."""
         from src.video_gen.freepik_selectors import MODEL_DATA_CY
 
         gen = FreepikBrowserGenerator()
 
-        # Build a minimal mock page that records what data-cy was queried
-        recorded_selectors = []
-        model_item = MagicMock()
-        model_item.click = AsyncMock()
         all_models_btn = MagicMock()
         all_models_btn.click = AsyncMock()
 
         async def query_selector(selector):
-            recorded_selectors.append(selector)
             if "All models" in selector:
                 return all_models_btn
-            if "ai-model-item-" in selector:
-                return model_item
             if "backdrop-blur-lg" in selector:
                 return None
             return None
+
+        recorded_evaluate_args = []
+
+        async def fake_evaluate(js, arg=None):
+            recorded_evaluate_args.append((js, arg))
+            return True
 
         page = MagicMock()
         page.click = AsyncMock()
@@ -365,16 +487,15 @@ class TestSelectModel:
         page.keyboard = MagicMock()
         page.keyboard.press = AsyncMock()
         page.query_selector = AsyncMock(side_effect=query_selector)
+        page.evaluate = AsyncMock(side_effect=fake_evaluate)
 
         asyncio.run(gen._select_model(page, "Kling 2.5"))
 
-        # Verify the correct data-cy was queried
+        # Verify page.evaluate was called with the right slug
         expected_slug = MODEL_DATA_CY["Kling 2.5"]
-        assert any(expected_slug in s for s in recorded_selectors), (
-            f"Expected [data-cy='{expected_slug}'] in queries, got {recorded_selectors}"
+        assert any(expected_slug == arg for _, arg in recorded_evaluate_args), (
+            f"Expected slug {expected_slug} in evaluate args, got {recorded_evaluate_args}"
         )
-        # Model item was clicked
-        assert model_item.click.called
 
 
 class TestSelectorsValid:

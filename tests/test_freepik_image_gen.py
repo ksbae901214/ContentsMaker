@@ -129,6 +129,7 @@ class TestGenerateSceneImagesFlow:
         gen_btn.inner_text = AsyncMock(
             return_value="Upgrade" if upgrade_after_click else "Generate"
         )
+        gen_btn.get_attribute = AsyncMock(return_value=None)  # not disabled
         gen_btn.click = AsyncMock()
 
         all_models_btn = MagicMock()

@@ -50,6 +50,7 @@ from src.video_gen.freepik_selectors import (
     FREEPIK_VIDEO_URL as VIDEO_URL,
     MODEL_DATA_CY,
     SELECTORS,
+    UNLIMITED_RESOLUTION_MAP,
 )
 
 logger = logging.getLogger(__name__)
@@ -103,8 +104,24 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
         output_path: str | None = None,
         poll_interval: float = 10.0,
         max_wait: float = 600.0,
+        allow_paid: bool = False,
     ) -> VideoResult:
         """Generate one video clip via Freepik and download it.
+
+        IMPORTANT — Premium+ Unlimited rules (verified 2026-04-08):
+            Kling 2.5 / Wan 2.2 / MiniMax Hailuo 2.3 (Fast) all REQUIRE a
+            Start image upload. They do NOT support pure text-to-video.
+            With Start image at the model's unlimited resolution
+            (Kling 2.5 720p / Wan 2.2 480p / MiniMax 768p), the Generate
+            button shows "Generate\\nUnlimited" = $0 cost.
+
+            Calling without source_image will leave the button disabled
+            and raise FreepikError. Pass source_image to enable generation.
+
+        Cost guard (allow_paid=False default):
+            Aborts BEFORE clicking Generate if the button text shows a
+            non-zero credit cost. Free states are bare "Generate" or
+            "Generate\\nUnlimited". Any "Generate\\n<number>" raises.
 
         Opens a Playwright browser with the persistent profile, navigates to
         Freepik Pikaso, iterates through `self.model_priority`, and returns
@@ -161,13 +178,24 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
                     try:
                         logger.info("모델 시도: %s", model_name)
                         await self._select_model(page, model_name)
+                        # Force the resolution to the unlimited tier for this model
+                        # (Kling 2.5 → 720p, Wan 2.2 → 480p, etc.).
+                        # Without this, the UI keeps the previous resolution and
+                        # the Generate button stays disabled with "Switch to
+                        # Unlimited mode" warning OR shows credit cost.
+                        target_res = UNLIMITED_RESOLUTION_MAP.get(model_name)
+                        if target_res:
+                            await self._select_resolution(page, target_res)
                         # Upload source image (if provided) AFTER model selection
                         # so that Kling 2.5 activates its Start/End frame mode.
+                        # NOTE: source_image triggers paid mode (~160 credits)
+                        # even on Premium+. Cost guard below catches this.
                         if source_image:
                             await self._upload_start_image(page, source_image)
                         existing_urls = await self._get_video_urls(page)
                         await self._submit_prompt(
-                            page, prompt, duration, resolution
+                            page, prompt, duration, resolution,
+                            allow_paid=allow_paid,
                         )
                         video_url = await self._wait_for_new_video(
                             page, existing_urls, max_wait
@@ -267,18 +295,23 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
             await all_btn.click()
             await page.wait_for_timeout(2500)
 
-        # 3. Click the target model by its stable data-cy
-        target = await page.query_selector(f'[data-cy="{slug}"]')
-        if not target:
+        # 3. Click the target model by its stable data-cy.
+        # IMPORTANT: Use a JS click via page.evaluate. The Pikaso modal
+        # has overlay elements that intercept Playwright pointer events,
+        # making regular .click() silently no-op (verified 2026-04-08).
+        result = await page.evaluate(
+            """(slug) => {
+                const btn = document.querySelector(`[data-cy="${slug}"]`);
+                if (!btn) return false;
+                btn.click();
+                return true;
+            }""",
+            slug,
+        )
+        if not result:
             raise FreepikError(
                 f"모델 '{model_name}' ({slug}) 을 모달에서 찾을 수 없습니다"
             )
-        try:
-            await target.click(timeout=10000)
-        except Exception as exc:
-            raise FreepikError(
-                f"모델 '{model_name}' 클릭 실패: {exc}"
-            ) from exc
         await page.wait_for_timeout(1500)
 
         # 4. Close the modal (Escape) and wait for backdrop to disappear
@@ -293,6 +326,68 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
             await page.wait_for_timeout(500)
         await page.wait_for_timeout(800)
         logger.info("모델 선택 완료: %s", model_name)
+
+    async def _select_resolution(self, page, target_resolution: str) -> None:
+        """Pick a specific resolution from the [data-cy='video-resolution-option']
+        popover. The button text shows the currently selected resolution
+        (e.g. "720", "480"). Clicking opens a popover with `popover-option`
+        items labeled like "720p", "480p", "768p".
+
+        target_resolution is the desired label without the 'p' (e.g. "720")
+        OR with it ("720p"). We try both forms.
+
+        If the resolution selector is missing OR the target option is not
+        available for the current model, logs a warning and continues.
+        """
+        trigger_sel = SELECTORS.get("resolution_trigger")
+        if not trigger_sel:
+            return
+
+        trigger = await page.query_selector(trigger_sel)
+        if not trigger:
+            logger.info("해상도 셀렉터 미발견 — 기본값 유지")
+            return
+
+        # Normalize: ensure both forms ("720" and "720p")
+        target_p = target_resolution if target_resolution.endswith("p") else f"{target_resolution}p"
+        target_no_p = target_resolution.rstrip("p")
+
+        current = (await trigger.inner_text()).strip()
+        if current == target_no_p or current == target_p:
+            logger.info("해상도 이미 %s 선택됨", target_p)
+            return
+
+        logger.info("해상도 변경: %s → %s", current, target_p)
+        try:
+            await trigger.click()
+            await page.wait_for_timeout(1500)
+
+            # Find the popover option with matching text
+            options = await page.query_selector_all('[data-cy="popover-option"]')
+            chosen = None
+            for opt in options:
+                txt = (await opt.inner_text()).strip()
+                if txt == target_p or txt == target_no_p:
+                    chosen = opt
+                    break
+
+            if chosen:
+                await chosen.click()
+                await page.wait_for_timeout(800)
+                logger.info("✅ 해상도 %s 선택", target_p)
+            else:
+                logger.warning(
+                    "해상도 옵션 %s 미발견 (popover에 없음) — Escape로 닫음",
+                    target_p,
+                )
+                await page.keyboard.press("Escape")
+                await page.wait_for_timeout(500)
+        except Exception as exc:
+            logger.warning("해상도 선택 실패 (%s): %s", target_p, exc)
+            try:
+                await page.keyboard.press("Escape")
+            except Exception:
+                pass
 
     async def _upload_start_image(self, page, source_image: str) -> None:
         """Upload a source image to the Start frame input (image-to-video).
@@ -364,12 +459,91 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
             await page.keyboard.press("Delete")
             await page.wait_for_timeout(300)
 
+    async def _check_generate_cost(self, page) -> int:
+        """Parse the Generate button text and return the credit cost.
+
+        Pikaso Generate button conventions (verified 2026-04-08):
+            "Generate"             → 0 credits (truly free, video gen)
+            "Generate\\nUnlimited"  → 0 credits (truly free, image gen)
+            "Generate\\n160"        → 160 credits (paid, e.g. image-to-video)
+            "Generate\\n2080"       → 2080 credits (paid, e.g. Veo 3.1)
+            "Upgrade\\n..."         → button changed to upgrade CTA (no credits)
+
+        IMPORTANT: Pikaso disables the Generate button briefly while
+        calculating cost (after model/prompt change). We poll until enabled
+        before reading the text — otherwise we'd see stale "Generate" text
+        and falsely report 0 credits.
+
+        Returns:
+            int: 0 if free, otherwise the credit cost.
+
+        Raises:
+            FreepikError: if the button is missing or shows "Upgrade".
+        """
+        # Poll until the button becomes enabled (cost calculation done).
+        # NOTE: HTML `disabled` attribute returns "" (empty string) when set,
+        # NOT None — so we must explicitly check for is None to detect absence.
+        gen_btn = None
+        enabled = False
+        for _ in range(60):  # up to ~15 seconds
+            gen_btn = await page.query_selector(SELECTORS["generate_button"])
+            if gen_btn:
+                disabled = await gen_btn.get_attribute("disabled")
+                aria_disabled = await gen_btn.get_attribute("aria-disabled")
+                # disabled is None only when the attribute is absent.
+                # disabled = "" means <button disabled> (still disabled).
+                if disabled is None and aria_disabled != "true":
+                    enabled = True
+                    break
+            await page.wait_for_timeout(250)
+        if not gen_btn:
+            raise FreepikError("Generate 버튼을 찾을 수 없습니다.")
+        if not enabled:
+            # Diagnose why
+            panel = await page.query_selector("[data-cy='video-generator-panel']")
+            panel_text = (await panel.inner_text()).strip() if panel else "(panel 미발견)"
+            raise FreepikError(
+                f"Generate 버튼이 활성화되지 않습니다. 패널 상태:\n{panel_text}"
+            )
+
+        text = (await gen_btn.inner_text()).strip()
+        if "upgrade" in text.lower():
+            raise FreepikError(
+                "Generate 버튼이 'Upgrade'로 바뀜 — 크레딧 부족 또는 플랜 제약"
+            )
+
+        # Find the second line (after "Generate")
+        lines = [l.strip() for l in text.split("\n") if l.strip()]
+        if len(lines) <= 1:
+            return 0  # bare "Generate" — free
+        cost_line = lines[1].lower()
+        if cost_line == "unlimited" or cost_line == "무제한":
+            return 0  # explicit free indicator (image gen)
+        # Otherwise expect a numeric cost (e.g. "160", "2080", "1.2K")
+        try:
+            # Strip K/k suffix and convert
+            if cost_line.endswith("k"):
+                return int(float(cost_line[:-1]) * 1000)
+            return int(float(cost_line))
+        except (ValueError, TypeError):
+            # Unrecognized format — be conservative and treat as paid
+            logger.warning("Generate 버튼 텍스트 파싱 실패: %r — paid로 간주", text)
+            return -1  # sentinel: unparseable, treat as paid
+
     async def _submit_prompt(
-        self, page, prompt: str, duration: float, resolution: str
+        self,
+        page,
+        prompt: str,
+        duration: float,
+        resolution: str,
+        allow_paid: bool = False,
     ) -> None:
-        """Fill in the prompt, ensure 9:16, and click Generate.
+        """Fill in the prompt, ensure 9:16, then click Generate (with cost guard).
 
         Assumes the desired model has already been selected via _select_model.
+
+        If allow_paid=False (default) and the Generate button shows a non-zero
+        credit cost, raises FreepikError BEFORE clicking — no credits are spent.
         """
         logger.info("프롬프트 입력: %s", prompt[:60])
 
@@ -401,23 +575,31 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
             except Exception as e:
                 logger.warning("9:16 선택 스킵 (기본 비율로 진행): %s", e)
 
-        # Click Generate
-        gen_btn = await page.query_selector(SELECTORS["generate_button"])
-        if not gen_btn:
-            raise FreepikError("Generate 버튼을 찾을 수 없습니다.")
-        await gen_btn.click()
+        # ─── Cost guard — check BEFORE clicking Generate ───
+        await page.wait_for_timeout(1500)  # let UI settle so button text updates
+        cost = await self._check_generate_cost(page)
+        logger.info("Generate 비용: %d 크레딧 (allow_paid=%s)", cost, allow_paid)
+        if cost != 0 and not allow_paid:
+            raise FreepikError(
+                f"이 설정은 {cost} 크레딧을 차감합니다. 무제한 플랜에서만 사용하려면 "
+                f"image-to-video(source_image)를 제거하거나 다른 모델로 폴백하세요. "
+                f"강제로 진행하려면 allow_paid=True를 전달하세요."
+            )
+
+        # Click Generate via page.click — Playwright auto-waits for enabled state.
+        # This avoids stale ElementHandle issues from the cost check above.
+        await page.click(SELECTORS["generate_button"], timeout=15000)
         await page.wait_for_timeout(2000)
 
-        # Check if credits exhausted immediately (button text becomes "Upgrade")
+        # Post-click sanity check — ensure button didn't flip to Upgrade
         gen_btn = await page.query_selector(SELECTORS["generate_button"])
         if gen_btn:
             btn_text = (await gen_btn.inner_text()).strip().lower()
             if "upgrade" in btn_text:
                 raise FreepikError(
-                    "Freepik AI 크레딧이 부족합니다 — 이 모델은 현재 플랜에서 "
-                    "크레딧을 소모하며 잔액이 부족합니다. 다음 무제한 모델로 폴백합니다."
+                    "Freepik 크레딧이 부족합니다 — Generate 클릭 후 Upgrade로 전환됨"
                 )
-        logger.info("생성 요청 전송")
+        logger.info("생성 요청 전송 (비용: %d 크레딧)", cost)
 
     async def _get_video_urls(self, page) -> set[str]:
         """Return all CDN video URLs currently rendered on the page."""

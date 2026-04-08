@@ -33,7 +33,7 @@ DEEVID_HEADLESS = False  # headed by default; set true after stable
 
 # freepik.com browser automation
 FREEPIK_PROFILE_DIR = PROJECT_ROOT / ".cache" / "freepik_profile"
-FREEPIK_VIDEO_URL = "https://www.freepik.com/ai/video-generator"
+FREEPIK_VIDEO_URL = "https://www.freepik.com/pikaso/ai-video-generator"
 FREEPIK_HEADLESS = False  # headed by default; set true after stable
 
 # Auto crawler settings (P2)

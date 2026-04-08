@@ -186,25 +186,50 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
         """Fill in the prompt, select 9:16, and click Generate."""
         logger.info("프롬프트 입력: %s", prompt[:60])
 
-        await page.fill(SELECTORS["prompt_input"], prompt)
+        # Prompt input is a contenteditable div — must click then type
+        prompt_el = await page.query_selector(SELECTORS["prompt_input"])
+        if not prompt_el:
+            raise FreepikError("프롬프트 입력창을 찾을 수 없습니다.")
+        await prompt_el.click()
+        await page.wait_for_timeout(300)
+        await prompt_el.type(prompt)
         await page.wait_for_timeout(500)
 
-        # Try to select 9:16 aspect ratio
+        # Try to select 9:16 aspect ratio if not already selected
         trigger = SELECTORS.get("aspect_ratio_trigger")
         aspect_opt = SELECTORS.get("aspect_9_16_option")
         if trigger and aspect_opt:
             try:
-                await page.click(trigger, timeout=5000)
-                await page.wait_for_timeout(500)
-                await page.click(aspect_opt, timeout=5000)
-                await page.wait_for_timeout(500)
-                await page.keyboard.press("Escape")
-                logger.info("9:16 aspect ratio 선택")
+                ar_btn = await page.query_selector(trigger)
+                if ar_btn:
+                    current_text = (await ar_btn.inner_text()).strip()
+                    if "9:16" not in current_text:
+                        await ar_btn.click()
+                        await page.wait_for_timeout(1000)
+                        await page.click(aspect_opt, timeout=5000)
+                        await page.wait_for_timeout(500)
+                        logger.info("9:16 aspect ratio 선택")
+                    else:
+                        logger.info("9:16 이미 선택됨")
             except Exception as e:
                 logger.warning("9:16 선택 스킵 (기본 비율로 진행): %s", e)
 
         # Click Generate
-        await page.click(SELECTORS["generate_button"])
+        gen_btn = await page.query_selector(SELECTORS["generate_button"])
+        if not gen_btn:
+            raise FreepikError("Generate 버튼을 찾을 수 없습니다.")
+        await gen_btn.click()
+        await page.wait_for_timeout(2000)
+
+        # Check if credits exhausted immediately (button text becomes "Upgrade")
+        gen_btn = await page.query_selector(SELECTORS["generate_button"])
+        if gen_btn:
+            btn_text = (await gen_btn.inner_text()).strip().lower()
+            if "upgrade" in btn_text:
+                raise FreepikError(
+                    "Freepik AI 크레딧이 부족합니다. "
+                    "구독 플랜의 월 크레딧 한도를 확인하거나 플랜을 업그레이드하세요."
+                )
         logger.info("생성 요청 전송")
 
     async def _get_video_urls(self, page) -> set[str]:

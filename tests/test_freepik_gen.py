@@ -70,17 +70,58 @@ class TestGenerateAndWaitPreconditions:
 class TestGenerateAndWaitFlow:
     """End-to-end flow with fully mocked Playwright."""
 
-    def _make_mock_page(self, new_video_after_polls=2, no_credits=False):
+    def _make_prompt_el(self):
+        """Mock for the contenteditable prompt input element."""
+        el = MagicMock()
+        el.click = AsyncMock()
+        el.type = AsyncMock()
+        return el
+
+    def _make_ar_btn(self, current_ratio="9:16"):
+        """Mock for the aspect ratio button (shows current selection)."""
+        btn = MagicMock()
+        btn.inner_text = AsyncMock(return_value=current_ratio)
+        btn.click = AsyncMock()
+        return btn
+
+    def _make_gen_btn(self, after_click_text="Generate"):
+        """Mock for the generate button.
+
+        after_click_text simulates the button text after click:
+        - "Generate": normal state → generation proceeds
+        - "Upgrade": credits exhausted → FreepikError raised
+        """
+        btn = MagicMock()
+        btn.inner_text = AsyncMock(return_value=after_click_text)
+        btn.click = AsyncMock()
+        return btn
+
+    def _make_mock_page(self, new_video_after_polls=2, upgrade_after_click=False):
         """Build a mock page that simulates the Freepik video generator DOM."""
         page = MagicMock()
         page.goto = AsyncMock()
         page.wait_for_timeout = AsyncMock()
-        page.fill = AsyncMock()
-        page.click = AsyncMock()
         page.add_init_script = AsyncMock()
         page.keyboard = MagicMock()
         page.keyboard.press = AsyncMock()
         page.wait_for_selector = AsyncMock(return_value=MagicMock())
+
+        prompt_el = self._make_prompt_el()
+        ar_btn = self._make_ar_btn(current_ratio="9:16")  # already 9:16 — no re-selection
+        gen_btn = self._make_gen_btn(
+            after_click_text="Upgrade" if upgrade_after_click else "Generate"
+        )
+
+        async def query_selector(selector):
+            if "contenteditable" in selector:
+                return prompt_el
+            if "aspect-ratio" in selector:
+                return ar_btn
+            if "generate-button" in selector:
+                return gen_btn
+            return None
+
+        page.query_selector = AsyncMock(side_effect=query_selector)
 
         call_state = {"poll_count": 0}
         NEW_VIDEO_URL = "https://cdn.freepik.com/videos/test_new.mp4"
@@ -98,8 +139,6 @@ class TestGenerateAndWaitFlow:
         page.query_selector_all = AsyncMock(side_effect=query_selector_all)
 
         async def is_visible(sel):
-            if no_credits and "credits" in sel.lower():
-                return True
             return False
 
         page.is_visible = AsyncMock(side_effect=is_visible)
@@ -165,7 +204,6 @@ class TestGenerateAndWaitFlow:
         assert result.duration_ms == 5000
         assert result.prompt == "A sunny beach at sunset"
         assert result.cost_usd > 0.0
-        page.fill.assert_called()
 
     def test_no_credits_raises(self, tmp_path):
         profile = tmp_path / "profile"
@@ -174,7 +212,7 @@ class TestGenerateAndWaitFlow:
         gen = FreepikBrowserGenerator()
         gen.profile_dir = profile
 
-        page = self._make_mock_page(no_credits=True)
+        page = self._make_mock_page(upgrade_after_click=True)
         playwright_ctx = self._patch_playwright(page)
 
         async def fake_sleep(_):
@@ -204,6 +242,7 @@ class TestSelectorsValid:
         from src.video_gen.freepik_selectors import FREEPIK_VIDEO_URL
 
         assert FREEPIK_VIDEO_URL.startswith("https://www.freepik.com/")
+        assert "pikaso" in FREEPIK_VIDEO_URL
 
 
 class TestFactoryRegistration:

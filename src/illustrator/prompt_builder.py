@@ -93,6 +93,7 @@ IMAGE_STYLE_PRESETS = {
     # CRITICAL: the word "illustration" is FORBIDDEN here — it triggers
     # stylized output on Nano Banana / GPT Image. We want camera photography.
     "realistic": (
+        # ─── Photography vocabulary (must come first to anchor the model) ───
         "Professional DSLR photograph, photorealistic, shot on Sony A7R IV, "
         "85mm prime lens, f/1.8 shallow depth of field, "
         "Korean drama cinematography style, "
@@ -101,10 +102,23 @@ IMAGE_STYLE_PRESETS = {
         "attractive Korean adults in their 20s-30s in modern Korean settings, "
         "cinematic color grading (Sony Venice / ARRI Alexa look), "
         "high dynamic range, sharp focus on subject, tasteful bokeh background, "
+        # ─── Anatomy correctness (CRITICAL — diffusion models fail this often) ───
+        "anatomically correct human body, "
+        "EXACTLY two arms, EXACTLY two hands, EXACTLY five fingers per hand, "
+        "EXACTLY two legs, EXACTLY one head, EXACTLY two eyes, "
+        "natural realistic hand positioning and proportions, "
+        "hands and fingers in clear well-defined positions (not overlapping or merged), "
+        "NO extra limbs, NO extra hands, NO extra fingers, NO extra arms, NO extra legs, "
+        "NO duplicated body parts, NO mutant anatomy, NO deformed hands, "
+        "NO floating hands disconnected from arms, NO hands with wrong thumb orientation, "
+        "NO mirrored body parts, NO three hands, NO two left hands, NO two right hands, "
+        # ─── Aspect ratio + text removal ───
         "vertical 9:16 aspect ratio for YouTube Shorts, "
         "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, "
         "NO watermarks, NO subtitles, NO UI elements, NO titles, NO labels, NO signs with writing, "
+        # ─── Style guard (anti-cartoon) ───
         "NO cartoon, NO anime, NO illustration, NO painting, NO drawing, NO webtoon, NO manga, "
+        "NO 3D render, NO CGI look, "
         "this is a REAL PHOTOGRAPH not a drawing, "
         "the image must contain ZERO written characters of any language"
     ),
@@ -145,8 +159,12 @@ STYLE_INSTRUCTIONS_FOR_CLAUDE = {
             "- 매력적인 한국인 20-30대 (사실적 외모)\n"
             "- 자연광 또는 골든아워, 부드러운 조명\n"
             "- 한국 현대 배경 (아파트, 오피스, 카페 등)\n"
-            "- 절대 포함 금지: 'illustration', 'drawing', 'cartoon', 'anime', 'webtoon', 'painting'\n"
-            "- 반드시 포함: 'photograph', 'photorealistic', 'DSLR', 'shot on', 'bokeh'\n"
+            "- ⚠️ ANATOMY CRITICAL: 정확히 손 2개, 손가락 5개씩, 팔 2개, 다리 2개\n"
+            "  - 절대 금지: 손이 3개, 왼손이 2개, 손가락 6개, 팔 3개, 신체 부위 중복, 기형 손\n"
+            "  - 손의 위치를 명확히 묘사 (예: 'left hand covering mouth, right hand resting on table')\n"
+            "  - 손이 보이지 않을 경우 'hands not visible' 또는 'hidden behind back'으로 명시\n"
+            "- 절대 포함 금지 단어: 'illustration', 'drawing', 'cartoon', 'anime', 'webtoon', 'painting'\n"
+            "- 반드시 포함 단어: 'photograph', 'photorealistic', 'DSLR', 'shot on', 'bokeh', 'anatomically correct'\n"
             "- 텍스트 금지: 이미지 어디에도 글자/숫자/텍스트/말풍선 절대 없음"
         ),
     },
@@ -210,8 +228,13 @@ def build_image_prompts(script: ShortsScript, image_style: str = "webtoon") -> l
         rule_6 = (
             "6. 캐릭터 묘사는 실제 사진 찍는 것처럼: 'a Korean woman in her 20s with shoulder-length "
             "black hair, wearing a beige cardigan, looking shocked', 'captured in natural window light' 등\n"
+            "   ⚠️ ANATOMY (CRITICAL): 손/팔/다리의 위치를 명확히 묘사. "
+            "예: 'her left hand covering her mouth, her right hand resting at her side', "
+            "'both hands holding a smartphone', 'hands clasped together in front of chest'. "
+            "손이 보이지 않을 경우 'hands hidden behind back' 또는 'hands out of frame'. "
+            "반드시 'anatomically correct, exactly two hands with five fingers each' 포함.\n"
             "   ⚠️ 절대 사용 금지 단어: illustration, drawing, cartoon, anime, manga, webtoon, painting, artwork\n"
-            "   ✅ 반드시 사용: photograph, photo, photorealistic, shot on DSLR, 85mm lens, bokeh, cinematic"
+            "   ✅ 반드시 사용: photograph, photo, photorealistic, shot on DSLR, 85mm lens, bokeh, cinematic, anatomically correct"
         )
     else:
         rule_6 = (

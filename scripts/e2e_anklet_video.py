@@ -32,18 +32,18 @@ from src.video_gen.freepik_gen import FreepikBrowserGenerator
 
 
 SCRIPT_FILE = Path("data/scripts/20260408_e2e_anklet.json")
-# Pre-generated realistic images from the previous E2E test
+# Re-generated realistic images (v2 — anatomy fix + realistic style enforcement)
 SCENE_IMAGES = [
-    (1, "data/images/20260408_140718_scene_01.png"),
-    (2, "data/images/20260408_140800_scene_02.png"),
-    (3, "data/images/20260408_140848_scene_03.png"),
-    (4, "data/images/20260408_141005_scene_04.png"),
-    (5, "data/images/20260408_141052_scene_05.png"),
-    (6, "data/images/20260408_141240_scene_06.png"),
+    (1, "data/images/20260408_150026_scene_01.png"),
+    (2, "data/images/20260408_150105_scene_02.png"),
+    (3, "data/images/20260408_150144_scene_03.png"),
+    (4, "data/images/20260408_150253_scene_04.png"),
+    (5, "data/images/20260408_150356_scene_05.png"),
+    (6, "data/images/20260408_150445_scene_06.png"),
 ]
-OUTPUT_DIR = Path("data/videos/anklet_scenes")
+OUTPUT_DIR = Path("data/videos/anklet_scenes_v2")
 FINAL_OUTPUT = Path(
-    "data/outputs/20260408_anklet_kling25_fullvideo.mp4"
+    "data/outputs/20260408_anklet_kling25_fullvideo_v2.mp4"
 )
 
 
@@ -93,11 +93,16 @@ async def generate_all_clips(script: ShortsScript) -> list[Path]:
 
 
 def _build_motion_prompt(voice_text: str, scene_type: str) -> str:
-    """Heuristic motion prompt — subtle camera moves + subject action."""
-    # Keep it simple: slow cinematic camera move + subject emotion
+    """Heuristic motion prompt — subtle camera moves + subject action.
+
+    Includes anatomy guards so Kling 2.5 doesn't introduce extra limbs
+    or duplicated body parts during animation.
+    """
     base = (
         "Slow cinematic camera movement, subtle natural motion. "
         "The subject's facial expression and body language subtly animates. "
+        "Preserve anatomical correctness — exactly two hands, no extra limbs, "
+        "no duplicated body parts, hands remain in their original positions. "
     )
     if scene_type == "title":
         return base + "Gentle push-in on subject. " + voice_text[:80]

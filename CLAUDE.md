@@ -22,9 +22,19 @@ python3 -m pytest tests/test_models.py::test_scene_from_dict -v  # Single test
 ruff check .                             # Python lint
 
 # CLI pipeline
-python3 -m src.main image screenshot.png        # Screenshot → video
+python3 -m src.main image screenshot.png [screenshot2.png ...]  # Screenshot → video
+python3 -m src.main image screenshot.png --no-bgm --no-references  # Disable BGM / reference images
 python3 -m src.main manual --file data/raw/x.json  # JSON → video
+python3 -m src.main manual --interactive           # Interactive prompt entry
+python3 -m src.main url https://gall.dcinside.com/...  # URL → video (DCInside / Nate Pann / Naver Cafe)
+python3 -m src.main analyze --file data/raw/x.json [--with-tts]  # Analyze only
+python3 -m src.main tts --file data/scripts/x.json   # TTS only
+python3 -m src.main render --script data/scripts/x.json --audio data/audio/x.mp3  # Render only
 python3 -m src.main pipeline --file data/raw/x.json  # Full pipeline
+python3 -m src.main freepik_login                  # One-time Freepik browser login
+python3 -m src.main deevid_login                   # One-time deevid.ai browser login
+python3 -m src.main youtube-auth                   # One-time YouTube OAuth
+python3 -m src.main tiktok-auth                    # One-time TikTok OAuth
 
 # Install
 pip install -r requirements.txt          # Python deps
@@ -39,10 +49,11 @@ cd src/video/remotion && npm install     # Remotion deps (separate package.json)
 ```
 Input (screenshot/URL/text/topic) → BlindPost or TopicInput JSON (data/raw/)
   → Claude analyzer → ShortsScript JSON (data/scripts/)
-    → GPT Image API → manga PNGs (data/images/)       [manga mode]
-    → Seedance API → video clips MP4 (data/videos/)    [video mode]
+    → Freepik/GPT Image API → manga PNGs (data/images/)   [manga mode]
+    → Freepik/deevid/Seedance → video clips MP4 (data/videos/)  [video mode]
     → edge-tts → voice MP3 + timing JSON (data/audio/)
       → Remotion render → MP4 (data/outputs/)
+        → YouTube / TikTok upload (optional)
 ```
 
 ### Two Entry Points
@@ -60,8 +71,9 @@ Input (screenshot/URL/text/topic) → BlindPost or TopicInput JSON (data/raw/)
 | `tts/` | Voice synthesis | `edge-tts` (free, async); `voice_config.py` maps emotion → voice/colors/gradient |
 | `video/` | Video rendering | `renderer.py` wraps Remotion CLI; copies images/videos/audio to `public/` |
 | `video_gen/` | AI video generation | `seedance_gen.py` (API), `deevid_gen.py` (browser automation, Veo 3.1), `factory.py` (provider selection), `base.py` (abstract) |
-| `editor/` | Scene editing | `scene_ops.py` (split/merge/reorder/resize), `batch.py`, `project.py`, `translator.py` |
-| `config/settings.py` | Global paths & constants | `PROJECT_ROOT`, `DATA_*_DIR`, `CLAUDE_TIMEOUT_SECONDS=300` |
+| `editor/` | Scene editing | `scene_ops.py` (split/merge/reorder/resize), `batch.py`, `project.py`, `translator.py`, `template.py` |
+| `upload/` | Platform upload | `youtube_uploader.py` (YouTube Data API v3 resumable upload), `tiktok_uploader.py`, `metadata_generator.py` (auto-generates title/description/tags/hashtags from `ShortsScript`) |
+| `config/settings.py` | Global paths & constants | `PROJECT_ROOT`, `DATA_*_DIR`, `CLAUDE_TIMEOUT_SECONDS=1800`, `MAX_SCENE_DURATION_SECONDS=5.0` |
 
 ### Remotion Video (`src/video/remotion/`)
 
@@ -105,6 +117,8 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 - **Assets flow through `public/`** — renderer copies audio/images/BGM/SFX to `public/` before Remotion render, then cleans up temp files after.
 - **snake_case ↔ camelCase boundary** — Python uses snake_case, Remotion/TS uses camelCase. The `renderer.py` converts at the boundary.
 - **Per-scene TTS timing** — `generate_voice_with_timing()` returns `scene_timings` (start_ms/end_ms per scene) for precise audio-video sync. Scene ID `-1` is the outro.
+- **Max scene duration** — `MAX_SCENE_DURATION_SECONDS=5.0` enforced at script generation time. Pre-existing scripts can be split with `scene_ops.split_scenes_to_max_duration()`. This ensures each scene fits within one Kling 2.5 / Wan 2.2 / MiniMax clip (shortest common ceiling across Premium+ unlimited models).
+- **Reference images** — webtoon-style image generation reads from `data/references/`. Pass `--no-references` to skip.
 
 ### Input Modes
 
@@ -112,7 +126,7 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 |------|-------|----------|--------|
 | `image` | Screenshot file | `analyze(BlindPost)` | Blind OCR |
 | `manual` | Title + body text | `analyze(BlindPost)` | Manual entry |
-| `url` | Blind URL | `analyze(BlindPost)` | Web scrape |
+| `url` | URL | `analyze(BlindPost)` | DCInside / Nate Pann / Naver Cafe scrape |
 | `topic` | Free topic text | `analyze_topic(TopicInput)` | User topic |
 
 ### Visual Modes
@@ -158,8 +172,11 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 - `SEEDANCE_API_KEY` — optional, for Seedance API video provider
 - `SEEDANCE_API_BASE` — optional, Seedance API base URL (default: `https://api.seedance.ai/v1`)
 - (no env vars needed for `freepik` or `deevid` providers — they use persistent browser profiles at `.cache/freepik_profile/` and `.cache/deevid_profile/`)
+- YouTube upload requires `data/.youtube_credentials.json` (OAuth 2.0 Desktop App client secret from Google Cloud Console → YouTube Data API v3). Token saved to `data/.youtube_token.json` after `youtube-auth`.
 
 ## Recent Changes
+- 010: Cost guard — prevents accidental Premium+ credit usage
+- 009: `MAX_SCENE_DURATION_SECONDS=5.0` enforced; `scene_ops.split_scenes_to_max_duration()` added so Kling 2.5 clips never freeze
 - 008: Freepik Premium+ 무제한 최적화
   - 영상: `MODEL_DATA_CY` 맵 41개 모델 + `_select_model()` + 폴백 체인 (Kling 2.5 → MiniMax → Wan 2.2)
   - 이미지: `FreepikImageGenerator` 신규 — 1 세션 N 이미지 + Nano Banana Pro 무제한 + `_generate_via_freepik()` 분기

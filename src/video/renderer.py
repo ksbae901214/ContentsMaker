@@ -212,11 +212,11 @@ def render_video(
             cmd,
             capture_output=True,
             text=True,
-            timeout=300,
+            timeout=1800,  # 30분 — 많은 씬 + 비디오 배경 렌더는 오래 걸림
             cwd=str(PROJECT_ROOT),
         )
     except subprocess.TimeoutExpired:
-        raise RenderError("렌더링 시간 초과 (5분).")
+        raise RenderError("렌더링 시간 초과 (30분).")
     finally:
         if props_path.exists():
             props_path.unlink()

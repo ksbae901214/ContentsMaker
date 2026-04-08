@@ -213,7 +213,11 @@ def _run_tts(script):
 def _run_illustrations(script, use_references: bool = True) -> list[dict] | None:
     """Generate manga illustrations for scenes. Returns None if unavailable."""
     import os
-    if not os.environ.get("OPENAI_API_KEY"):
+    from src.config.settings import DEFAULT_IMAGE_PROVIDER
+
+    provider = DEFAULT_IMAGE_PROVIDER  # "freepik" or "gpt"
+
+    if provider == "gpt" and not os.environ.get("OPENAI_API_KEY"):
         print("🎨 Step 3/5: 만화 이미지 생성 스킵 (OPENAI_API_KEY 미설정)")
         print("   그라데이션 배경으로 대체합니다.")
         return None
@@ -221,15 +225,16 @@ def _run_illustrations(script, use_references: bool = True) -> list[dict] | None
     from src.illustrator.image_generator import ImageGenerateError, generate_scene_images
     from src.illustrator.reference_manager import is_available as refs_available, get_all_references
     try:
-        has_refs = use_references and refs_available()
+        has_refs = use_references and refs_available() and provider == "gpt"
+        provider_label = "Freepik (무제한)" if provider == "freepik" else "GPT Image API"
         if has_refs:
             ref_count = len(get_all_references())
-            print(f"🎨 Step 3/5: 만화 이미지 생성 중 ({len(script.scenes)}씬, 레퍼런스 {ref_count}장)...")
+            print(f"🎨 Step 3/5: 만화 이미지 생성 중 ({len(script.scenes)}씬, 레퍼런스 {ref_count}장, {provider_label})...")
         else:
-            print(f"🎨 Step 3/5: 만화 이미지 생성 중 ({len(script.scenes)}씬)...")
-        results = generate_scene_images(script, use_references=use_references)
-        cost = len(results) * 0.005
-        print(f"   생성: {len(results)}장 (${cost:.3f})")
+            print(f"🎨 Step 3/5: 만화 이미지 생성 중 ({len(script.scenes)}씬, {provider_label})...")
+        results = generate_scene_images(script, use_references=use_references, provider=provider)
+        cost_str = f"${len(results) * 0.005:.3f}" if provider == "gpt" else "$0.000 (Premium+)"
+        print(f"   생성: {len(results)}장 ({cost_str})")
         return results
     except ImageGenerateError as e:
         logger.warning("이미지 생성 실패, 그라데이션으로 대체: %s", e)

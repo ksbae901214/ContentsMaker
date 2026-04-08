@@ -81,7 +81,7 @@ class FreepikImageGenerator:
         prompts: list[dict],
         output_dir: Path | None = None,
         aspect_ratio: str = "9:16",
-        max_wait_per_image: float = 180.0,
+        max_wait_per_image: float = 600.0,  # 10분 — Nano Banana Pro는 보통 30~120s, 여유
         allow_paid: bool = False,
     ) -> list[dict]:
         """Generate one image per prompt.

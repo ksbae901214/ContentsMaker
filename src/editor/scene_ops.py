@@ -302,3 +302,68 @@ def _rebuild_script(original: ShortsScript, new_scenes: list[Scene]) -> ShortsSc
 
 
 from src.analyzer.script_models import AudioConfig
+
+
+def split_scenes_to_max_duration(
+    script: ShortsScript, max_duration: float | None = None
+) -> ShortsScript:
+    """Iteratively split any scene whose duration exceeds ``max_duration``.
+
+    This is a safety net for scripts produced before the analyzer enforced
+    per-scene duration limits. Long scenes are split at the middle of their
+    display text (roughly). Repeated until every scene is ≤ ``max_duration``.
+
+    Why this matters: video generation models like Kling 2.5 produce fixed
+    5-second clips. A 10-second scene with a 5-second video freezes for the
+    last 5 seconds on the last frame, creating a visible pause.
+
+    Args:
+        script: The ShortsScript to process.
+        max_duration: Maximum seconds per scene. Defaults to
+            ``settings.MAX_SCENE_DURATION_SECONDS`` (5.0).
+
+    Returns:
+        A new ShortsScript where every scene.duration ≤ max_duration.
+    """
+    from src.config.settings import MAX_SCENE_DURATION_SECONDS
+
+    limit = max_duration if max_duration is not None else MAX_SCENE_DURATION_SECONDS
+    if limit <= 0:
+        raise SceneOpsError(f"max_duration must be positive, got {limit}")
+
+    result = script
+    # Iterate until no further splits are possible. Hard-cap at 100 rounds to
+    # prevent infinite loops on pathological inputs.
+    for _ in range(100):
+        # Find the first scene that's still too long
+        target = next(
+            (s for s in result.scenes if s.duration > limit), None
+        )
+        if target is None:
+            return result  # All scenes fit within the limit
+
+        # Split at the middle of the display text
+        text = target.text.replace("\\n", "\n")
+        if len(text) < 4:
+            # Too short to split meaningfully — give up on this scene
+            break
+
+        split_pos = len(text) // 2
+        # Try to snap to a whitespace/punctuation boundary near the middle
+        for offset in range(0, len(text) // 2):
+            for delta in (-offset, offset):
+                candidate = split_pos + delta
+                if 2 <= candidate < len(text) - 2 and text[candidate] in " \n,.…!?":
+                    split_pos = candidate + 1
+                    break
+            else:
+                continue
+            break
+
+        try:
+            result = scene_split(result, target.id, split_pos)
+        except SceneOpsError:
+            # Split failed (e.g., too few words) — stop to avoid infinite loop
+            break
+
+    return result

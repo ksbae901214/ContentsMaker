@@ -274,6 +274,58 @@ class TestGenerateAndWaitFlow:
                     )
 
 
+class TestUploadStartImage:
+    """_upload_start_image should set_input_files on the first image input."""
+
+    def test_missing_source_file_raises(self, tmp_path):
+        gen = FreepikBrowserGenerator()
+        page = MagicMock()
+        with pytest.raises(FreepikError, match="Source image not found"):
+            asyncio.run(
+                gen._upload_start_image(page, str(tmp_path / "nonexistent.png"))
+            )
+
+    def test_no_file_inputs_raises(self, tmp_path):
+        gen = FreepikBrowserGenerator()
+        img = tmp_path / "test.png"
+        img.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 100)
+
+        page = MagicMock()
+        page.wait_for_timeout = AsyncMock()
+        page.query_selector_all = AsyncMock(return_value=[])  # no inputs
+        page.query_selector = AsyncMock(return_value=None)
+
+        with pytest.raises(FreepikError, match="이미지 업로드 input"):
+            asyncio.run(gen._upload_start_image(page, str(img)))
+
+    def test_calls_set_input_files_on_first_input(self, tmp_path):
+        gen = FreepikBrowserGenerator()
+        img = tmp_path / "test.png"
+        img.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 100)
+
+        input_el = MagicMock()
+        input_el.set_input_files = AsyncMock()
+
+        start_frame_el = MagicMock()
+        preview_img = MagicMock()
+        start_frame_el.query_selector = AsyncMock(return_value=preview_img)
+
+        page = MagicMock()
+        page.wait_for_timeout = AsyncMock()
+        page.query_selector_all = AsyncMock(return_value=[input_el])
+
+        async def qs(sel):
+            if "video-start-frame" in sel:
+                return start_frame_el
+            return None
+
+        page.query_selector = AsyncMock(side_effect=qs)
+
+        asyncio.run(gen._upload_start_image(page, str(img)))
+
+        input_el.set_input_files.assert_called_once_with(str(img))
+
+
 class TestSelectModel:
     """_select_model should fail cleanly for unknown models."""
 

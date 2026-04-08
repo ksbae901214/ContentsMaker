@@ -161,6 +161,10 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
                     try:
                         logger.info("모델 시도: %s", model_name)
                         await self._select_model(page, model_name)
+                        # Upload source image (if provided) AFTER model selection
+                        # so that Kling 2.5 activates its Start/End frame mode.
+                        if source_image:
+                            await self._upload_start_image(page, source_image)
                         existing_urls = await self._get_video_urls(page)
                         await self._submit_prompt(
                             page, prompt, duration, resolution
@@ -289,6 +293,52 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
             await page.wait_for_timeout(500)
         await page.wait_for_timeout(800)
         logger.info("모델 선택 완료: %s", model_name)
+
+    async def _upload_start_image(self, page, source_image: str) -> None:
+        """Upload a source image to the Start frame input (image-to-video).
+
+        Requires that a model supporting Start frame (e.g. Kling 2.5) was
+        already selected. Uses Playwright's `set_input_files()` directly on
+        the first image file input — this bypasses the visible click flow
+        and doesn't require the "Start image" button to be activated first.
+
+        On success the UI shows a thumbnail preview of the uploaded image
+        inside `[data-cy="video-start-frame-input"]`.
+        """
+        from pathlib import Path as _Path
+
+        src_path = _Path(source_image)
+        if not src_path.exists():
+            raise FreepikError(f"Source image not found: {source_image}")
+
+        logger.info("Start image 업로드: %s", src_path.name)
+
+        inputs = await page.query_selector_all(SELECTORS["image_file_inputs"])
+        if not inputs:
+            raise FreepikError(
+                "이미지 업로드 input 미발견. Start image 지원 모델인지 확인하세요"
+                " (예: Kling 2.5)"
+            )
+
+        try:
+            # The first image/* input is the Start frame upload.
+            await inputs[0].set_input_files(str(src_path))
+        except Exception as exc:
+            raise FreepikError(
+                f"Start image 업로드 실패: {exc}"
+            ) from exc
+
+        # Wait for upload → preview to appear
+        await page.wait_for_timeout(4000)
+
+        # Verify preview appeared inside the start-frame container
+        start_el = await page.query_selector(SELECTORS["start_image_trigger"])
+        if start_el:
+            preview = await start_el.query_selector("img")
+            if preview:
+                logger.info("✅ Start image 업로드 & 프리뷰 확인됨")
+            else:
+                logger.warning("Start image 업로드 후 프리뷰 <img> 미발견 (진행 계속)")
 
     async def _reset_page(self, page) -> None:
         """Clear the prompt input and any modal overlay — for fallback retries."""

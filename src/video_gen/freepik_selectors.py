@@ -138,4 +138,12 @@ SELECTORS: dict[str, str | None] = {
     "all_models_button": "button:has-text('All models')",
     # The full-screen modal backdrop — used to detect open/close state
     "model_modal_backdrop": "div.fixed.inset-0.backdrop-blur-lg",
+
+    # ─── Start image / End image upload (image-to-video) ───
+    # Kling 2.5 supports Start / End frame inputs. Playwright uploads files
+    # directly via `input.set_input_files()` on the first image file input.
+    "start_image_trigger": "[data-cy='video-start-frame-input']",
+    "end_image_trigger": "[data-cy='video-end-frame-input']",
+    # File inputs below the start-frame UI — image/* accept
+    "image_file_inputs": "input[type='file'][accept*='image']",
 }

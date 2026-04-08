@@ -82,6 +82,7 @@ class FreepikImageGenerator:
         output_dir: Path | None = None,
         aspect_ratio: str = "9:16",
         max_wait_per_image: float = 180.0,
+        allow_paid: bool = False,
     ) -> list[dict]:
         """Generate one image per prompt.
 
@@ -158,6 +159,7 @@ class FreepikImageGenerator:
                             scene_id=scene_id,
                             output_dir=target_dir,
                             max_wait=max_wait_per_image,
+                            allow_paid=allow_paid,
                         )
                         results.append({
                             "scene_id": scene_id,
@@ -289,6 +291,57 @@ class FreepikImageGenerator:
         except Exception as exc:
             logger.warning("%s 선택 실패 (기본값 유지): %s", aspect_ratio, exc)
 
+    async def _check_generate_cost(self, page) -> int:
+        """Parse Generate button text → credit cost (0 = free, >0 = credits).
+
+        Pikaso image generator conventions:
+            "Generate"             → 0 (free)
+            "Generate\\nUnlimited"  → 0 (explicit free indicator)
+            "Generate\\n75"         → 75 credits (paid)
+            "Upgrade\\n..."         → no credits (plan locked)
+
+        Polls until the button becomes enabled (cost calculation done) so
+        the text we read is the final state, not the transient "calculating"
+        placeholder.
+        """
+        # Poll until the button becomes enabled.
+        # NOTE: HTML `disabled` attribute returns "" (empty string) when set.
+        gen_btn = None
+        enabled = False
+        for _ in range(60):
+            gen_btn = await page.query_selector(IMAGE_SELECTORS["generate_button"])
+            if gen_btn:
+                disabled = await gen_btn.get_attribute("disabled")
+                aria_disabled = await gen_btn.get_attribute("aria-disabled")
+                if disabled is None and aria_disabled != "true":
+                    enabled = True
+                    break
+            await page.wait_for_timeout(250)
+        if not gen_btn:
+            raise FreepikImageError("Generate 버튼을 찾을 수 없습니다.")
+        if not enabled:
+            raise FreepikImageError(
+                "Generate 버튼이 활성화되지 않습니다 (15초 대기 후에도 disabled 상태)"
+            )
+
+        text = (await gen_btn.inner_text()).strip()
+        if "upgrade" in text.lower():
+            raise FreepikImageError("Generate 버튼이 'Upgrade'로 바뀜")
+
+        lines = [l.strip() for l in text.split("\n") if l.strip()]
+        if len(lines) <= 1:
+            return 0
+        cost_line = lines[1].lower()
+        if cost_line == "unlimited" or cost_line == "무제한":
+            return 0
+        try:
+            if cost_line.endswith("k"):
+                return int(float(cost_line[:-1]) * 1000)
+            return int(float(cost_line))
+        except (ValueError, TypeError):
+            logger.warning("Generate 버튼 텍스트 파싱 실패: %r", text)
+            return -1
+
     async def _generate_one(
         self,
         page,
@@ -296,8 +349,13 @@ class FreepikImageGenerator:
         scene_id: int,
         output_dir: Path,
         max_wait: float,
+        allow_paid: bool = False,
     ) -> Path:
-        """Generate and download a single image for one prompt."""
+        """Generate and download a single image for one prompt.
+
+        If allow_paid=False (default) and the Generate button shows a non-zero
+        credit cost, raises FreepikImageError BEFORE clicking Generate.
+        """
         # Snapshot existing image URLs
         existing_urls = await self._get_image_urls(page)
 
@@ -314,20 +372,28 @@ class FreepikImageGenerator:
         await prompt_el.type(prompt)
         await page.wait_for_timeout(500)
 
-        # Click Generate
-        gen_btn = await page.query_selector(IMAGE_SELECTORS["generate_button"])
-        if not gen_btn:
-            raise FreepikImageError("Generate 버튼 미발견")
-        await gen_btn.click()
+        # ─── Cost guard — abort BEFORE clicking Generate if non-zero ───
+        await page.wait_for_timeout(1500)  # let UI settle
+        cost = await self._check_generate_cost(page)
+        logger.info("이미지 Generate 비용: %d (allow_paid=%s)", cost, allow_paid)
+        if cost != 0 and not allow_paid:
+            raise FreepikImageError(
+                f"이 이미지 생성은 {cost} 크레딧을 차감합니다. "
+                f"무제한 모드를 사용하려면 모델/설정을 변경하세요. "
+                f"(allow_paid=True로 강제 진행 가능)"
+            )
+
+        # Click Generate via page.click — Playwright auto-waits for enabled state.
+        await page.click(IMAGE_SELECTORS["generate_button"], timeout=15000)
         await page.wait_for_timeout(2000)
 
-        # Check for Upgrade immediately
+        # Post-click sanity check
         gen_btn = await page.query_selector(IMAGE_SELECTORS["generate_button"])
         if gen_btn:
             text = (await gen_btn.inner_text()).strip().lower()
             if "upgrade" in text:
                 raise FreepikImageError(
-                    "이 모델은 크레딧을 소모하며 잔액이 부족합니다"
+                    "Freepik 크레딧이 부족합니다 — Generate 클릭 후 Upgrade로 전환됨"
                 )
 
         # Poll for new image

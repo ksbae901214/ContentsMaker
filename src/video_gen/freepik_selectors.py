@@ -142,8 +142,27 @@ SELECTORS: dict[str, str | None] = {
     # ─── Start image / End image upload (image-to-video) ───
     # Kling 2.5 supports Start / End frame inputs. Playwright uploads files
     # directly via `input.set_input_files()` on the first image file input.
+    # WARNING: image-to-video CHARGES CREDITS even on Premium+ unlimited models.
     "start_image_trigger": "[data-cy='video-start-frame-input']",
     "end_image_trigger": "[data-cy='video-end-frame-input']",
-    # File inputs below the start-frame UI — image/* accept
     "image_file_inputs": "input[type='file'][accept*='image']",
+
+    # ─── Resolution selector (CRITICAL for unlimited mode) ───
+    # Each unlimited model has ONE specific resolution that's truly free:
+    #   Kling 2.5            → 720p
+    #   MiniMax Hailuo 2.3   → 768p
+    #   Wan 2.2              → 480p
+    # Wrong resolution = button stays disabled with "Switch to Unlimited mode" warning.
+    "resolution_trigger": "[data-cy='video-resolution-option']",
+    # Resolution options inside the popover are popover-option items.
+    # Match by inner text (e.g. "480p", "720p", "768p").
+}
+
+# Per-model unlimited resolution. Premium+ users get 0-credit generation
+# only at this exact resolution. Other resolutions are paid.
+UNLIMITED_RESOLUTION_MAP: dict[str, str] = {
+    "Kling 2.5": "720p",
+    "MiniMax Hailuo 2.3 Fast": "768p",
+    "MiniMax Hailuo 2.3": "768p",
+    "Wan 2.2": "480p",
 }

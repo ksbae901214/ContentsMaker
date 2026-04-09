@@ -31,6 +31,15 @@ interface SceneVideo {
   video_path: string;
 }
 
+interface ScenePrompt {
+  scene_id: number;
+  type: string;
+  text: string;
+  voice_text: string;
+  image_prompt: string;
+  motion_prompt: string;
+}
+
 interface Props {
   title: string;
   scenes: SceneData[];
@@ -39,6 +48,7 @@ interface Props {
   useBgm: boolean;
   emotionType?: string;
   audioPath?: string;
+  imageStyle?: string;
   sceneVideos?: SceneVideo[];
   onTitleChange: (title: string) => void;
   onScenesChange: (scenes: SceneData[]) => void;
@@ -55,6 +65,7 @@ export function SceneEditor({
   useBgm,
   emotionType = "relatable",
   audioPath,
+  imageStyle = "realistic",
   sceneVideos,
   onTitleChange,
   onScenesChange,
@@ -79,6 +90,10 @@ export function SceneEditor({
   const [showPreview, setShowPreview] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [targetLang, setTargetLang] = useState<"en" | "ja" | null>(null);
+  const [showPrompts, setShowPrompts] = useState(false);
+  const [prompts, setPrompts] = useState<ScenePrompt[] | null>(null);
+  const [promptsLoading, setPromptsLoading] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const imageMap = new Map(sceneImages.map((img) => [img.scene_id, img]));
   const videoMap = new Map((sceneVideos || []).map((v) => [v.scene_id, v]));
@@ -146,6 +161,32 @@ export function SceneEditor({
       },
     ]);
     setHasChanges(true);
+  };
+
+  const copyToClipboard = async (text: string, key: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 1500);
+  };
+
+  const openPrompts = async () => {
+    setShowPrompts(true);
+    if (prompts) return;
+    setPromptsLoading(true);
+    try {
+      const res = await fetch("/api/prompts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scriptPath, imageStyle }),
+      });
+      if (!res.ok) throw new Error("프롬프트 생성 실패");
+      const data = await res.json();
+      setPrompts(data.prompts);
+    } catch {
+      setShowPrompts(false);
+    } finally {
+      setPromptsLoading(false);
+    }
   };
 
   const handleVideoUpload = async (sceneId: number, file: File) => {
@@ -428,6 +469,12 @@ export function SceneEditor({
           {showPreview ? "▼ 미리보기 숨기기" : "▶ 미리보기"}
         </button>
         <button
+          onClick={openPrompts}
+          className="py-2 px-4 rounded-lg text-sm font-medium transition bg-purple-700 hover:bg-purple-600"
+        >
+          📋 프롬프트
+        </button>
+        <button
           onClick={handleRerender}
           disabled={rendering || !hasChanges}
           className={`py-2 px-4 rounded-lg text-sm font-medium transition ${
@@ -645,6 +692,89 @@ export function SceneEditor({
           }}
           onClose={() => setShowVoicePicker(false)}
         />
+      )}
+
+      {/* Freepik 프롬프트 모달 */}
+      {showPrompts && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 overflow-y-auto py-8 px-4">
+          <div className="bg-gray-900 rounded-xl w-full max-w-2xl border border-gray-700 shadow-2xl">
+            <div className="flex justify-between items-center px-5 py-4 border-b border-gray-700">
+              <div>
+                <h3 className="text-lg font-bold">📋 Freepik 프롬프트</h3>
+                <p className="text-xs text-gray-400 mt-0.5">각 씬의 프롬프트를 복사해서 Freepik에 직접 입력하세요</p>
+              </div>
+              <button
+                onClick={() => setShowPrompts(false)}
+                className="text-gray-400 hover:text-white text-xl leading-none px-2"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-5 space-y-5">
+              {promptsLoading && (
+                <div className="text-center py-10 text-gray-400">
+                  <div className="text-3xl mb-2">⏳</div>
+                  프롬프트 생성 중...
+                </div>
+              )}
+
+              {prompts && prompts.map((p) => (
+                <div key={p.scene_id} className="bg-gray-800 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
+                    <span className="bg-gray-700 px-2 py-0.5 rounded font-mono">씬 {p.scene_id}</span>
+                    <span>{p.type}</span>
+                    <span className="truncate text-gray-500">{p.text}</span>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-semibold text-purple-400">🖼️ 이미지 프롬프트</label>
+                      <button
+                        onClick={() => copyToClipboard(p.image_prompt, `img-${p.scene_id}`)}
+                        className="text-xs px-2 py-1 bg-purple-800 hover:bg-purple-700 rounded transition"
+                      >
+                        {copiedKey === `img-${p.scene_id}` ? "✅ 복사됨" : "복사"}
+                      </button>
+                    </div>
+                    <div className="text-xs bg-gray-900 rounded p-3 text-gray-300 font-mono whitespace-pre-wrap break-all leading-relaxed max-h-32 overflow-y-auto">
+                      {p.image_prompt}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-semibold text-blue-400">🎬 영상 프롬프트</label>
+                      <button
+                        onClick={() => copyToClipboard(p.motion_prompt, `vid-${p.scene_id}`)}
+                        className="text-xs px-2 py-1 bg-blue-800 hover:bg-blue-700 rounded transition"
+                      >
+                        {copiedKey === `vid-${p.scene_id}` ? "✅ 복사됨" : "복사"}
+                      </button>
+                    </div>
+                    <div className="text-xs bg-gray-900 rounded p-3 text-gray-300 font-mono whitespace-pre-wrap break-all leading-relaxed max-h-32 overflow-y-auto">
+                      {p.motion_prompt}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {prompts && (
+              <div className="px-5 pb-5">
+                <button
+                  onClick={async () => {
+                    const all = prompts.map((p) =>
+                      `=== 씬 ${p.scene_id} (${p.type}) ===\n[씬 내용]\n${p.text}\n\n[이미지 프롬프트]\n${p.image_prompt}\n\n[영상 프롬프트]\n${p.motion_prompt}`
+                    ).join("\n\n" + "─".repeat(60) + "\n\n");
+                    await copyToClipboard(all, "all");
+                  }}
+                  className="w-full py-2.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium transition"
+                >
+                  {copiedKey === "all" ? "✅ 전체 복사됨" : "📋 전체 복사"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

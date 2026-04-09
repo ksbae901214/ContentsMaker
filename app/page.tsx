@@ -209,6 +209,7 @@ export default function Home() {
               useBgm={bgm}
               emotionType={result.emotion}
               audioPath={result.audioPath}
+              imageStyle={result.imageStyle || imageStyle}
               sceneVideos={result.visualMode === "video" ? (result.sceneVideos || []) : undefined}
               onTitleChange={(title) => setResult({...result, title})}
               onScenesChange={(scenes) => setResult({...result, scenes})}

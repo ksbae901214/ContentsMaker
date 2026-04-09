@@ -36,8 +36,8 @@ class TestModelPriority:
 
         gen = FreepikBrowserGenerator()
         assert gen.model_priority == list(FREEPIK_VIDEO_MODEL_PRIORITY)
-        # Premium+ unlimited models first
-        assert gen.model_priority[0] == "Kling 2.5"
+        # Wan 2.2 480p + start image = Unlimited (confirmed 2026-04-09)
+        assert gen.model_priority[0] == "Wan 2.2"
 
     def test_custom_priority(self):
         gen = FreepikBrowserGenerator(model_priority=["Kling 2.5"])

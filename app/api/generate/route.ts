@@ -299,16 +299,29 @@ from pathlib import Path
 from src.analyzer.script_models import ShortsScript
 from src.video_gen.factory import create_generator
 from src.video_gen.motion_prompt_builder import build_motion_prompt
-from src.config.settings import DATA_VIDEOS_DIR
+from src.config.settings import DATA_VIDEOS_DIR,DATA_DIR
+DATA_IMAGES_DIR=DATA_DIR/"images"
 s=ShortsScript.load('''${a.sp}''')
 gen=create_generator('${videoProvider}')
 results=[]
 DATA_VIDEOS_DIR.mkdir(parents=True,exist_ok=True)
+DATA_IMAGES_DIR.mkdir(parents=True,exist_ok=True)
+# Freepik image-to-video: generate start frames first (free), then animate
+src_images={}
+if '${videoProvider}'=='freepik':
+ from src.illustrator.freepik_image_gen import FreepikImageGenerator
+ from src.illustrator.prompt_builder import build_image_prompts_simple
+ img_gen=FreepikImageGenerator()
+ scene_prompts=build_image_prompts_simple(s,'realistic')
+ prompts=[{'scene_id':p['scene_id'],'prompt':p['prompt']} for p in scene_prompts]
+ img_results=asyncio.run(img_gen.generate_scene_images(prompts,output_dir=DATA_IMAGES_DIR))
+ src_images={r['scene_id']:r.get('image_path') for r in img_results if r.get('image_path')}
 for scene in s.scenes:
  mp=build_motion_prompt(scene)
  out=str(DATA_VIDEOS_DIR/f"scene_{scene.id:02d}.mp4")
+ src=src_images.get(scene.id)
  try:
-  vr=asyncio.run(gen.generate_and_wait(prompt=mp,duration=5.0,output_path=out))
+  vr=asyncio.run(gen.generate_and_wait(prompt=mp,duration=5.0,output_path=out,source_image=src,allow_paid=False))
   results.append({"scene_id":scene.id,"video_path":vr.path})
  except Exception as e:
   results.append({"scene_id":scene.id,"video_path":"","error":str(e)})

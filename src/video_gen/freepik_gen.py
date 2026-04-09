@@ -241,6 +241,17 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
         logger.info("Freepik 접속: %s", VIDEO_URL)
         await page.goto(VIDEO_URL, wait_until="domcontentloaded")
         await page.wait_for_timeout(4000)
+        await self._dismiss_tutorial(page)
+
+    async def _dismiss_tutorial(self, page) -> None:
+        """No-op: the hero tutorial carousel is a static section, not a modal.
+
+        Freepik shows a 4-step onboarding hero carousel on first visit. It
+        occupies the center/right panel but does NOT block the left sidebar
+        (model selector, prompt, Generate button). The carousel persists even
+        after clicking Next — it only disappears after the first generation
+        completes and the result is shown. We leave it alone.
+        """
 
     async def _is_logged_in(self, page) -> bool:
         """Detect login state via logged_in_marker or absence of login button."""

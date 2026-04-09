@@ -159,10 +159,15 @@ SELECTORS: dict[str, str | None] = {
 }
 
 # Per-model unlimited resolution. Premium+ users get 0-credit generation
-# only at this exact resolution. Other resolutions are paid.
+# only at this exact resolution WITH a start image uploaded.
+# Verified 2026-04-09:
+#   - Kling 2.5: 720p option removed by Freepik; image-to-video costs 160 credits
+#   - MiniMax Hailuo 2.3 Fast: image-to-video costs 160 credits
+#   - Wan 2.2 480p + start image = "Unlimited" (0 credits) ← confirmed FREE
+# Strategy: use Wan 2.2 480p as primary (free), others as fallback (paid).
 UNLIMITED_RESOLUTION_MAP: dict[str, str] = {
-    "Kling 2.5": "720p",
-    "MiniMax Hailuo 2.3 Fast": "768p",
-    "MiniMax Hailuo 2.3": "768p",
-    "Wan 2.2": "480p",
+    "Wan 2.2": "480p",              # ✅ FREE with start image (confirmed 2026-04-09)
+    "MiniMax Hailuo 2.3 Fast": "768p",  # ⚠️ costs credits (use as fallback)
+    "MiniMax Hailuo 2.3": "768p",   # ⚠️ costs credits
+    "Kling 2.5": "768p",            # ⚠️ costs credits (720p removed by Freepik)
 }

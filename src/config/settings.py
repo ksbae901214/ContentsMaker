@@ -53,9 +53,9 @@ FREEPIK_HEADLESS = False  # headed by default; set true after stable
 # Premium+ unlimited video models — tried in order, falling back on failure.
 # All three are "unlimited" on Premium+ per freepik.com/가격 (2026-04-08).
 FREEPIK_VIDEO_MODEL_PRIORITY = [
-    "Kling 2.5",                 # 720p-1080p, 5-10s — best quality
-    "MiniMax Hailuo 2.3 Fast",   # 768p-1080p, 6-10s — fallback 1
-    "Wan 2.2",                   # 480p-720p, 5-10s  — fallback 2
+    "Wan 2.2",                   # 480p, FREE with start image (confirmed 2026-04-09)
+    "MiniMax Hailuo 2.3 Fast",   # 768p, fallback (costs credits without start image)
+    "Kling 2.5",                 # 768p, fallback (720p removed by Freepik)
 ]
 
 # Premium+ unlimited image models for manga mode (Freepik browser automation).

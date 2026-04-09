@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { SceneCard } from "./SceneCard";
 import { ImageReplaceModal } from "./ImageReplaceModal";
 import { Timeline } from "./Timeline";
@@ -26,6 +26,11 @@ interface SceneData {
 
 type ViewMode = "card" | "timeline";
 
+interface SceneVideo {
+  scene_id: number;
+  video_path: string;
+}
+
 interface Props {
   title: string;
   scenes: SceneData[];
@@ -34,10 +39,12 @@ interface Props {
   useBgm: boolean;
   emotionType?: string;
   audioPath?: string;
+  sceneVideos?: SceneVideo[];
   onTitleChange: (title: string) => void;
   onScenesChange: (scenes: SceneData[]) => void;
   onImagesChange: (images: SceneImage[]) => void;
   onVideoUpdate: (videoPath: string) => void;
+  onVideosChange?: (videos: SceneVideo[]) => void;
 }
 
 export function SceneEditor({
@@ -48,10 +55,12 @@ export function SceneEditor({
   useBgm,
   emotionType = "relatable",
   audioPath,
+  sceneVideos,
   onTitleChange,
   onScenesChange,
   onImagesChange,
   onVideoUpdate,
+  onVideosChange,
 }: Props) {
   const [modalSceneId, setModalSceneId] = useState<number | null>(null);
   const [rendering, setRendering] = useState(false);
@@ -72,6 +81,8 @@ export function SceneEditor({
   const [targetLang, setTargetLang] = useState<"en" | "ja" | null>(null);
 
   const imageMap = new Map(sceneImages.map((img) => [img.scene_id, img]));
+  const videoMap = new Map((sceneVideos || []).map((v) => [v.scene_id, v]));
+  const isVideoMode = sceneVideos !== undefined;
 
   const handleSelect = (sceneId: number, checked: boolean) => {
     const next = new Set(selectedScenes);
@@ -134,6 +145,21 @@ export function SceneEditor({
         prompt: data.prompt ?? "(uploaded)",
       },
     ]);
+    setHasChanges(true);
+  };
+
+  const handleVideoUpload = async (sceneId: number, file: File) => {
+    const fd = new FormData();
+    fd.set("sceneId", String(sceneId));
+    fd.set("file", file);
+    const res = await fetch("/api/scene/video", { method: "POST", body: fd });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "업로드 실패");
+    }
+    const data = await res.json();
+    const updated = (sceneVideos || []).filter((v) => v.scene_id !== sceneId);
+    onVideosChange?.([...updated, { scene_id: data.scene_id, video_path: data.video_path }]);
     setHasChanges(true);
   };
 
@@ -529,20 +555,28 @@ export function SceneEditor({
       {viewMode === "card" ? (
         <div className="space-y-2">
           {scenes.map((scene, idx) => (
-            <SceneCard
-              key={scene.id}
-              scene={scene}
-              image={imageMap.get(scene.id)}
-              selected={selectedScenes.has(scene.id)}
-              isLast={idx === scenes.length - 1}
-              onSelect={handleSelect}
-              onImageClick={handleImageClick}
-              onTextSave={handleTextSave}
-              onSplit={handleSplit}
-              onMerge={handleMerge}
-              onStyleClick={handleStyleClick}
-              onTransitionClick={(id) => setTransitionSceneId(id)}
-            />
+            <div key={scene.id}>
+              <SceneCard
+                scene={scene}
+                image={imageMap.get(scene.id)}
+                selected={selectedScenes.has(scene.id)}
+                isLast={idx === scenes.length - 1}
+                onSelect={handleSelect}
+                onImageClick={handleImageClick}
+                onTextSave={handleTextSave}
+                onSplit={handleSplit}
+                onMerge={handleMerge}
+                onStyleClick={handleStyleClick}
+                onTransitionClick={(id) => setTransitionSceneId(id)}
+              />
+              {isVideoMode && (
+                <VideoSceneStatus
+                  sceneId={scene.id}
+                  hasVideo={videoMap.has(scene.id)}
+                  onUpload={handleVideoUpload}
+                />
+              )}
+            </div>
           ))}
         </div>
       ) : (
@@ -612,6 +646,67 @@ export function SceneEditor({
           onClose={() => setShowVoicePicker(false)}
         />
       )}
+    </div>
+  );
+}
+
+// ── VideoSceneStatus ──────────────────────────────────────────────────────────
+// Shown below each SceneCard when the pipeline is in video mode.
+// Green badge if the scene has a video; orange badge + upload button if missing.
+
+function VideoSceneStatus({
+  sceneId,
+  hasVideo,
+  onUpload,
+}: {
+  sceneId: number;
+  hasVideo: boolean;
+  onUpload: (sceneId: number, file: File) => Promise<void>;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  if (hasVideo) {
+    return (
+      <div className="flex items-center gap-1.5 px-3 py-1 text-xs text-green-400 bg-green-900/20 border border-green-800/40 rounded-b-lg -mt-0.5">
+        <span>✅</span>
+        <span>씬 {sceneId} 영상 있음</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-900/20 border border-orange-700/40 rounded-b-lg -mt-0.5">
+      <span className="text-xs text-orange-400 flex-1">⚠️ 씬 {sceneId} 영상 없음</span>
+      {error && <span className="text-xs text-red-400">{error}</span>}
+      <button
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className="text-xs px-2 py-1 bg-orange-700 hover:bg-orange-600 rounded transition disabled:opacity-50"
+      >
+        {uploading ? "업로드 중..." : "📁 영상 업로드"}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="video/*,.mp4,.webm,.mov"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          setUploading(true);
+          setError("");
+          try {
+            await onUpload(sceneId, file);
+          } catch (err: any) {
+            setError(err.message || "업로드 실패");
+          } finally {
+            setUploading(false);
+            e.target.value = "";
+          }
+        }}
+      />
     </div>
   );
 }

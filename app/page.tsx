@@ -168,6 +168,7 @@ export default function Home() {
       scriptPath={review.scriptPath}
       emotion={review.emotion}
       duration={review.duration}
+      imageStyle={imageStyle}
       onTitleChange={(t) => setReview({...review, title: t})}
       onScenesChange={(s) => setReview({...review, scenes: s})}
       onGenerate={generateFromScript}
@@ -208,10 +209,12 @@ export default function Home() {
               useBgm={bgm}
               emotionType={result.emotion}
               audioPath={result.audioPath}
+              sceneVideos={result.visualMode === "video" ? (result.sceneVideos || []) : undefined}
               onTitleChange={(title) => setResult({...result, title})}
               onScenesChange={(scenes) => setResult({...result, scenes})}
               onImagesChange={(images) => setResult({...result, sceneImages: images})}
               onVideoUpdate={(videoPath) => setResult({...result, videoPath})}
+              onVideosChange={(sv) => setResult({...result, sceneVideos: sv})}
             />
           </div>
         )}

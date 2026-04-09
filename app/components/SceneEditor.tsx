@@ -288,24 +288,29 @@ export function SceneEditor({
       if (!reader) throw new Error("스트림 열기 실패");
 
       const dec = new TextDecoder();
+      // Buffer partial lines across TCP chunk boundaries (SSE parser fix).
+      let buf = "";
+      const processLine = (line: string) => {
+        if (!line.startsWith("data: ")) return;
+        let d: any;
+        try { d = JSON.parse(line.slice(6)); }
+        catch { return; }
+        if (d.type === "progress") setRenderProgress(d.message);
+        else if (d.type === "done") {
+          onVideoUpdate(d.result.videoPath);
+          setHasChanges(false);
+        } else if (d.type === "error") throw new Error(d.message);
+      };
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
-        for (const line of dec
-          .decode(value)
-          .split("\n")
-          .filter((l) => l.startsWith("data: "))) {
-          try {
-            const d = JSON.parse(line.slice(6));
-            if (d.type === "progress") setRenderProgress(d.message);
-            else if (d.type === "done") {
-              onVideoUpdate(d.result.videoPath);
-              setHasChanges(false);
-            } else if (d.type === "error") throw new Error(d.message);
-          } catch (e: any) {
-            if (!e.message?.includes("JSON")) throw e;
-          }
+        if (done) {
+          if (buf.trim()) processLine(buf);
+          break;
         }
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const line of lines) processLine(line);
       }
     } catch (e: any) {
       setRenderProgress(`오류: ${e.message}`);

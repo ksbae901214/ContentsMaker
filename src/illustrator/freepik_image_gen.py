@@ -406,13 +406,16 @@ class FreepikImageGenerator:
 
     async def _get_image_urls(self, page) -> set[str]:
         """Return all CDN image URLs (excluding avatar/thumbnails)."""
-        imgs = await page.query_selector_all("img")
-        urls: set[str] = set()
-        for img in imgs:
-            src = await img.get_attribute("src")
-            if src and "cdnpk" in src and src.startswith("http"):
-                urls.add(src)
-        return urls
+        try:
+            imgs = await page.query_selector_all("img")
+            urls: set[str] = set()
+            for img in imgs:
+                src = await img.get_attribute("src")
+                if src and "cdnpk" in src and src.startswith("http"):
+                    urls.add(src)
+            return urls
+        except Exception as exc:
+            raise FreepikImageError(f"브라우저 세션이 닫혔습니다: {exc}") from exc
 
     async def _wait_for_new_image(
         self, page, existing_urls: set[str], max_wait: float

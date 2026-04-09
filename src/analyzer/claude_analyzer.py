@@ -114,7 +114,12 @@ def analyze_topic(
 
 
 def _call_claude(prompt: str) -> str:
-    """Call Claude Code headless mode and return raw output."""
+    """Call Claude Code headless mode and return raw output.
+
+    Passes stdin=DEVNULL so the subprocess never blocks waiting for input.
+    On timeout we include any partial stdout/stderr so the caller can see
+    what state the CLI was in when it hung.
+    """
     try:
         env = {
             **os.environ,
@@ -126,21 +131,31 @@ def _call_claude(prompt: str) -> str:
             text=True,
             timeout=CLAUDE_TIMEOUT_SECONDS,
             env=env,
+            stdin=subprocess.DEVNULL,
         )
     except FileNotFoundError:
         raise AnalyzerError(
             "Claude Code가 설치되지 않았습니다. "
             "'claude' 명령어가 PATH에 있는지 확인하세요."
         )
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as exc:
+        partial_out = (exc.stdout or b"").decode("utf-8", "replace")[:300] if isinstance(exc.stdout, bytes) else (exc.stdout or "")[:300]
+        partial_err = (exc.stderr or b"").decode("utf-8", "replace")[:300] if isinstance(exc.stderr, bytes) else (exc.stderr or "")[:300]
+        detail = ""
+        if partial_err:
+            detail = f" | stderr: {partial_err.strip()}"
+        elif partial_out:
+            detail = f" | stdout: {partial_out.strip()}"
         raise AnalyzerError(
             f"Claude Code 응답 시간 초과 ({CLAUDE_TIMEOUT_SECONDS}초). "
-            "네트워크 상태를 확인하세요."
+            f"네트워크/Claude CLI 상태를 확인하세요.{detail}"
         )
 
     if result.returncode != 0:
         stderr = result.stderr[:300] if result.stderr else ""
-        raise AnalyzerError(f"Claude Code 실행 실패 (exit {result.returncode}): {stderr}")
+        stdout = result.stdout[:300] if result.stdout else ""
+        detail = stderr or stdout or "(no output)"
+        raise AnalyzerError(f"Claude Code 실행 실패 (exit {result.returncode}): {detail}")
 
     output = result.stdout.strip()
     if not output:

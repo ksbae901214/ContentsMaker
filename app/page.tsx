@@ -1,11 +1,22 @@
 "use client";
 import { useState, useEffect } from "react";
 import { SceneEditor } from "./components/SceneEditor";
+import { ScriptReviewer } from "./components/ScriptReviewer";
 
-type Status = "idle" | "processing" | "done" | "error";
+type Status = "idle" | "processing" | "reviewing" | "done" | "error";
 interface SceneImage { scene_id: number; image_path: string; prompt: string; }
 interface SceneData { id: number; timestamp: number; duration: number; type: string; text: string; voice_text: string; emphasis: string; }
 interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; videoCount?: number; cost: number; visualMode?: string; imageStyle?: string; sourceType?: string; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; scriptPath?: string; audioPath?: string; sceneImages?: SceneImage[]; sceneVideos?: {scene_id:number;video_path:string}[]; scenes?: SceneData[]; dryRun?: boolean; }
+// Phase 1 (analyze-only) result held during the reviewing state.
+interface ReviewPayload {
+  phase: "analyzed";
+  title: string;
+  emotion: string;
+  duration: number;
+  scriptPath: string;
+  scenes: SceneData[];
+  sourceType?: string;
+}
 interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
@@ -15,13 +26,21 @@ export default function Home() {
   const [contentStyle, setContentStyle] = useState<"narration"|"skit"|"review">("narration");
   const [tone, setTone] = useState("");
   const [details, setDetails] = useState("");
-  const [imageStyle, setImageStyle] = useState<"webtoon"|"3d_pixar"|"realistic"|"anime">("webtoon");
-  const [visualMode, setVisualMode] = useState<"manga"|"video">("manga");
+  const [imageStyle, setImageStyle] = useState<"webtoon"|"3d_pixar"|"realistic"|"anime">("realistic");
+  // Default = video mode (Kling 2.5 + Premium+ unlimited). User-confirmed default.
+  const [visualMode, setVisualMode] = useState<"manga"|"video">("video");
   const [videoProvider, setVideoProvider] = useState<"seedance"|"deevid"|"freepik">("freepik");
   const [imageProvider, setImageProvider] = useState<"freepik"|"gpt">("freepik");
   const [status, setStatus] = useState<Status>("idle");
   const [progress, setProgress] = useState<string[]>([]);
   const [result, setResult] = useState<JobResult|null>(null);
+  const [review, setReview] = useState<ReviewPayload|null>(null);
+  // "analyze" during Phase 1 (input → Claude) or "render" during Phase 2
+  // (script → images/videos/TTS/render). Drives the processing header.
+  const [phase, setPhase] = useState<"analyze"|"render">("analyze");
+  // Visual/upload/bgm options from Phase 1 form are persisted here so
+  // Phase 2 (mode=script) can resubmit with the same settings.
+  const [phase2Opts, setPhase2Opts] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
@@ -39,34 +58,97 @@ export default function Home() {
   useEffect(()=>{ loadStats(); }, []);
 
   const generate = async (fd: FormData) => {
-    setStatus("processing"); setProgress([]); setResult(null); setError("");
+    setStatus("processing"); setProgress([]); setResult(null); setReview(null); setError("");
     try {
       const res = await fetch("/api/generate", { method: "POST", body: fd });
       const reader = res.body?.getReader();
       if (!reader) throw new Error("스트림 열기 실패");
       const dec = new TextDecoder();
+      // Buffer partial lines across TCP chunk boundaries. Large "done"
+      // events (full scenes array ≈ 3-5 KB) can be split mid-line and
+      // would otherwise silently fail to parse, leaving the UI stuck
+      // in "processing" forever.
+      let buf = "";
+      const processLine = (line: string) => {
+        if (!line.startsWith("data: ")) return;
+        let d: any;
+        try { d = JSON.parse(line.slice(6)); }
+        catch { return; } // incomplete / corrupt line, skip
+        if (d.type === "progress") setProgress(p => {
+          const msg: string = d.message || "";
+          // Heartbeat messages (⏳ prefix) replace the previous heartbeat so
+          // the log stays readable during multi-minute operations. Completion
+          // (✅), start (⏳ ... 시작), and error (❌/⚠️) messages all append.
+          const isHeartbeat = msg.startsWith("⏳") && msg.includes("진행 중");
+          if (isHeartbeat && p.length > 0) {
+            const last = p[p.length-1];
+            if (last.startsWith("⏳") && last.includes("진행 중")) {
+              return [...p.slice(0, -1), msg];
+            }
+          }
+          return [...p, msg];
+        });
+        else if (d.type === "done") {
+          // Phase 1 analyze-only result carries phase==="analyzed"
+          // and no videoPath — show the review screen instead of done.
+          if (d.result?.phase === "analyzed") {
+            setReview(d.result as ReviewPayload);
+            setStatus("reviewing");
+          } else {
+            setResult(d.result);
+            setStatus("done");
+          }
+        }
+        else if (d.type === "error") throw new Error(d.message);
+      };
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
-        for (const line of dec.decode(value).split("\n").filter(l => l.startsWith("data: "))) {
-          try {
-            const d = JSON.parse(line.slice(6));
-            if (d.type === "progress") setProgress(p => [...p, d.message]);
-            else if (d.type === "done") { setResult(d.result); setStatus("done"); }
-            else if (d.type === "error") throw new Error(d.message);
-          } catch (e: any) { if (!e.message?.includes("JSON")) throw e; }
+        if (done) {
+          // Flush any final buffered line (in case stream ended without
+          // a trailing newline).
+          if (buf.trim()) processLine(buf);
+          break;
         }
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? ""; // last element may be a partial line
+        for (const line of lines) processLine(line);
       }
     } catch (e: any) { setError(e.message); setStatus("error"); }
   };
 
-  const reset = () => { setStatus("idle"); setResult(null); setProgress([]); setFiles([]); setError(""); };
+  // Kick off Phase 1 (analyze-only). Stores the visual/upload options so
+  // Phase 2 (generateFromScript) can resubmit with the same settings.
+  const startAnalyze = (fd: FormData) => {
+    fd.set("stopAfter", "analyze");
+    const opts: Record<string, string> = {};
+    ["visualMode","imageStyle","videoProvider","imageProvider","bgm","yt","tt"].forEach(k => {
+      const v = fd.get(k);
+      if (typeof v === "string") opts[k] = v;
+    });
+    setPhase2Opts(opts);
+    setPhase("analyze");
+    generate(fd);
+  };
+
+  // Phase 2: from the reviewed script → images/videos/TTS/render.
+  const generateFromScript = () => {
+    if (!review) return;
+    const fd = new FormData();
+    fd.set("mode", "script");
+    fd.set("scriptPath", review.scriptPath);
+    Object.entries(phase2Opts).forEach(([k, v]) => fd.set(k, v));
+    setPhase("render");
+    generate(fd);
+  };
+
+  const reset = () => { setStatus("idle"); setResult(null); setReview(null); setProgress([]); setFiles([]); setError(""); };
 
   if (status === "processing") return (
     <main className="max-w-2xl mx-auto px-4 py-8">
       <div className="text-center py-8">
         <div className="text-5xl mb-4 animate-bounce">🎬</div>
-        <h2 className="text-xl font-bold mb-2">영상 생성 중...</h2>
+        <h2 className="text-xl font-bold mb-2">{phase==="render"?"영상 생성 중...":"스크립트 분석 중..."}</h2>
         <p className="text-gray-400">{progress[progress.length-1]||"준비 중..."}</p>
       </div>
       <div className="w-full bg-gray-800 rounded-full h-2 mb-4">
@@ -77,6 +159,20 @@ export default function Home() {
         <div className="flex gap-2 py-1 text-sm"><span className="text-yellow-400 animate-pulse">●</span><span className="text-gray-500">처리 중...</span></div>
       </div>
     </main>
+  );
+
+  if (status === "reviewing" && review) return (
+    <ScriptReviewer
+      title={review.title}
+      scenes={review.scenes}
+      scriptPath={review.scriptPath}
+      emotion={review.emotion}
+      duration={review.duration}
+      onTitleChange={(t) => setReview({...review, title: t})}
+      onScenesChange={(s) => setReview({...review, scenes: s})}
+      onGenerate={generateFromScript}
+      onCancel={reset}
+    />
   );
 
   if (status === "done" && result) {
@@ -246,7 +342,7 @@ export default function Home() {
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
         <div className="flex gap-2">
-          <button onClick={()=>{if(!files.length)return;const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);if(customTitle.trim())fd.set("customTitle",customTitle.trim());files.forEach(f=>fd.append("images",f));generate(fd)}}
+          <button onClick={()=>{if(!files.length)return;const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);if(customTitle.trim())fd.set("customTitle",customTitle.trim());files.forEach(f=>fd.append("images",f));startAnalyze(fd)}}
             disabled={!files.length} className={`flex-1 py-3 rounded-lg font-medium transition ${files.length?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성 {files.length>0?`(${files.length}장)`:""}
           </button>
@@ -273,7 +369,7 @@ export default function Home() {
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
         <div className="flex gap-2">
-          <button onClick={()=>{if(!title.trim()||!body.trim())return;const fd=new FormData();fd.set("mode","manual");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("title",title);fd.set("body",body);fd.set("comments",JSON.stringify(comments.filter(c=>c.trim())));generate(fd)}}
+          <button onClick={()=>{if(!title.trim()||!body.trim())return;const fd=new FormData();fd.set("mode","manual");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("title",title);fd.set("body",body);fd.set("comments",JSON.stringify(comments.filter(c=>c.trim())));startAnalyze(fd)}}
             disabled={!title.trim()||!body.trim()} className={`flex-1 py-3 rounded-lg font-medium transition ${title.trim()&&body.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성
           </button>
@@ -294,7 +390,7 @@ export default function Home() {
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
         <div className="flex gap-2">
-          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("url",urlInput.trim());if(customTitle.trim())fd.set("customTitle",customTitle.trim());generate(fd)}}
+          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("url",urlInput.trim());if(customTitle.trim())fd.set("customTitle",customTitle.trim());startAnalyze(fd)}}
             disabled={!urlInput.trim()} className={`flex-1 py-3 rounded-lg font-medium transition ${urlInput.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성
           </button>
@@ -321,7 +417,7 @@ export default function Home() {
           <textarea value={details} onChange={e=>setDetails(e.target.value)} placeholder="AI에게 전달할 추가 정보" rows={3} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none resize-y"/></div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
         <div className="flex gap-2">
-          <button onClick={()=>{if(topicText.trim().length<5)return;const fd=new FormData();fd.set("mode","topic");fd.set("bgm",bgm?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("topic",topicText.trim());fd.set("contentStyle",contentStyle);fd.set("tone",tone);fd.set("details",details);generate(fd)}}
+          <button onClick={()=>{if(topicText.trim().length<5)return;const fd=new FormData();fd.set("mode","topic");fd.set("bgm",bgm?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("topic",topicText.trim());fd.set("contentStyle",contentStyle);fd.set("tone",tone);fd.set("details",details);startAnalyze(fd)}}
             disabled={topicText.trim().length<5} className={`flex-1 py-3 rounded-lg font-medium transition ${topicText.trim().length>=5?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성
           </button>

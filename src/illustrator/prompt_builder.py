@@ -13,6 +13,12 @@ from pathlib import Path
 
 from src.analyzer.script_models import ShortsScript, Scene
 from src.config.settings import CLAUDE_TIMEOUT_SECONDS
+from src.illustrator.image_constants import (
+    ANATOMY_GUARD,
+    NO_TEXT_GUARD,
+    PHOTO_STYLE_FOOTER,
+    PHOTO_STYLE_PREFIX,
+)
 from src.illustrator.reference_manager import is_available as refs_available
 
 logger = logging.getLogger(__name__)
@@ -92,35 +98,21 @@ IMAGE_STYLE_PRESETS = {
     ),
     # CRITICAL: the word "illustration" is FORBIDDEN here — it triggers
     # stylized output on Nano Banana / GPT Image. We want camera photography.
+    # The NO_TEXT_GUARD, PHOTO_STYLE_PREFIX, PHOTO_STYLE_FOOTER, and
+    # ANATOMY_GUARD constants are the shared source of truth
+    # (see src/illustrator/image_constants.py) so e2e scripts and the
+    # web UI produce identical quality.
     "realistic": (
-        # ─── Photography vocabulary (must come first to anchor the model) ───
-        "Professional DSLR photograph, photorealistic, shot on Sony A7R IV, "
-        "85mm prime lens, f/1.8 shallow depth of field, "
-        "Korean drama cinematography style, "
-        "natural daylight with soft window light or golden hour, "
+        PHOTO_STYLE_PREFIX
+        + "shallow depth of field, natural daylight with soft window light or golden hour, "
         "true-to-life skin texture with visible pores and micro-details, "
         "attractive Korean adults in their 20s-30s in modern Korean settings, "
         "cinematic color grading (Sony Venice / ARRI Alexa look), "
         "high dynamic range, sharp focus on subject, tasteful bokeh background, "
-        # ─── Anatomy correctness (CRITICAL — diffusion models fail this often) ───
-        "anatomically correct human body, "
-        "EXACTLY two arms, EXACTLY two hands, EXACTLY five fingers per hand, "
-        "EXACTLY two legs, EXACTLY one head, EXACTLY two eyes, "
-        "natural realistic hand positioning and proportions, "
-        "hands and fingers in clear well-defined positions (not overlapping or merged), "
-        "NO extra limbs, NO extra hands, NO extra fingers, NO extra arms, NO extra legs, "
-        "NO duplicated body parts, NO mutant anatomy, NO deformed hands, "
-        "NO floating hands disconnected from arms, NO hands with wrong thumb orientation, "
-        "NO mirrored body parts, NO three hands, NO two left hands, NO two right hands, "
-        # ─── Aspect ratio + text removal ───
-        "vertical 9:16 aspect ratio for YouTube Shorts, "
-        "absolutely NO text, NO letters, NO numbers, NO words, NO speech bubbles, NO captions, "
-        "NO watermarks, NO subtitles, NO UI elements, NO titles, NO labels, NO signs with writing, "
-        # ─── Style guard (anti-cartoon) ───
-        "NO cartoon, NO anime, NO illustration, NO painting, NO drawing, NO webtoon, NO manga, "
-        "NO 3D render, NO CGI look, "
-        "this is a REAL PHOTOGRAPH not a drawing, "
-        "the image must contain ZERO written characters of any language"
+        + ANATOMY_GUARD
+        + ", natural realistic hand positioning and proportions, "
+        "hands and fingers in clear well-defined positions (not overlapping or merged)"
+        + PHOTO_STYLE_FOOTER
     ),
     "anime": (
         "Japanese anime style illustration, large expressive eyes, "
@@ -165,7 +157,11 @@ STYLE_INSTRUCTIONS_FOR_CLAUDE = {
             "  - 손이 보이지 않을 경우 'hands not visible' 또는 'hidden behind back'으로 명시\n"
             "- 절대 포함 금지 단어: 'illustration', 'drawing', 'cartoon', 'anime', 'webtoon', 'painting'\n"
             "- 반드시 포함 단어: 'photograph', 'photorealistic', 'DSLR', 'shot on', 'bokeh', 'anatomically correct'\n"
-            "- 텍스트 금지: 이미지 어디에도 글자/숫자/텍스트/말풍선 절대 없음"
+            "- ⚠️ 텍스트 금지 (CRITICAL): 이미지 어디에도 글자 절대 없음 — "
+            "표지판, 이름표, 명찰, 간판, 메뉴판, 포스터, 문서, 클립보드, 책 표지, 제품 라벨, "
+            "약병 라벨, 모니터 화면 텍스트, 폰/태블릿/TV 화면 텍스트, 화이트보드, 차트, "
+            "한국어/영어/중국어/일본어 등 모든 언어의 읽을 수 있는 문자 일절 금지. "
+            "프롬프트에 반드시 '배경의 벽/가구/물건에는 텍스트 없음, 단색/무지 표면으로 유지'를 명시"
         ),
     },
     "3d_pixar": {

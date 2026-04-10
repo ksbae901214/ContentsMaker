@@ -120,6 +120,7 @@ def _call_claude_with_images(image_paths: list[Path]) -> str:
             ["claude", "-p", prompt, "--allowedTools", "Read"],
             capture_output=True,
             text=True,
+            stdin=subprocess.DEVNULL,
             timeout=CLAUDE_TIMEOUT_SECONDS,
         )
     except FileNotFoundError:

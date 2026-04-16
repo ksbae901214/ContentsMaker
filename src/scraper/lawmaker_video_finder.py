@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import logging
 import subprocess
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ def _build_query(name: str, source: str, max_results: int) -> str:
 
 def _run_ytdlp_search(query: str) -> list[str]:
     cmd = [
-        "yt-dlp",
+        sys.executable, "-m", "yt_dlp",
         "--dump-json",
         "--flat-playlist",
         "--no-download",
@@ -62,7 +63,7 @@ def _run_ytdlp_search(query: str) -> list[str]:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     except subprocess.TimeoutExpired as exc:
         raise VideoSearchError("yt-dlp 검색 시간 초과 (30초)") from exc
-    except FileNotFoundError as exc:
+    except (FileNotFoundError, ModuleNotFoundError) as exc:
         raise VideoSearchError(
             "yt-dlp가 설치되어 있지 않습니다. 'pip3 install yt-dlp'를 실행하세요."
         ) from exc
@@ -123,7 +124,6 @@ def format_upload_date(date_str: str) -> str:
 
 if __name__ == "__main__":
     import argparse
-    import sys
 
     parser = argparse.ArgumentParser(description="Search YouTube for lawmaker videos")
     parser.add_argument("--name", required=True, help="Lawmaker name (e.g. 나경원)")

@@ -214,3 +214,112 @@ def build_topic_prompt(
         tone=tone or "(자동 감지)",
         details=details or "(없음)",
     )
+
+
+# ── Political commentary prompt ─────────────────────────────────────────
+
+POLITICAL_ANALYZE_PROMPT = """다음 국회 발언 영상의 자막을 분석하여 유튜브 쇼츠 정치 해설 영상 스크립트를 생성하세요.
+
+## 원본 정보
+영상 URL: {youtube_url}
+클립 구간: {clip_start}초 ~ {clip_end}초
+톤: {tone}
+추가 지시: {details}
+
+## 자막 (시간별)
+{transcript_text}
+
+## 교차 편집 규칙 (필수)
+
+1. **구조**: title → clip → commentary → clip → commentary → ... → commentary
+2. **"clip" 씬**: 원본 영상의 특정 구간 재생
+   - clip_start / clip_end 필드 필수 (원본 클립 내 상대 시간, 0초부터)
+   - text: 원본 자막 내용 (화면에 자막으로 표시)
+   - voice_text: 빈 문자열 "" (TTS 안 함, 원본 오디오 재생)
+3. **"commentary" 씬**: AI 해설 (그라디언트 배경 + 텍스트)
+   - voice_text: 해설 내용 (TTS로 읽힘)
+   - clip_start / clip_end 불필요
+4. **"title" 씬**: 첫 번째 씬, 임팩트 있는 제목 (3초)
+
+## 구성 규칙
+
+- clip 씬 3-4개: 원본 발언의 핵심 구간 (각 3-5초)
+- commentary 씬 3-4개: 각 clip 직후 해설 (각 3-5초)
+- 마무리 commentary 1개: 결론/전망
+- **총 30-60초**, 씬 하나당 **최대 5초**
+- emotion_type: "angry" (비판적 톤) 또는 "relatable" (분석/공감 톤)
+
+## 해설 규칙
+
+- 정치적 편향 최소화, 핵심을 짚는 분석
+- 시청자가 이해하기 쉬운 구어체
+- highlight_words로 핵심 단어 1-3개 강조
+
+## 텍스트 규칙
+
+- text 줄바꿈: 15자 이내
+- voice_text: 자연스러운 구어체, 문장 끝에 마침표
+- audio.tts_script: commentary + title 씬의 voice_text만 이어붙이기 (clip 씬 제외)
+
+## 출력 JSON
+
+```json
+{{{{
+  "metadata": {{{{
+    "title": "임팩트 있는 제목",
+    "emotion_type": "relatable",
+    "duration": 45,
+    "source_url": "{youtube_url}",
+    "source_type": "political"
+  }}}},
+  "scenes": [
+    {{{{ "id": 1, "timestamp": 0, "duration": 3, "type": "title",
+       "text": "제목\\n두 줄", "voice_text": "제목 음성",
+       "emphasis": "high", "highlight_words": ["핵심"] }}}},
+    {{{{ "id": 2, "timestamp": 3, "duration": 5, "type": "clip",
+       "text": "의원의 발언\\n자막", "voice_text": "",
+       "emphasis": "high", "highlight_words": ["핵심단어"],
+       "clip_start": 0.0, "clip_end": 5.0 }}}},
+    {{{{ "id": 3, "timestamp": 8, "duration": 4, "type": "commentary",
+       "text": "해설 텍스트\\n두 줄", "voice_text": "이 발언의 핵심은 이것입니다.",
+       "emphasis": "medium", "highlight_words": ["핵심"] }}}}
+  ],
+  "audio": {{{{
+    "tts_script": "제목 음성 이 발언의 핵심은 이것입니다. ...",
+    "voice": "",
+    "rate": "",
+    "pitch": ""
+  }}}},
+  "background": {{{{
+    "type": "gradient",
+    "colors": []
+  }}}}
+}}}}
+```
+
+audio.voice, audio.rate, audio.pitch, background.colors는 빈 값으로 두세요 (시스템이 자동 설정).
+JSON만 출력하세요. 다른 설명은 포함하지 마세요."""
+
+
+def build_political_prompt(
+    youtube_url: str,
+    transcript: list[dict],
+    clip_start: float,
+    clip_end: float,
+    tone: str = "",
+    details: str = "",
+) -> str:
+    """Build the analysis prompt for political commentary."""
+    transcript_text = "\n".join(
+        f"[{seg['start']:.1f}s-{seg['end']:.1f}s] {seg['text']}"
+        for seg in transcript
+    ) if transcript else "(자막 없음 — 영상 내용을 기반으로 일반적인 정치 해설 구성)"
+
+    return POLITICAL_ANALYZE_PROMPT.format(
+        youtube_url=youtube_url,
+        clip_start=clip_start,
+        clip_end=clip_end,
+        tone=tone or "객관적 분석",
+        details=details or "(없음)",
+        transcript_text=transcript_text,
+    )

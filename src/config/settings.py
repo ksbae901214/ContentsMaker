@@ -39,6 +39,9 @@ MAX_SCENE_DURATION_SECONDS = 5.0
 # Video generation
 DATA_VIDEOS_DIR = DATA_DIR / "videos"
 
+# Political commentary mode
+DATA_POLITICAL_DIR = DATA_DIR / "political"
+
 # deevid.ai browser automation
 DEEVID_PROFILE_DIR = PROJECT_ROOT / ".cache" / "deevid_profile"
 DEEVID_URL = "https://deevid.ai/"

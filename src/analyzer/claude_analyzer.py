@@ -113,6 +113,61 @@ def analyze_topic(
     return script, file_path
 
 
+def analyze_political(
+    political_input,
+    transcript: list[dict],
+    output_dir: Path | None = None,
+) -> tuple[ShortsScript, Path]:
+    """Analyze a political speech and generate a cross-edit ShortsScript.
+
+    Returns (ShortsScript, file_path) tuple.
+    """
+    from src.analyzer.prompt_template import build_political_prompt
+
+    prompt = build_political_prompt(
+        youtube_url=political_input.youtube_url,
+        transcript=transcript,
+        clip_start=political_input.clip_start,
+        clip_end=political_input.clip_end,
+        tone=political_input.tone,
+        details=political_input.details,
+    )
+
+    logger.info("Claude Code 정치 해설 분석 시작: %s", political_input.youtube_url)
+    raw_json = _call_claude(prompt)
+    script = _parse_response(raw_json)
+
+    # Ensure source_type is "political"
+    if script.metadata.source_type != "political":
+        script = ShortsScript(
+            metadata=Metadata(
+                title=script.metadata.title,
+                emotion_type=script.metadata.emotion_type,
+                duration=script.metadata.duration,
+                source_url=political_input.youtube_url,
+                source_type="political",
+            ),
+            scenes=script.scenes,
+            audio=script.audio,
+            background=script.background,
+        )
+
+    script = _apply_voice_config(script)
+    script = _ensure_line_breaks(script)
+
+    target_dir = output_dir or DATA_SCRIPTS_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{timestamp}_political.json"
+    file_path = target_dir / filename
+
+    script.save(file_path)
+    logger.info("정치 해설 스크립트 저장: %s", file_path)
+
+    return script, file_path
+
+
 def _call_claude(prompt: str) -> str:
     """Call Claude Code headless mode and return raw output.
 

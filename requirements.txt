@@ -9,3 +9,6 @@ pytest-asyncio>=0.23.0
 
 # Browser automation (deevid.ai video generation)
 playwright>=1.49.0
+
+# YouTube download (political commentary mode)
+yt-dlp>=2024.1.0

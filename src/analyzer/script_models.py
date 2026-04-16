@@ -10,7 +10,7 @@ from typing import Literal
 
 
 EmotionType = Literal["funny", "touching", "angry", "relatable"]
-SceneType = Literal["title", "body", "comment"]
+SceneType = Literal["title", "body", "comment", "clip", "commentary"]
 Emphasis = Literal["high", "medium", "low"]
 VisualType = Literal["image", "video", "none"]
 TransitionType = Literal["fade", "slide-left", "slide-up", "zoom", "dissolve", "wipe"]
@@ -113,6 +113,8 @@ class Scene:
     subtitle_style: SubtitleStyle | None = None
     transition: TransitionConfig | None = None
     sfx: tuple[SfxConfig, ...] = ()
+    clip_start: float | None = None   # seconds into source clip (political mode)
+    clip_end: float | None = None     # seconds into source clip (political mode)
 
     def to_dict(self) -> dict:
         d = {
@@ -135,6 +137,10 @@ class Scene:
             d["transition"] = self.transition.to_dict()
         if self.sfx:
             d["sfx"] = [s.to_dict() for s in self.sfx]
+        if self.clip_start is not None:
+            d["clip_start"] = self.clip_start
+        if self.clip_end is not None:
+            d["clip_end"] = self.clip_end
         return d
 
     @classmethod
@@ -165,10 +171,12 @@ class Scene:
             subtitle_style=sub_style,
             transition=transition,
             sfx=tuple(SfxConfig.from_dict(s) for s in raw_sfx),
+            clip_start=data.get("clip_start"),
+            clip_end=data.get("clip_end"),
         )
 
 
-SourceType = Literal["blind", "topic"]
+SourceType = Literal["blind", "topic", "political"]
 
 
 @dataclass(frozen=True)

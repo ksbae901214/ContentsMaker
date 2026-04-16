@@ -1,5 +1,5 @@
 export type EmotionType = "funny" | "touching" | "angry" | "relatable";
-export type SceneType = "title" | "body" | "comment";
+export type SceneType = "title" | "body" | "comment" | "clip" | "commentary";
 export type Emphasis = "high" | "medium" | "low";
 export type VisualType = "image" | "video" | "none";
 export type TransitionType =

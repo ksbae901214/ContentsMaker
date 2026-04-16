@@ -152,6 +152,21 @@ p=save_topic(ti)
 print(json.dumps({"path":str(p),"topic":ti.topic}))`)));
           send("progress",{message:`✅ "${r.topic}"`});
           rawPath = r.path;
+        } else if (mode === "political") {
+          const ytUrl = fd.get("youtubeUrl") as string;
+          const clipStartRaw = parseFloat((fd.get("clipStart") as string) || "0") || 0;
+          const clipEndRaw = parseFloat((fd.get("clipEnd") as string) || "0") || 0;
+          const polTone = (fd.get("politicalTone") as string) || "";
+          const polDetails = (fd.get("politicalDetails") as string) || "";
+          if (!ytUrl) { send("error",{message:"YouTube URL을 입력해주세요"}); ctrl.close(); return; }
+          const r = await withStage("정치 입력 저장", 5, async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.scraper.political_input import PoliticalInput,save_political
+pi=PoliticalInput(youtube_url=${JSON.stringify(ytUrl)},clip_start=${clipStartRaw},clip_end=${clipEndRaw},tone=${JSON.stringify(polTone)},details=${JSON.stringify(polDetails)})
+p=save_political(pi)
+print(json.dumps({"path":str(p),"url":pi.youtube_url}))`)));
+          send("progress",{message:`✅ "${r.url}"`});
+          rawPath = r.path;
         } else {
           const t=fd.get("title") as string, b=fd.get("body") as string, c=fd.get("comments") as string||"[]";
           if(!t||!b){send("error",{message:"제목과 본문 필수"});ctrl.close();return;}
@@ -171,7 +186,42 @@ print(json.dumps({"path":str(save_post(post)),"title":post.title}))`)));
         // Claude CLI analysis — typically 30s–5min. Skipped entirely when
         // mode==="script" (Phase 2 entry already loaded the script above).
         if (mode !== "script") {
-          if (mode === "topic") {
+          if (mode === "political") {
+            // Political mode: download video + subtitles, then analyze
+            const ytUrl = fd.get("youtubeUrl") as string;
+            const clipStart = parseFloat((fd.get("clipStart") as string) || "0") || 0;
+            const clipEnd = parseFloat((fd.get("clipEnd") as string) || "0") || 0;
+            const polTone = (fd.get("politicalTone") as string) || "";
+            const polDetails = (fd.get("politicalDetails") as string) || "";
+
+            // Step 1: Download video + subtitles
+            const dl = await withStage("YouTube 영상 다운로드", 120, async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.config.settings import DATA_POLITICAL_DIR
+from src.scraper.youtube_downloader import download_video,download_subtitles,parse_vtt_subtitles,extract_clip,extract_audio
+DATA_POLITICAL_DIR.mkdir(parents=True,exist_ok=True)
+url=${JSON.stringify(ytUrl)}
+vp=download_video(url,DATA_POLITICAL_DIR)
+vtt=download_subtitles(url,DATA_POLITICAL_DIR)
+transcript=parse_vtt_subtitles(vtt) if vtt else []
+cs=${clipStart};ce=${clipEnd}
+if ce<=cs: ce=min(cs+60,120)
+cp=extract_clip(vp,cs,ce,DATA_POLITICAL_DIR/"clip.mp4")
+ca=extract_audio(cp,DATA_POLITICAL_DIR/"clip_audio.mp3")
+print(json.dumps({"video":str(vp),"clip":str(cp),"clip_audio":str(ca),"transcript":transcript,"sub_count":len(transcript),"clip_start":cs,"clip_end":ce}))`)));
+            send("progress",{message:`✅ 다운로드 완료 (자막 ${dl.sub_count}줄, 클립 ${dl.clip_start}-${dl.clip_end}초)`});
+
+            // Step 2: Claude analysis with transcript
+            a = await withStage("Claude 정치 해설 분석", 180, async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.scraper.political_input import PoliticalInput
+from src.analyzer.claude_analyzer import analyze_political
+pi=PoliticalInput(youtube_url=${JSON.stringify(ytUrl)},clip_start=${dl.clip_start},clip_end=${dl.clip_end},tone=${JSON.stringify(polTone)},details=${JSON.stringify(polDetails)})
+transcript=json.loads('''${JSON.stringify(dl.transcript)}''')
+s,sp=analyze_political(pi,transcript)
+print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp),"clip":'''${dl.clip}''',"clip_audio":'''${dl.clip_audio}'''}))`)));
+          } else if (mode === "topic") {
             const contentStyle = (fd.get("contentStyle") as string) || "narration";
             const tone = (fd.get("tone") as string) || "";
             const details = (fd.get("details") as string) || "";
@@ -245,6 +295,50 @@ print(json.dumps({"scenes":s["scenes"]}))`));
           send("progress",{message:"🎨 [드라이런] 이미지/영상 생성 스킵"});
           send("progress",{message:"🎙️ [드라이런] 음성 생성 스킵"});
           send("progress",{message:"🎬 [드라이런] 렌더링 스킵"});
+        } else if (mode === "political" && a.clip && a.clip_audio) {
+          // ── Political mode: audio stitching + scene clip extraction ──
+          const polStitch = await withStage("오디오 스티칭 (원본+TTS)", 60, async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.script_models import ShortsScript
+from src.tts.audio_stitcher import stitch_political_audio
+s=ShortsScript.load('''${a.sp}''')
+ap,timings=stitch_political_audio(s,Path('''${a.clip_audio}'''))
+print(json.dumps({"audio_path":str(ap),"timings":timings}))`)));
+          ttsResult = polStitch;
+          send("progress",{message:`✅ 오디오 스티칭 완료 (${polStitch.timings.length}씬)`});
+
+          // Extract per-scene video clips for clip scenes
+          const sceneClips = await withStage("씬 클립 추출", 30, async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.script_models import ShortsScript
+from src.scraper.youtube_downloader import extract_scene_clips
+from src.config.settings import DATA_VIDEOS_DIR
+s=ShortsScript.load('''${a.sp}''')
+clips=extract_scene_clips(Path('''${a.clip}'''),list(s.scenes),DATA_VIDEOS_DIR)
+print(json.dumps(clips))`)));
+          generatedVideos = sceneClips;
+          vc = sceneClips.length;
+          send("progress",{message:`✅ 씬 클립 ${vc}개 추출`});
+
+          // Render
+          const imgJson=JSON.stringify(generatedImages);
+          const vidJson=JSON.stringify(generatedVideos);
+          const timingsJson=JSON.stringify(ttsResult!.timings);
+          const rr = await withStage("Remotion 최종 렌더", Math.max(60, a.scenes * 10), async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.script_models import ShortsScript
+from src.video.renderer import render_video
+s=ShortsScript.load('''${a.sp}''')
+ap=Path('''${ttsResult!.audio_path}''')
+sv=json.loads('''${vidJson}''') if '''${vidJson}'''!='[]' else None
+timings=json.loads('''${timingsJson}''')
+o=render_video(s,audio_path=ap,scene_videos=sv,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings)
+print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`)));
+          send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
+          videoPath = rr.path;
         } else if (visualMode === "video") {
           // AI Video clip mode — provider selectable
           const videoProvider = (fd.get("videoProvider") as string) || "seedance";

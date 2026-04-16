@@ -29,6 +29,15 @@ export default function Home() {
   const [clipEnd, setClipEnd] = useState("");
   const [politicalTone, setPoliticalTone] = useState("");
   const [politicalDetails, setPoliticalDetails] = useState("");
+  // Lawmaker selection flow
+  interface LawmakerItem { name: string; party: string; role: string; description: string; emoji: string; searchQuery: string; }
+  interface VideoItem { title: string; url: string; duration_seconds: number; view_count: number; upload_date: string; channel: string; thumbnail: string; duration_label: string; date_label: string; }
+  const [lawmakers, setLawmakers] = useState<LawmakerItem[]>([]);
+  const [selectedLawmaker, setSelectedLawmaker] = useState<LawmakerItem | null>(null);
+  const [lawmakerVideos, setLawmakerVideos] = useState<VideoItem[]>([]);
+  const [videosLoading, setVideosLoading] = useState(false);
+  const [videosError, setVideosError] = useState("");
+  const [selectedVideoTitle, setSelectedVideoTitle] = useState("");
   const [tone, setTone] = useState("");
   const [details, setDetails] = useState("");
   const [imageStyle, setImageStyle] = useState<"webtoon"|"3d_pixar"|"realistic"|"anime">("realistic");
@@ -61,6 +70,34 @@ export default function Home() {
 
   const loadStats = () => { fetch("/api/stats").then(r=>r.json()).then(setStats).catch(()=>{}); };
   useEffect(()=>{ loadStats(); }, []);
+  useEffect(()=>{ fetch("/api/lawmaker/list").then(r=>r.json()).then(d=>setLawmakers(d.lawmakers||[])).catch(()=>{}); }, []);
+
+  const selectLawmaker = async (lm: LawmakerItem) => {
+    setSelectedLawmaker(lm);
+    setLawmakerVideos([]);
+    setVideosError("");
+    setVideosLoading(true);
+    try {
+      const r = await fetch(`/api/lawmaker/videos?name=${encodeURIComponent(lm.name)}&source=all&limit=10`);
+      const d = await r.json();
+      if (d.error) setVideosError(d.error);
+      else setLawmakerVideos(d.videos || []);
+    } catch { setVideosError("영상 검색 실패"); }
+    finally { setVideosLoading(false); }
+  };
+
+  const pickVideo = (v: VideoItem) => {
+    setPoliticalUrl(v.url);
+    setSelectedVideoTitle(v.title);
+  };
+
+  const resetPoliticalFlow = () => {
+    setSelectedLawmaker(null);
+    setLawmakerVideos([]);
+    setPoliticalUrl("");
+    setSelectedVideoTitle("");
+    setVideosError("");
+  };
 
   const generate = async (fd: FormData) => {
     setStatus("processing"); setProgress([]); setResult(null); setReview(null); setError("");
@@ -438,29 +475,109 @@ export default function Home() {
       </div>
       {/* Political tab */}
       <div className="space-y-4" style={{display:tab==="political"?"block":"none"}}>
-        <div><label className="block text-sm font-medium text-gray-300 mb-1">YouTube URL *</label>
-          <input value={politicalUrl} onChange={e=>setPoliticalUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/></div>
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="block text-sm font-medium text-gray-300 mb-1">시작 시간 (선택)</label>
-            <input value={clipStart} onChange={e=>setClipStart(e.target.value)} placeholder="0:00 또는 초" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/></div>
-          <div><label className="block text-sm font-medium text-gray-300 mb-1">종료 시간 (선택)</label>
-            <input value={clipEnd} onChange={e=>setClipEnd(e.target.value)} placeholder="비워두면 60초" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/></div>
-        </div>
-        <div><label className="block text-sm font-medium text-gray-300 mb-1">해설 톤 (선택)</label>
-          <input value={politicalTone} onChange={e=>setPoliticalTone(e.target.value)} placeholder="예: 날카롭게, 객관적으로, 유머러스" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/></div>
-        <div><label className="block text-sm font-medium text-gray-300 mb-1">추가 지시 (선택)</label>
-          <textarea value={politicalDetails} onChange={e=>setPoliticalDetails(e.target.value)} placeholder="예: 경제 정책에 집중, 야당 시각 포함" rows={2} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none resize-y"/></div>
-        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
-        <div className="flex gap-2">
-          <button onClick={()=>{if(!politicalUrl.trim())return;const fd=new FormData();fd.set("mode","political");fd.set("bgm",bgm?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("youtubeUrl",politicalUrl.trim());fd.set("clipStart",clipStart);fd.set("clipEnd",clipEnd);fd.set("politicalTone",politicalTone);fd.set("politicalDetails",politicalDetails);startAnalyze(fd)}}
-            disabled={!politicalUrl.trim()} className={`flex-1 py-3 rounded-lg font-medium transition ${politicalUrl.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
-            🎙️ 정치 해설 생성
-          </button>
-          <button onClick={()=>{if(!politicalUrl.trim())return;const fd=new FormData();fd.set("mode","political");fd.set("bgm","off");fd.set("yt","off");fd.set("tt","off");fd.set("dryRun","on");fd.set("youtubeUrl",politicalUrl.trim());fd.set("clipStart",clipStart);fd.set("clipEnd",clipEnd);fd.set("politicalTone",politicalTone);fd.set("politicalDetails",politicalDetails);generate(fd)}}
-            disabled={!politicalUrl.trim()} className={`py-3 px-4 rounded-lg font-medium transition ${politicalUrl.trim()?"bg-yellow-600 hover:bg-yellow-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
-            🧪 테스트
-          </button>
-        </div>
+        {/* Step 1: Lawmaker selection */}
+        {!selectedLawmaker && !politicalUrl && (
+          <div>
+            <h3 className="text-sm font-medium text-gray-300 mb-3">인기 의원 선택</h3>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {lawmakers.map(lm=>(
+                <button key={lm.name} onClick={()=>selectLawmaker(lm)}
+                  className="flex items-start gap-2 p-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-left transition border border-gray-700 hover:border-blue-500">
+                  <span className="text-2xl">{lm.emoji}</span>
+                  <div className="min-w-0">
+                    <div className="font-medium text-sm">{lm.name}</div>
+                    <div className="text-xs text-blue-400">{lm.party}</div>
+                    <div className="text-xs text-gray-400 truncate">{lm.description}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="border-t border-gray-700 pt-3">
+              <p className="text-xs text-gray-500 mb-2">또는 직접 YouTube URL 입력</p>
+              <input value={politicalUrl} onChange={e=>setPoliticalUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Video list (lawmaker selected, no URL yet) */}
+        {selectedLawmaker && !politicalUrl && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <button onClick={resetPoliticalFlow} className="text-gray-400 hover:text-white text-sm">← 뒤로</button>
+              <h3 className="text-sm font-medium text-gray-300">{selectedLawmaker.emoji} {selectedLawmaker.name} 최신 발언</h3>
+            </div>
+            {videosLoading && (
+              <div className="text-center py-6 text-gray-400 text-sm">
+                <div className="animate-spin text-2xl mb-2">⏳</div>
+                YouTube 검색 중...
+              </div>
+            )}
+            {videosError && (
+              <div className="bg-red-900/30 border border-red-700 rounded-lg p-3 text-sm text-red-300 mb-3">
+                {videosError}
+                {videosError.includes("yt-dlp") && <div className="mt-1 text-xs text-gray-400">터미널에서 <code className="text-yellow-400">pip3 install yt-dlp</code> 실행 후 재시도</div>}
+              </div>
+            )}
+            {!videosLoading && !videosError && lawmakerVideos.length === 0 && (
+              <div className="text-center py-4 text-gray-500 text-sm">검색 결과가 없습니다</div>
+            )}
+            <div className="space-y-2 mb-3">
+              {lawmakerVideos.map((v,i)=>(
+                <button key={i} onClick={()=>pickVideo(v)}
+                  className="w-full flex gap-3 p-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-left transition border border-gray-700 hover:border-blue-500">
+                  {v.thumbnail && <img src={v.thumbnail} alt="" className="w-16 h-10 object-cover rounded flex-shrink-0"/>}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-white line-clamp-2 leading-tight mb-1">{v.title}</div>
+                    <div className="text-xs text-gray-400">
+                      {v.channel&&<span className="mr-2">{v.channel}</span>}
+                      {v.duration_label&&<span className="mr-2">⏱ {v.duration_label}</span>}
+                      {v.view_count>0&&<span className="mr-2">👁 {(v.view_count/10000).toFixed(1)}만</span>}
+                      {v.date_label&&<span>{v.date_label}</span>}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="border-t border-gray-700 pt-3">
+              <p className="text-xs text-gray-500 mb-2">또는 직접 URL 입력</p>
+              <input onChange={e=>{if(e.target.value)setPoliticalUrl(e.target.value)}} placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: URL selected — show options form */}
+        {politicalUrl && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 border border-gray-700">
+              <div className="min-w-0 flex-1 mr-2">
+                <div className="text-xs text-gray-400 mb-0.5">선택된 영상</div>
+                <div className="text-sm text-white truncate">{selectedVideoTitle || politicalUrl}</div>
+              </div>
+              <button onClick={()=>{setPoliticalUrl("");setSelectedVideoTitle("");}} className="text-gray-400 hover:text-white text-xs whitespace-nowrap">변경</button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="block text-sm font-medium text-gray-300 mb-1">시작 시간 (선택)</label>
+                <input value={clipStart} onChange={e=>setClipStart(e.target.value)} placeholder="0:00 또는 초" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/></div>
+              <div><label className="block text-sm font-medium text-gray-300 mb-1">종료 시간 (선택)</label>
+                <input value={clipEnd} onChange={e=>setClipEnd(e.target.value)} placeholder="비워두면 자동(60초)" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/></div>
+            </div>
+            <div><label className="block text-sm font-medium text-gray-300 mb-1">해설 톤 (선택)</label>
+              <input value={politicalTone} onChange={e=>setPoliticalTone(e.target.value)} placeholder="예: 날카롭게, 객관적으로, 유머러스" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/></div>
+            <div><label className="block text-sm font-medium text-gray-300 mb-1">추가 지시 (선택)</label>
+              <textarea value={politicalDetails} onChange={e=>setPoliticalDetails(e.target.value)} placeholder="예: 경제 정책에 집중, 야당 시각 포함" rows={2} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none resize-y"/></div>
+            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+            <div className="flex gap-2">
+              <button onClick={()=>{const fd=new FormData();fd.set("mode","political");fd.set("bgm",bgm?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("youtubeUrl",politicalUrl.trim());fd.set("clipStart",clipStart);fd.set("clipEnd",clipEnd);fd.set("politicalTone",politicalTone);fd.set("politicalDetails",politicalDetails);startAnalyze(fd)}}
+                className="flex-1 py-3 rounded-lg font-medium transition bg-blue-600 hover:bg-blue-500">
+                🎙️ 정치 해설 생성
+              </button>
+              <button onClick={()=>{const fd=new FormData();fd.set("mode","political");fd.set("bgm","off");fd.set("yt","off");fd.set("tt","off");fd.set("dryRun","on");fd.set("youtubeUrl",politicalUrl.trim());fd.set("clipStart",clipStart);fd.set("clipEnd",clipEnd);fd.set("politicalTone",politicalTone);fd.set("politicalDetails",politicalDetails);generate(fd)}}
+                className="py-3 px-4 rounded-lg font-medium transition bg-yellow-600 hover:bg-yellow-500">
+                🧪 테스트
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       {error&&<div className="mt-4 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200">{error}</div>}
     </main>

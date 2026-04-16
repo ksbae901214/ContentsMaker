@@ -324,6 +324,55 @@ python3 -m src.main deevid_login
 
 ---
 
+## Phase 8: 정치 해설 쇼츠 + 인기 의원 영상 검색 ✅ 구현 완료
+
+**브랜치**: `006-video-shorts-mode`
+
+### 8-1. 정치 교차편집 파이프라인 ✅
+
+- `src/scraper/political_input.py` — PoliticalInput 모델
+- `src/scraper/youtube_downloader.py` — yt-dlp 다운로드 + VTT 파싱
+- `src/tts/audio_stitcher.py` — 클립 오디오 + TTS 스티칭
+- `src/analyzer/script_models.py` — Scene에 clip/commentary 타입 추가
+- `src/analyzer/prompt_template.py` — POLITICAL_ANALYZE_PROMPT
+- `src/analyzer/claude_analyzer.py` — analyze_political()
+- `app/api/generate/route.ts` — political 모드 분기
+- `app/page.tsx` — 정치 해설 탭 추가
+
+### 8-2. 인기 의원 영상 검색 ✅
+
+- `src/data/popular_female_lawmakers.py` — 인기 여성의원 데이터 (8명, 양당)
+- `src/scraper/lawmaker_video_finder.py` — yt-dlp 기반 YouTube 영상 검색
+- `src/analyzer/clip_selector.py` — 자막 키워드 분석으로 자동 구간 선택
+- `app/api/lawmaker/list/route.ts` — 의원 목록 API (정적)
+- `app/api/lawmaker/videos/route.ts` — 영상 검색 API (yt-dlp 호출)
+- `app/page.tsx` — 3단계 UI (의원 선택 → 영상 목록 → 생성 폼)
+
+### 8-3. 테스트 ✅
+
+- `tests/test_political_input.py` — 11개
+- `tests/test_youtube_downloader.py` — 9개
+- `tests/test_audio_stitcher.py` — 3개
+- `tests/test_political_prompt.py` — 6개
+- `tests/test_lawmaker_finder.py` — 17개 (신규)
+- `tests/test_clip_selector.py` — 6개 (신규)
+- **총 70개 통과**
+
+### 의원 데이터 (22대 국회)
+
+| 의원명 | 정당 | 특징 |
+|-------|------|------|
+| 나경원 | 국민의힘 | 전 원내대표, 중진 |
+| 배현진 | 국민의힘 | 전 MBC 앵커 |
+| 김예지 | 국민의힘 | 올림픽 펜싱 은메달 |
+| 한지아 | 국민의힘 | 의사 출신 |
+| 진선미 | 민주당 | 전 장관 |
+| 남인순 | 민주당 | 복지위 베테랑 |
+| 서영교 | 민주당 | 4선 의원 |
+| 고민정 | 민주당 | 전 청와대 대변인 |
+
+---
+
 ## Phase 4: 자동화 + 업로드 📋 미착수
 
 ### 계획 항목

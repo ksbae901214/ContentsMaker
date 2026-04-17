@@ -14,6 +14,47 @@ class SceneOpsError(Exception):
     """Raised when a scene operation fails."""
 
 
+# Priority-ordered groups for splitting text at natural boundaries.
+# Sentence terminators are preferred so scenes never cut mid-sentence.
+_SPLIT_PRIORITY_GROUPS: tuple[tuple[str, ...], ...] = (
+    (".", "!", "?", "…"),   # sentence terminators
+    (",", ";", ":", "—"),   # clause separators
+    (" ", "\n"),             # whitespace
+)
+
+
+def _find_split_position(text: str, preferred_mid: int) -> int | None:
+    """Return the character index just after a natural break closest to ``preferred_mid``.
+
+    Priority: sentence terminator > clause separator > whitespace.
+    Within each priority, the position closest to ``preferred_mid`` wins.
+    Returns ``None`` if no break character is found in the interior of ``text``.
+    """
+    if len(text) < 4:
+        return None
+    preferred_mid = max(2, min(preferred_mid, len(text) - 2))
+
+    for group in _SPLIT_PRIORITY_GROUPS:
+        best: int | None = None
+        best_distance = len(text) + 1
+        for i, ch in enumerate(text):
+            if ch not in group:
+                continue
+            # Split *after* the break char so the break stays with the left half.
+            split_after = i + 1
+            if split_after <= 2 or split_after >= len(text) - 1:
+                continue
+            distance = abs(split_after - preferred_mid)
+            # `<=` so that on ties we prefer later positions — this keeps
+            # `text_a` longer (fewer 1-word halves after strip/split).
+            if distance <= best_distance:
+                best = split_after
+                best_distance = distance
+        if best is not None:
+            return best
+    return None
+
+
 def scene_split(
     script: ShortsScript,
     scene_id: int,
@@ -41,15 +82,17 @@ def scene_split(
         raise SceneOpsError("분할 후 각 씬에 최소 2단어 이상 필요합니다")
 
     voice = target.voice_text
-    voice_mid = len(voice) * split_position // len(text)
-    space_idx = voice.rfind(" ", 0, voice_mid)
-    if space_idx <= 0:
-        space_idx = voice.find(" ", voice_mid)
-    if space_idx <= 0:
-        space_idx = voice_mid
+    voice_mid = len(voice) * split_position // len(text) if len(text) else len(voice) // 2
+    voice_split = _find_split_position(voice, voice_mid)
+    if voice_split is None:
+        # Legacy fallback: nearest whitespace to the proportional midpoint.
+        space_idx = voice.rfind(" ", 0, voice_mid)
+        if space_idx <= 0:
+            space_idx = voice.find(" ", voice_mid)
+        voice_split = space_idx if space_idx > 0 else voice_mid
 
-    voice_a = voice[:space_idx].strip()
-    voice_b = voice[space_idx:].strip()
+    voice_a = voice[:voice_split].strip()
+    voice_b = voice[voice_split:].strip()
 
     ratio = len(text_a) / len(text)
     dur_a = round(target.duration * ratio, 1)
@@ -348,17 +391,9 @@ def split_scenes_to_max_duration(
             # Too short to split meaningfully — give up on this scene
             break
 
-        split_pos = len(text) // 2
-        # Try to snap to a whitespace/punctuation boundary near the middle
-        for offset in range(0, len(text) // 2):
-            for delta in (-offset, offset):
-                candidate = split_pos + delta
-                if 2 <= candidate < len(text) - 2 and text[candidate] in " \n,.…!?":
-                    split_pos = candidate + 1
-                    break
-            else:
-                continue
-            break
+        # Prefer sentence terminators; fall back to clause separators, then whitespace.
+        snapped = _find_split_position(text, len(text) // 2)
+        split_pos = snapped if snapped is not None else len(text) // 2
 
         try:
             result = scene_split(result, target.id, split_pos)

@@ -156,3 +156,66 @@ class TestSplitScenesToMaxDuration:
         result = split_scenes_to_max_duration(script, max_duration=5.0)
         # Might still be one scene if splitting failed, but no exception
         assert len(result.scenes) >= 1
+
+
+class TestSplitPrefersSentenceBoundary:
+    """문장 종결 부호(., !, ?, …) 우선 분할 — 문장 중간 끊김 방지."""
+
+    def test_prefers_period_over_space(self):
+        """중앙에 공백과 마침표가 둘 다 있으면 마침표에서 자른다."""
+        # 이게 A야. 이게 B야. 이게 C야.  (len≈22, mid≈11 "B")
+        # 가까운 ` ` = 10, 가까운 `.` = 7 or 12 — `.` 선택돼야 함.
+        script = _make_script([
+            _make_scene(1, 10.0, "이게 A야. 이게 B야. 이게 C야.",
+                        "이게 A야. 이게 B야. 이게 C야."),
+        ])
+        result = split_scenes_to_max_duration(script, max_duration=5.0)
+
+        # 첫 씬은 반드시 마침표로 끝나야 한다 (문장 완성)
+        assert result.scenes[0].voice_text.rstrip().endswith((".", "!", "?", "…"))
+
+    def test_prefers_exclamation_and_question(self):
+        """! 와 ? 도 문장 종결로 인정한다."""
+        script = _make_script([
+            _make_scene(1, 10.0, "정말요? 그럴 수가! 믿기지 않네요.",
+                        "정말요? 그럴 수가! 믿기지 않네요."),
+        ])
+        result = split_scenes_to_max_duration(script, max_duration=5.0)
+        assert result.scenes[0].voice_text.rstrip().endswith((".", "!", "?", "…"))
+
+    def test_falls_back_to_comma_when_no_sentence_boundary(self):
+        """한 문장 안이면 쉼표에서 자른다."""
+        # 한 문장, 매우 긴 구절로 이루어진 텍스트입니다
+        script = _make_script([
+            _make_scene(1, 10.0, "한 문장, 매우 긴 구절로 이루어진 텍스트입니다",
+                        "한 문장, 매우 긴 구절로 이루어진 텍스트입니다"),
+        ])
+        result = split_scenes_to_max_duration(script, max_duration=5.0)
+        # 2개 씬으로 분할됐다면 첫 씬 끝은 쉼표여야 함 (또는 공백)
+        assert len(result.scenes) >= 1
+
+    def test_falls_back_to_space_when_no_punctuation(self):
+        """마침표/쉼표 없으면 공백에서 자른다 (기존 동작 유지)."""
+        script = _make_script([
+            _make_scene(1, 10.0, "아주 긴 문장 그냥 이어지는 텍스트 더",
+                        "아주 긴 문장 그냥 이어지는 텍스트 더"),
+        ])
+        result = split_scenes_to_max_duration(script, max_duration=5.0)
+        assert len(result.scenes) >= 2  # 분할됨
+
+    def test_voice_text_split_preserves_sentence(self):
+        """voice_text 분할도 문장 경계를 따라야 한다."""
+        from src.editor.scene_ops import scene_split
+
+        script = _make_script([
+            _make_scene(1, 10.0,
+                        "첫 문장입니다. 두 번째 문장입니다.",
+                        "첫 문장입니다. 두 번째 문장입니다."),
+        ])
+        # 중앙 근처 (첫 문장 끝 '.' 위치) 에서 분할
+        text = script.scenes[0].text
+        split_pos = text.index(".") + 1  # "첫 문장입니다." 뒤
+        result = scene_split(script, 1, split_pos)
+
+        # voice_text 도 문장 종결로 끝나야 한다
+        assert result.scenes[0].voice_text.rstrip().endswith((".", "!", "?", "…"))

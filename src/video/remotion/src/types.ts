@@ -53,6 +53,9 @@ export interface SceneData {
   sfx?: SfxConfig[];
   // QW-01: 첫 1.5~2.5초 후킹 씬. true 시 1.4x 폰트 + 중앙 + 펀치 줌.
   hook?: boolean;
+  // QW-02: 강조 키워드 색 카테고리 — fact(노랑)/criticism(빨강)/neutral(emotion 색).
+  highlight_category?: string;
+  highlightCategory?: string;
 }
 
 export const HIGHLIGHT_COLORS: Record<EmotionType, string> = {
@@ -61,6 +64,23 @@ export const HIGHLIGHT_COLORS: Record<EmotionType, string> = {
   angry: "#FF4444",
   relatable: "#87CEEB",
 };
+
+// QW-02: 카테고리별 강조 색 — emotion 색보다 우선. 정치 유튜브 §2.3 패턴.
+export const CATEGORY_HIGHLIGHT_COLORS: Record<string, string> = {
+  fact: "#FFD54F",
+  criticism: "#F44336",
+};
+
+/** QW-02: 카테고리가 있으면 그 색, 아니면 emotion 색으로 폴백. */
+export function resolveHighlightColor(
+  category: string | undefined,
+  emotion: EmotionType,
+): string {
+  if (category && CATEGORY_HIGHLIGHT_COLORS[category]) {
+    return CATEGORY_HIGHLIGHT_COLORS[category];
+  }
+  return HIGHLIGHT_COLORS[emotion] ?? HIGHLIGHT_COLORS.relatable;
+}
 
 export interface ShortsScriptData {
   metadata: {

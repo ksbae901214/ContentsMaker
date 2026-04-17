@@ -48,7 +48,29 @@ HIGHLIGHT_COLORS: dict[str, str] = {
     "relatable": "#87CEEB",
 }
 
+# QW-02: 카테고리별 키워드 강조 색 — emotion 색보다 우선 적용.
+# 정치 유튜브 §2.3 패턴: 사실·숫자는 노랑, 비판은 빨강으로 분리해 시각 신호 차별화.
+CATEGORY_HIGHLIGHT_COLORS: dict[str, str] = {
+    "fact": "#FFD54F",       # 정보·숫자·일자 — 정보성 노랑
+    "criticism": "#F44336",  # 비판·문제 지적 — 날카로운 빨강
+}
+
 DEFAULT_EMOTION = "relatable"
+
+
+def resolve_highlight_color(category: str, emotion_type: str) -> str:
+    """QW-02: 씬의 highlight_category가 있으면 그 색, 아니면 emotion 색.
+
+    Args:
+        category: "fact" / "criticism" / "neutral" (또는 임의 문자열)
+        emotion_type: "funny" / "touching" / "angry" / "relatable"
+
+    Returns:
+        hex color. neutral 또는 미지의 category는 emotion 색으로 폴백.
+    """
+    if category in CATEGORY_HIGHLIGHT_COLORS:
+        return CATEGORY_HIGHLIGHT_COLORS[category]
+    return HIGHLIGHT_COLORS.get(emotion_type, HIGHLIGHT_COLORS[DEFAULT_EMOTION])
 
 # Korean voice catalog for edge-tts with metadata
 KOREAN_VOICES: list[dict[str, str]] = [

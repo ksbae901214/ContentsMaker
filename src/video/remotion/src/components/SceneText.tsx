@@ -4,7 +4,7 @@ import {
   useCurrentFrame,
   interpolate,
 } from "remotion";
-import { HIGHLIGHT_COLORS } from "../types";
+import { resolveHighlightColor } from "../types";
 import type { EmotionType, SubtitleStyle } from "../types";
 import { buildSubtitleTextShadow } from "./SubtitleBlock";
 
@@ -32,6 +32,9 @@ interface SceneData {
   translated_text?: string;
   // QW-01: 첫 1.5~2.5초 후킹 씬. true 시 1.4x 폰트 + 중앙 + 펀치 줌.
   hook?: boolean;
+  // QW-02: 강조 키워드 색 카테고리.
+  highlight_category?: string;
+  highlightCategory?: string;
 }
 
 interface SceneTextProps {
@@ -126,9 +129,12 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
 
   const isComment = scene.type === "comment";
   const highlightWords = scene.highlightWords || [];
-  const highlightColor =
-    HIGHLIGHT_COLORS[(emotion || "relatable") as EmotionType] ||
-    HIGHLIGHT_COLORS.relatable;
+  // QW-02: highlight_category가 있으면 카테고리 색, 없으면 emotion 색.
+  const highlightCategory = scene.highlightCategory || scene.highlight_category;
+  const highlightColor = resolveHighlightColor(
+    highlightCategory,
+    (emotion || "relatable") as EmotionType,
+  );
 
   const translatedText = scene.translatedText || scene.translated_text;
 

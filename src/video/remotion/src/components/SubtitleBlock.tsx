@@ -1,6 +1,7 @@
 // T068: 프리셋별 스타일로 자막 렌더링
 import React from "react";
 import { useCurrentFrame, interpolate } from "remotion";
+import { CATEGORY_HIGHLIGHT_COLORS } from "../types";
 
 export interface SubtitlePresetData {
   id: string;
@@ -29,6 +30,8 @@ interface SubtitleBlockProps {
   highlightWords?: string[];
   // QW-01: 후킹 씬일 때 1.4x 폰트 + 중앙 + 펀치 줌 적용
   isHook?: boolean;
+  // QW-02: 강조 키워드 색 카테고리 — 있으면 preset.highlightColor 대신 적용
+  highlightCategory?: string;
 }
 
 const STYLE_SCALE: Record<string, number> = {
@@ -97,6 +100,7 @@ export const SubtitleBlock: React.FC<SubtitleBlockProps> = ({
   style = "medium",
   highlightWords = [],
   isHook = false,
+  highlightCategory,
 }) => {
   const frame = useCurrentFrame();
   const scale = STYLE_SCALE[style] ?? 1.0;
@@ -161,7 +165,12 @@ export const SubtitleBlock: React.FC<SubtitleBlockProps> = ({
             wordBreak: "keep-all",
           }}
         >
-          {renderWithHighlights(text, highlightWords, preset.highlightColor)}
+          {renderWithHighlights(
+            text,
+            highlightWords,
+            (highlightCategory && CATEGORY_HIGHLIGHT_COLORS[highlightCategory]) ||
+              preset.highlightColor,
+          )}
         </div>
       </div>
     </div>

@@ -120,6 +120,9 @@ class Scene:
     # QW-01: 첫 1.5~2.5초 후킹 씬 표시. True면 렌더 단계에서 1.4x 폰트 +
     # 중앙 정렬 + 펀치 줌 적용. 기본 False (호환).
     hook: bool = False
+    # QW-02: 강조 키워드 색 카테고리 — fact(노랑)/criticism(빨강)/neutral(emotion 색).
+    # 기본 "neutral" — 기존 emotion 기반 동작 유지.
+    highlight_category: str = "neutral"
 
     def to_dict(self) -> dict:
         d = {
@@ -148,6 +151,8 @@ class Scene:
             d["clip_end"] = self.clip_end
         if self.hook:  # 호환: False는 키 생략
             d["hook"] = True
+        if self.highlight_category and self.highlight_category != "neutral":
+            d["highlight_category"] = self.highlight_category
         return d
 
     @classmethod
@@ -181,6 +186,9 @@ class Scene:
             clip_start=data.get("clip_start"),
             clip_end=data.get("clip_end"),
             hook=bool(data.get("hook", False)),
+            highlight_category=str(
+                data.get("highlight_category", data.get("highlightCategory", "neutral"))
+            ),
         )
 
 

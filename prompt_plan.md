@@ -6,46 +6,51 @@
 
 ---
 
-## 📋 다음 작업: MID-05 썸네일 자동 생성 (계획만, 구현은 별도 세션)
+## 🚧 진행 중: MID-05 썸네일 자동 생성 (2026-04-17 확정)
 
 **출처**: `docs/dem-shorts/political-youtube-style-plan.md` §5.1, §8.2 MID-05
-**목표**: 정치 유튜브 표준 썸네일(인물 캡처 + 빨강/노랑 텍스트 오버레이)을 자동 생성해 YouTube CTR 향상.
+**목표**: 정치 유튜브 표준 썸네일(hook 씬 프레임 + 빨강/노랑 텍스트)을 자동 생성해 CTR 향상.
 
-### 결정 필요 항목 (Plan 단계에서 사용자 확정)
-- **Q1 이미지 소스**: A=hook 씬 영상 1프레임 캡처 / B=Freepik 신규 생성 / C=핵심 발언 프레임 자동 검출
-- **Q2 텍스트 오버레이**: 폰트(Pretendard?) + 위치(상단/하단) + 색상(빨강/노랑) + 외곽선
-- **Q3 화살표/동그라미 강조**: 정치 유튜브 패턴이지만 인물 표정 검출 필요 → opt-in
-- **Q4 YouTube 업로드**: thumbnails.set API 통합 / 로컬 파일만 저장
+### 확정 사항 (2026-04-17)
+- **Q1 이미지 소스**: A안 — hook 씬 프레임 캡처 (ffmpeg `-ss 0.8 -frames 1`)
+- **Q2 텍스트 오버레이**: Pretendard ExtraBold, **상단 25% + 100px 오프셋** (사용자 조정), 빨강(#DC143C)/노랑(#FFD93D) 2행, 외곽선 10px 검정
+- **Q3 화살표/동그라미**: v1 제외 (opt-in 자리만 남김, v3 예정)
+- **Q4 YouTube 업로드**: v1 로컬 PNG만 저장 + `--upload-thumbnail` 플래그 자리 준비
 
-### 영향 파일 (5~7개)
-1. **신규** `src/upload/thumbnail_generator.py` — 핵심 모듈 (PIL/Pillow + ffmpeg 캡처)
-2. `src/upload/youtube_uploader.py` — thumbnail 업로드 (YouTube Data API videos.thumbnails.set)
-3. `src/video/renderer.py` — 렌더 후 자동 썸네일 생성 옵션 (auto_thumbnail=True)
-4. `app/api/generate/route.ts` — UI에 썸네일 미리보기
+### 해상도
+- **1280x720 (16:9) 고정** — Shorts 피드와 일반 비디오 모두 호환
+
+### 영향 파일 (6개)
+1. **신규** `src/upload/thumbnail_generator.py`
+2. `src/video/renderer.py` — `auto_thumbnail` 플래그
+3. `app/api/generate/route.ts` — done 이벤트에 `thumbnailPath`
+4. `app/page.tsx` — 썸네일 미리보기 + 다운로드
 5. **신규** `tests/test_thumbnail_generator.py`
-6. **자산**: Pretendard ExtraBold 폰트 + 화살표/동그라미 PNG 자산 (선택)
-7. `data/.youtube_credentials.json` 권한 확인 (thumbnails.set scope 필요)
-
-### 리스크
-- YouTube Data API thumbnails.set: 일일 quota 소비 큼 → 신중
-- PIL 폰트 라이선스 (Pretendard SIL OFL OK)
-- 인물 표정 검출은 OpenCV/MediaPipe 필요 → 의존성 증가
+6. **신규 자산** `assets/fonts/Pretendard-ExtraBold.otf` (SIL OFL)
 
 ### 단계
-1. **TDD**: thumbnail_generator 단위 테스트 (이미지 사이즈, 오버레이 위치, 색상)
-2. **PIL 통합**: 1280x720 (16:9) 또는 1080x1080 (1:1) — YouTube Shorts thumbnail은 9:16
-3. **자동 트리거**: hook 씬 캡처 → 제목 오버레이 → 저장
-4. **YouTube 업로드 통합**: youtube_uploader 에 thumbnail_path 인자 추가
-5. **시각 검증**: 5개 다른 영상으로 썸네일 생성 후 검수
+1. **Phase 1 (2h)**: TDD RED → GREEN, thumbnail_generator.py (capture_hook_frame / compose_thumbnail / generate_thumbnail_from_script)
+2. **Phase 2 (1h)**: renderer.py auto_thumbnail=True 통합
+3. **Phase 3 (0.5h)**: Pretendard 자산 다운로드
+4. **Phase 4 (1h)**: UI/CLI 노출
+5. **Phase 5 (1h)**: 5개 쇼츠 시각 검증 (메모리 규칙: Freepik 전용)
 
-### 복잡도: MEDIUM-HIGH (5~7시간)
-- PIL/Pillow 코드: 2h
-- YouTube API 통합: 1.5h
-- 테스트: 1.5h
-- 시각 검증: 1h
-- 자산 수집(폰트): 0.5h
+### 총 예상: 5.5h
 
-**다음 세션 시작 시 `/plan MID-05`로 본격 진행.**
+### 리스크
+- HIGH: Pretendard 폰트 라이선스 → SIL OFL 1.1 OK, LICENSE.txt 병행
+- MEDIUM: 짧은 hook 씬 프레임 추출 실패 → `-ss 0.3` fallback
+- MEDIUM: PIL 한글 자동 줄바꿈 미지원 → highlight_words 2~4글자 제한
+
+### 진행 상태
+- [x] 코드 진단 + 옵션 확정 (A/Pretendard+100px/opt-in/로컬만)
+- [x] Phase 1 TDD RED (19 tests)
+- [x] Phase 1 GREEN (19/19 passed, 835 total)
+- [ ] Phase 2 renderer 통합
+- [ ] Phase 3 폰트 자산
+- [ ] Phase 4 UI/CLI
+- [ ] Phase 5 시각 검증
+- [ ] 커밋 + 푸시
 
 ---
 

@@ -199,35 +199,42 @@ export function ScriptReviewer({
       <div className="bg-gray-800 rounded-lg p-4 mb-4">
         <label className="text-xs text-gray-500 mb-2 block">📌 영상 제목</label>
         {editingTitle ? (
-          <div className="flex gap-2">
-            <input
+          <div className="flex gap-2 items-start">
+            <textarea
               value={titleDraft}
               onChange={(e) => setTitleDraft(e.target.value)}
-              className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded focus:border-blue-500 focus:outline-none text-sm"
+              className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded focus:border-blue-500 focus:outline-none text-sm resize-y min-h-[2.75rem] whitespace-pre-wrap"
               autoFocus
+              rows={2}
               onKeyDown={(e) => {
-                if (e.key === "Enter") saveTitle();
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  saveTitle();
+                }
                 if (e.key === "Escape") {
                   setEditingTitle(false);
                   setTitleDraft(title);
                 }
               }}
             />
-            <button
-              onClick={saveTitle}
-              className="px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded text-xs font-medium"
-            >
-              저장
-            </button>
-            <button
-              onClick={() => {
-                setEditingTitle(false);
-                setTitleDraft(title);
-              }}
-              className="px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-xs font-medium"
-            >
-              취소
-            </button>
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={saveTitle}
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded text-xs font-medium"
+                title="Cmd/Ctrl + Enter"
+              >
+                저장
+              </button>
+              <button
+                onClick={() => {
+                  setEditingTitle(false);
+                  setTitleDraft(title);
+                }}
+                className="px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-xs font-medium"
+              >
+                취소
+              </button>
+            </div>
           </div>
         ) : (
           <div
@@ -235,7 +242,7 @@ export function ScriptReviewer({
               setEditingTitle(true);
               setTitleDraft(title);
             }}
-            className="text-base font-medium cursor-pointer hover:bg-gray-700/50 rounded px-2 py-2 transition"
+            className="text-base font-medium cursor-pointer hover:bg-gray-700/50 rounded px-2 py-2 transition whitespace-pre-wrap"
             title="클릭하여 수정"
           >
             {title} <span className="text-gray-500 text-xs ml-2">✏️ 수정</span>

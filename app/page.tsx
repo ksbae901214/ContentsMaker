@@ -21,7 +21,10 @@ interface Stats { imageCount: number; videoCount: number; audioCount: number; sc
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
 export default function Home() {
-  const [tab, setTab] = useState<"image"|"manual"|"url"|"topic"|"political">("image");
+  const [tab, setTab] = useState<"image"|"manual"|"url"|"topic"|"political"|"natv_clip">("image");
+  const [natvClipUrl, setNavtClipUrl] = useState("");
+  const [natvUseTts, setNavtUseTts] = useState(true);
+  const [natvTone, setNavtTone] = useState<"angry"|"funny"|"touching"|"relatable">("angry");
   const [topicText, setTopicText] = useState("");
   const [contentStyle, setContentStyle] = useState<"narration"|"skit"|"review">("narration");
   const [politicalUrl, setPoliticalUrl] = useState("");
@@ -32,12 +35,20 @@ export default function Home() {
   // Lawmaker selection flow
   interface LawmakerItem { name: string; party: string; role: string; description: string; emoji: string; searchQuery: string; }
   interface VideoItem { title: string; url: string; duration_seconds: number; view_count: number; upload_date: string; channel: string; thumbnail: string; duration_label: string; date_label: string; }
+  interface IdeaItem { title: string; hook: string; angle: string; natvKeywords: string; }
   const [lawmakers, setLawmakers] = useState<LawmakerItem[]>([]);
   const [selectedLawmaker, setSelectedLawmaker] = useState<LawmakerItem | null>(null);
   const [lawmakerVideos, setLawmakerVideos] = useState<VideoItem[]>([]);
   const [videosLoading, setVideosLoading] = useState(false);
   const [videosError, setVideosError] = useState("");
   const [selectedVideoTitle, setSelectedVideoTitle] = useState("");
+  const [videoIdeas, setVideoIdeas] = useState<IdeaItem[]>([]);
+  const [selectedIdea, setSelectedIdea] = useState<IdeaItem | null>(null);
+  const [ideasLoading, setIdeasLoading] = useState(false);
+  const [ideasError, setIdeasError] = useState("");
+  const [natvVideos, setNavtvVideos] = useState<VideoItem[]>([]);
+  const [natvLoading, setNavtvLoading] = useState(false);
+  const [natvError, setNavtvError] = useState("");
   const [tone, setTone] = useState("");
   const [details, setDetails] = useState("");
   const [imageStyle, setImageStyle] = useState<"webtoon"|"3d_pixar"|"realistic"|"anime">("realistic");
@@ -76,14 +87,51 @@ export default function Home() {
     setSelectedLawmaker(lm);
     setLawmakerVideos([]);
     setVideosError("");
+    setVideoIdeas([]);
+    setSelectedIdea(null);
+    setIdeasError("");
     setVideosLoading(true);
+    setIdeasLoading(true);
+    let titles: string[] = [];
     try {
       const r = await fetch(`/api/lawmaker/videos?name=${encodeURIComponent(lm.name)}&source=all&limit=10`);
       const d = await r.json();
       if (d.error) setVideosError(d.error);
-      else setLawmakerVideos(d.videos || []);
+      else {
+        setLawmakerVideos(d.videos || []);
+        titles = (d.videos || []).map((v: VideoItem) => v.title).filter(Boolean);
+      }
     } catch { setVideosError("영상 검색 실패"); }
     finally { setVideosLoading(false); }
+
+    if (titles.length === 0) { setIdeasLoading(false); return; }
+    try {
+      const r = await fetch("/api/lawmaker/ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: lm.name, titles }),
+      });
+      const d = await r.json();
+      if (d.error) setIdeasError(d.error);
+      else setVideoIdeas(d.ideas || []);
+    } catch { setIdeasError("아이디어 생성 실패"); }
+    finally { setIdeasLoading(false); }
+  };
+
+  const selectIdea = async (idea: IdeaItem) => {
+    setSelectedIdea(idea);
+    setNavtvVideos([]);
+    setNavtvError("");
+    setNavtvLoading(true);
+    try {
+      const r = await fetch(
+        `/api/lawmaker/videos?name=${encodeURIComponent(selectedLawmaker?.name || "")}&natvOnly=true&keywords=${encodeURIComponent(idea.natvKeywords)}&limit=10`
+      );
+      const d = await r.json();
+      if (d.error) setNavtvError(d.error);
+      else setNavtvVideos(d.videos || []);
+    } catch { setNavtvError("NATV 영상 검색 실패"); }
+    finally { setNavtvLoading(false); }
   };
 
   const pickVideo = (v: VideoItem) => {
@@ -97,6 +145,11 @@ export default function Home() {
     setPoliticalUrl("");
     setSelectedVideoTitle("");
     setVideosError("");
+    setVideoIdeas([]);
+    setSelectedIdea(null);
+    setIdeasError("");
+    setNavtvVideos([]);
+    setNavtvError("");
   };
 
   const generate = async (fd: FormData) => {
@@ -308,9 +361,9 @@ export default function Home() {
         <p className="text-gray-400">인기글/자유주제 → 만화 쇼츠 자동 생성</p>
       </header>
       <div className="flex gap-2 mb-6">
-        {(["image","manual","url","topic","political"] as const).map(t=>(
+        {(["image","manual","url","topic","political","natv_clip"] as const).map(t=>(
           <button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2.5 rounded-lg font-medium transition text-xs ${tab===t?"bg-blue-600":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
-            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":"🎙️ 정치 해설"}
+            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":t==="political"?"🎙️ 정치 해설":"📺 NATV 클립"}
           </button>
         ))}
       </div>
@@ -473,6 +526,55 @@ export default function Home() {
           </button>
         </div>
       </div>
+      {/* NATV 클립 tab */}
+      <div className="space-y-4" style={{display:tab==="natv_clip"?"block":"none"}}>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">국회방송 YouTube URL *</label>
+          <input
+            value={natvClipUrl}
+            onChange={e=>setNavtClipUrl(e.target.value)}
+            placeholder="https://www.youtube.com/watch?v=..."
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+          />
+          <p className="text-xs text-gray-500 mt-1">NATV 국회방송 영상 URL을 붙여넣으면 자동으로 최고 임팩트 구간을 찾아 쇼츠로 만듭니다.</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">감정 톤</label>
+          <div className="grid grid-cols-4 gap-2">
+            {(["angry","funny","touching","relatable"] as const).map(t=>(
+              <button key={t} onClick={()=>setNavtTone(t)}
+                className={`py-2 rounded-lg text-xs transition ${natvTone===t?"bg-blue-600 ring-2 ring-blue-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
+                {t==="angry"?"😤 분노":t==="funny"?"😂 유머":t==="touching"?"🥹 감동":"🤝 공감"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={natvUseTts} onChange={e=>setNavtUseTts(e.target.checked)} className="w-5 h-5 rounded"/>
+          <span className="text-sm text-gray-300">🎙️ TTS 음성 추가 (끄면 BGM만)</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
+          <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
+        </label>
+        <button
+          onClick={()=>{
+            if(!natvClipUrl.trim())return;
+            const fd=new FormData();
+            fd.set("mode","natv_clip");
+            fd.set("youtubeUrl",natvClipUrl.trim());
+            fd.set("tone",natvTone);
+            fd.set("tts",natvUseTts?"on":"off");
+            fd.set("bgm",bgm?"on":"off");
+            fd.set("yt","off");fd.set("tt","off");
+            startAnalyze(fd);
+          }}
+          disabled={!natvClipUrl.trim()}
+          className={`w-full py-3 rounded-lg font-medium transition ${natvClipUrl.trim()?"bg-emerald-600 hover:bg-emerald-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
+          📺 NATV 클립 쇼츠 생성
+        </button>
+      </div>
+
       {/* Political tab */}
       <div className="space-y-4" style={{display:tab==="political"?"block":"none"}}>
         {/* Step 1: Lawmaker selection */}
@@ -493,59 +595,181 @@ export default function Home() {
               ))}
             </div>
             <div className="border-t border-gray-700 pt-3">
-              <p className="text-xs text-gray-500 mb-2">또는 직접 YouTube URL 입력</p>
+              <p className="text-xs text-gray-500 mb-2">또는 직접 NATV URL 입력</p>
               <input value={politicalUrl} onChange={e=>setPoliticalUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/>
             </div>
           </div>
         )}
 
-        {/* Step 2: Video list (lawmaker selected, no URL yet) */}
-        {selectedLawmaker && !politicalUrl && (
+        {/* Step 2: Loading / fallback (lawmaker selected, ideas not yet ready) */}
+        {selectedLawmaker && !politicalUrl && videoIdeas.length === 0 && (
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <button onClick={resetPoliticalFlow} className="text-gray-400 hover:text-white text-sm">← 뒤로</button>
-              <h3 className="text-sm font-medium text-gray-300">{selectedLawmaker.emoji} {selectedLawmaker.name} 최신 발언</h3>
+              <h3 className="text-sm font-medium text-gray-300">{selectedLawmaker.emoji} {selectedLawmaker.name}</h3>
             </div>
-            {videosLoading && (
-              <div className="text-center py-6 text-gray-400 text-sm">
-                <div className="animate-spin text-2xl mb-2">⏳</div>
-                YouTube 검색 중...
+
+            {/* Loading spinner */}
+            {(videosLoading || ideasLoading) && (
+              <div className="text-center py-8 text-gray-400 text-sm">
+                <div className="text-3xl mb-3 animate-pulse">🤔</div>
+                <div className="font-medium text-white mb-1">AI 아이디어 생성 중...</div>
+                <div className="text-xs text-gray-500">
+                  {videosLoading ? "YouTube 영상 제목 수집 중 (약 30초)" : "Claude가 쇼츠 아이디어 분석 중 (약 1~2분)"}
+                </div>
               </div>
             )}
-            {videosError && (
+
+            {/* Errors */}
+            {ideasError && !ideasLoading && (
+              <div className="bg-red-900/30 border border-red-700 rounded-lg p-3 text-sm text-red-300 mb-3">
+                💡 아이디어 생성 실패: {ideasError}
+              </div>
+            )}
+            {videosError && !videosLoading && (
               <div className="bg-red-900/30 border border-red-700 rounded-lg p-3 text-sm text-red-300 mb-3">
                 {videosError}
-                {videosError.includes("yt-dlp") && <div className="mt-1 text-xs text-gray-400">터미널에서 <code className="text-yellow-400">pip3 install yt-dlp</code> 실행 후 재시도</div>}
               </div>
             )}
-            {!videosLoading && !videosError && lawmakerVideos.length === 0 && (
-              <div className="text-center py-4 text-gray-500 text-sm">검색 결과가 없습니다</div>
+
+            {/* Fallback: done loading, no ideas — show raw video list */}
+            {!videosLoading && !ideasLoading && (
+              <>
+                {lawmakerVideos.length > 0 ? (
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-400 mb-2">
+                      {ideasError ? "아이디어 생성 실패 — " : "아이디어 준비 중 — "}영상을 직접 선택할 수 있습니다:
+                    </p>
+                    <div className="space-y-2">
+                      {lawmakerVideos.map((v, i) => (
+                        <button key={i} onClick={()=>pickVideo(v)}
+                          className="w-full flex gap-3 p-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-left transition border border-gray-700 hover:border-blue-500">
+                          {v.thumbnail && <img src={v.thumbnail} alt="" className="w-16 h-10 object-cover rounded flex-shrink-0"/>}
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium text-white line-clamp-2 leading-tight mb-1">{v.title}</div>
+                            <div className="text-xs text-gray-400">
+                              {v.channel&&<span className="mr-2">{v.channel}</span>}
+                              {v.duration_label&&<span className="mr-2">⏱ {v.duration_label}</span>}
+                              {v.view_count>0&&<span className="mr-2">👁 {(v.view_count/10000).toFixed(1)}만</span>}
+                              {v.date_label&&<span>{v.date_label}</span>}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : !videosError && (
+                  <div className="text-center py-4 text-gray-500 text-sm mb-3">검색 결과가 없습니다</div>
+                )}
+                <div className="border-t border-gray-700 pt-3">
+                  <p className="text-xs text-gray-500 mb-2">또는 직접 NATV URL 입력</p>
+                  <input onChange={e=>{if(e.target.value)setPoliticalUrl(e.target.value)}} placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Step 3: Idea cards (lawmaker selected, ideas ready, no idea selected) */}
+        {selectedLawmaker && !politicalUrl && videoIdeas.length > 0 && !selectedIdea && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <button onClick={resetPoliticalFlow} className="text-gray-400 hover:text-white text-sm">← 뒤로</button>
+              <h3 className="text-sm font-medium text-gray-300">{selectedLawmaker.emoji} {selectedLawmaker.name} — AI 쇼츠 아이디어</h3>
+            </div>
+            <div className="space-y-2 mb-4">
+              {videoIdeas.map((idea, i) => (
+                <button key={i} onClick={()=>selectIdea(idea)}
+                  className="w-full p-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-left transition border border-gray-700 hover:border-purple-500">
+                  <div className="text-sm font-bold text-white mb-1 leading-snug">{idea.title}</div>
+                  <div className="text-xs text-purple-300 mb-1">💬 {idea.hook}</div>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <span className="bg-gray-700 px-2 py-0.5 rounded">{idea.angle}</span>
+                    <span className="text-gray-500">🔍 {idea.natvKeywords}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="border-t border-gray-700 pt-3">
+              <p className="text-xs text-gray-500 mb-2">또는 직접 NATV URL 입력</p>
+              <input onChange={e=>{if(e.target.value)setPoliticalUrl(e.target.value)}} placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: NATV video list (idea selected, no URL yet) */}
+        {selectedLawmaker && selectedIdea && !politicalUrl && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <button onClick={()=>{setSelectedIdea(null);setNavtvVideos([]);setNavtvError("");}} className="text-gray-400 hover:text-white text-sm">← 뒤로</button>
+              <h3 className="text-sm font-medium text-gray-300">국회방송 영상 선택</h3>
+            </div>
+            <div className="bg-gray-900 rounded-lg p-3 mb-3 border border-purple-800">
+              <div className="text-xs text-purple-300 mb-0.5">선택된 아이디어</div>
+              <div className="text-sm font-medium text-white leading-snug">{selectedIdea.title}</div>
+              <div className="text-xs text-gray-400 mt-1">🔍 검색: {selectedIdea.natvKeywords}</div>
+            </div>
+            {natvLoading && (
+              <div className="text-center py-6 text-gray-400 text-sm">
+                <div className="animate-spin text-2xl mb-2">⏳</div>
+                국회방송 영상 검색 중...
+              </div>
+            )}
+            {natvError && (
+              <div className="bg-red-900/30 border border-red-700 rounded-lg p-3 text-sm text-red-300 mb-3">{natvError}</div>
+            )}
+            {!natvLoading && !natvError && natvVideos.length === 0 && (
+              <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-3 mb-3">
+                <div className="text-sm text-yellow-300 mb-2">국회방송 영상을 찾지 못했습니다</div>
+                <p className="text-xs text-gray-400">아래에서 다른 키워드로 검색하거나 직접 URL을 입력하세요.</p>
+              </div>
             )}
             <div className="space-y-2 mb-3">
-              {lawmakerVideos.map((v,i)=>(
+              {natvVideos.map((v,i)=>(
                 <button key={i} onClick={()=>pickVideo(v)}
                   className="w-full flex gap-3 p-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-left transition border border-gray-700 hover:border-blue-500">
                   {v.thumbnail && <img src={v.thumbnail} alt="" className="w-16 h-10 object-cover rounded flex-shrink-0"/>}
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-white line-clamp-2 leading-tight mb-1">{v.title}</div>
                     <div className="text-xs text-gray-400">
-                      {v.channel&&<span className="mr-2">{v.channel}</span>}
+                      <span className="text-green-400 mr-2">📺 국회방송</span>
                       {v.duration_label&&<span className="mr-2">⏱ {v.duration_label}</span>}
-                      {v.view_count>0&&<span className="mr-2">👁 {(v.view_count/10000).toFixed(1)}만</span>}
                       {v.date_label&&<span>{v.date_label}</span>}
                     </div>
                   </div>
                 </button>
               ))}
             </div>
-            <div className="border-t border-gray-700 pt-3">
-              <p className="text-xs text-gray-500 mb-2">또는 직접 URL 입력</p>
-              <input onChange={e=>{if(e.target.value)setPoliticalUrl(e.target.value)}} placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/>
+            <div className="border-t border-gray-700 pt-3 space-y-3">
+              <div>
+                <p className="text-xs text-gray-500 mb-2">다른 키워드로 국회방송 재검색</p>
+                <div className="flex gap-2">
+                  <input
+                    id="natv-keyword-input"
+                    defaultValue={selectedIdea?.natvKeywords || ""}
+                    placeholder="예: 나경원 대정부질문"
+                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+                  />
+                  <button
+                    onClick={()=>{
+                      const kw = (document.getElementById("natv-keyword-input") as HTMLInputElement)?.value?.trim();
+                      if (kw && selectedIdea) selectIdea({...selectedIdea, natvKeywords: kw});
+                    }}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition whitespace-nowrap"
+                  >
+                    🔍 재검색
+                  </button>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-2">또는 직접 NATV URL 입력</p>
+                <input onChange={e=>{if(e.target.value)setPoliticalUrl(e.target.value)}} placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"/>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Step 3: URL selected — show options form */}
+        {/* Step 5: URL selected — show options form */}
         {politicalUrl && (
           <div className="space-y-4">
             <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 border border-gray-700">

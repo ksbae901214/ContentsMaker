@@ -167,6 +167,11 @@ p=save_political(pi)
 print(json.dumps({"path":str(p),"url":pi.youtube_url}))`)));
           send("progress",{message:`✅ "${r.url}"`});
           rawPath = r.path;
+        } else if (mode === "natv_clip") {
+          const ytUrl = fd.get("youtubeUrl") as string;
+          if (!ytUrl) { send("error",{message:"NATV YouTube URL을 입력해주세요"}); ctrl.close(); return; }
+          rawPath = "";
+          send("progress",{message:`🔗 NATV URL: ${ytUrl}`});
         } else {
           const t=fd.get("title") as string, b=fd.get("body") as string, c=fd.get("comments") as string||"[]";
           if(!t||!b){send("error",{message:"제목과 본문 필수"});ctrl.close();return;}
@@ -232,6 +237,42 @@ from src.analyzer.claude_analyzer import analyze_topic
 ti=TopicInput(topic=${JSON.stringify(fd.get("topic") as string)},style=${JSON.stringify(contentStyle)},tone=${JSON.stringify(tone)},details=${JSON.stringify(details)})
 s,sp=analyze_topic(ti)
 print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp)}))`)));
+          } else if (mode === "natv_clip") {
+            const ytUrl = fd.get("youtubeUrl") as string;
+            const natvTone = (fd.get("tone") as string) || "angry";
+
+            // Step 1: Download video + Korean subtitles
+            const dl = await withStage("NATV 영상 다운로드", 120, async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.config.settings import DATA_DIR
+from src.scraper.youtube_downloader import download_video,download_subtitles,parse_vtt_subtitles
+natv_dir=DATA_DIR/"natv_clips"
+natv_dir.mkdir(parents=True,exist_ok=True)
+url=${JSON.stringify(ytUrl)}
+vp=download_video(url,natv_dir)
+vtt=download_subtitles(url,natv_dir)
+transcript=parse_vtt_subtitles(vtt) if vtt else []
+print(json.dumps({"video":str(vp),"transcript":transcript,"sub_count":len(transcript),"natv_dir":str(natv_dir)}))`)));
+            send("progress",{message:`✅ 다운로드 완료 (자막 ${dl.sub_count}줄)`});
+
+            // Step 2: Auto-select best clip + generate script from subtitle content
+            const dlTranscript = JSON.stringify(dl.transcript);
+            a = await withStage("임팩트 구간 분석 + 스크립트 생성", 180, async () => JSON.parse(await py(`
+import sys,json,re;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.clip_selector import select_best_clip
+from src.scraper.topic_input import TopicInput
+from src.analyzer.claude_analyzer import analyze_topic
+transcript=json.loads(r"""${dlTranscript}""")
+start_sec,end_sec=select_best_clip(transcript,max_duration=55.0)
+clip_segs=[s for s in transcript if s["start"]>=start_sec-2 and s["end"]<=end_sec+2]
+clip_text=" ".join(s["text"] for s in clip_segs)
+clip_text=re.sub(r"(\\S+) \\1",r"\\1",clip_text)[:2000]
+ti=TopicInput(topic=clip_text,style="narration",tone=${JSON.stringify(natvTone)},details="NATV 국회방송 영상 내용 기반 — 실제 발언을 그대로 활용")
+s,sp=analyze_topic(ti)
+print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp),"natv_video":${JSON.stringify(dl.video)},"clip_start":start_sec,"clip_end":end_sec,"natv_dir":${JSON.stringify(dl.natv_dir)}}))`)));
+            send("progress",{message:`✅ "${a.title}" (${a.scenes}씬, 클립 ${a.clip_start?.toFixed(0)}~${a.clip_end?.toFixed(0)}초)`});
           } else {
             a = await withStage("Claude 분석 (쇼츠 스크립트 생성)", 180, async () => JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
@@ -295,6 +336,77 @@ print(json.dumps({"scenes":s["scenes"]}))`));
           send("progress",{message:"🎨 [드라이런] 이미지/영상 생성 스킵"});
           send("progress",{message:"🎙️ [드라이런] 음성 생성 스킵"});
           send("progress",{message:"🎬 [드라이런] 렌더링 스킵"});
+        } else if (mode === "natv_clip" && a.natv_video && a.clip_start !== undefined) {
+          // ── NATV 클립 모드: TTS(optional) + 씬 클립 분할 + 렌더 ──
+          const natvUseTts = (fd.get("tts") as string) !== "off";
+
+          if (natvUseTts) {
+            ttsResult = await withStage("edge-tts 음성 + 씬 타이밍", 30, async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.analyzer.script_models import ShortsScript
+from src.tts.edge_tts_generator import generate_voice_with_timing
+ap,timings=generate_voice_with_timing(ShortsScript.load('''${a.sp}'''))
+print(json.dumps({"audio_path":str(ap),"timings":timings}))`)));
+            send("progress",{message:`✅ 음성 완료 (${ttsResult!.timings.length}씬)`});
+          } else {
+            // No TTS: build synthetic timings from script scene durations
+            ttsResult = await withStage("씬 타이밍 계산 (TTS 없음)", 5, async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.analyzer.script_models import ShortsScript
+s=ShortsScript.load('''${a.sp}''')
+t=0.0;timings=[]
+for sc in s.scenes:
+  dur=sc.duration or 4.0
+  timings.append({"scene_id":sc.id,"start_ms":int(t*1000),"end_ms":int((t+dur)*1000)})
+  t+=dur
+timings.append({"scene_id":-1,"start_ms":int(t*1000),"end_ms":int((t+4)*1000)})
+print(json.dumps({"audio_path":"","timings":timings}))`)));
+            send("progress",{message:`✅ 씬 타이밍 계산 완료 (TTS 없음)`});
+          }
+
+          // Cut NATV clip into per-scene 9:16 clips
+          const timingsJson2 = JSON.stringify(ttsResult!.timings);
+          const sceneClips = await withStage(`NATV 씬 클립 분할 (9:16 변환, ${a.scenes}씬)`, 60, async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.dem_shorts.editor.segment_cutter import cut_segment
+natv_video=Path(${JSON.stringify(a.natv_video)})
+natv_dir=Path(${JSON.stringify(a.natv_dir)})
+clip_start=${a.clip_start}
+clip_end=${a.clip_end}
+clip_duration=clip_end-clip_start
+timings=[t for t in json.loads(r"""${timingsJson2}""") if t["scene_id"]!=-1]
+tts_total_ms=max(t["end_ms"] for t in timings)
+clips=[]
+for t in timings:
+  sid=t["scene_id"]
+  ns=clip_start+(t["start_ms"]/tts_total_ms)*clip_duration
+  ne=clip_start+(t["end_ms"]/tts_total_ms)*clip_duration
+  out=natv_dir/f"scene_{sid:02d}.mp4"
+  cut_segment(input_path=natv_video,output_path=out,start_sec=ns,end_sec=ne)
+  clips.append({"scene_id":sid,"video_path":str(out)})
+print(json.dumps(clips))`)));
+          generatedVideos = sceneClips;
+          vc = sceneClips.length;
+          send("progress",{message:`✅ 씬 클립 ${vc}개 분할 완료`});
+
+          // Render
+          const imgJson0 = JSON.stringify(generatedImages);
+          const vidJson0 = JSON.stringify(generatedVideos);
+          const timingsJson3 = JSON.stringify(ttsResult!.timings);
+          const audioArg = natvUseTts ? `Path('''${ttsResult!.audio_path}''')` : "None";
+          const rr0 = await withStage("Remotion 최종 렌더", Math.max(60, a.scenes * 10), async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.script_models import ShortsScript
+from src.video.renderer import render_video
+s=ShortsScript.load('''${a.sp}''')
+sv=json.loads(r"""${vidJson0}""") or None
+timings=json.loads(r"""${timingsJson3}""")
+o=render_video(s,audio_path=${audioArg},scene_videos=sv,use_bgm=${useBgm?"True":"False"},scene_timings=timings)
+print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`)));
+          send("progress",{message:`✅ 렌더링 완료 (${rr0.size}MB)`});
+          videoPath = rr0.path;
         } else if (mode === "political" && a.clip && a.clip_audio) {
           // ── Political mode: audio stitching + scene clip extraction ──
           const polStitch = await withStage("오디오 스티칭 (원본+TTS)", 60, async () => JSON.parse(await py(`

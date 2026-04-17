@@ -1,9 +1,27 @@
 import React from "react";
 import { Composition } from "remotion";
 import { ShortsComposition } from "./ShortsComposition";
+import { DemShortsComposition } from "./DemShortsComposition";
 import type { ShortsScriptData } from "./types";
 
 const FPS = 30;
+
+const defaultDemShortsPreset = {
+  id: "default",
+  fontFamily: "Pretendard, -apple-system, sans-serif",
+  baseFontSize: 64,
+  color: "#FFFFFF",
+  highlightColor: "#FFC107",
+  strokeColor: "#000000",
+  strokeWidth: 3,
+  background: "rgba(0,0,0,0.6)",
+  textAlign: "center" as const,
+  paddingPx: 20,
+  position: "bottom" as const,
+  maxLines: 2,
+  lineHeight: 1.2,
+  bold: true,
+};
 
 const defaultScript: ShortsScriptData = {
   metadata: {
@@ -42,13 +60,29 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="BlindShorts"
         component={ShortsComposition}
-        durationInFrames={FPS * 60}
+        durationInFrames={FPS * 90}
         fps={FPS}
         width={1080}
         height={1920}
         defaultProps={{
           scriptData: defaultScript,
           audioFile: "",
+        }}
+      />
+      <Composition
+        id="DemShorts"
+        component={DemShortsComposition}
+        durationInFrames={FPS * 60}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{
+          videoFile: "",
+          commentaryBlocks: [],
+          subtitlePreset: defaultDemShortsPreset,
+          ttsFile: undefined,
+          bgmFile: undefined,
+          sourceLabelText: "NATV 국회방송",
         }}
       />
     </>

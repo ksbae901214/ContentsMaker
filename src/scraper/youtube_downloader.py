@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def download_video(url: str, output_dir: Path) -> Path:
     template = str(output_dir / "%(id)s.%(ext)s")
 
     cmd = [
-        "yt-dlp",
+        sys.executable, "-m", "yt_dlp",
         "-f", "bestvideo[height<=1080]+bestaudio/best",
         "--merge-output-format", "mp4",
         "-o", template,
@@ -57,7 +58,7 @@ def download_subtitles(
     template = str(output_dir / "%(id)s")
 
     cmd = [
-        "yt-dlp",
+        sys.executable, "-m", "yt_dlp",
         "--write-auto-sub",
         "--sub-lang", lang,
         "--sub-format", "vtt",

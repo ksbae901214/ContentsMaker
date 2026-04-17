@@ -18,10 +18,12 @@ import edge_tts
 
 from src.analyzer.script_models import ShortsScript
 from src.config.settings import DATA_AUDIO_DIR
+from src.video.outro_template import OUTRO_VOICE_TEXT
 
 logger = logging.getLogger(__name__)
 
-OUTRO_TEXT = "구독과 좋아요를 눌러주시면 더 많은 영상을 볼 수 있습니다."
+# QW-05: 단일 출처 (src/video/outro_template.py)에서 가져온 표준화된 아웃트로 음성 텍스트.
+OUTRO_TEXT = OUTRO_VOICE_TEXT
 
 _SSML_BREAK_RE = re.compile(r"<break\s+time=['\"][^'\"]*['\"]\s*/?>")
 

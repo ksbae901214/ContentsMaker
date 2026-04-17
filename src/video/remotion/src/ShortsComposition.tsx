@@ -12,6 +12,7 @@ import { Background } from "./components/Background";
 import { SceneText } from "./components/SceneText";
 import { Transition } from "./components/Transition";
 import { SceneWithVideo } from "./components/SceneWithVideo";
+import { Outro } from "./components/Outro";
 import type { ShortsScriptData, TransitionType } from "./types";
 import { GRADIENT_THEMES } from "./types";
 
@@ -113,9 +114,9 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         <TitleBar title={title} />
       </Sequence>
 
-      {/* Outro: Subscribe / Like / Bell */}
+      {/* Outro: standardized CTA — see src/video/outro_template.py */}
       <Sequence from={contentEndFrame} durationInFrames={OUTRO_DURATION_FRAMES}>
-        <OutroScene />
+        <Outro />
       </Sequence>
 
       {audioFile && <Audio src={staticFile(audioFile)} />}
@@ -183,60 +184,6 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
           {title}
         </div>
       </div>
-    </AbsoluteFill>
-  );
-};
-
-const OutroScene: React.FC = () => {
-  const frame = useCurrentFrame();
-
-  const opacity = interpolate(frame, [0, 20], [0, 1], {
-    extrapolateRight: "clamp",
-  });
-
-  return (
-    <AbsoluteFill style={{ backgroundColor: "#000" }}>
-      {/* Background outro image (public/outro.png) */}
-      <AbsoluteFill style={{ opacity }}>
-        <Img
-          src={staticFile("outro.png")}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-      </AbsoluteFill>
-
-      {/* Overlay text at bottom */}
-      <AbsoluteFill
-        style={{
-          justifyContent: "flex-end",
-          alignItems: "center",
-          opacity,
-        }}
-      >
-        <div
-          style={{
-            marginBottom: 200,
-            padding: "16px 40px",
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 38,
-              fontWeight: 700,
-              color: "#FFFFFF",
-              fontFamily: "Noto Sans KR, sans-serif",
-              textShadow: "2px 2px 8px rgba(0,0,0,0.8)",
-              lineHeight: 1.6,
-            }}
-          >
-            구독과 좋아요를 눌러주시면{"\n"}더 많은 영상을 볼 수 있습니다
-          </div>
-        </div>
-      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

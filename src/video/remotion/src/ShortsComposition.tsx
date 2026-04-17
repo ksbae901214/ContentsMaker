@@ -35,6 +35,8 @@ interface ShortsCompositionProps {
   sceneImages?: SceneImage[];
   sceneVideos?: SceneVideo[];
   bgmFile?: string;
+  // QW-07: hook 씬 동안만 재생되는 인트로 빌드업 BGM (선택).
+  introBgmFile?: string;
 }
 
 export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
@@ -43,6 +45,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   sceneImages = [],
   sceneVideos = [],
   bgmFile = "",
+  introBgmFile = "",
 }) => {
   const emotion =
     (scriptData.metadata as any).emotionType ||
@@ -121,6 +124,22 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
 
       {audioFile && <Audio src={staticFile(audioFile)} />}
       {bgmFile && <Audio src={staticFile(bgmFile)} volume={0.15} loop />}
+
+      {/* QW-07: hook 씬 동안만 인트로 빌드업 BGM 재생 */}
+      {introBgmFile && (() => {
+        const hookScene = scriptData.scenes.find((s: any) => s.hook === true);
+        if (!hookScene) return null;
+        const startFrame = Math.round(hookScene.timestamp * FPS);
+        const durationFrames = Math.round(hookScene.duration * FPS);
+        return (
+          <Sequence from={startFrame} durationInFrames={durationFrames}>
+            <Audio
+              src={staticFile("bgm/" + introBgmFile)}
+              volume={0.35}
+            />
+          </Sequence>
+        );
+      })()}
 
       {/* Per-scene sound effects */}
       {scriptData.scenes.map((scene) => {

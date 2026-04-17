@@ -14,6 +14,7 @@ from pathlib import Path
 
 from src.analyzer.script_models import ShortsScript
 from src.config.settings import DATA_AUDIO_DIR, PROJECT_ROOT
+from src.video.bgm_matcher import find_hook_scene, intro_bgm_for_emotion
 from src.video.sfx_matcher import auto_assign_sfx
 from src.video.transition_matcher import auto_assign_transitions
 
@@ -131,6 +132,18 @@ def render_video(
         else:
             logger.warning("BGM 파일 없음: %s — BGM 없이 진행", bgm_src)
 
+    # QW-07: hook 씬에 인트로 빌드업 BGM 자동 매칭. public/bgm/ 에 사전
+    # 수집된 트랙을 staticFile() 로 직접 로드 (별도 복사 불필요).
+    intro_bgm_filename = ""
+    if find_hook_scene(script) is not None:
+        track = intro_bgm_for_emotion(script.metadata.emotion_type)
+        track_path = PROJECT_ROOT / "public" / "bgm" / track
+        if track_path.exists():
+            intro_bgm_filename = track
+            logger.info("Hook 인트로 BGM 적용: %s", track)
+        else:
+            logger.warning("Hook 인트로 BGM 누락: %s", track_path)
+
     # Copy SFX files to public dir for Remotion staticFile() access
     sfx_dir = PROJECT_ROOT / "data" / "sfx"
     for scene in script.scenes:
@@ -198,6 +211,7 @@ def render_video(
         "sceneImages": scene_image_props,
         "sceneVideos": scene_video_props,
         "bgmFile": bgm_filename,
+        "introBgmFile": intro_bgm_filename,
     }
 
     props_path = target_dir / f"{timestamp}_props.json"

@@ -13,6 +13,67 @@ EMOTION_HASHTAGS = {
     "relatable": ["#블라인드", "#직장인", "#공감", "#일상", "#shorts"],
 }
 
+# QW-08 클릭베이트 가드: YouTube 정책/계정 정지 리스크 차단용 금칙어 → 사실형 대체어
+# 매치 시 description 은 대체, title 은 사실 기반 fallback 으로 재생성한다.
+BANNED_CLICKBAIT_WORDS: dict[str, str] = {
+    "믿을 수 없는": "주목받은",
+    "충격적": "주목할",
+    "충격": "주요",
+    "경악": "놀라운",
+    "폭로": "공개",
+    "완벽한": "주요",
+    "반드시": "예정된",
+    "절대": "주요",
+    "결국": "최종",
+    "100%": "확정",
+}
+
+
+def _sanitize_clickbait(text: str) -> tuple[str, bool]:
+    """Replace clickbait words with neutral alternates.
+
+    Returns (sanitized_text, was_modified). Longer phrases are matched first
+    so that "충격적" is replaced before "충격" and never leaves residue.
+    """
+    modified = False
+    out = text
+    for word in sorted(BANNED_CLICKBAIT_WORDS, key=len, reverse=True):
+        if word in out:
+            out = out.replace(word, BANNED_CLICKBAIT_WORDS[word])
+            modified = True
+    return out, modified
+
+
+def _strip_clickbait(text: str) -> str:
+    """Remove banned words entirely (used to extract a fact kernel for fallback titles)."""
+    out = text
+    for word in sorted(BANNED_CLICKBAIT_WORDS, key=len, reverse=True):
+        out = out.replace(word, "")
+    return " ".join(out.split()).strip("!?.,~ ")
+
+
+def _build_fact_based_title(script: ShortsScript) -> str:
+    """Fact-based fallback title used when the original contains banned clickbait words.
+
+    Why: YouTube spam/clickbait policies penalize sensational titles. Falling back to
+    "[국회] 발언자/주제 — N초 정리" 형태로 재생성해 채널 신뢰도를 지킨다.
+    """
+    prefix = "[국회]" if script.metadata.source_type == "political" else "[정리]"
+    duration = int(script.metadata.duration)
+
+    fact_kernel = _strip_clickbait(script.metadata.title)
+    if not fact_kernel and script.scenes:
+        first_text = script.scenes[0].text.replace("\n", " ").strip()
+        fact_kernel = _strip_clickbait(first_text)
+    if not fact_kernel:
+        fact_kernel = "주요 발언"
+
+    suffix = f" — {duration}초 정리"
+    budget = 100 - len(prefix) - 1 - len(suffix)
+    if len(fact_kernel) > budget:
+        fact_kernel = fact_kernel[:budget].rstrip()
+    return f"{prefix} {fact_kernel}{suffix}"
+
 
 def generate_metadata(script: ShortsScript) -> dict:
     """Generate YouTube upload metadata from a ShortsScript.
@@ -20,7 +81,14 @@ def generate_metadata(script: ShortsScript) -> dict:
     Returns dict with title, description, tags.
     """
     emotion = script.metadata.emotion_type
-    title = script.metadata.title
+    raw_title = script.metadata.title
+
+    # QW-08: 금칙어 매치 시 사실 기반 fallback 제목으로 재생성한다.
+    _, title_had_clickbait = _sanitize_clickbait(raw_title)
+    if title_had_clickbait:
+        title = _build_fact_based_title(script)
+    else:
+        title = raw_title
 
     hashtags = EMOTION_HASHTAGS.get(emotion, EMOTION_HASHTAGS["relatable"])
 
@@ -74,10 +142,19 @@ def generate_metadata(script: ShortsScript) -> dict:
 
     hashtags_str = " ".join(hashtags)
 
+    description_text = "\n".join(description_lines)
+    sanitized_description, _ = _sanitize_clickbait(description_text)
+    sanitized_summary, _ = _sanitize_clickbait(summary)
+    sanitized_tags = []
+    for t in tags:
+        cleaned, _ = _sanitize_clickbait(t)
+        if cleaned and cleaned not in sanitized_tags:
+            sanitized_tags.append(cleaned)
+
     return {
         "title": title[:100],
-        "description": "\n".join(description_lines),
-        "tags": tags[:30],
-        "summary": summary,
+        "description": sanitized_description,
+        "tags": sanitized_tags[:30],
+        "summary": sanitized_summary,
         "hashtags": hashtags_str,
     }

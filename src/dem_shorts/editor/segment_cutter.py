@@ -21,6 +21,52 @@ class SegmentCutError(Exception):
     """Raised when segment cut fails."""
 
 
+def _probe_duration(path: Path) -> float | None:
+    """Return media duration in seconds via ffprobe, or None if unavailable."""
+    if shutil.which("ffprobe") is None:
+        return None
+    try:
+        result = subprocess.run(
+            [
+                "ffprobe",
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=noprint_wrappers=1:nokey=1",
+                str(path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode != 0:
+            return None
+        return float(result.stdout.strip())
+    except (ValueError, subprocess.TimeoutExpired):
+        return None
+
+
+def _format_ffmpeg_error(stderr: str, max_chars: int = 1500) -> str:
+    """Show the meaningful tail of ffmpeg stderr.
+
+    ffmpeg always prints version + configuration banner first (~500 chars).
+    Real error lines (e.g. 'Invalid data', 'moov atom not found') appear at
+    the end. Truncating with `[:N]` hides the actual cause — use the tail
+    and skip lines that are pure configuration noise.
+    """
+    if not stderr:
+        return "(no stderr)"
+    lines = stderr.splitlines()
+    skip_prefixes = ("ffmpeg version", "  built with", "  configuration:", "  lib")
+    meaningful = [ln for ln in lines if not ln.startswith(skip_prefixes)]
+    tail = "\n".join(meaningful) if meaningful else stderr
+    if len(tail) > max_chars:
+        tail = "..." + tail[-max_chars:]
+    return tail
+
+
 def validate_cut_duration(start_sec: float, end_sec: float) -> None:
     """FR-018: cut duration ≤ 60s."""
     if start_sec < 0:
@@ -100,6 +146,23 @@ def cut_segment(
     if shutil.which("ffmpeg") is None:
         raise SegmentCutError("ffmpeg not installed or not on PATH")
 
+    # Probe input duration so we can fail fast instead of letting ffmpeg
+    # silently produce an empty 262-byte container when start_sec is past the
+    # end of the file.
+    duration = _probe_duration(input_path)
+    if duration is not None:
+        if start_sec >= duration:
+            raise SegmentCutError(
+                f"start_sec ({start_sec:.2f}s) is at or beyond input duration "
+                f"({duration:.2f}s) — ffmpeg would produce an empty clip. "
+                f"input={input_path.name}"
+            )
+        # Clamp end_sec to the actual input length so we don't request frames
+        # that don't exist (which produces a truncated but valid clip rather
+        # than an error, but we want predictable behavior).
+        if end_sec > duration:
+            end_sec = duration
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     cmd = build_ffmpeg_cmd(
@@ -116,7 +179,8 @@ def cut_segment(
     )
     if result.returncode != 0:
         raise SegmentCutError(
-            f"ffmpeg failed (exit {result.returncode}): {result.stderr[:500]}"
+            f"ffmpeg failed (exit {result.returncode}): "
+            f"{_format_ffmpeg_error(result.stderr)}"
         )
     if not output_path.exists():
         raise SegmentCutError(f"output not produced: {output_path}")
@@ -124,6 +188,8 @@ def cut_segment(
     if size < 1000:
         raise SegmentCutError(
             f"output too small ({size} bytes) — empty container, ffmpeg may have failed silently. "
-            f"stderr: {result.stderr[:300]}"
+            f"start={start_sec:.2f}s end={end_sec:.2f}s "
+            f"input_duration={duration if duration is not None else '?'}s. "
+            f"stderr tail: {_format_ffmpeg_error(result.stderr)}"
         )
     return output_path

@@ -29,6 +29,71 @@ BANNED_CLICKBAIT_WORDS: dict[str, str] = {
 }
 
 
+_HASHTAG_KEYWORD_MAX_COUNT = 10
+_HASHTAG_TOTAL_MAX_COUNT = 15
+_PURE_NUMBER_RE = None  # lazy compiled in _is_meaningful_keyword
+
+
+def _is_meaningful_keyword(word: str) -> bool:
+    """해시태그 후보 검증 — 의미 있는 키워드만 통과."""
+    import re
+    cleaned = re.sub(r"[\s\W_]+", "", word)
+    if len(cleaned) < 2:
+        return False
+    if cleaned.isdigit():
+        return False
+    return True
+
+
+def _to_hashtag(word: str) -> str:
+    """공백/특수문자 제거 후 # prefix."""
+    import re
+    cleaned = re.sub(r"[\s\W_]+", "", word)
+    return f"#{cleaned}"
+
+
+def extract_keyword_hashtags(script: ShortsScript) -> list[str]:
+    """MID-08: 모든 씬의 highlight_words에서 해시태그를 추출.
+
+    - 1글자/순수 숫자 키워드는 제외
+    - 공백·특수문자 제거 후 # prefix
+    - dedupe (등장 순서 보존)
+    - 최대 10개로 제한 (해시태그 스팸 방지)
+    """
+    tags: list[str] = []
+    seen: set[str] = set()
+    for scene in script.scenes:
+        for word in scene.highlight_words or ():
+            if not _is_meaningful_keyword(word):
+                continue
+            tag = _to_hashtag(word)
+            if tag in seen:
+                continue
+            seen.add(tag)
+            tags.append(tag)
+            if len(tags) >= _HASHTAG_KEYWORD_MAX_COUNT:
+                return tags
+    return tags
+
+
+def merge_hashtags(emotion_tags: list[str], keyword_tags: list[str]) -> list[str]:
+    """MID-08: emotion 정적 + 키워드 해시태그 dedupe 합산.
+
+    키워드 해시태그를 앞에 두어 더 구체적인 정보가 먼저 노출되게 한다.
+    YouTube 권장 해시태그 15개 한도를 넘지 않는다.
+    """
+    merged: list[str] = []
+    seen: set[str] = set()
+    for tag in keyword_tags + emotion_tags:
+        if tag in seen:
+            continue
+        seen.add(tag)
+        merged.append(tag)
+        if len(merged) >= _HASHTAG_TOTAL_MAX_COUNT:
+            break
+    return merged
+
+
 def _sanitize_clickbait(text: str) -> tuple[str, bool]:
     """Replace clickbait words with neutral alternates.
 
@@ -90,7 +155,10 @@ def generate_metadata(script: ShortsScript) -> dict:
     else:
         title = raw_title
 
-    hashtags = EMOTION_HASHTAGS.get(emotion, EMOTION_HASHTAGS["relatable"])
+    emotion_hashtags = EMOTION_HASHTAGS.get(emotion, EMOTION_HASHTAGS["relatable"])
+    # MID-08: highlight_words 기반 해시태그를 emotion 정적과 결합
+    keyword_hashtags = extract_keyword_hashtags(script)
+    hashtags = merge_hashtags(emotion_hashtags, keyword_hashtags)
 
     description_lines = [
         title,

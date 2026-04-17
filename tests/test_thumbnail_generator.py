@@ -31,13 +31,14 @@ from src.upload.thumbnail_generator import (
 # ---------------------------------------------------------------------------
 
 
-def test_thumbnail_dimensions_are_1280x720():
-    assert THUMB_WIDTH == 1280
-    assert THUMB_HEIGHT == 720
+def test_thumbnail_dimensions_are_9_16():
+    """Shorts thumbnail must be portrait 9:16 (1080×1920)."""
+    assert THUMB_WIDTH == 1080
+    assert THUMB_HEIGHT == 1920
 
 
 def test_text_y_offset_is_20_pixels():
-    """Title clears YouTube Shorts navigation bar: top 50% + 20px."""
+    """Title clears YouTube Shorts navigation bar: top 13% + 20px."""
     assert TEXT_Y_OFFSET == 20
 
 
@@ -48,19 +49,19 @@ def test_text_y_offset_is_20_pixels():
 
 class TestComputeTextPosition:
     def test_default_top_percent_and_offset(self):
-        # 720 * 0.50 = 360, + 20 = 380
-        assert compute_text_position(canvas_height=720) == 380
+        # 1920 * 0.13 = 249.6 → 249, + 20 = 269
+        assert compute_text_position(canvas_height=1920) == 269
 
     def test_custom_offset(self):
-        assert compute_text_position(canvas_height=720, y_offset=0) == 360
+        assert compute_text_position(canvas_height=1920, y_offset=0) == 249
 
     def test_custom_top_percent(self):
-        # 720 * 0.5 = 360, + 20 = 380 (default percent is 0.50 so same)
-        assert compute_text_position(canvas_height=720, top_percent=0.5) == 380
+        # 1920 * 0.5 = 960, + 20 = 980
+        assert compute_text_position(canvas_height=1920, top_percent=0.5) == 980
 
     def test_scales_with_canvas_height(self):
-        # 1920 * 0.50 = 960, + 20 = 980
-        assert compute_text_position(canvas_height=1920) == 980
+        # 720 * 0.13 = 93.6 → 93, + 20 = 113
+        assert compute_text_position(canvas_height=720) == 113
 
 
 # ---------------------------------------------------------------------------
@@ -150,7 +151,7 @@ def _make_fake_frame(path: Path, width: int = 1920, height: int = 1080) -> Path:
 
 
 class TestComposeThumbnail:
-    def test_output_is_1280x720_png(self, tmp_path):
+    def test_output_is_1080x1920_png(self, tmp_path):
         frame = _make_fake_frame(tmp_path / "frame.png")
         output = tmp_path / "thumb.png"
 
@@ -159,7 +160,7 @@ class TestComposeThumbnail:
         assert result == output
         assert output.exists()
         with Image.open(output) as img:
-            assert img.size == (1280, 720)
+            assert img.size == (1080, 1920)
             assert img.format == "PNG"
 
     def test_handles_empty_title(self, tmp_path):
@@ -180,7 +181,7 @@ class TestComposeThumbnail:
         )
         assert result.exists()
         with Image.open(output) as img:
-            assert img.size == (1280, 720)
+            assert img.size == (1080, 1920)
 
     def test_raises_when_frame_missing(self, tmp_path):
         with pytest.raises(FileNotFoundError):
@@ -191,14 +192,14 @@ class TestComposeThumbnail:
             )
 
     def test_preserves_aspect_by_cropping(self, tmp_path):
-        """Vertical 1080x1920 source → crop center to 1280x720 canvas."""
-        frame = _make_fake_frame(tmp_path / "frame.png", width=1080, height=1920)
+        """Landscape 1920x1080 source → scale+crop center to portrait 1080x1920 canvas."""
+        frame = _make_fake_frame(tmp_path / "frame.png", width=1920, height=1080)
         output = tmp_path / "thumb.png"
 
         result = compose_thumbnail(frame, title="제목", output_path=output)
 
         with Image.open(result) as img:
-            assert img.size == (1280, 720)
+            assert img.size == (1080, 1920)
 
 
 # ---------------------------------------------------------------------------
@@ -227,7 +228,7 @@ class TestGenerateThumbnailFromScript:
         assert result.exists()
         assert result.suffix == ".png"
         with Image.open(result) as img:
-            assert img.size == (1280, 720)
+            assert img.size == (1080, 1920)
 
     def test_raises_when_video_missing(self, tmp_path, sample_script):
         with pytest.raises(FileNotFoundError):

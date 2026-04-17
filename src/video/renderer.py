@@ -14,6 +14,7 @@ from pathlib import Path
 
 from src.analyzer.script_models import ShortsScript
 from src.config.settings import DATA_AUDIO_DIR, PROJECT_ROOT
+from src.video.sfx_matcher import auto_assign_sfx
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ def render_video(
     output_dir: Path | None = None,
     use_bgm: bool = True,
     scene_timings: list[dict] | None = None,
+    auto_sfx: bool = True,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
@@ -45,7 +47,13 @@ def render_video(
         output_dir: Output directory (defaults to data/outputs/)
         use_bgm: Whether to include background music
         scene_timings: Per-scene TTS timing data for audio-video sync
+        auto_sfx: QW-04 — auto-assign whoosh/impact SFX to every cut transition.
+                  Pass False to keep original scene.sfx (or no SFX at all).
     """
+    # QW-04: 모든 컷 전환에 whoosh/impact SFX 자동 주입 (사용자 지정 sfx 는 보존).
+    if auto_sfx:
+        script = auto_assign_sfx(script)
+
     target_dir = output_dir or DATA_OUTPUTS_DIR
     target_dir.mkdir(parents=True, exist_ok=True)
 

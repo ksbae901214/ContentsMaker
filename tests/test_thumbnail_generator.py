@@ -3,7 +3,7 @@
 Covers:
 - capture_hook_frame: ffmpeg subprocess invocation + fallback
 - compose_thumbnail: 1280x720 PNG output with title overlay
-- compute_text_position: pure function for text y-coordinate (top 25% + 100px offset)
+- compute_text_position: pure function for text y-coordinate (top 50% + 20px offset)
 - generate_thumbnail_from_script: end-to-end orchestrator
 """
 from __future__ import annotations
@@ -36,9 +36,9 @@ def test_thumbnail_dimensions_are_1280x720():
     assert THUMB_HEIGHT == 720
 
 
-def test_text_y_offset_is_100_pixels():
-    """User-confirmed offset: top 25% + 100px down."""
-    assert TEXT_Y_OFFSET == 100
+def test_text_y_offset_is_20_pixels():
+    """Title clears YouTube Shorts navigation bar: top 50% + 20px."""
+    assert TEXT_Y_OFFSET == 20
 
 
 # ---------------------------------------------------------------------------
@@ -48,19 +48,19 @@ def test_text_y_offset_is_100_pixels():
 
 class TestComputeTextPosition:
     def test_default_top_percent_and_offset(self):
-        # 720 * 0.25 = 180, + 100 = 280
-        assert compute_text_position(canvas_height=720) == 280
+        # 720 * 0.50 = 360, + 20 = 380
+        assert compute_text_position(canvas_height=720) == 380
 
     def test_custom_offset(self):
-        assert compute_text_position(canvas_height=720, y_offset=0) == 180
+        assert compute_text_position(canvas_height=720, y_offset=0) == 360
 
     def test_custom_top_percent(self):
-        # 720 * 0.5 = 360, + 100 = 460
-        assert compute_text_position(canvas_height=720, top_percent=0.5) == 460
+        # 720 * 0.5 = 360, + 20 = 380 (default percent is 0.50 so same)
+        assert compute_text_position(canvas_height=720, top_percent=0.5) == 380
 
     def test_scales_with_canvas_height(self):
-        # 1920 * 0.25 = 480, + 100 = 580
-        assert compute_text_position(canvas_height=1920) == 580
+        # 1920 * 0.50 = 960, + 20 = 980
+        assert compute_text_position(canvas_height=1920) == 980
 
 
 # ---------------------------------------------------------------------------

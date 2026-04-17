@@ -109,13 +109,16 @@ export const SubtitleBlock: React.FC<SubtitleBlockProps> = ({
   const fontSize = Math.round(preset.baseFontSize * scale * hookMultiplier);
 
   // QW-01: hook 씬은 위치를 화면 중앙으로 강제
+  // "top" is positioned at 20% to stay below the YouTube Shorts navigation bar
+  // (~8–10% from top on a phone screen). "bottom" sits in the lower letterbox
+  // black bar when the source clip is 16:9 letterboxed inside the 9:16 frame.
   const posStyle: React.CSSProperties = isHook
     ? { top: "40%", alignItems: "center" }
     : preset.position === "top"
-    ? { top: "10%", alignItems: "flex-start" }
+    ? { top: "20%", alignItems: "flex-start" }
     : preset.position === "center"
     ? { top: "40%", alignItems: "center" }
-    : { bottom: "15%", alignItems: "flex-end" };
+    : { bottom: "5%", alignItems: "flex-end" };
 
   // QW-01: hook 씬은 펀치 줌 — 30fps 기준 frame 0/3/9 → 0.88/1.08/1.0
   const punchScale = isHook

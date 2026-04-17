@@ -24,9 +24,10 @@ from src.analyzer.script_models import ShortsScript
 THUMB_WIDTH = 1280
 THUMB_HEIGHT = 720
 
-# User-confirmed layout: text baseline starts at top 25% + 100px.
-TEXT_TOP_PERCENT = 0.25
-TEXT_Y_OFFSET = 100
+# Title sits in the lower half so it clears the YouTube Shorts navigation bar
+# (back button + search icon overlay the top ~10–15% of the display).
+TEXT_TOP_PERCENT = 0.50
+TEXT_Y_OFFSET = 20
 
 # Political-YouTube palette.
 COLOR_CONTEXT = "#DC143C"   # crimson red — context words

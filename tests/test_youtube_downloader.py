@@ -80,7 +80,7 @@ WEBVTT
 class TestDownloadVideo:
     @patch("src.scraper.youtube_downloader.subprocess.run")
     def test_command_construction(self, mock_run, tmp_path):
-        mock_run.return_value = MagicMock(returncode=0, stderr="")
+        mock_run.return_value = MagicMock(returncode=0, stderr="", stdout="")
         # Create a fake mp4 so glob finds it
         fake = tmp_path / "abc123.mp4"
         fake.write_bytes(b"fake")
@@ -89,18 +89,66 @@ class TestDownloadVideo:
         result = download_video("https://youtube.com/watch?v=abc123", tmp_path)
 
         call_args = mock_run.call_args[0][0]
-        assert call_args[0] == "yt-dlp"
+        # May be ["yt-dlp", ...] or [sys.executable, "-m", "yt_dlp", ...]
+        assert "yt-dlp" in call_args or "yt_dlp" in call_args
         assert "--merge-output-format" in call_args
         assert "mp4" in call_args
         assert result == fake
 
     @patch("src.scraper.youtube_downloader.subprocess.run")
     def test_download_failure(self, mock_run, tmp_path):
-        mock_run.return_value = MagicMock(returncode=1, stderr="Error: video not found")
+        mock_run.return_value = MagicMock(returncode=1, stderr="Error: video not found", stdout="")
 
         from src.scraper.youtube_downloader import download_video
         with pytest.raises(YouTubeDownloadError, match="yt-dlp"):
             download_video("https://youtube.com/watch?v=bad", tmp_path)
+
+    @patch("src.scraper.youtube_downloader.subprocess.run")
+    def test_ignores_scene_clips_from_previous_runs(self, mock_run, tmp_path):
+        """Regression: output_dir is shared with per-scene cutter output
+        (natv_clips/ holds both YouTube downloads and scene_*.mp4 pieces).
+        An older YouTube file + newer scene clips must NOT cause the scene
+        clip to be returned — that would feed a 6-second piece back into
+        cut_segment at 791s and raise SegmentCutError.
+        """
+        import os, time
+        # Old YouTube download (older mtime)
+        yt = tmp_path / "abc123.mp4"
+        yt.write_bytes(b"yt-video-content" * 100)
+        old_time = time.time() - 3600
+        os.utime(yt, (old_time, old_time))
+
+        # Newer scene clips from a previous run — they must be ignored.
+        for i in range(1, 10):
+            scene = tmp_path / f"scene_1776415995_{i:02d}.mp4"
+            scene.write_bytes(b"scene-piece" * 10)
+
+        mock_run.return_value = MagicMock(returncode=0, stderr="", stdout="")
+
+        from src.scraper.youtube_downloader import download_video
+        result = download_video("https://youtube.com/watch?v=abc123", tmp_path)
+
+        # Must return the real YouTube download, not the newest scene clip.
+        assert result == yt, f"returned {result.name}, expected abc123.mp4"
+        assert not result.name.startswith("scene_")
+
+    @patch("src.scraper.youtube_downloader.subprocess.run")
+    def test_prefers_yt_dlp_print_output_when_available(self, mock_run, tmp_path):
+        """If yt-dlp reports the final path via --print, trust that over glob."""
+        real = tmp_path / "targetvideo.mp4"
+        real.write_bytes(b"real-content" * 50)
+        # A newer unrelated mp4 sits in the same directory.
+        noise = tmp_path / "scene_99_01.mp4"
+        noise.write_bytes(b"noise")
+
+        mock_run.return_value = MagicMock(
+            returncode=0, stderr="",
+            stdout=str(real) + "\n",
+        )
+
+        from src.scraper.youtube_downloader import download_video
+        result = download_video("https://youtube.com/watch?v=target", tmp_path)
+        assert result == real
 
 
 class TestExtractClip:

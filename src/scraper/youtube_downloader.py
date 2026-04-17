@@ -21,7 +21,16 @@ class YouTubeDownloadError(Exception):
 
 
 def download_video(url: str, output_dir: Path) -> Path:
-    """Download a YouTube video as MP4. Returns path to downloaded file."""
+    """Download a YouTube video as MP4. Returns path to downloaded file.
+
+    Resolution order for the returned path:
+    1. yt-dlp's ``--print after_move:filepath`` stdout (trusted when present).
+    2. Glob ``*.mp4`` in ``output_dir``, **excluding ``scene_*.mp4``** — those
+       are per-scene clips written by the segment cutter into the same
+       directory, and their mtime is newer than the YouTube download on repeat
+       runs (which would silently feed a 6-second piece back into the cutter
+       and blow up at 791s seek).
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     template = str(output_dir / "%(id)s.%(ext)s")
 
@@ -31,6 +40,8 @@ def download_video(url: str, output_dir: Path) -> Path:
         "--merge-output-format", "mp4",
         "-o", template,
         "--no-playlist",
+        "--print", "after_move:filepath",
+        "--no-simulate",
         "--quiet",
         url,
     ]
@@ -41,7 +52,21 @@ def download_video(url: str, output_dir: Path) -> Path:
             f"yt-dlp 다운로드 실패: {result.stderr[:300]}"
         )
 
-    mp4_files = sorted(output_dir.glob("*.mp4"), key=lambda p: p.stat().st_mtime)
+    # Prefer the exact path reported by yt-dlp.
+    for line in (result.stdout or "").splitlines():
+        candidate = Path(line.strip())
+        if candidate.suffix.lower() == ".mp4" and candidate.exists():
+            logger.info(
+                "다운로드 완료: %s (%.1f MB)",
+                candidate.name, candidate.stat().st_size / 1e6,
+            )
+            return candidate
+
+    # Fallback: glob but skip scene_*.mp4 pieces left by the segment cutter.
+    mp4_files = sorted(
+        (p for p in output_dir.glob("*.mp4") if not p.name.startswith("scene_")),
+        key=lambda p: p.stat().st_mtime,
+    )
     if not mp4_files:
         raise YouTubeDownloadError("다운로드된 MP4 파일을 찾을 수 없습니다.")
 

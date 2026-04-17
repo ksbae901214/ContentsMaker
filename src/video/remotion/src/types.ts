@@ -50,6 +50,8 @@ export interface SceneData {
   subtitle_style?: SubtitleStyle;
   transition?: TransitionConfig;
   sfx?: SfxConfig[];
+  // QW-01: 첫 1.5~2.5초 후킹 씬. true 시 1.4x 폰트 + 중앙 + 펀치 줌.
+  hook?: boolean;
 }
 
 export const HIGHLIGHT_COLORS: Record<EmotionType, string> = {

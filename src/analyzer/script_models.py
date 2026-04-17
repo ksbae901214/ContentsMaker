@@ -115,6 +115,9 @@ class Scene:
     sfx: tuple[SfxConfig, ...] = ()
     clip_start: float | None = None   # seconds into source clip (political mode)
     clip_end: float | None = None     # seconds into source clip (political mode)
+    # QW-01: 첫 1.5~2.5초 후킹 씬 표시. True면 렌더 단계에서 1.4x 폰트 +
+    # 중앙 정렬 + 펀치 줌 적용. 기본 False (호환).
+    hook: bool = False
 
     def to_dict(self) -> dict:
         d = {
@@ -141,6 +144,8 @@ class Scene:
             d["clip_start"] = self.clip_start
         if self.clip_end is not None:
             d["clip_end"] = self.clip_end
+        if self.hook:  # 호환: False는 키 생략
+            d["hook"] = True
         return d
 
     @classmethod
@@ -173,6 +178,7 @@ class Scene:
             sfx=tuple(SfxConfig.from_dict(s) for s in raw_sfx),
             clip_start=data.get("clip_start"),
             clip_end=data.get("clip_end"),
+            hook=bool(data.get("hook", False)),
         )
 
 

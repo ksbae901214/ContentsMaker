@@ -46,6 +46,53 @@ class TestScene:
         assert restored == original
 
 
+class TestSceneHookField:
+    """QW-01: 첫 씬을 hook 으로 표시하기 위한 Scene.hook 필드."""
+
+    def test_default_hook_is_false(self):
+        """기본값은 False — 기존 코드 회귀 방지."""
+        s = Scene(id=1, timestamp=0, duration=5, type="title",
+                  text="제목", voice_text="제목입니다")
+        assert s.hook is False
+
+    def test_create_with_hook_true(self):
+        s = Scene(id=1, timestamp=0, duration=2, type="title",
+                  text="후킹", voice_text="후킹 음성", hook=True)
+        assert s.hook is True
+
+    def test_hook_true_roundtrip(self):
+        """hook=True 인 Scene은 to_dict/from_dict 라운드트립에서 보존."""
+        original = Scene(id=1, timestamp=0, duration=2, type="title",
+                         text="후킹", voice_text="짧게", hook=True)
+        restored = Scene.from_dict(original.to_dict())
+        assert restored.hook is True
+        assert restored == original
+
+    def test_hook_false_omitted_from_dict(self):
+        """hook=False 면 to_dict 결과에 키가 없어야 한다 (기존 JSON 호환)."""
+        s = Scene(id=1, timestamp=0, duration=5, type="title",
+                  text="제목", voice_text="제목입니다", hook=False)
+        d = s.to_dict()
+        assert "hook" not in d, (
+            "hook=False는 키 생략 — 기존 JSON 파일과 호환"
+        )
+
+    def test_hook_true_appears_in_dict(self):
+        s = Scene(id=1, timestamp=0, duration=2, type="title",
+                  text="후킹", voice_text="짧게", hook=True)
+        d = s.to_dict()
+        assert d.get("hook") is True
+
+    def test_legacy_json_without_hook_loads_as_false(self):
+        """기존 JSON(hook 키 없음)은 hook=False 로 로드되어야 한다."""
+        data = {
+            "id": 1, "timestamp": 0, "duration": 5, "type": "title",
+            "text": "제목", "voice_text": "제목입니다",
+        }
+        s = Scene.from_dict(data)
+        assert s.hook is False
+
+
 class TestMetadata:
     def test_create(self):
         m = Metadata(title="테스트", emotion_type="funny", duration=45)

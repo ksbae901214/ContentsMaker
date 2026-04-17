@@ -6,10 +6,49 @@
 
 ---
 
-## 🚧 진행 중: QW-03 자막 외곽선 강화 (정치 유튜브 가독성 패턴)
+## 🚧 진행 중: QW-01 후킹 자막 첫 1.5초 강제 (2026-04-17)
+
+**출처**: `docs/dem-shorts/political-youtube-style-plan.md` §1.2(쇼츠 후킹), §8.2 QW-01
+**선행 결정 (2026-04-17)**: A/A/A — 고정 1.5~2.5초 / voice_text 그대로 / 강한 펀치 줌
+
+### 결정 사항
+- **Q1 duration**: A안 — hook 씬은 1.5~2.5초 고정 (LLM에 강제). 본 내용은 2번째 씬부터
+- **Q2 voice_text**: A안 — 그대로 읽음. 프롬프트에 "음절 8자 이내" 강제로 1.5~2.5초 안에 맞춤
+- **Q3 펀치 줌**: A안 — scale 0.88 → 1.08 → 1.0 (30fps 기준 frame 0/3/9). 강한 pop
+
+### 영향 파일 (6개)
+1. `src/analyzer/script_models.py` — Scene에 `hook: bool = False` 필드 (호환)
+2. `src/analyzer/prompt_template.py` — ANALYZE/TOPIC/POLITICAL 3개 프롬프트에 후킹 규칙 + 금지어
+3. `src/video/remotion/src/types.ts` — SceneData에 `hook?: boolean`
+4. `src/video/remotion/src/components/SceneText.tsx` — hook 시 1.4x 폰트 + 중앙 + 펀치 줌
+5. `src/video/remotion/src/components/SubtitleBlock.tsx` — `isHook?: boolean` prop
+6. `tests/test_prompt_template.py` (신규/수정), `tests/test_models.py` (Scene hook 라운드트립)
+
+### 단계
+1. **TDD RED**: 프롬프트 후킹 가이드/금지어 검증 + Scene.hook 라운드트립 테스트 추가
+2. **GREEN**: 모델 → 프롬프트 → Remotion 컴포넌트 순서로 구현
+3. **시각 검증**: data/qw01_preview/ Playwright 캡처
+4. **회귀**: pytest 전체 + tsc (root + Remotion)
+5. **커밋 + 푸시** (병렬 QW-08과 충돌 0 확인)
+
+### 진행 상태
+- [x] 코드 진단
+- [x] 옵션 결정 (A/A/A)
+- [ ] TDD RED
+- [ ] GREEN
+- [ ] 시각 검증
+- [ ] 커밋
+
+### QW-08과 협조
+- 금지어 리스트는 prompt_template.py 인라인 정의
+- QW-08 머지 후 `src/upload/metadata_generator.py`의 금지어와 공통화 (별도 PR)
+
+---
+
+## ✅ 완료: QW-03 자막 외곽선 강화 (2026-04-17, 04af8c4)
 
 **출처**: `docs/dem-shorts/political-youtube-style-plan.md` §8.2 QW-03
-**선행 결정 (2026-04-17)**: B안 (시그니처 색 유지) + 6px 두께 + 약한 drop shadow
+**선행 결정**: B안 (시그니처 색 유지) + 6px 두께 + 약한 drop shadow
 
 ### 결정 사항
 - **stroke_color**: 프리셋별 시그니처 색 유지 (예: leejaemyung=#1A237E 블루, hotissue=#000000 검정). SceneText.tsx는 프리셋 없으니 기본 `#000000`.

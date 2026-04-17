@@ -1,5 +1,6 @@
 // T068: 프리셋별 스타일로 자막 렌더링
 import React from "react";
+import { useCurrentFrame, interpolate } from "remotion";
 
 export interface SubtitlePresetData {
   id: string;
@@ -26,6 +27,8 @@ interface SubtitleBlockProps {
   preset: SubtitlePresetData;
   style?: "high" | "medium" | "low";
   highlightWords?: string[];
+  // QW-01: 후킹 씬일 때 1.4x 폰트 + 중앙 + 펀치 줌 적용
+  isHook?: boolean;
 }
 
 const STYLE_SCALE: Record<string, number> = {
@@ -93,17 +96,29 @@ export const SubtitleBlock: React.FC<SubtitleBlockProps> = ({
   preset,
   style = "medium",
   highlightWords = [],
+  isHook = false,
 }) => {
+  const frame = useCurrentFrame();
   const scale = STYLE_SCALE[style] ?? 1.0;
-  const fontSize = Math.round(preset.baseFontSize * scale);
+  // QW-01: hook 씬은 1.4x 폰트로 임팩트 강화
+  const hookMultiplier = isHook ? 1.4 : 1.0;
+  const fontSize = Math.round(preset.baseFontSize * scale * hookMultiplier);
 
-  // Position by preset
-  const posStyle: React.CSSProperties =
-    preset.position === "top"
-      ? { top: "10%", alignItems: "flex-start" }
-      : preset.position === "center"
-      ? { top: "40%", alignItems: "center" }
-      : { bottom: "15%", alignItems: "flex-end" };
+  // QW-01: hook 씬은 위치를 화면 중앙으로 강제
+  const posStyle: React.CSSProperties = isHook
+    ? { top: "40%", alignItems: "center" }
+    : preset.position === "top"
+    ? { top: "10%", alignItems: "flex-start" }
+    : preset.position === "center"
+    ? { top: "40%", alignItems: "center" }
+    : { bottom: "15%", alignItems: "flex-end" };
+
+  // QW-01: hook 씬은 펀치 줌 — 30fps 기준 frame 0/3/9 → 0.88/1.08/1.0
+  const punchScale = isHook
+    ? interpolate(frame, [0, 3, 9], [0.88, 1.08, 1.0], {
+        extrapolateRight: "clamp",
+      })
+    : 1.0;
 
   const dropShadow = preset.dropShadow ?? "3px 3px 8px rgba(0,0,0,0.7)";
   const textShadow = buildSubtitleTextShadow(
@@ -130,6 +145,7 @@ export const SubtitleBlock: React.FC<SubtitleBlockProps> = ({
           padding: `${preset.paddingPx}px ${preset.paddingPx * 1.5}px`,
           borderRadius: 12,
           maxWidth: "90%",
+          transform: isHook ? `scale(${punchScale})` : undefined,
         }}
       >
         <div

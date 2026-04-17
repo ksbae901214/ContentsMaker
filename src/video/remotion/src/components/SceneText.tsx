@@ -30,6 +30,8 @@ interface SceneData {
   subtitle_style?: SubtitleStyle;
   translatedText?: string;
   translated_text?: string;
+  // QW-01: 첫 1.5~2.5초 후킹 씬. true 시 1.4x 폰트 + 중앙 + 펀치 줌.
+  hook?: boolean;
 }
 
 interface SceneTextProps {
@@ -74,19 +76,33 @@ const HighlightedText: React.FC<{
 
 export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
   const frame = useCurrentFrame();
+  const isHook = scene.hook === true;
 
-  const opacity = interpolate(frame, [0, 15], [0, 1], {
-    extrapolateRight: "clamp",
-  });
-  const animateY = interpolate(frame, [0, 15], [40, 0], {
-    extrapolateRight: "clamp",
-  });
+  // QW-01: hook 씬은 펀치 줌으로 등장. 일반 씬은 기존 fade+up 진입.
+  // 30fps 기준 frame 0/3/9 — 0.88 → 1.08 (overshoot) → 1.0 (settle).
+  const punchScale = interpolate(
+    frame,
+    [0, 3, 9],
+    [0.88, 1.08, 1.0],
+    { extrapolateRight: "clamp" },
+  );
+  const opacity = interpolate(
+    frame,
+    isHook ? [0, 3] : [0, 15],
+    [0, 1],
+    { extrapolateRight: "clamp" },
+  );
+  const animateY = isHook
+    ? 0
+    : interpolate(frame, [0, 15], [40, 0], { extrapolateRight: "clamp" });
 
   // Support both camelCase and snake_case from props
   const style: SubtitleStyle | undefined =
     scene.subtitleStyle || scene.subtitle_style;
 
-  const fontSize = style?.font_size ?? DEFAULT_FONT_SIZE;
+  const baseFontSize = style?.font_size ?? DEFAULT_FONT_SIZE;
+  // QW-01: hook 씬은 1.4x 폰트로 임팩트 강화
+  const fontSize = isHook ? Math.round(baseFontSize * 1.4) : baseFontSize;
   const fontWeight = style?.font_weight ?? "700";
   const fontFamily = style?.font_family ?? "Noto Sans KR, sans-serif";
   const textColor = style?.color ?? "#FFFFFF";
@@ -99,7 +115,8 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
     strokeColor,
     dropShadow,
   );
-  const positionY = style?.position_y ?? 0.652;
+  // QW-01: hook 씬은 화면 중앙 강제 (positionY 0.5)
+  const positionY = isHook ? 0.5 : (style?.position_y ?? 0.652);
   const bgColor = style?.bg_color ?? null;
   const bgOpacity = style?.bg_opacity ?? 0;
 
@@ -126,7 +143,9 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
       <div
         style={{
           opacity,
-          transform: `translateY(${animateY + verticalOffset}px)`,
+          transform: isHook
+            ? `translateY(${verticalOffset}px) scale(${punchScale})`
+            : `translateY(${animateY + verticalOffset}px)`,
           textAlign: "center",
           maxWidth: "90%",
           position: "relative",

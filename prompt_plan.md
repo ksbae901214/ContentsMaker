@@ -2,7 +2,46 @@
 
 > 블라인드 인기글을 만화 스타일 YouTube Shorts 영상으로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-04-02
+**마지막 업데이트**: 2026-04-17
+
+---
+
+## 🚧 진행 중: QW-03 자막 외곽선 강화 (정치 유튜브 가독성 패턴)
+
+**출처**: `docs/dem-shorts/political-youtube-style-plan.md` §8.2 QW-03
+**선행 결정 (2026-04-17)**: B안 (시그니처 색 유지) + 6px 두께 + 약한 drop shadow
+
+### 결정 사항
+- **stroke_color**: 프리셋별 시그니처 색 유지 (예: leejaemyung=#1A237E 블루, hotissue=#000000 검정). SceneText.tsx는 프리셋 없으니 기본 `#000000`.
+- **stroke_width**: 모든 프리셋 + SceneText 기본값 **6px** 통일 (현재 3·3·4·5·5)
+- **drop shadow**: 기존 `3px 3px 8px rgba(0,0,0,0.7)` (약) 유지 — 외곽선이 강해지므로 그림자는 약하게
+
+### 영향 파일 (6개)
+1. `src/dem_shorts/editor/subtitle_presets.py` — 5개 프리셋 stroke_width=6 + drop_shadow 필드 추가
+2. `src/video/remotion/src/components/SubtitleBlock.tsx` — textShadow에 stroke + drop shadow 합성
+3. `src/video/remotion/src/components/SceneText.tsx` — 외곽선 신규 도입 (4-corner textShadow)
+4. `src/video/remotion/src/types.ts` — `SubtitleStyle`에 `stroke_color?`, `stroke_width?` 추가
+5. `tests/dem_shorts/test_subtitle_presets.py` — drop_shadow 필드 + stroke_width≥6 assert
+6. Remotion 컴포넌트 단위 테스트 (신규)
+
+### 단계
+1. **TDD RED**: 테스트 추가 (stroke_width≥6, drop_shadow 필드 존재, textShadow 빌더 stroke+shadow 합성)
+2. **GREEN**: 5개 프리셋 + 두 컴포넌트 + types 수정
+3. **시각 검증**: NATV 클립 1개로 짧은 테스트 영상 렌더 → 가독성 확인
+4. **회귀 검증**: 기존 `tests/dem_shorts/` 287건 + tsc 통과
+5. **커밋 + 푸시**
+
+### 진행 상태
+- [x] 코드 진단 + 미리보기 (data/qw03_preview/)
+- [x] 옵션 결정 (B/6px/약한 그림자)
+- [ ] TDD RED
+- [ ] GREEN
+- [ ] 시각 검증
+- [ ] 커밋
+
+### 비고
+- 후속 Quick Win 순서: QW-01 후킹 자막 → QW-08 클릭베이트 가드 → QW-05 CTA 아웃트로 → ...
+- 미리보기 자산: `data/qw03_preview/preview.html` + 4개 PNG
 
 ---
 

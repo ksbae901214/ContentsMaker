@@ -6,10 +6,15 @@ import {
 } from "remotion";
 import { HIGHLIGHT_COLORS } from "../types";
 import type { EmotionType, SubtitleStyle } from "../types";
+import { buildSubtitleTextShadow } from "./SubtitleBlock";
 
 /** Default values when no SubtitleStyle is provided. */
 const DEFAULT_FONT_SIZE = 80;
 const DEFAULT_POSITION_Y = 192; // 10% below center of 1920px
+// QW-03 (B안): 시그니처 색 정보가 없는 SceneText는 검정 6px 기본 외곽선.
+const DEFAULT_STROKE_COLOR = "#000000";
+const DEFAULT_STROKE_WIDTH = 6;
+const DEFAULT_DROP_SHADOW = "3px 3px 8px rgba(0,0,0,0.7)";
 
 interface SceneData {
   id: number;
@@ -85,7 +90,15 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
   const fontWeight = style?.font_weight ?? "700";
   const fontFamily = style?.font_family ?? "Noto Sans KR, sans-serif";
   const textColor = style?.color ?? "#FFFFFF";
-  const textShadow = style?.shadow ?? "3px 3px 8px rgba(0,0,0,0.7)";
+  // QW-03: 기존 `style.shadow`는 drop shadow로 흡수. 외곽선은 별도 합성.
+  const dropShadow = style?.shadow ?? DEFAULT_DROP_SHADOW;
+  const strokeColor = style?.stroke_color ?? DEFAULT_STROKE_COLOR;
+  const strokeWidth = style?.stroke_width ?? DEFAULT_STROKE_WIDTH;
+  const textShadow = buildSubtitleTextShadow(
+    strokeWidth,
+    strokeColor,
+    dropShadow,
+  );
   const positionY = style?.position_y ?? 0.652;
   const bgColor = style?.bg_color ?? null;
   const bgOpacity = style?.bg_opacity ?? 0;

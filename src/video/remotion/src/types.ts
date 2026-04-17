@@ -19,6 +19,9 @@ export interface SubtitleStyle {
   position_y: number;
   bg_color: string | null;
   bg_opacity: number;
+  // QW-03: 외곽선 색/두께. 누락 시 검정 6px 기본값.
+  stroke_color?: string;
+  stroke_width?: number;
 }
 
 export interface TransitionConfig {

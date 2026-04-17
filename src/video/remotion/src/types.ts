@@ -8,7 +8,8 @@ export type TransitionType =
   | "slide-up"
   | "zoom"
   | "dissolve"
-  | "wipe";
+  | "wipe"
+  | "punch-zoom";
 
 export interface SubtitleStyle {
   font_family: string;

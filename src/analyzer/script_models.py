@@ -13,7 +13,9 @@ EmotionType = Literal["funny", "touching", "angry", "relatable"]
 SceneType = Literal["title", "body", "comment", "clip", "commentary"]
 Emphasis = Literal["high", "medium", "low"]
 VisualType = Literal["image", "video", "none"]
-TransitionType = Literal["fade", "slide-left", "slide-up", "zoom", "dissolve", "wipe"]
+TransitionType = Literal[
+    "fade", "slide-left", "slide-up", "zoom", "dissolve", "wipe", "punch-zoom",
+]
 
 
 @dataclass(frozen=True)

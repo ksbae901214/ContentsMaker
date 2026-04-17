@@ -115,6 +115,22 @@ function getTransitionStyle(
         )}% 0 0)`,
       };
 
+    case "punch-zoom":
+      // QW-06: 짧은 펀치 줌 — overshoot 후 정착 (정치 유튜브 §3.3 패턴)
+      // 0~3 frames: 0.92 → 1.05 (overshoot)
+      // 3~6 frames: 1.05 → 1.0 (settle)
+      return {
+        opacity: interpolate(frame, [0, 3], [0, 1], {
+          extrapolateRight: "clamp",
+        }),
+        transform: `scale(${interpolate(
+          frame,
+          [0, 3, 6],
+          [0.92, 1.05, 1.0],
+          { extrapolateRight: "clamp" }
+        )})`,
+      };
+
     default:
       return {
         opacity: interpolate(frame, [0, durationFrames], [0, 1], {

@@ -567,7 +567,7 @@ export default function Home() {
             fd.set("tts",natvUseTts?"on":"off");
             fd.set("bgm",bgm?"on":"off");
             fd.set("yt","off");fd.set("tt","off");
-            startAnalyze(fd);
+            generate(fd);
           }}
           disabled={!natvClipUrl.trim()}
           className={`w-full py-3 rounded-lg font-medium transition ${natvClipUrl.trim()?"bg-emerald-600 hover:bg-emerald-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>

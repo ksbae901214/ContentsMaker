@@ -604,10 +604,8 @@ print(json.dumps({"c":len(r),"cost":len(r)*0.005,"images":[{"scene_id":x["scene_
         }
 
         // ───── Common pipeline for BOTH video and manga modes ─────
-        // Previously TTS/render/upload lived only inside the manga-mode
-        // else branch, so the video mode produced clips but never
-        // rendered the final mp4. Hoisted out so both modes finish properly.
-        if (!dryRun) {
+        // Skipped for natv_clip and political, which have their own full pipelines above.
+        if (!dryRun && mode !== "natv_clip" && mode !== "political") {
           ttsResult = await withStage(
             "edge-tts 음성 + 씬 타이밍",
             30,

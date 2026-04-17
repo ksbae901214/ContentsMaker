@@ -256,10 +256,7 @@ transcript=parse_vtt_subtitles(vtt) if vtt else []
 print(json.dumps({"video":str(vp),"transcript":transcript,"sub_count":len(transcript),"natv_dir":str(natv_dir)}))`)));
             send("progress",{message:`✅ 다운로드 완료 (자막 ${dl.sub_count}줄)`});
 
-            // Step 2: Auto-select best clip + generate script from subtitle content.
-            // Also persist the filtered transcript so the scene-cut stage can
-            // align per-scene video to the ORIGINAL timestamps (prevents the
-            // proportional-cut mismatch between voice_text and on-screen speaker).
+            // Step 2: Auto-select best clip + generate script from subtitle content
             const dlTranscript = JSON.stringify(dl.transcript);
             a = await withStage("임팩트 구간 분석 + 스크립트 생성", 180, async () => JSON.parse(await py(`
 import sys,json,re;sys.path.insert(0,'${ROOT}')
@@ -272,13 +269,9 @@ start_sec,end_sec=select_best_clip(transcript,max_duration=55.0)
 clip_segs=[s for s in transcript if s["start"]>=start_sec-2 and s["end"]<=end_sec+2]
 clip_text=" ".join(s["text"] for s in clip_segs)
 clip_text=re.sub(r"(\\S+) \\1",r"\\1",clip_text)[:2000]
-natv_dir=Path(${JSON.stringify(dl.natv_dir)})
-natv_dir.mkdir(parents=True,exist_ok=True)
-transcript_path=natv_dir/"transcript.json"
-transcript_path.write_text(json.dumps(clip_segs,ensure_ascii=False),encoding="utf-8")
 ti=TopicInput(topic=clip_text,style="narration",tone=${JSON.stringify(natvTone)},details="NATV 국회방송 영상 내용 기반 — 실제 발언을 그대로 활용")
 s,sp=analyze_topic(ti)
-print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp),"natv_video":${JSON.stringify(dl.video)},"clip_start":start_sec,"clip_end":end_sec,"natv_dir":${JSON.stringify(dl.natv_dir)},"transcript_path":str(transcript_path)}))`)));
+print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp),"natv_video":${JSON.stringify(dl.video)},"clip_start":start_sec,"clip_end":end_sec,"natv_dir":${JSON.stringify(dl.natv_dir)}}))`)));
             send("progress",{message:`✅ "${a.title}" (${a.scenes}씬, 클립 ${a.clip_start?.toFixed(0)}~${a.clip_end?.toFixed(0)}초)`});
           } else {
             a = await withStage("Claude 분석 (쇼츠 스크립트 생성)", 180, async () => JSON.parse(await py(`
@@ -374,35 +367,28 @@ print(json.dumps({"audio_path":"","timings":timings}))`)));
             send("progress",{message:`✅ 씬 타이밍 계산 완료 (TTS 없음)`});
           }
 
-          // Cut NATV clip into per-scene 9:16 clips.
-          // Content-aware: fuzzy-match each scene's voice_text back to the
-          // original transcript so the on-screen footage matches what's being
-          // said. Falls back to proportional cut if no good match is found.
+          // Cut NATV clip into per-scene 9:16 clips
           const timingsJson2 = JSON.stringify(ttsResult!.timings);
           const sceneClips = await withStage(`NATV 씬 클립 분할 (9:16 변환, ${a.scenes}씬)`, 60, async () => JSON.parse(await py(`
 import sys,json,time;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.dem_shorts.editor.segment_cutter import cut_segment
-from src.dem_shorts.editor.transcript_aligner import align_scenes_to_transcript
-from src.analyzer.script_models import ShortsScript
 natv_video=Path(${JSON.stringify(a.natv_video)})
 natv_dir=Path(${JSON.stringify(a.natv_dir)})
 clip_start=${a.clip_start}
 clip_end=${a.clip_end}
-script=ShortsScript.load('''${a.sp}''')
-voice_by_id={sc.id:(sc.voice_text or "") for sc in script.scenes}
+clip_duration=clip_end-clip_start
 timings=[t for t in json.loads(r"""${timingsJson2}""") if t["scene_id"]!=-1]
-transcript_path=Path(${JSON.stringify(a.transcript_path || "")})
-transcript=json.loads(transcript_path.read_text(encoding="utf-8")) if transcript_path.name and transcript_path.exists() else []
-scenes_for_align=[{"scene_id":t["scene_id"],"voice_text":voice_by_id.get(t["scene_id"],""),"start_ms":t["start_ms"],"end_ms":t["end_ms"]} for t in timings]
-aligned=align_scenes_to_transcript(scenes=scenes_for_align,transcript=transcript,clip_start=clip_start,clip_end=clip_end)
+tts_total_ms=max(t["end_ms"] for t in timings)
 ts=int(time.time())
 clips=[]
-for a_scene in aligned:
-  sid=a_scene["scene_id"]
+for t in timings:
+  sid=t["scene_id"]
+  ns=clip_start+(t["start_ms"]/tts_total_ms)*clip_duration
+  ne=clip_start+(t["end_ms"]/tts_total_ms)*clip_duration
   out=natv_dir/f"scene_{ts}_{sid:02d}.mp4"
-  cut_segment(input_path=natv_video,output_path=out,start_sec=a_scene["start_sec"],end_sec=a_scene["end_sec"])
-  clips.append({"scene_id":sid,"video_path":str(out),"source":a_scene["source"]})
+  cut_segment(input_path=natv_video,output_path=out,start_sec=ns,end_sec=ne)
+  clips.append({"scene_id":sid,"video_path":str(out)})
 print(json.dumps(clips))`)));
           generatedVideos = sceneClips;
           vc = sceneClips.length;

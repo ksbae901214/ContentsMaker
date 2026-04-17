@@ -367,7 +367,7 @@ print(json.dumps({"audio_path":"","timings":timings}))`)));
           // Cut NATV clip into per-scene 9:16 clips
           const timingsJson2 = JSON.stringify(ttsResult!.timings);
           const sceneClips = await withStage(`NATV 씬 클립 분할 (9:16 변환, ${a.scenes}씬)`, 60, async () => JSON.parse(await py(`
-import sys,json;sys.path.insert(0,'${ROOT}')
+import sys,json,time;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.dem_shorts.editor.segment_cutter import cut_segment
 natv_video=Path(${JSON.stringify(a.natv_video)})
@@ -377,12 +377,13 @@ clip_end=${a.clip_end}
 clip_duration=clip_end-clip_start
 timings=[t for t in json.loads(r"""${timingsJson2}""") if t["scene_id"]!=-1]
 tts_total_ms=max(t["end_ms"] for t in timings)
+ts=int(time.time())
 clips=[]
 for t in timings:
   sid=t["scene_id"]
   ns=clip_start+(t["start_ms"]/tts_total_ms)*clip_duration
   ne=clip_start+(t["end_ms"]/tts_total_ms)*clip_duration
-  out=natv_dir/f"scene_{sid:02d}.mp4"
+  out=natv_dir/f"scene_{ts}_{sid:02d}.mp4"
   cut_segment(input_path=natv_video,output_path=out,start_sec=ns,end_sec=ne)
   clips.append({"scene_id":sid,"video_path":str(out)})
 print(json.dumps(clips))`)));

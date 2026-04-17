@@ -162,7 +162,7 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
       <div
         style={{
           opacity,
-          marginTop: 80,
+          marginTop: 180,
           padding: "16px 40px",
           background: "rgba(0,0,0,0.6)",
           borderRadius: 12,

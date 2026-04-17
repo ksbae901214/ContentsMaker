@@ -86,7 +86,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
   const fontFamily = style?.font_family ?? "Noto Sans KR, sans-serif";
   const textColor = style?.color ?? "#FFFFFF";
   const textShadow = style?.shadow ?? "3px 3px 8px rgba(0,0,0,0.7)";
-  const positionY = style?.position_y ?? 0.6;
+  const positionY = style?.position_y ?? 0.652;
   const bgColor = style?.bg_color ?? null;
   const bgOpacity = style?.bg_opacity ?? 0;
 

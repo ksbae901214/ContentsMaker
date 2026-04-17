@@ -302,3 +302,94 @@ class TestSceneVideos:
             output_dir=output_dir,
             use_bgm=False,
         )
+
+
+class TestAutoThumbnail:
+    """Phase 2: auto_thumbnail=True integration tests."""
+
+    @patch("src.video.renderer.generate_thumbnail_from_script")
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_auto_thumbnail_true_calls_generator(
+        self, mock_which, mock_run, mock_thumb, sample_script, tmp_data_dir
+    ):
+        """auto_thumbnail=True triggers generate_thumbnail_from_script after render."""
+        output_dir = tmp_data_dir / "outputs"
+
+        def side_effect(*args, **kwargs):
+            out_path = Path(args[0][5])
+            out_path.write_bytes(b"fake mp4")
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = side_effect
+        mock_thumb.return_value = output_dir / "fake.thumb.png"
+
+        render_video(sample_script, output_dir=output_dir, use_bgm=False, auto_thumbnail=True)
+
+        mock_thumb.assert_called_once()
+        call_args = mock_thumb.call_args[0]
+        assert call_args[0].metadata.title == sample_script.metadata.title
+
+    @patch("src.video.renderer.generate_thumbnail_from_script")
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_auto_thumbnail_false_skips_generator(
+        self, mock_which, mock_run, mock_thumb, sample_script, tmp_data_dir
+    ):
+        """auto_thumbnail=False must NOT call generate_thumbnail_from_script."""
+        output_dir = tmp_data_dir / "outputs"
+
+        def side_effect(*args, **kwargs):
+            out_path = Path(args[0][5])
+            out_path.write_bytes(b"fake mp4")
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = side_effect
+
+        render_video(sample_script, output_dir=output_dir, use_bgm=False, auto_thumbnail=False)
+
+        mock_thumb.assert_not_called()
+
+    @patch("src.video.renderer.generate_thumbnail_from_script", side_effect=RuntimeError("ffmpeg gone"))
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_thumbnail_failure_does_not_fail_render(
+        self, mock_which, mock_run, mock_thumb, sample_script, tmp_data_dir
+    ):
+        """Thumbnail generation failure must be non-fatal — render still returns the MP4."""
+        output_dir = tmp_data_dir / "outputs"
+
+        def side_effect(*args, **kwargs):
+            out_path = Path(args[0][5])
+            out_path.write_bytes(b"fake mp4")
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = side_effect
+
+        result = render_video(
+            sample_script, output_dir=output_dir, use_bgm=False, auto_thumbnail=True
+        )
+
+        assert result.exists()
+        assert result.suffix == ".mp4"
+
+    @patch("src.video.renderer.generate_thumbnail_from_script")
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_auto_thumbnail_default_is_true(
+        self, mock_which, mock_run, mock_thumb, sample_script, tmp_data_dir
+    ):
+        """Default behaviour: auto_thumbnail=True, so thumbnail is generated."""
+        output_dir = tmp_data_dir / "outputs"
+
+        def side_effect(*args, **kwargs):
+            out_path = Path(args[0][5])
+            out_path.write_bytes(b"fake mp4")
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = side_effect
+        mock_thumb.return_value = output_dir / "fake.thumb.png"
+
+        render_video(sample_script, output_dir=output_dir, use_bgm=False)
+
+        mock_thumb.assert_called_once()

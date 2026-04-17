@@ -46,10 +46,10 @@
 - [x] 코드 진단 + 옵션 확정 (A/Pretendard+100px/opt-in/로컬만)
 - [x] Phase 1 TDD RED (19 tests)
 - [x] Phase 1 GREEN (19/19 passed, 835 total)
-- [ ] Phase 2 renderer 통합
-- [ ] Phase 3 폰트 자산
-- [ ] Phase 4 UI/CLI
-- [ ] Phase 5 시각 검증
+- [x] Phase 2 renderer 통합 (auto_thumbnail=True 플래그 + 4 TDD 테스트)
+- [x] Phase 3 폰트 자산 (Pretendard-ExtraBold.otf 1.5MB, SIL OFL)
+- [x] Phase 4 UI/CLI (thumbnailPath done 이벤트 + 미리보기 + 다운로드 버튼)
+- [x] Phase 5 시각 검증 (5개 영상 1280×720 썸네일, Pretendard 렌더 확인)
 - [ ] 커밋 + 푸시
 
 ---

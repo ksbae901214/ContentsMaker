@@ -330,6 +330,7 @@ print(json.dumps({"scenes":s["scenes"]}))`));
         let generatedImages: {scene_id:number,image_path:string}[] = [];
         let generatedVideos: {scene_id:number,video_path:string}[] = [];
         let videoPath = "";
+        let thumbnailPath = "";
         let ttsResult: {audio_path:string,timings:any[]}|null = null;
 
         if (dryRun) {
@@ -338,7 +339,9 @@ print(json.dumps({"scenes":s["scenes"]}))`));
           send("progress",{message:"🎬 [드라이런] 렌더링 스킵"});
         } else if (mode === "natv_clip" && a.natv_video && a.clip_start !== undefined) {
           // ── NATV 클립 모드: TTS(optional) + 씬 클립 분할 + 렌더 ──
-          const natvUseTts = (fd.get("tts") as string) !== "off";
+          // 쇼츠 디폴트는 TTS off — 원본 발언 + BGM/SFX 만으로 임팩트 살림.
+          // 사용자가 명시적으로 "on" 보낼 때만 TTS 활성화.
+          const natvUseTts = (fd.get("tts") as string) === "on";
 
           if (natvUseTts) {
             ttsResult = await withStage("edge-tts 음성 + 씬 타이밍", 30, async () => JSON.parse(await py(`
@@ -405,9 +408,11 @@ s=ShortsScript.load('''${a.sp}''')
 sv=json.loads(r"""${vidJson0}""") or None
 timings=json.loads(r"""${timingsJson3}""")
 o=render_video(s,audio_path=${audioArg},scene_videos=sv,use_bgm=${useBgm?"True":"False"},scene_timings=timings)
-print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`)));
+t=o.parent/(o.stem+".thumb.png")
+print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))`)));
           send("progress",{message:`✅ 렌더링 완료 (${rr0.size}MB)`});
           videoPath = rr0.path;
+          thumbnailPath = rr0.thumbnailPath || "";
         } else if (mode === "political" && a.clip && a.clip_audio) {
           // ── Political mode: audio stitching + scene clip extraction ──
           const polStitch = await withStage("오디오 스티칭 (원본+TTS)", 60, async () => JSON.parse(await py(`
@@ -449,9 +454,11 @@ ap=Path('''${ttsResult!.audio_path}''')
 sv=json.loads('''${vidJson}''') if '''${vidJson}'''!='[]' else None
 timings=json.loads('''${timingsJson}''')
 o=render_video(s,audio_path=ap,scene_videos=sv,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings)
-print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`)));
+t=o.parent/(o.stem+".thumb.png")
+print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))`)));
           send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
           videoPath = rr.path;
+          thumbnailPath = rr.thumbnailPath || "";
         } else if (visualMode === "video") {
           // AI Video clip mode — provider selectable
           const videoProvider = (fd.get("videoProvider") as string) || "seedance";
@@ -636,10 +643,12 @@ si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
 sv=json.loads('''${vidJson}''') if '''${vidJson}'''!='[]' else None
 timings=json.loads('''${timingsJson}''')
 o=render_video(s,audio_path=ap,scene_images=si,scene_videos=sv,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings)
-print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`))
+t=o.parent/(o.stem+".thumb.png")
+print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))`))
           );
           send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
           videoPath = rr.path;
+          thumbnailPath = rr.thumbnailPath || "";
 
           if (useYt) {
             try {
@@ -702,7 +711,7 @@ print(json.dumps({"scenes":s["scenes"]}))`));
           return sc;
         })};
 
-        send("done",{result:{videoPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,videoCount:vc,cost,visualMode,imageStyle,sourceType:mode==="topic"?"topic":"blind",summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,audioPath:ttsResult?.audio_path||"",sceneImages:generatedImages,sceneVideos:generatedVideos,scenes:scriptData.scenes,dryRun}});
+        send("done",{result:{videoPath,thumbnailPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,videoCount:vc,cost,visualMode,imageStyle,sourceType:mode==="topic"?"topic":"blind",summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,audioPath:ttsResult?.audio_path||"",sceneImages:generatedImages,sceneVideos:generatedVideos,scenes:scriptData.scenes,dryRun}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

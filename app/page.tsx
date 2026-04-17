@@ -6,7 +6,7 @@ import { ScriptReviewer } from "./components/ScriptReviewer";
 type Status = "idle" | "processing" | "reviewing" | "done" | "error";
 interface SceneImage { scene_id: number; image_path: string; prompt: string; }
 interface SceneData { id: number; timestamp: number; duration: number; type: string; text: string; voice_text: string; emphasis: string; }
-interface JobResult { videoPath: string; title: string; emotion: string; duration: number; imageCount: number; videoCount?: number; cost: number; visualMode?: string; imageStyle?: string; sourceType?: string; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; scriptPath?: string; audioPath?: string; sceneImages?: SceneImage[]; sceneVideos?: {scene_id:number;video_path:string}[]; scenes?: SceneData[]; dryRun?: boolean; }
+interface JobResult { videoPath: string; thumbnailPath?: string; title: string; emotion: string; duration: number; imageCount: number; videoCount?: number; cost: number; visualMode?: string; imageStyle?: string; sourceType?: string; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; scriptPath?: string; audioPath?: string; sceneImages?: SceneImage[]; sceneVideos?: {scene_id:number;video_path:string}[]; scenes?: SceneData[]; dryRun?: boolean; }
 // Phase 1 (analyze-only) result held during the reviewing state.
 interface ReviewPayload {
   phase: "analyzed";
@@ -23,7 +23,7 @@ const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 �
 export default function Home() {
   const [tab, setTab] = useState<"image"|"manual"|"url"|"topic"|"political"|"natv_clip">("image");
   const [natvClipUrl, setNavtClipUrl] = useState("");
-  const [natvUseTts, setNavtUseTts] = useState(true);
+  const [natvUseTts, setNavtUseTts] = useState(false);
   const [natvTone, setNavtTone] = useState<"angry"|"funny"|"touching"|"relatable">("angry");
   const [topicText, setTopicText] = useState("");
   const [contentStyle, setContentStyle] = useState<"narration"|"skit"|"review">("narration");
@@ -326,8 +326,26 @@ export default function Home() {
             <p className="text-sm text-blue-400 leading-relaxed select-all cursor-pointer">{result.hashtags}</p>
           </div>
         )}
+        {result.thumbnailPath && (
+          <div className="mb-4">
+            <p className="text-xs text-gray-400 mb-1">썸네일 미리보기 (1280×720)</p>
+            <img
+              src={`/api/download?path=${encodeURIComponent(result.thumbnailPath)}`}
+              alt="thumbnail"
+              className="w-full rounded-lg border border-gray-700"
+              style={{maxHeight: "200px", objectFit: "cover"}}
+            />
+          </div>
+        )}
         <div className="flex gap-3">
           {result.videoPath && <a href={url} download className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium text-center transition">⬇️ 다운로드</a>}
+          {result.thumbnailPath && (
+            <a
+              href={`/api/download?path=${encodeURIComponent(result.thumbnailPath)}`}
+              download
+              className="py-3 px-4 bg-yellow-600 hover:bg-yellow-500 rounded-lg font-medium text-center transition"
+            >🖼️ 썸네일</a>
+          )}
           {result.scriptPath && (
             <button
               onClick={async () => {

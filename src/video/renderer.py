@@ -14,6 +14,7 @@ from pathlib import Path
 
 from src.analyzer.script_models import ShortsScript
 from src.config.settings import DATA_AUDIO_DIR, PROJECT_ROOT
+from src.upload.thumbnail_generator import generate_thumbnail_from_script
 from src.video.bgm_matcher import find_hook_scene, intro_bgm_for_emotion
 from src.video.sfx_matcher import auto_assign_sfx
 from src.video.transition_matcher import auto_assign_transitions
@@ -39,6 +40,7 @@ def render_video(
     scene_timings: list[dict] | None = None,
     auto_sfx: bool = True,
     auto_transition: bool = True,
+    auto_thumbnail: bool = True,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
@@ -263,6 +265,13 @@ def render_video(
 
     file_size_mb = output_path.stat().st_size / (1024 * 1024)
     logger.info("렌더링 완료: %s (%.1f MB)", output_path, file_size_mb)
+
+    if auto_thumbnail:
+        try:
+            thumb = generate_thumbnail_from_script(script, output_path, target_dir)
+            logger.info("썸네일 생성 완료: %s", thumb)
+        except Exception as exc:
+            logger.warning("썸네일 생성 실패 (비치명적): %s", exc)
 
     return output_path
 

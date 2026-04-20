@@ -417,7 +417,7 @@ python3 -m src.main deevid_login
 
 ---
 
-## Phase 9: 유명인 소개 쇼츠 📋 계획 완료, 미착수
+## Phase 9: 유명인 소개 쇼츠 🚧 진행 중 (9-1, 9-2, 9-3 완료)
 
 **브랜치 예정**: `007-celebrity-shorts`
 **참고**: YouTube @구독좋아요-x4h 채널 포맷
@@ -440,39 +440,29 @@ python3 -m src.main deevid_login
 | MEDIUM | Freepik 세션 만료 | 기존 `freepik_login` 커맨드로 재로그인 |
 | MEDIUM | 인물별 사진 < 3장 | 최소 3씬으로 자동 축소 |
 
-### 9-1. 나무위키 스크래퍼 📋
+### 9-1. 나무위키 스크래퍼 ✅
 
-- [ ] `src/scraper/celebrity_models.py` 신규 — `CelebrityInfo` frozen dataclass (name, summary, birth_date, profession, career_highlights[], trivia[], source_url)
-- [ ] `src/scraper/namuwiki_scraper.py` 신규 — `fetch_person(name) -> CelebrityInfo`
-  - 요청 엔드포인트: `https://namu.wiki/w/{urlencode(name)}`
-  - BeautifulSoup 섹션 파싱
-  - 레이트리밋(1 req/2s), User-Agent 정상화
-  - `data/cache/namuwiki/` JSON 캐싱
-- [ ] `tests/test_namuwiki_scraper.py` 신규 — 3명 fixture + 캐시 히트 테스트
+- [x] `src/scraper/celebrity_models.py` — `CelebrityInfo` frozen dataclass (HTTPS + namu.wiki 도메인 검증)
+- [x] `src/scraper/namuwiki_scraper.py` — `fetch_person(name)` (rate limit + UA + 캐시 + httpx transport 주입)
+- [x] `tests/test_celebrity_models.py` — 12개 pass
+- [x] `tests/test_namuwiki_scraper.py` — 9개 pass (httpx MockTransport)
+- [x] `requirements.txt`에 `beautifulsoup4` 추가
 
-**의존성**: `beautifulsoup4`, `httpx` (requirements.txt 확인)
+### 9-2. 네이버 이미지 검색 ✅
 
-### 9-2. 네이버 이미지 검색 📋
+- [x] `src/illustrator/naver_image_search.py` — `NaverImageSearcher.search()` + `.download()` (metadata.json 동반 저장, 깨진 링크 skip)
+- [x] `tests/test_naver_image_search.py` — 11개 pass (검색/인증/에러/다운로드/메타)
+- [ ] `.env.local.example` 업데이트 (후속) — `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`
 
-- [ ] `src/illustrator/naver_image_search.py` 신규 — `search_person_images(name, count=5) -> list[dict]`
-  - 엔드포인트: `https://openapi.naver.com/v1/search/image?query={name}&display={count}&sort=sim`
-  - 헤더: `X-Naver-Client-Id`, `X-Naver-Client-Secret`
-  - 다운로드 → `data/images/celebrity/{timestamp}_{name}/`
-  - 메타(source_url, site, size) JSON 동반 저장
-- [ ] `.env.local.example` 업데이트 — `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`
-- [ ] `tests/test_naver_image_search.py` 신규 — httpx mock
+**비용**: 무료 (일 25,000 쿼리). 실제 호출은 키 발급 후 E2E로 검증.
 
-**비용**: 무료 (일 25,000 쿼리)
+### 9-3. 유명인 대본 생성기 ✅
 
-### 9-3. 유명인 대본 생성기 📋
-
-- [ ] `src/analyzer/celebrity_prompt.py` 신규 — Claude 프롬프트 템플릿
-  - 규칙: "제공된 나무위키 본문에 없는 사실은 절대 추가하지 말 것"
-  - 4가지 감정 톤 자동 선택 (funny/touching/angry/relatable)
-  - 엔딩 씬 자막: "출처: 나무위키" 고정
-- [ ] `src/analyzer/celebrity_analyzer.py` 신규 — `analyze_celebrity(info: CelebrityInfo) -> tuple[ShortsScript, Path]`
-  - `claude_analyzer.py`의 `_parse_response()`, `_apply_voice_config()` 재사용
-- [ ] `src/analyzer/script_models.py` 수정 — `Metadata.source_type` 리터럴에 `"celebrity"` 추가 (`blind | topic | political | celebrity`)
+- [x] `src/analyzer/celebrity_prompt.py` — 팩트 제한 + verbatim 금지 + 출처 의무 + 4톤 자동 선택
+- [x] `src/analyzer/celebrity_analyzer.py` — `analyze_celebrity()` (source_type/source_url 강제 덮어쓰기)
+- [x] `src/analyzer/script_models.py` — `SourceType` 리터럴에 `"celebrity"` 추가
+- [x] `tests/test_celebrity_prompt.py` — 7개 pass
+- [x] `tests/test_celebrity_analyzer.py` — 7개 pass (Claude subprocess mock)
 
 **Scene 구성 (30-40초 총합)**:
 - `title` 1씬 (5초) — 인물명 + 한 줄 소개

@@ -176,7 +176,7 @@ class Scene:
         )
 
 
-SourceType = Literal["blind", "topic", "political"]
+SourceType = Literal["blind", "topic", "political", "celebrity"]
 
 
 @dataclass(frozen=True)

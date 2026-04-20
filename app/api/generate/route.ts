@@ -244,20 +244,33 @@ print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"du
             const ytUrl = fd.get("youtubeUrl") as string;
             const natvTone = (fd.get("tone") as string) || "angry";
 
-            // Step 1: Download video + Korean subtitles
-            const dl = await withStage("NATV 영상 다운로드", 120, async () => JSON.parse(await py(`
+            // Step 1: Download video + transcript (VTT 우선, 없으면 Whisper STT 폴백)
+            // 환각 방지 bugfix (2026-04-20): 과거엔 자막 없을 때 빈 transcript로
+            // analyze_topic(topic="")을 호출 → Claude가 details 힌트만 보고 엉뚱한
+            // 내용 생성. transcribe_video_or_fallback이 Whisper로 안전 폴백하고,
+            // 그마저 실패하면 TranscriptUnavailableError로 명시 실패.
+            const dl = await withStage("NATV 영상 다운로드 + 자막/STT 확보", 900, async () => JSON.parse(await py(`
 import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.config.settings import DATA_DIR
-from src.scraper.youtube_downloader import download_video,download_subtitles,parse_vtt_subtitles
+from src.scraper.youtube_downloader import (
+  download_video, transcribe_video_or_fallback, TranscriptUnavailableError,
+)
 natv_dir=DATA_DIR/"natv_clips"
 natv_dir.mkdir(parents=True,exist_ok=True)
 url=${JSON.stringify(ytUrl)}
 vp=download_video(url,natv_dir)
-vtt=download_subtitles(url,natv_dir)
-transcript=parse_vtt_subtitles(vtt) if vtt else []
-print(json.dumps({"video":str(vp),"transcript":transcript,"sub_count":len(transcript),"natv_dir":str(natv_dir)}))`)));
-            send("progress",{message:`✅ 다운로드 완료 (자막 ${dl.sub_count}줄)`});
+try:
+  transcript = transcribe_video_or_fallback(url=url, video_path=vp, out_dir=natv_dir)
+  print(json.dumps({"video":str(vp),"transcript":transcript,"sub_count":len(transcript),"natv_dir":str(natv_dir)}))
+except TranscriptUnavailableError as exc:
+  print(json.dumps({"error":"transcript_unavailable","detail":str(exc)[:300]}))`)));
+            if ((dl as any).error === "transcript_unavailable") {
+              send("error", {message: `자막/STT 확보 실패: ${(dl as any).detail}`});
+              ctrl.close();
+              return;
+            }
+            send("progress",{message:`✅ 다운로드 완료 (transcript ${dl.sub_count}줄)`});
 
             // Step 2: Auto-select best clip + generate script from subtitle content
             const dlTranscript = JSON.stringify(dl.transcript);
@@ -272,9 +285,19 @@ start_sec,end_sec=select_best_clip(transcript,max_duration=55.0)
 clip_segs=[s for s in transcript if s["start"]>=start_sec-2 and s["end"]<=end_sec+2]
 clip_text=" ".join(s["text"] for s in clip_segs)
 clip_text=re.sub(r"(\\S+) \\1",r"\\1",clip_text)[:2000]
-ti=TopicInput(topic=clip_text,style="narration",tone=${JSON.stringify(natvTone)},details="NATV 국회방송 영상 내용 기반 — 실제 발언을 그대로 활용")
-s,sp=analyze_topic(ti)
-print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp),"natv_video":${JSON.stringify(dl.video)},"clip_start":start_sec,"clip_end":end_sec,"natv_dir":${JSON.stringify(dl.natv_dir)}}))`)));
+# 환각 방지 (bugfix 2026-04-20): 발췌된 clip_text가 비어 있으면 analyze_topic은
+# details 힌트만 보고 환각 컨텐츠를 생성하므로 명시적으로 차단한다.
+if not clip_text.strip():
+  print(json.dumps({"error":"empty_clip_text","detail":"NATV 영상에서 의미 있는 발언 구간을 찾지 못했습니다. 자막 품질이 낮거나 무음 구간일 수 있습니다."}))
+else:
+  ti=TopicInput(topic=clip_text,style="narration",tone=${JSON.stringify(natvTone)},details="NATV 국회방송 영상 내용 기반 — 실제 발언을 그대로 활용")
+  s,sp=analyze_topic(ti)
+  print(json.dumps({"title":s.metadata.title,"emotion":s.metadata.emotion_type,"duration":s.metadata.duration,"scenes":len(s.scenes),"sp":str(sp),"natv_video":${JSON.stringify(dl.video)},"clip_start":start_sec,"clip_end":end_sec,"natv_dir":${JSON.stringify(dl.natv_dir)}}))`)));
+            if ((a as any).error === "empty_clip_text") {
+              send("error", {message: `NATV 클립 생성 실패: ${(a as any).detail}`});
+              ctrl.close();
+              return;
+            }
             send("progress",{message:`✅ "${a.title}" (${a.scenes}씬, 클립 ${a.clip_start?.toFixed(0)}~${a.clip_end?.toFixed(0)}초)`});
           } else {
             a = await withStage("Claude 분석 (쇼츠 스크립트 생성)", 180, async () => JSON.parse(await py(`

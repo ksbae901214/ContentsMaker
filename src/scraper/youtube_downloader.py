@@ -13,6 +13,10 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
+class TranscriptUnavailableError(Exception):
+    """VTT·Whisper STT 모두 실패하거나 영상이 없을 때 — 환각 방지용 fail-loud 신호."""
+
+
 class YouTubeDownloadError(Exception):
     """Raised when YouTube download or processing fails."""
 
@@ -251,3 +255,79 @@ def extract_scene_clips(
 
     logger.info("씬 클립 추출 완료: %d/%d", len(results), sum(1 for s in scenes if s.type == "clip"))
     return results
+
+
+# ── Transcript fallback (VTT → Whisper STT) ──────────────────────────────
+# 버그: 자막 없는 NATV 영상에서 빈 transcript로 analyze_topic을 호출해 Claude가
+# 환각을 일으키는 문제 수정 (2026-04-20). 자막이 없으면 Whisper STT로 폴백하고,
+# 둘 다 실패 시 TranscriptUnavailableError로 명시적으로 실패한다.
+
+
+def _whisper_transcribe(video_path: Path, *, model_name: str = "large-v3") -> list[dict]:
+    """Whisper 로컬 STT. 실패 시 예외 전파.
+
+    Returns: [{"start": float, "end": float, "text": str}, ...]
+    """
+    import whisper  # type: ignore
+
+    model = whisper.load_model(model_name)
+    result = model.transcribe(str(video_path), language="ko", verbose=False)
+    segments = []
+    for seg in result.get("segments", []):
+        text = (seg.get("text") or "").strip()
+        if not text:
+            continue
+        segments.append({
+            "start": float(seg["start"]),
+            "end": float(seg["end"]),
+            "text": text,
+        })
+    return segments
+
+
+def transcribe_video_or_fallback(
+    *,
+    url: str,
+    video_path: Path,
+    out_dir: Path,
+    lang: str = "ko",
+) -> list[dict]:
+    """NATV 영상 transcript 확보 — VTT 우선, 실패 시 Whisper STT 폴백.
+
+    환각 방지 (bugfix 2026-04-20):
+      1) yt-dlp로 한국어 자막 VTT 다운로드 시도
+      2) VTT 없거나 비어 있으면 Whisper STT로 대체 (무거움, 수 분 소요)
+      3) Whisper마저 실패하면 `TranscriptUnavailableError` 발생 → 상위에서 사용자 안내
+
+    Raises:
+        TranscriptUnavailableError: 영상 파일 없음, 자막/STT 모두 실패, 결과 비어 있음.
+    """
+    if not video_path.exists():
+        raise TranscriptUnavailableError(
+            f"video_not_found: {video_path} — 영상 다운로드가 먼저 완료되어야 합니다."
+        )
+
+    vtt = download_subtitles(url, out_dir, lang=lang)
+    if vtt is not None:
+        transcript = parse_vtt_subtitles(vtt)
+        if transcript:
+            logger.info("VTT 자막 %d세그먼트 확보", len(transcript))
+            return transcript
+        logger.warning("VTT 파싱 결과가 비어 Whisper STT 폴백을 시도합니다.")
+
+    logger.info("자막 없음 — Whisper STT 폴백 (%s)", video_path.name)
+    try:
+        result = _whisper_transcribe(video_path)
+    except Exception as exc:
+        raise TranscriptUnavailableError(
+            f"자막 없음 + Whisper STT 실패: {exc}. "
+            "수동으로 대본을 입력하거나 자막이 있는 영상을 사용하세요."
+        ) from exc
+
+    if not result:
+        raise TranscriptUnavailableError(
+            "자막·Whisper 모두 비어 transcript 확보 실패. "
+            "음질이 낮거나 무음 영상일 수 있습니다."
+        )
+    logger.info("Whisper STT %d세그먼트 확보", len(result))
+    return result

@@ -591,10 +591,11 @@ export default function Home() {
           <input type="checkbox" checked={natvUseTts} onChange={e=>setNavtUseTts(e.target.checked)} className="w-5 h-5 rounded"/>
           <span className="text-sm text-gray-300">🎙️ TTS 음성 추가 (끄면 BGM만)</span>
         </label>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
-          <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
-        </label>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+        </div>
         <button
           onClick={()=>{
             if(!natvClipUrl.trim())return;
@@ -604,6 +605,8 @@ export default function Home() {
             fd.set("tone",natvTone);
             fd.set("tts",natvUseTts?"on":"off");
             fd.set("bgm",bgm?"on":"off");
+            fd.set("transitions",transitions?"on":"off");
+            fd.set("sfx",sfx?"on":"off");
             fd.set("yt","off");fd.set("tt","off");
             generate(fd);
           }}

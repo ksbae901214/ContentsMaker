@@ -2,7 +2,7 @@
 
 > 블라인드 인기글을 만화 스타일 YouTube Shorts 영상으로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-04-02
+**마지막 업데이트**: 2026-04-20
 
 ---
 
@@ -414,3 +414,152 @@ python3 -m src.main deevid_login
 | touching | #6A5ACD → #9370DB → #DDA0DD |
 | angry | #DC143C → #8B0000 → #B22222 |
 | relatable | #4169E1 → #1E90FF → #87CEEB |
+
+---
+
+## Phase 9: 유명인 소개 쇼츠 📋 계획 완료, 미착수
+
+**브랜치 예정**: `007-celebrity-shorts`
+**참고**: YouTube @구독좋아요-x4h 채널 포맷
+**용도**: **학습/개인 목적 전용** (상업 이용 금지)
+
+### 개요
+
+인물 이름 한 개 입력 → 자동 파이프라인으로 유명인 소개 쇼츠 생성.
+
+**플로우**: 이름 → 나무위키 정보 수집 → Claude 대본 작성(4가지 톤 재활용) → 네이버 이미지 검색 → Freepik image-to-video → TTS → Remotion 렌더링 → MP4
+
+### ⚠️ 리스크 & 대응
+
+| 등급 | 이슈 | 대응 |
+|---|---|---|
+| CRITICAL | 네이버 이미지 검색 결과 = 타 사이트 소유 이미지 (초상권/저작권) | ① 영상 엔딩에 출처 자막 강제 ② **YouTube/TikTok 업로드 UI 비활성화** ③ `data/outputs/celebrity/` 로 별도 저장 |
+| CRITICAL | 나무위키 CC BY-NC-SA 3.0 (비상업) | ① 원문 직접 나레이션 금지 (Claude 재구성 강제) ② "출처: 나무위키" 자막 하드코딩 |
+| HIGH | 나무위키 IP 차단 | 1 req/2s 레이트리밋 + UA 정상화 + `data/cache/namuwiki/` 캐싱 |
+| HIGH | Claude 할루시네이션 | "제공된 본문에 없으면 생략" 프롬프트 강제 |
+| MEDIUM | Freepik 세션 만료 | 기존 `freepik_login` 커맨드로 재로그인 |
+| MEDIUM | 인물별 사진 < 3장 | 최소 3씬으로 자동 축소 |
+
+### 9-1. 나무위키 스크래퍼 📋
+
+- [ ] `src/scraper/celebrity_models.py` 신규 — `CelebrityInfo` frozen dataclass (name, summary, birth_date, profession, career_highlights[], trivia[], source_url)
+- [ ] `src/scraper/namuwiki_scraper.py` 신규 — `fetch_person(name) -> CelebrityInfo`
+  - 요청 엔드포인트: `https://namu.wiki/w/{urlencode(name)}`
+  - BeautifulSoup 섹션 파싱
+  - 레이트리밋(1 req/2s), User-Agent 정상화
+  - `data/cache/namuwiki/` JSON 캐싱
+- [ ] `tests/test_namuwiki_scraper.py` 신규 — 3명 fixture + 캐시 히트 테스트
+
+**의존성**: `beautifulsoup4`, `httpx` (requirements.txt 확인)
+
+### 9-2. 네이버 이미지 검색 📋
+
+- [ ] `src/illustrator/naver_image_search.py` 신규 — `search_person_images(name, count=5) -> list[dict]`
+  - 엔드포인트: `https://openapi.naver.com/v1/search/image?query={name}&display={count}&sort=sim`
+  - 헤더: `X-Naver-Client-Id`, `X-Naver-Client-Secret`
+  - 다운로드 → `data/images/celebrity/{timestamp}_{name}/`
+  - 메타(source_url, site, size) JSON 동반 저장
+- [ ] `.env.local.example` 업데이트 — `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`
+- [ ] `tests/test_naver_image_search.py` 신규 — httpx mock
+
+**비용**: 무료 (일 25,000 쿼리)
+
+### 9-3. 유명인 대본 생성기 📋
+
+- [ ] `src/analyzer/celebrity_prompt.py` 신규 — Claude 프롬프트 템플릿
+  - 규칙: "제공된 나무위키 본문에 없는 사실은 절대 추가하지 말 것"
+  - 4가지 감정 톤 자동 선택 (funny/touching/angry/relatable)
+  - 엔딩 씬 자막: "출처: 나무위키" 고정
+- [ ] `src/analyzer/celebrity_analyzer.py` 신규 — `analyze_celebrity(info: CelebrityInfo) -> tuple[ShortsScript, Path]`
+  - `claude_analyzer.py`의 `_parse_response()`, `_apply_voice_config()` 재사용
+- [ ] `src/analyzer/script_models.py` 수정 — `Metadata.source_type` 리터럴에 `"celebrity"` 추가 (`blind | topic | political | celebrity`)
+
+**Scene 구성 (30-40초 총합)**:
+- `title` 1씬 (5초) — 인물명 + 한 줄 소개
+- `body` 4-5씬 (각 5초) — 핵심 일화/업적
+- `comment` 1씬 (5초) — 마무리 + "출처: 나무위키"
+
+`MAX_SCENE_DURATION_SECONDS=5.0` 제약 준수
+
+### 9-4. Freepik image-to-video 통합 📋
+
+**기존 재활용 (별도 Remotion 작업 없음)**:
+- `src/video_gen/freepik_gen.py` — `generate(prompt, source_image=...)` 인터페이스
+- `src/video_gen/factory.py::create_generator("freepik")` 사용
+- `python3 -m src.main freepik_login` (기존 커맨드) 로 선 로그인
+
+**신규**:
+- [ ] `src/video_gen/celebrity_motion.py` — 인물 전용 모션 프롬프트 빌더 ("subtle camera push-in, gentle parallax, no face distortion")
+
+**플로우**: 네이버 PNG → Freepik 브라우저 자동화 → 5초 MP4 클립 → 기존 `scene_videos` 파이프라인에 연결
+
+### 9-5. CLI 통합 📋
+
+- [ ] `src/main.py` 수정 — `cmd_celebrity(args)` 추가 (기존 `cmd_topic` 패턴 미러링)
+  - 커맨드: `python3 -m src.main celebrity "손흥민"`
+  - 옵션: `--no-video` (사진만 사용, Freepik 스킵)
+
+### 9-6. Next.js UI 통합 📋
+
+- [ ] `app/page.tsx` 수정 — 탭 유니언에 `"celebrity"` 추가 (5번째 탭)
+  - 단순 텍스트 입력 (이름 1줄) + 생성 버튼
+  - **학습 목적 안내 배너** 필수
+- [ ] `app/api/generate/route.ts` 수정 — `mode === "celebrity"` 분기
+  - `src.main celebrity {name}` 서브프로세스 호출
+- [ ] **업로드 토글 비활성화**: 유명인 탭 선택 시 `ytUpload`/`ttUpload` 체크박스 disable + 툴팁 "학습 목적 전용"
+
+### 9-7. 테스트 & 문서 📋
+
+- [ ] pytest: 신규 3개 모듈 (모킹 기반, 커버리지 80%+)
+- [ ] `CLAUDE.md` — Input Modes 표에 `celebrity` 행 추가
+- [ ] `README.md` — 사용법 섹션 추가 + **법적 고지** 명시
+
+### 의존성 요약
+
+| 종류 | 항목 | 비용 |
+|---|---|---|
+| Python pkg | `beautifulsoup4`, `httpx` | 무료 |
+| API | 네이버 검색 API | 무료 (25,000/일) |
+| API | Claude CLI | 기존 |
+| API | Freepik (브라우저 자동화) | 기존 |
+
+### 예상 복잡도: MEDIUM-HIGH (17-22시간, 약 3일)
+
+| 단계 | 시간 |
+|---|---|
+| 9-1 나무위키 | 4-5h |
+| 9-2 네이버 | 2-3h |
+| 9-3 대본 생성기 | 3-4h |
+| 9-4 Freepik 통합 | 2-3h |
+| 9-5 CLI | 1-2h |
+| 9-6 UI | 2-3h |
+| 9-7 테스트 & 문서 | 3h |
+
+### 구현 순서
+
+```
+9-1 (나무위키) → 9-3 (대본) → 9-2 (네이버) → 9-4 (Freepik) → 9-5 (CLI) → 9-6 (UI) → 9-7 (테스트+문서)
+```
+
+텍스트 파이프라인(9-1→9-3)을 먼저 검증한 후 시각 파이프라인(9-2→9-4)을 붙이고, 마지막에 UI/테스트로 마무리.
+
+### 신규/수정 파일 요약
+
+| 파일 | 상태 |
+|---|---|
+| `src/scraper/namuwiki_scraper.py` | **신규** |
+| `src/scraper/celebrity_models.py` | **신규** |
+| `src/illustrator/naver_image_search.py` | **신규** |
+| `src/analyzer/celebrity_analyzer.py` | **신규** |
+| `src/analyzer/celebrity_prompt.py` | **신규** |
+| `src/video_gen/celebrity_motion.py` | **신규** |
+| `src/analyzer/script_models.py` | source_type 리터럴 확장 |
+| `src/main.py` | cmd_celebrity 추가 |
+| `app/page.tsx` | 5번째 탭, 업로드 비활성화 |
+| `app/api/generate/route.ts` | celebrity 모드 분기 |
+| `.env.local.example` | NAVER_* 키 추가 |
+| `CLAUDE.md` | Input Modes 표 갱신 |
+| `README.md` | 사용법 + 법적 고지 |
+| `tests/test_namuwiki_scraper.py` | **신규** |
+| `tests/test_naver_image_search.py` | **신규** |
+| `tests/test_celebrity_analyzer.py` | **신규** |

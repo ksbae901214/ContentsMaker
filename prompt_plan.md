@@ -2,7 +2,7 @@
 
 > 블라인드 인기글을 만화 스타일 YouTube Shorts 영상으로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-04-20
+**마지막 업데이트**: 2026-04-21
 
 ---
 
@@ -417,7 +417,7 @@ python3 -m src.main deevid_login
 
 ---
 
-## Phase 9: 유명인 소개 쇼츠 🚧 진행 중 (9-1, 9-2, 9-3 완료)
+## Phase 9: 유명인 소개 쇼츠 🚧 진행 중 (9-1~9-4 완료)
 
 **브랜치 예정**: `007-celebrity-shorts`
 **참고**: YouTube @구독좋아요-x4h 채널 포맷
@@ -471,17 +471,21 @@ python3 -m src.main deevid_login
 
 `MAX_SCENE_DURATION_SECONDS=5.0` 제약 준수
 
-### 9-4. Freepik image-to-video 통합 📋
+### 9-4. Freepik image-to-video 통합 ✅
 
-**기존 재활용 (별도 Remotion 작업 없음)**:
-- `src/video_gen/freepik_gen.py` — `generate(prompt, source_image=...)` 인터페이스
+**기존 재활용 (별도 코드 변경 없음)**:
+- `src/video_gen/freepik_gen.py` — `FreepikBrowserGenerator.generate_and_wait()`
 - `src/video_gen/factory.py::create_generator("freepik")` 사용
 - `python3 -m src.main freepik_login` (기존 커맨드) 로 선 로그인
 
 **신규**:
-- [ ] `src/video_gen/celebrity_motion.py` — 인물 전용 모션 프롬프트 빌더 ("subtle camera push-in, gentle parallax, no face distortion")
+- [x] `src/video_gen/celebrity_motion.py` — `build_celebrity_motion_prompt(scene, person_name)`
+  - STATIC 카메라(title 씬) / GENTLE 5% push-in(body,comment) 자동 선택
+  - CELEBRITY_IDENTITY_GUARD: 얼굴 morph/나이 변경/립싱크 금지
+  - 기존 `motion_prompt_builder.MOTION_GUARD`와 결합
+- [x] `tests/test_celebrity_motion.py` — 10개 pass
 
-**플로우**: 네이버 PNG → Freepik 브라우저 자동화 → 5초 MP4 클립 → 기존 `scene_videos` 파이프라인에 연결
+**플로우**: 네이버 PNG → celebrity_motion 프롬프트 → Freepik 브라우저 자동화 → 5초 MP4 클립 → 기존 `scene_videos` 파이프라인 연결
 
 ### 9-5. CLI 통합 📋
 

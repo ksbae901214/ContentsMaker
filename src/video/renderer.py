@@ -30,6 +30,32 @@ class RenderError(Exception):
     """Raised when video rendering fails."""
 
 
+def _strip_scene_effects(
+    script: ShortsScript,
+    *,
+    drop_sfx: bool,
+    drop_transitions: bool,
+) -> ShortsScript:
+    """Return a new ShortsScript with ``sfx`` and/or ``transition`` cleared.
+
+    Scenes are frozen dataclasses, so this produces a fresh script object;
+    the input is never mutated. Used when the user disables transition
+    effects or sound effects from the UI.
+    """
+    if not drop_sfx and not drop_transitions:
+        return script
+    from dataclasses import replace
+    new_scenes = tuple(
+        replace(
+            sc,
+            sfx=() if drop_sfx else sc.sfx,
+            transition=None if drop_transitions else sc.transition,
+        )
+        for sc in script.scenes
+    )
+    return replace(script, scenes=new_scenes)
+
+
 def render_video(
     script: ShortsScript,
     audio_path: Path | None = None,
@@ -41,6 +67,8 @@ def render_video(
     auto_sfx: bool = True,
     auto_transition: bool = True,
     auto_thumbnail: bool = True,
+    enable_sfx: bool = True,
+    enable_transitions: bool = True,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
@@ -56,7 +84,18 @@ def render_video(
                   Pass False to keep original scene.sfx (or no SFX at all).
         auto_transition: QW-06 — auto-assign 0.2s punch-zoom to high-emphasis
                   and hook scenes. Pass False to keep original transitions.
+        enable_sfx: User-level switch. When False, ALL scene SFX are removed
+                  (including analyzer-generated and auto-assigned) and auto_sfx
+                  is forced off. Default True preserves existing behavior.
+        enable_transitions: User-level switch. When False, ALL scene transitions
+                  are cleared and auto_transition is forced off. Default True.
     """
+    # User-disabled effects take priority over auto-assignment.
+    if not enable_sfx:
+        auto_sfx = False
+    if not enable_transitions:
+        auto_transition = False
+
     # QW-04: 모든 컷 전환에 whoosh/impact SFX 자동 주입 (사용자 지정 sfx 는 보존).
     if auto_sfx:
         script = auto_assign_sfx(script)
@@ -64,6 +103,13 @@ def render_video(
     # QW-06: high emphasis + hook 씬에 punch-zoom 트랜지션 자동 주입.
     if auto_transition:
         script = auto_assign_transitions(script)
+
+    # Finally, strip any remaining effects the user opted out of.
+    script = _strip_scene_effects(
+        script,
+        drop_sfx=not enable_sfx,
+        drop_transitions=not enable_transitions,
+    )
 
     target_dir = output_dir or DATA_OUTPUTS_DIR
     target_dir.mkdir(parents=True, exist_ok=True)

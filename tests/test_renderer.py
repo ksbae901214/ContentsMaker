@@ -92,6 +92,133 @@ class TestRenderVideoPrep:
         with pytest.raises(RenderError, match="시간 초과"):
             render_video(sample_script, output_dir=tmp_data_dir / "outputs")
 
+
+class TestStripSceneEffects:
+    """enable_sfx / enable_transitions=False 시 씬에서 효과 제거 검증."""
+
+    def _script_with_effects(self, sample_script):
+        """sample_script 에 sfx/transition 을 실어 리턴."""
+        from dataclasses import replace
+        from src.analyzer.script_models import SfxConfig, TransitionConfig
+        scenes = []
+        for sc in sample_script.scenes:
+            scenes.append(replace(
+                sc,
+                sfx=(SfxConfig(name="whoosh", category="emphasis", offset_ms=0, volume=0.3),),
+                transition=TransitionConfig(type="punch-zoom", duration=0.2),
+            ))
+        return replace(sample_script, scenes=tuple(scenes))
+
+    def test_strip_sfx_only(self, sample_script):
+        from src.video.renderer import _strip_scene_effects
+        script = self._script_with_effects(sample_script)
+        result = _strip_scene_effects(script, drop_sfx=True, drop_transitions=False)
+        for sc in result.scenes:
+            assert sc.sfx == ()
+            assert sc.transition is not None  # 전환은 유지
+
+    def test_strip_transitions_only(self, sample_script):
+        from src.video.renderer import _strip_scene_effects
+        script = self._script_with_effects(sample_script)
+        result = _strip_scene_effects(script, drop_sfx=False, drop_transitions=True)
+        for sc in result.scenes:
+            assert sc.transition is None
+            assert len(sc.sfx) > 0  # 효과음은 유지
+
+    def test_strip_both(self, sample_script):
+        from src.video.renderer import _strip_scene_effects
+        script = self._script_with_effects(sample_script)
+        result = _strip_scene_effects(script, drop_sfx=True, drop_transitions=True)
+        for sc in result.scenes:
+            assert sc.sfx == ()
+            assert sc.transition is None
+
+    def test_noop_when_both_false(self, sample_script):
+        from src.video.renderer import _strip_scene_effects
+        script = self._script_with_effects(sample_script)
+        result = _strip_scene_effects(script, drop_sfx=False, drop_transitions=False)
+        # 원본과 동일 — 각 씬 sfx/transition 유지
+        for orig, new in zip(script.scenes, result.scenes):
+            assert orig.sfx == new.sfx
+            assert orig.transition == new.transition
+
+    def test_immutability(self, sample_script):
+        """frozen dataclass — 원본 script 가 변형되어선 안 된다."""
+        from src.video.renderer import _strip_scene_effects
+        script = self._script_with_effects(sample_script)
+        _ = _strip_scene_effects(script, drop_sfx=True, drop_transitions=True)
+        # 원본은 그대로
+        assert all(len(sc.sfx) > 0 for sc in script.scenes)
+        assert all(sc.transition is not None for sc in script.scenes)
+
+
+class TestRenderVideoFlags:
+    """render_video(enable_sfx/enable_transitions) 플래그가 auto-assign 도 막는지."""
+
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_disable_sfx_prevents_auto_assign(self, mock_which, mock_run, sample_script, tmp_data_dir):
+        """enable_sfx=False → props 에 씬별 sfx 비어 있어야."""
+        import json
+        output_dir = tmp_data_dir / "outputs"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        captured: dict = {}
+        def fake_run(cmd, **kw):
+            # cmd 에 --props 경로가 있으면 열어서 JSON 파싱
+            for i, a in enumerate(cmd):
+                if a == "--props" and i + 1 < len(cmd):
+                    captured["props"] = json.loads(open(cmd[i + 1]).read())
+            # fake output 생성
+            for a in cmd:
+                if isinstance(a, str) and a.endswith(".mp4"):
+                    open(a, "wb").write(b"0" * 2000)
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = fake_run
+        render_video(
+            sample_script,
+            output_dir=output_dir,
+            enable_sfx=False,
+            enable_transitions=True,
+            auto_thumbnail=False,
+        )
+        assert "props" in captured, "--props 경로가 포착되지 않았습니다"
+        scenes = captured["props"]["scriptData"]["scenes"]
+        for sc in scenes:
+            # camelCase 또는 snake_case 둘 다 허용
+            sfx = sc.get("sfx") or []
+            assert not sfx, f"sfx 가 남아있음: {sc.get('id')} {sfx}"
+
+    @patch("src.video.renderer.subprocess.run")
+    @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
+    def test_disable_transitions_prevents_auto_assign(self, mock_which, mock_run, sample_script, tmp_data_dir):
+        import json
+        output_dir = tmp_data_dir / "outputs"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        captured: dict = {}
+        def fake_run(cmd, **kw):
+            for i, a in enumerate(cmd):
+                if a == "--props" and i + 1 < len(cmd):
+                    captured["props"] = json.loads(open(cmd[i + 1]).read())
+            for a in cmd:
+                if isinstance(a, str) and a.endswith(".mp4"):
+                    open(a, "wb").write(b"0" * 2000)
+            return MagicMock(returncode=0, stderr="", stdout="")
+
+        mock_run.side_effect = fake_run
+        render_video(
+            sample_script,
+            output_dir=output_dir,
+            enable_sfx=True,
+            enable_transitions=False,
+            auto_thumbnail=False,
+        )
+        scenes = captured["props"]["scriptData"]["scenes"]
+        for sc in scenes:
+            assert not sc.get("transition"), f"transition 이 남아있음: {sc.get('id')}"
+
     @patch("src.video.renderer.subprocess.run")
     @patch("src.video.renderer.shutil.which", return_value="/usr/local/bin/npx")
     def test_render_success_returns_path(self, mock_which, mock_run, sample_script, tmp_data_dir):

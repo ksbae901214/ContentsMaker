@@ -44,11 +44,13 @@ function pyWithStdin(code: string, stdinData: string): Promise<string> {
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
-  const { scriptPath, sceneImages, sceneVideos, useBgm } = await req.json() as {
+  const { scriptPath, sceneImages, sceneVideos, useBgm, useTransitions, useSfx } = await req.json() as {
     scriptPath: string;
     sceneImages?: { scene_id: number; image_path: string }[];
     sceneVideos?: { scene_id: number; video_path: string }[];
     useBgm: boolean;
+    useTransitions?: boolean;
+    useSfx?: boolean;
   };
 
   if (!isAllowedScriptPath(scriptPath)) {
@@ -61,6 +63,10 @@ export async function POST(req: NextRequest) {
   const validImages = (sceneImages ?? []).filter((img) => isAllowedImagePath(img.image_path));
   const validVideos = (sceneVideos ?? []).filter((v) => isAllowedVideoPath(v.video_path));
   const safeBgm = Boolean(useBgm);
+  // Default to ON when omitted (backward compatibility). Only false explicitly
+  // disables; any truthy / absent value keeps the existing behavior.
+  const safeTransitions = useTransitions === undefined ? true : Boolean(useTransitions);
+  const safeSfx = useSfx === undefined ? true : Boolean(useSfx);
 
   const enc = new TextEncoder();
 
@@ -90,6 +96,8 @@ print(json.dumps({"audio_path":str(ap),"timings":timings}))`, ttsArgs));
           scene_images: validImages,
           scene_videos: validVideos,
           use_bgm: safeBgm,
+          enable_transitions: safeTransitions,
+          enable_sfx: safeSfx,
           audio_path: ttsResult.audio_path,
           timings: ttsResult.timings,
         });
@@ -105,7 +113,7 @@ ap=Path(args["audio_path"])
 si=args["scene_images"] if args["scene_images"] else None
 sv=args["scene_videos"] if args["scene_videos"] else None
 timings=args.get("timings")
-o=render_video(s,audio_path=ap,scene_images=si,scene_videos=sv,use_bgm=args["use_bgm"],scene_timings=timings)
+o=render_video(s,audio_path=ap,scene_images=si,scene_videos=sv,use_bgm=args["use_bgm"],scene_timings=timings,enable_transitions=args.get("enable_transitions",True),enable_sfx=args.get("enable_sfx",True))
 t=o.parent/(o.stem+".thumb.png")
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))`, renderArgs));
         send("progress", { message: `✅ 렌더링 완료 (${rr.size}MB)` });

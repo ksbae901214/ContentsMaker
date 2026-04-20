@@ -50,6 +50,8 @@ interface Props {
   audioPath?: string;
   imageStyle?: string;
   sceneVideos?: SceneVideo[];
+  initialUseTransitions?: boolean;
+  initialUseSfx?: boolean;
   onTitleChange: (title: string) => void;
   onScenesChange: (scenes: SceneData[]) => void;
   onImagesChange: (images: SceneImage[]) => void;
@@ -67,12 +69,16 @@ export function SceneEditor({
   audioPath,
   imageStyle = "realistic",
   sceneVideos,
+  initialUseTransitions = true,
+  initialUseSfx = true,
   onTitleChange,
   onScenesChange,
   onImagesChange,
   onVideoUpdate,
   onVideosChange,
 }: Props) {
+  const [useTransitions, setUseTransitions] = useState(initialUseTransitions);
+  const [useSfx, setUseSfx] = useState(initialUseSfx);
   const [modalSceneId, setModalSceneId] = useState<number | null>(null);
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState("");
@@ -352,6 +358,8 @@ export function SceneEditor({
             video_path: v.video_path,
           })),
           useBgm,
+          useTransitions,
+          useSfx,
         }),
       });
 
@@ -467,6 +475,29 @@ export function SceneEditor({
             {title}
           </div>
         )}
+      </div>
+
+      {/* Render effect toggles — applied on "최종 렌더링" */}
+      <div className="bg-gray-800/60 rounded-lg px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        <span className="text-xs text-gray-500">렌더 옵션:</span>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={useTransitions}
+            onChange={(e) => { setUseTransitions(e.target.checked); setHasChanges(true); }}
+            className="w-4 h-4 rounded"
+          />
+          <span className="text-gray-300">🎬 화면 전환 효과</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={useSfx}
+            onChange={(e) => { setUseSfx(e.target.checked); setHasChanges(true); }}
+            className="w-4 h-4 rounded"
+          />
+          <span className="text-gray-300">🔊 효과음</span>
+        </label>
       </div>
 
       {/* Preview toggle + panel */}

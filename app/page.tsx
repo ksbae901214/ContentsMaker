@@ -74,6 +74,8 @@ export default function Home() {
   const [comments, setComments] = useState([""]);
   const [stats, setStats] = useState<Stats|null>(null);
   const [bgm, setBgm] = useState(true);
+  const [transitions, setTransitions] = useState(true);
+  const [sfx, setSfx] = useState(true);
   const [ytUpload, setYtUpload] = useState(false);
   const [ttUpload, setTtUpload] = useState(false);
   const [urlInput, setUrlInput] = useState("");
@@ -217,7 +219,7 @@ export default function Home() {
   const startAnalyze = (fd: FormData) => {
     fd.set("stopAfter", "analyze");
     const opts: Record<string, string> = {};
-    ["visualMode","imageStyle","videoProvider","imageProvider","bgm","yt","tt"].forEach(k => {
+    ["visualMode","imageStyle","videoProvider","imageProvider","bgm","transitions","sfx","yt","tt"].forEach(k => {
       const v = fd.get(k);
       if (typeof v === "string") opts[k] = v;
     });
@@ -306,6 +308,8 @@ export default function Home() {
               audioPath={result.audioPath}
               imageStyle={result.imageStyle || imageStyle}
               sceneVideos={(result.sceneVideos && result.sceneVideos.length > 0) ? result.sceneVideos : (result.visualMode === "video" ? [] : undefined)}
+              initialUseTransitions={transitions}
+              initialUseSfx={sfx}
               onTitleChange={(title) => setResult({...result, title})}
               onScenesChange={(scenes) => setResult({...result, scenes})}
               onImagesChange={(images) => setResult({...result, sceneImages: images})}
@@ -455,11 +459,15 @@ export default function Home() {
             </div>))}
           </div>
         )}
-        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+        </div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
         <div className="flex gap-2">
-          <button onClick={()=>{if(!files.length)return;const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);if(customTitle.trim())fd.set("customTitle",customTitle.trim());files.forEach(f=>fd.append("images",f));startAnalyze(fd)}}
+          <button onClick={()=>{if(!files.length)return;const fd=new FormData();fd.set("mode","image");fd.set("bgm",bgm?"on":"off");fd.set("transitions",transitions?"on":"off");fd.set("sfx",sfx?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);if(customTitle.trim())fd.set("customTitle",customTitle.trim());files.forEach(f=>fd.append("images",f));startAnalyze(fd)}}
             disabled={!files.length} className={`flex-1 py-3 rounded-lg font-medium transition ${files.length?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성 {files.length>0?`(${files.length}장)`:""}
           </button>
@@ -482,11 +490,15 @@ export default function Home() {
             {comments.length>1&&<button onClick={()=>setComments(comments.filter((_,j)=>j!==i))} className="text-red-400 px-2">✕</button>}
           </div>))}
           <button onClick={()=>setComments([...comments,""])} className="text-sm text-blue-400">+ 댓글 추가</button></div>
-        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+        </div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
         <div className="flex gap-2">
-          <button onClick={()=>{if(!title.trim()||!body.trim())return;const fd=new FormData();fd.set("mode","manual");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("title",title);fd.set("body",body);fd.set("comments",JSON.stringify(comments.filter(c=>c.trim())));startAnalyze(fd)}}
+          <button onClick={()=>{if(!title.trim()||!body.trim())return;const fd=new FormData();fd.set("mode","manual");fd.set("bgm",bgm?"on":"off");fd.set("transitions",transitions?"on":"off");fd.set("sfx",sfx?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("title",title);fd.set("body",body);fd.set("comments",JSON.stringify(comments.filter(c=>c.trim())));startAnalyze(fd)}}
             disabled={!title.trim()||!body.trim()} className={`flex-1 py-3 rounded-lg font-medium transition ${title.trim()&&body.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성
           </button>
@@ -503,11 +515,15 @@ export default function Home() {
           <input value={urlInput} onChange={e=>setUrlInput(e.target.value)} placeholder="https://gall.dcinside.com/... 또는 cafe.naver.com/..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/>
           <p className="text-gray-500 text-xs mt-1">지원: 디시인사이드, 네이트판, 네이버 카페</p>
         </div>
-        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+        </div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
         <div className="flex gap-2">
-          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm",bgm?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("url",urlInput.trim());if(customTitle.trim())fd.set("customTitle",customTitle.trim());startAnalyze(fd)}}
+          <button onClick={()=>{if(!urlInput.trim())return;const fd=new FormData();fd.set("mode","url");fd.set("bgm",bgm?"on":"off");fd.set("transitions",transitions?"on":"off");fd.set("sfx",sfx?"on":"off");fd.set("yt",ytUpload?"on":"off");fd.set("tt",ttUpload?"on":"off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("url",urlInput.trim());if(customTitle.trim())fd.set("customTitle",customTitle.trim());startAnalyze(fd)}}
             disabled={!urlInput.trim()} className={`flex-1 py-3 rounded-lg font-medium transition ${urlInput.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성
           </button>
@@ -532,9 +548,13 @@ export default function Home() {
           <input value={tone} onChange={e=>setTone(e.target.value)} placeholder="예: 재밌게, 심각하게, 감성적으로" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/></div>
         <div><label className="block text-sm font-medium text-gray-300 mb-1">추가 설명 (선택)</label>
           <textarea value={details} onChange={e=>setDetails(e.target.value)} placeholder="AI에게 전달할 추가 정보" rows={3} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none resize-y"/></div>
-        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+        </div>
         <div className="flex gap-2">
-          <button onClick={()=>{if(topicText.trim().length<5)return;const fd=new FormData();fd.set("mode","topic");fd.set("bgm",bgm?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("topic",topicText.trim());fd.set("contentStyle",contentStyle);fd.set("tone",tone);fd.set("details",details);startAnalyze(fd)}}
+          <button onClick={()=>{if(topicText.trim().length<5)return;const fd=new FormData();fd.set("mode","topic");fd.set("bgm",bgm?"on":"off");fd.set("transitions",transitions?"on":"off");fd.set("sfx",sfx?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("topic",topicText.trim());fd.set("contentStyle",contentStyle);fd.set("tone",tone);fd.set("details",details);startAnalyze(fd)}}
             disabled={topicText.trim().length<5} className={`flex-1 py-3 rounded-lg font-medium transition ${topicText.trim().length>=5?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
             🎬 영상 생성
           </button>
@@ -807,9 +827,13 @@ export default function Home() {
               <input value={politicalTone} onChange={e=>setPoliticalTone(e.target.value)} placeholder="예: 날카롭게, 객관적으로, 유머러스" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/></div>
             <div><label className="block text-sm font-medium text-gray-300 mb-1">추가 지시 (선택)</label>
               <textarea value={politicalDetails} onChange={e=>setPoliticalDetails(e.target.value)} placeholder="예: 경제 정책에 집중, 야당 시각 포함" rows={2} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none resize-y"/></div>
-            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+        </div>
             <div className="flex gap-2">
-              <button onClick={()=>{const fd=new FormData();fd.set("mode","political");fd.set("bgm",bgm?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("youtubeUrl",politicalUrl.trim());fd.set("clipStart",clipStart);fd.set("clipEnd",clipEnd);fd.set("politicalTone",politicalTone);fd.set("politicalDetails",politicalDetails);startAnalyze(fd)}}
+              <button onClick={()=>{const fd=new FormData();fd.set("mode","political");fd.set("bgm",bgm?"on":"off");fd.set("transitions",transitions?"on":"off");fd.set("sfx",sfx?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("youtubeUrl",politicalUrl.trim());fd.set("clipStart",clipStart);fd.set("clipEnd",clipEnd);fd.set("politicalTone",politicalTone);fd.set("politicalDetails",politicalDetails);startAnalyze(fd)}}
                 className="flex-1 py-3 rounded-lg font-medium transition bg-blue-600 hover:bg-blue-500">
                 🎙️ 정치 해설 생성
               </button>

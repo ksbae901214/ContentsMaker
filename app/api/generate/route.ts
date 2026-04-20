@@ -36,6 +36,9 @@ export async function POST(req: NextRequest) {
   const fd = await req.formData();
   const mode = fd.get("mode") as string;
   const useBgm = (fd.get("bgm") as string) !== "off";
+  // Default on: only explicit "off" disables scene transitions / SFX.
+  const useTransitions = (fd.get("transitions") as string) !== "off";
+  const useSfx = (fd.get("sfx") as string) !== "off";
   const useYt = (fd.get("yt") as string) === "on";
   const useTt = (fd.get("tt") as string) === "on";
   const dryRun = (fd.get("dryRun") as string) === "on";
@@ -407,7 +410,7 @@ from src.video.renderer import render_video
 s=ShortsScript.load('''${a.sp}''')
 sv=json.loads(r"""${vidJson0}""") or None
 timings=json.loads(r"""${timingsJson3}""")
-o=render_video(s,audio_path=${audioArg},scene_videos=sv,use_bgm=${useBgm?"True":"False"},scene_timings=timings)
+o=render_video(s,audio_path=${audioArg},scene_videos=sv,use_bgm=${useBgm?"True":"False"},scene_timings=timings,enable_transitions=${useTransitions?"True":"False"},enable_sfx=${useSfx?"True":"False"})
 t=o.parent/(o.stem+".thumb.png")
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))`)));
           send("progress",{message:`✅ 렌더링 완료 (${rr0.size}MB)`});
@@ -453,7 +456,7 @@ s=ShortsScript.load('''${a.sp}''')
 ap=Path('''${ttsResult!.audio_path}''')
 sv=json.loads('''${vidJson}''') if '''${vidJson}'''!='[]' else None
 timings=json.loads('''${timingsJson}''')
-o=render_video(s,audio_path=ap,scene_videos=sv,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings)
+o=render_video(s,audio_path=ap,scene_videos=sv,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings,enable_transitions=${useTransitions ? "True" : "False"},enable_sfx=${useSfx ? "True" : "False"})
 t=o.parent/(o.stem+".thumb.png")
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))`)));
           send("progress",{message:`✅ 렌더링 완료 (${rr.size}MB)`});
@@ -642,7 +645,7 @@ ap=Path('''${ttsResult!.audio_path}''')
 si=json.loads('''${imgJson}''') if '''${imgJson}'''!='[]' else None
 sv=json.loads('''${vidJson}''') if '''${vidJson}'''!='[]' else None
 timings=json.loads('''${timingsJson}''')
-o=render_video(s,audio_path=ap,scene_images=si,scene_videos=sv,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings)
+o=render_video(s,audio_path=ap,scene_images=si,scene_videos=sv,use_bgm=${useBgm ? "True" : "False"},scene_timings=timings,enable_transitions=${useTransitions ? "True" : "False"},enable_sfx=${useSfx ? "True" : "False"})
 t=o.parent/(o.stem+".thumb.png")
 print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))`))
           );

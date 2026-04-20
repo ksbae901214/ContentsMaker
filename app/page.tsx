@@ -21,7 +21,10 @@ interface Stats { imageCount: number; videoCount: number; audioCount: number; sc
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
 export default function Home() {
-  const [tab, setTab] = useState<"image"|"manual"|"url"|"topic"|"political">("image");
+  const [tab, setTab] = useState<"image"|"manual"|"url"|"topic"|"political"|"celebrity">("image");
+  const [celebrityName, setCelebrityName] = useState("");
+  const [celebrityNoVideo, setCelebrityNoVideo] = useState(false);
+  const [celebrityNoImages, setCelebrityNoImages] = useState(false);
   const [topicText, setTopicText] = useState("");
   const [contentStyle, setContentStyle] = useState<"narration"|"skit"|"review">("narration");
   const [politicalUrl, setPoliticalUrl] = useState("");
@@ -308,9 +311,9 @@ export default function Home() {
         <p className="text-gray-400">인기글/자유주제 → 만화 쇼츠 자동 생성</p>
       </header>
       <div className="flex gap-2 mb-6">
-        {(["image","manual","url","topic","political"] as const).map(t=>(
+        {(["image","manual","url","topic","political","celebrity"] as const).map(t=>(
           <button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2.5 rounded-lg font-medium transition text-xs ${tab===t?"bg-blue-600":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
-            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":"🎙️ 정치 해설"}
+            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":t==="political"?"🎙️ 정치 해설":"👤 유명인"}
           </button>
         ))}
       </div>
@@ -579,6 +582,62 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Celebrity tab (Phase 9) — 학습 목적 전용 */}
+      <div className="space-y-4" style={{display:tab==="celebrity"?"block":"none"}}>
+        <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-3 text-xs text-yellow-200">
+          ⚠️ <strong>학습 목적 전용</strong> — 나무위키(CC BY-NC-SA) + 네이버 이미지 기반. 공개 업로드 전 초상권·저작권 직접 확인 필요. 업로드 옵션은 비활성화됩니다.
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">인물 이름 *</label>
+          <input value={celebrityName} onChange={e=>setCelebrityName(e.target.value)} placeholder="예: 손흥민, 세종대왕, 유재석" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/>
+          <p className="text-gray-500 text-xs mt-1">나무위키에 문서가 있는 인물명</p>
+        </div>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={celebrityNoVideo} onChange={e=>setCelebrityNoVideo(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🖼️ Freepik 영상 변환 스킵 (정지 이미지만, 훨씬 빠름)</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={celebrityNoImages} onChange={e=>setCelebrityNoImages(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🎨 이미지 전체 스킵 (그라데이션 배경만)</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
+          </label>
+          <div className="flex items-center gap-2 text-xs text-gray-500 pl-7">
+            <span>📺 YouTube 업로드</span>
+            <span className="text-gray-600">— 유명인 탭에서는 비활성화됨</span>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={()=>{
+            if(!celebrityName.trim())return;
+            const fd=new FormData();
+            fd.set("mode","celebrity");
+            fd.set("celebrityName",celebrityName.trim());
+            fd.set("noVideo",celebrityNoVideo?"on":"off");
+            fd.set("noImages",celebrityNoImages?"on":"off");
+            fd.set("bgm",bgm?"on":"off");
+            fd.set("yt","off");
+            fd.set("tt","off");
+            generate(fd);
+          }}
+            disabled={!celebrityName.trim()}
+            className={`flex-1 py-3 rounded-lg font-medium transition ${celebrityName.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
+            👤 유명인 쇼츠 생성
+          </button>
+        </div>
+        <div className="text-xs text-gray-500 space-y-1">
+          <p>💡 실행 전 체크리스트:</p>
+          <ul className="list-disc list-inside space-y-0.5 pl-2">
+            <li><code className="text-yellow-400">NAVER_CLIENT_ID</code> / <code className="text-yellow-400">NAVER_CLIENT_SECRET</code> <code>.env.local</code>에 설정 (이미지 사용 시)</li>
+            <li>터미널에서 <code className="text-yellow-400">python3 -m src.main freepik_login</code> 사전 1회 실행 (영상 모드 사용 시)</li>
+          </ul>
+        </div>
+      </div>
+
       {error&&<div className="mt-4 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200">{error}</div>}
     </main>
   );

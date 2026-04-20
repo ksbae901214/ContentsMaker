@@ -417,7 +417,7 @@ python3 -m src.main deevid_login
 
 ---
 
-## Phase 9: 유명인 소개 쇼츠 🚧 진행 중 (9-1~9-5 완료)
+## Phase 9: 유명인 소개 쇼츠 🚧 진행 중 (9-1~9-6 완료)
 
 **브랜치 예정**: `007-celebrity-shorts`
 **참고**: YouTube @구독좋아요-x4h 채널 포맷
@@ -495,14 +495,18 @@ python3 -m src.main deevid_login
   - 엔딩에 "학습 목적 전용" 안내 문구 출력
 - [x] `tests/test_main_celebrity.py` — 15개 pass (argparse + orchestration + error paths)
 
-### 9-6. Next.js UI 통합 📋
+### 9-6. Next.js UI 통합 ✅
 
-- [ ] `app/page.tsx` 수정 — 탭 유니언에 `"celebrity"` 추가 (5번째 탭)
-  - 단순 텍스트 입력 (이름 1줄) + 생성 버튼
-  - **학습 목적 안내 배너** 필수
-- [ ] `app/api/generate/route.ts` 수정 — `mode === "celebrity"` 분기
-  - `src.main celebrity {name}` 서브프로세스 호출
-- [ ] **업로드 토글 비활성화**: 유명인 탭 선택 시 `ytUpload`/`ttUpload` 체크박스 disable + 툴팁 "학습 목적 전용"
+- [x] `app/page.tsx` — 탭 유니언에 `"celebrity"` 추가 (6번째 탭, "👤 유명인")
+  - 이름 입력 + 3개 체크박스 (--no-video / --no-images / bgm)
+  - **학습 목적 안내 배너**: CC BY-NC-SA 준수 + 초상권 확인 안내
+  - 실행 전 체크리스트: NAVER 환경변수 + freepik_login 안내
+- [x] `app/api/generate/route.ts` — `mode === "celebrity"` top-level 분기
+  - `python3 -m src.main celebrity {name}` 서브프로세스 spawn
+  - stdout 라인 단위 SSE 스트리밍, 영상 경로 regex 파싱
+  - 완료 시 `done` 이벤트에 videoPath + sourceType="celebrity" 반환
+- [x] **업로드 UI 비활성화**: 유명인 탭에 YouTube/TikTok 체크박스 없음 (회색 텍스트 안내)
+- [x] `npm run build` 통과 (TypeScript clean, 25/25 pages)
 
 ### 9-7. 테스트 & 문서 📋
 

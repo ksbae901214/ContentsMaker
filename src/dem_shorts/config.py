@@ -84,7 +84,9 @@ DIARIZATION_MODEL = "pyannote/speaker-diarization-3.1"
 # Spec: specs/007-dem-shorts-studio/spec.md (v2)
 # Charter: docs/politics-bias-charter.md
 SUPPORTED_PERSPECTIVES = ("dem", "ppp")
-DEFAULT_PERSPECTIVE = "dem"  # 하위호환: 기존 DB row·API 호출은 dem으로 해석
+# 2026-04-20 채널 방향 확정 (@국회직캠-d6r = 야당 관점):
+# DEFAULT_PERSPECTIVE='ppp'로 변경. dem perspective는 명시 인자로만 동작 (로컬 렌더 전용).
+DEFAULT_PERSPECTIVE = "ppp"
 
 # FR-006: perspective별 pinned 시드 이름 목록 (scoring TOP 가중치에 사용)
 PERSPECTIVE_TOP_NAMES: dict[str, tuple[str, ...]] = {

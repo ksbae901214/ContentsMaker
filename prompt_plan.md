@@ -417,7 +417,7 @@ python3 -m src.main deevid_login
 
 ---
 
-## Phase 9: 유명인 소개 쇼츠 🚧 진행 중 (9-1~9-4 완료)
+## Phase 9: 유명인 소개 쇼츠 🚧 진행 중 (9-1~9-5 완료)
 
 **브랜치 예정**: `007-celebrity-shorts`
 **참고**: YouTube @구독좋아요-x4h 채널 포맷
@@ -487,11 +487,13 @@ python3 -m src.main deevid_login
 
 **플로우**: 네이버 PNG → celebrity_motion 프롬프트 → Freepik 브라우저 자동화 → 5초 MP4 클립 → 기존 `scene_videos` 파이프라인 연결
 
-### 9-5. CLI 통합 📋
+### 9-5. CLI 통합 ✅
 
-- [ ] `src/main.py` 수정 — `cmd_celebrity(args)` 추가 (기존 `cmd_topic` 패턴 미러링)
+- [x] `src/main.py` — `cmd_celebrity(args)` + `_run_celebrity_images()` + `_run_celebrity_videos()` 추가
   - 커맨드: `python3 -m src.main celebrity "손흥민"`
-  - 옵션: `--no-video` (사진만 사용, Freepik 스킵)
+  - 옵션: `--no-video` (Freepik 스킵, 정지 이미지), `--no-images` (이미지 전체 스킵), `--no-bgm`
+  - 엔딩에 "학습 목적 전용" 안내 문구 출력
+- [x] `tests/test_main_celebrity.py` — 15개 pass (argparse + orchestration + error paths)
 
 ### 9-6. Next.js UI 통합 📋
 

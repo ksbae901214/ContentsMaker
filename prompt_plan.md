@@ -2,11 +2,35 @@
 
 > 블라인드 인기글을 만화 스타일 YouTube Shorts 영상으로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-04-17
+**마지막 업데이트**: 2026-04-20
 
 ---
 
-## 🚧 진행 중: MID-05 썸네일 자동 생성 (2026-04-17 확정)
+## 🚧 진행 중: TRIM-01 NATV 씬 구간 드래그 트리밍 (2026-04-20 확정)
+
+### 목표
+Vrew 스타일 듀얼 핸들 프로그레스바로 씬 영상의 앞/뒤 경계를 조정.
+**NATV 클립 모드에만** 적용. 다른 모드(image/manual/url/topic/political/video)는 현재 동작 유지.
+
+### 아키텍처 요약
+- 재인코딩 없이 **Remotion `<Video startFrom endAt>` + 오프셋 메타데이터**로 해결
+- 사전 cut된 파일은 프리뷰 캐시로만 사용, 최종 렌더는 원본 + offset
+- `Scene` 에 `source_video/source_start/source_end` 3개 Optional 필드 추가 (후방 호환)
+
+### 단계
+
+- **Phase 1** 백엔드 — Scene 필드 + 직렬화 + SceneWithVideo.tsx `<Video startFrom endAt>` 전환
+- **Phase 2** NATV cut 루프 리팩터 — offset 기록, 렌더 시 원본+offset 경로 사용
+- **Phase 3** `/api/scene/trim` API — 유효성 + 스크립트 저장
+- **Phase 4** TrimSlider 컴포넌트 — 듀얼 핸들 range + `<video>` 프리뷰
+- **Phase 5** SceneEditor 통합 — NATV 씬에만 "구간 편집" 버튼 노출
+- **Phase 6** UX 보강 — TTS 길이 경고, 자동 맞춤, 키보드 스냅
+
+### 복잡도: MEDIUM (12-16h)
+
+---
+
+## ✅ 완료: MID-05 썸네일 자동 생성 (2026-04-17 확정)
 
 **출처**: `docs/dem-shorts/political-youtube-style-plan.md` §5.1, §8.2 MID-05
 **목표**: 정치 유튜브 표준 썸네일(hook 씬 프레임 + 빨강/노랑 텍스트)을 자동 생성해 CTR 향상.
@@ -50,7 +74,7 @@
 - [x] Phase 3 폰트 자산 (Pretendard-ExtraBold.otf 1.5MB, SIL OFL)
 - [x] Phase 4 UI/CLI (thumbnailPath done 이벤트 + 미리보기 + 다운로드 버튼)
 - [x] Phase 5 시각 검증 (5개 영상 1280×720 썸네일, Pretendard 렌더 확인)
-- [ ] 커밋 + 푸시
+- [x] 커밋 (25f45c5)
 
 ---
 

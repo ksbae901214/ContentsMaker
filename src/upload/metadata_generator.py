@@ -4,6 +4,8 @@ Generates title, description, and tags for YouTube upload.
 """
 from __future__ import annotations
 
+import re
+
 from src.analyzer.script_models import ShortsScript
 
 EMOTION_HASHTAGS = {
@@ -140,6 +142,110 @@ def _build_fact_based_title(script: ShortsScript) -> str:
     return f"{prefix} {fact_kernel}{suffix}"
 
 
+_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?…])\s+")
+
+_MAX_LINE_LEN = 80  # 한 줄 가독성 상한 (~60자 + 여유). 초과 시 어절 경계에서 자름.
+
+
+def _split_sentences(text: str) -> list[str]:
+    """문장 종결 부호 기준으로 문장 단위 분할."""
+    text = (text or "").replace("\n", " ").strip()
+    if not text:
+        return []
+    parts = [p.strip().rstrip(".!?…") for p in _SENTENCE_SPLIT_RE.split(text)]
+    return [p for p in parts if p]
+
+
+def _shorten(line: str, max_len: int = _MAX_LINE_LEN) -> str:
+    """어절 경계에서 자르되 ellipsis 로 마무리. 이미 짧으면 원본 반환."""
+    line = (line or "").strip()
+    if len(line) <= max_len:
+        return line
+    cut = line[:max_len]
+    # 마지막 공백 기준으로 어절 경계 맞춤 (공백 없으면 그냥 자름)
+    space = cut.rfind(" ")
+    if space >= int(max_len * 0.6):
+        cut = cut[:space]
+    return cut.rstrip(",.…— ") + "…"
+
+
+def _build_three_line_summary(script: ShortsScript) -> str:
+    """스크립트 전체 voice_text 에서 첫·중·말 문장을 뽑아 3줄 요약 생성.
+
+    전략:
+      line 1 — title/hook 씬 voice_text (없으면 metadata.title)
+      line 2 — body 씬들 중 가장 정보 밀도 높은 문장 (가장 긴 것)
+      line 3 — 마지막 body/comment 씬의 마지막 문장
+    각 줄은 <= _MAX_LINE_LEN 자. 중복은 다음 후보로 대체.
+    """
+    # 씬별로 (type, sentences) 수집
+    per_scene: list[tuple[str, list[str]]] = []
+    for s in script.scenes:
+        raw = (s.voice_text or s.text or "").strip()
+        sentences = _split_sentences(raw)
+        if sentences:
+            per_scene.append((s.type, sentences))
+
+    if not per_scene:
+        return (script.metadata.title or "").strip()
+
+    # Line 1 — title/hook 씬 우선, 없으면 첫 씬 첫 문장
+    line1 = ""
+    for t, sents in per_scene:
+        if t == "title":
+            line1 = sents[0]
+            break
+    if not line1:
+        line1 = per_scene[0][1][0]
+
+    # Line 3 — 마지막 씬의 마지막 문장 (body/comment 우선)
+    last_sent = ""
+    for t, sents in reversed(per_scene):
+        if t in ("body", "comment"):
+            last_sent = sents[-1]
+            break
+    if not last_sent:
+        last_sent = per_scene[-1][1][-1]
+
+    # Line 2 — line1/last 를 제외한 body 문장 중 가장 긴 것
+    mid_candidates: list[str] = []
+    for t, sents in per_scene:
+        if t not in ("body", "comment"):
+            continue
+        for sent in sents:
+            if sent != line1 and sent != last_sent:
+                mid_candidates.append(sent)
+    if mid_candidates:
+        mid = max(mid_candidates, key=len)
+    else:
+        # 후보가 없으면 순서대로 폴백: 두 번째 문장 / title 씬 / last
+        all_sents = [s for _, sents in per_scene for s in sents]
+        mid = ""
+        for cand in all_sents:
+            if cand != line1 and cand != last_sent:
+                mid = cand
+                break
+        if not mid:
+            mid = line1  # 마지막 폴백
+
+    lines = [line1, mid, last_sent]
+    # 중복이 남아있으면 다음 후보로 교체
+    seen: list[str] = []
+    all_sents = [s for _, sents in per_scene for s in sents]
+    for ln in lines:
+        if ln and ln not in seen:
+            seen.append(ln)
+        else:
+            # 중복 → 아직 안 쓴 문장 중 가장 긴 것
+            fallback = next(
+                (s for s in sorted(all_sents, key=len, reverse=True) if s not in seen),
+                ln,
+            )
+            seen.append(fallback)
+
+    return "\n".join(_shorten(ln) for ln in seen[:3])
+
+
 def generate_metadata(script: ShortsScript) -> dict:
     """Generate YouTube upload metadata from a ShortsScript.
 
@@ -192,21 +298,9 @@ def generate_metadata(script: ShortsScript) -> dict:
             if len(tags) >= 20:
                 break
 
-    # 3-line summary: fixed intro + 2 sentences summarizing full content
-    body_texts = " ".join(
-        s.text.replace("\n", " ").strip()
-        for s in script.scenes
-        if s.type in ("body", "comment")
-    )
-    # Take first ~2 meaningful chunks as summary sentences
-    sentences = [seg.strip() for seg in body_texts.replace(".", ".||").replace("?", "?||").replace("!", "!||").split("||") if seg.strip()]
-    line2 = sentences[0] if sentences else ""
-    line3 = sentences[1] if len(sentences) > 1 else (sentences[0] if sentences else "")
-    summary = (
-        "다양한 커뮤니티의 핫한 게시글을 영상으로 보여드립니다\n"
-        f"{line2.rstrip('.')}\n"
-        f"{line3.rstrip('.')}"
-    )
+    # 3-line summary built from ALL scene voice_text (not a fixed intro):
+    # line 1 = hook/title, line 2 = middle body claim, line 3 = closing.
+    summary = _build_three_line_summary(script)
 
     hashtags_str = " ".join(hashtags)
 

@@ -72,7 +72,121 @@ class TestGenerateMetadata:
         meta = generate_metadata(sample_script)
         lines = meta["summary"].split("\n")
         assert len(lines) == 3
-        assert "커뮤니티" in lines[0]  # fixed intro line
+        # 모든 라인에 실제 대본 내용이 들어가야 한다 — 고정 인트로 금지
+        for ln in lines:
+            assert ln.strip()
+        # 첫 줄은 타이틀/hook 씬 기반이어야 한다
+        assert any(w in lines[0] for w in ("결혼식", "남자친구", "언니"))
+        # 마지막 줄은 최종 씬의 핵심 내용을 반영해야 한다
+        assert "심하" in lines[2] or "레드" in lines[2]
+
+
+class TestBuildThreeLineSummary:
+    """대본 전체(voice_text) 에서 첫·중·말 문장을 뽑아 3줄 요약."""
+
+    def _script(self, *voices, **meta):
+        from src.analyzer.script_models import (
+            ShortsScript, Scene, Metadata, AudioConfig, BackgroundConfig,
+        )
+        scenes = tuple(
+            Scene(
+                id=i + 1,
+                timestamp=float(i * 4),
+                duration=4.0,
+                type="title" if i == 0 else "body",
+                text=v,
+                voice_text=v,
+                emphasis="high" if i == 0 else "medium",
+            )
+            for i, v in enumerate(voices)
+        )
+        return ShortsScript(
+            metadata=Metadata(
+                title=meta.get("title", voices[0]),
+                emotion_type=meta.get("emotion", "relatable"),
+                duration=float(len(voices) * 4),
+            ),
+            scenes=scenes,
+            audio=AudioConfig(tts_script=" ".join(voices)),
+            background=BackgroundConfig(type="gradient", colors=("#000",)),
+        )
+
+    def test_three_distinct_lines(self):
+        from src.upload.metadata_generator import _build_three_line_summary
+        script = self._script(
+            "하루 12시간 근무 이야기입니다",
+            "사장은 매일 야근을 강요했어요.",
+            "결국 퇴직금 없이 나왔죠.",
+            "법적 대응을 준비 중입니다.",
+            "여러분이라면 어떻게 하시겠어요?",
+        )
+        lines = _build_three_line_summary(script).split("\n")
+        assert len(lines) == 3
+        assert lines[0] != lines[1]
+        assert lines[1] != lines[2]
+
+    def test_first_line_uses_title_or_hook(self):
+        from src.upload.metadata_generator import _build_three_line_summary
+        script = self._script(
+            "회사 월급 이야기",
+            "월급이 밀렸어요.",
+            "3개월째 못 받았습니다.",
+        )
+        lines = _build_three_line_summary(script).split("\n")
+        # 첫 줄에 타이틀의 핵심 키워드가 있어야 한다
+        assert "월급" in lines[0] or "회사" in lines[0]
+
+    def test_last_line_comes_from_closing_scene(self):
+        from src.upload.metadata_generator import _build_three_line_summary
+        script = self._script(
+            "사건의 시작",
+            "중간 전개",
+            "절정 장면",
+            "예상 밖의 결말 반전",
+        )
+        lines = _build_three_line_summary(script).split("\n")
+        # 마지막 줄은 맨 마지막 씬의 어휘를 반영
+        assert "결말" in lines[2] or "반전" in lines[2]
+
+    def test_single_sentence_script_is_handled(self):
+        from src.upload.metadata_generator import _build_three_line_summary
+        script = self._script("한 문장뿐인 영상이에요.")
+        result = _build_three_line_summary(script)
+        lines = result.split("\n")
+        # 최소한 한 줄에 원본 문구가 들어가야 한다 (빈 요약 금지)
+        assert any("한 문장뿐" in ln for ln in lines)
+
+    def test_empty_voice_falls_back_to_display_text(self):
+        from src.upload.metadata_generator import _build_three_line_summary
+        from src.analyzer.script_models import (
+            ShortsScript, Scene, Metadata, AudioConfig, BackgroundConfig,
+        )
+        script = ShortsScript(
+            metadata=Metadata(title="제목", emotion_type="funny", duration=8.0),
+            scenes=(
+                Scene(id=1, timestamp=0, duration=4, type="title",
+                      text="첫 씬 텍스트", voice_text=""),
+                Scene(id=2, timestamp=4, duration=4, type="body",
+                      text="본문 텍스트 내용", voice_text=""),
+            ),
+            audio=AudioConfig(tts_script=""),
+            background=BackgroundConfig(type="gradient", colors=()),
+        )
+        result = _build_three_line_summary(script)
+        # voice_text 가 비어도 text 로 폴백
+        assert "첫 씬" in result or "본문" in result
+
+    def test_line_length_trimmed_when_very_long(self):
+        """한 문장이 120자 넘으면 60자 근처에서 자른다 (읽기 편의)."""
+        from src.upload.metadata_generator import _build_three_line_summary
+        long_voice = "가" * 150
+        script = self._script(
+            "타이틀",
+            long_voice,
+            "마지막",
+        )
+        lines = _build_three_line_summary(script).split("\n")
+        assert all(len(ln) <= 90 for ln in lines), f"line too long: {[len(ln) for ln in lines]}"
 
     def test_all_emotions_have_hashtags(self):
         for emotion in ["funny", "touching", "angry", "relatable"]:

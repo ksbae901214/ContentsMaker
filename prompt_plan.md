@@ -1,5 +1,100 @@
 # ContentsMaker 개발 계획 및 진행 상태
 
+> 블라인드 / NATV 영상을 YouTube Shorts / 롱폼으로 자동 변환하는 파이프라인
+
+**마지막 업데이트**: 2026-04-20
+
+---
+
+## 🚧 진행 예정: 010 PPP(국민의힘) 관점 영상 생성 — H2 Axis 방식 (2026-04-20 확정)
+
+### 목표
+운영자 YouTube 채널(@국회직캠-d6r)이 **한국은행 총재 인사청문회 비판**과 같은 야당(국민의힘) 관점 콘텐츠를 올리고 있어, 현행 007 "민주당 친화형" 파이프라인을 **양 정당 관점 공존(H2 Axis)** 으로 일반화.
+
+### 확정 결정
+- **H2 공존**: `party_perspective ∈ {dem, ppp}` 토글 추가. 민주당 draft_5.mp4 자산 보존, PPP 관점 병렬 운영.
+- **스펙 수정 필요**: `specs/007-dem-shorts-studio/spec.md:243~246` Out-of-Scope의 "타당(국민의힘 등) 친화형" 조항 제거 (Phase 0)
+- **변호사 자문 재수행 필수**: 양당 공존 리스크에 대한 1회 추가 자문
+
+### 핵심 설계
+- **5~6 man-day (M 복잡도)**
+- 신규 테이블 `perspectives` (id, label, youtube_channel_id 1:1 고정)
+- 기존 테이블에 `perspective` 컬럼 추가 (politicians, source_videos, shorts_drafts, uploaded_shorts, weekly_rankings, bias_reports, guardrail_history)
+- 모듈 리네임(`dem_shorts` → `party_shorts`)은 Phase 7로 **별도 PR**
+
+### 핵심 코드 변경 포인트
+
+| 파일 | 변경 |
+|------|------|
+| `src/dem_shorts/scoring.py:24` | `TOP3_NAMES` 하드코딩 → `get_top3_names(perspective)` |
+| `src/dem_shorts/scoring.py:41` | `calculate_dem_score` → `calculate_perspective_score(perspective, x)` |
+| `src/dem_shorts/models/politician.py:75` | `SEED_POLITICIANS` → `SEED_POLITICIANS_DEM` + `SEED_POLITICIANS_PPP` 분리 |
+| `src/dem_shorts/compliance/keyword_dict.py` | `PERSPECTIVE_KEYWORDS` 추가 (against_us / about_them 서브사전) |
+| `src/dem_shorts/compliance/gate.py` | **Item 11 Symmetry 게이트** — 양 perspective risk_score 차이 ≤20점 |
+| `src/dem_shorts/editor/commentary_prompt.py` | `PERSPECTIVE_TONE_GUIDE["ppp"]` 분기 |
+| `src/dem_shorts/bias_report.py:25` | `_TOP3_NAMES` 하드코딩 제거 |
+| `src/dem_shorts/uploader.py` | perspective ↔ channel_id 불일치 시 **TypeError 하드블록** |
+
+### 페이즈
+
+| Phase | 내용 | 시간 |
+|-------|------|------|
+| **0** | 거버넌스: spec 수정 + 변호사 자문 + `docs/politics-bias-charter.md` 초안 | 0.5d |
+| 1 | 설정·DB 마이그레이션 002_party_perspective + 모델 필드 추가 | 1d |
+| 2 | scoring·identify perspective 파라미터화 | 1d |
+| 3 | 가드레일 대칭화 + Symmetry 게이트 Item 11 | 1.5d |
+| 4 | 랭킹·리포트·업로드 perspective 분기 | 1d |
+| 5 | UI/API `?perspective=` 라우팅 | 0.5d |
+| 6 | E2E 검증 (DEM 회귀 + PPP 신규 MP4 2본 증거, 원칙 VII) | 1d |
+| 7 (선택) | `dem_shorts` → `party_shorts` 모듈 리네임 | 별도 PR |
+
+### Top 리스크 (H 4건)
+1. **R1 (H)** — 법률 자문 없이 런칭 → 선거법/명예훼손. **Phase 0 hard gate**
+2. **R2 (H)** — 민주당 E2E 회귀. 모든 perspective 파라미터 default='dem' 하위호환
+3. **R4 (H)** — perspective 누락으로 PPP 영상이 dem 채널에 업로드. uploader.py TypeError 하드블록
+4. **R10 (H)** — `TOP3_NAMES` 하드코딩 누락. 전수 grep 체크리스트 (현재 8개 파일 83건)
+
+### Constitution Check
+| 원칙 | 판정 |
+|------|------|
+| I. Zero-Cost | ✅ |
+| II. Pipeline Integrity | ✅ |
+| III. Text-First | ✅ |
+| **IV. Content Safety & Legal** | ⚠ **조건부 PASS** — Phase 0 완료 후 |
+| V~VIII | ✅ |
+
+### 확정된 7가지 (2026-04-20)
+1. **PPP 시드 정치인 6명**: 한동훈·김기현·권성동·추경호·나경원·오세훈
+2. **Symmetry 게이트 임계값**: 30일 warn → fail 승격 (점진 롤아웃)
+3. **YouTube 채널**: `@국회직캠-d6r` 기존 유지
+4. **스펙 수정 방식**: 007 확장 (spec.md 243~246줄 Out-of-Scope 제거 + FR 일반화)
+5. **`dem_shorts` 모듈 리네임**: Phase 7에서 `party_shorts`로 리네임 (별도 PR)
+6. **업로드 빈도 비율**: **PPP only** — 이 채널은 국민의힘 관점만 업로드. `uploader.py`에 perspective↔channel_id 하드블록 엄격 적용
+7. **Symmetry 게이트 fail 시 override**: 운영자 서명 시 허용 (FR-025 수동 2개 항목과 동일 구조, 감사 로그 보존)
+
+### Q6 결정의 구조적 영향
+- `perspectives` 테이블 시드: dem perspective는 `channel_id=NULL` (로컬 렌더만 가능, 업로드 불가)
+- `bias_report.py`는 PPP 내부 다양성(한동훈 vs 김기현) 체크로 재설계 (이재명 30% 초과 경고 → 특정 PPP 인물 30% 초과 경고)
+- 민주당 관점 draft_5.mp4 같은 로컬 테스트는 계속 가능 (원칙 II 파이프라인 독립성 유지)
+
+### 현재 채널 컨텍스트 (2026-04-20 확인)
+- 운영 채널: `@국회직캠-d6r` (국회 직캠 성격, 중립 네이밍)
+- 실제 컨텐츠 성향: **국민의힘(야당) 친화형** (한국은행 총재 비판 등)
+- 본 시스템에서 업로드된 이력: **0건** (`uploaded_shorts` 테이블 empty)
+- 방금 E2E 테스트로 생성된 draft_5.mp4: 민주당 용산 최고위 → 로컬 테스트용, 업로드 X
+
+### 연관 문서
+- 스펙: `specs/007-dem-shorts-studio/spec.md` (Out-of-Scope 수정 대상)
+- 헌법: `.specify/memory/constitution.md` (원칙 IV 재검토)
+- 신규: `docs/politics-bias-charter.md` (Phase 0 산출물)
+
+---
+
+## 이전 계획
+
+아래는 이전 활성 계획 및 완료 이력의 아카이브입니다 (PPP 기능 구현 시 참조용).
+
+
 > 블라인드 인기글을 만화 스타일 YouTube Shorts 영상으로 자동 변환하는 파이프라인
 
 **마지막 업데이트**: 2026-04-20

@@ -5,6 +5,12 @@ import { resolve } from "path";
 const ROOT = process.cwd();
 const ALLOWED_SCRIPTS_DIR = resolve(ROOT, "data", "scripts");
 const ALLOWED_IMAGES_DIR = resolve(ROOT, "data", "images");
+// Video assets can live in two directories depending on the source pipeline:
+//   data/videos/      — AI-generated clips (freepik/deevid/seedance) or
+//                       user-uploaded replacements from /api/scene/video
+//   data/natv_clips/  — per-scene 9:16 cuts extracted from NATV YouTube source
+const ALLOWED_VIDEOS_DIR = resolve(ROOT, "data", "videos");
+const ALLOWED_NATV_DIR = resolve(ROOT, "data", "natv_clips");
 
 function isAllowedScriptPath(p: string): boolean {
   return resolve(p).startsWith(ALLOWED_SCRIPTS_DIR);
@@ -12,6 +18,11 @@ function isAllowedScriptPath(p: string): boolean {
 
 function isAllowedImagePath(p: string): boolean {
   return resolve(p).startsWith(ALLOWED_IMAGES_DIR);
+}
+
+function isAllowedVideoPath(p: string): boolean {
+  const abs = resolve(p);
+  return abs.startsWith(ALLOWED_VIDEOS_DIR) || abs.startsWith(ALLOWED_NATV_DIR);
 }
 
 function pyWithStdin(code: string, stdinData: string): Promise<string> {
@@ -33,9 +44,10 @@ function pyWithStdin(code: string, stdinData: string): Promise<string> {
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
-  const { scriptPath, sceneImages, useBgm } = await req.json() as {
+  const { scriptPath, sceneImages, sceneVideos, useBgm } = await req.json() as {
     scriptPath: string;
-    sceneImages: { scene_id: number; image_path: string }[];
+    sceneImages?: { scene_id: number; image_path: string }[];
+    sceneVideos?: { scene_id: number; video_path: string }[];
     useBgm: boolean;
   };
 
@@ -46,7 +58,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const validImages = sceneImages.filter((img) => isAllowedImagePath(img.image_path));
+  const validImages = (sceneImages ?? []).filter((img) => isAllowedImagePath(img.image_path));
+  const validVideos = (sceneVideos ?? []).filter((v) => isAllowedVideoPath(v.video_path));
   const safeBgm = Boolean(useBgm);
 
   const enc = new TextEncoder();
@@ -75,6 +88,7 @@ print(json.dumps({"audio_path":str(ap),"timings":timings}))`, ttsArgs));
         const renderArgs = JSON.stringify({
           script_path: scriptPath,
           scene_images: validImages,
+          scene_videos: validVideos,
           use_bgm: safeBgm,
           audio_path: ttsResult.audio_path,
           timings: ttsResult.timings,
@@ -89,14 +103,18 @@ args=json.loads(sys.stdin.read())
 s=ShortsScript.load(args["script_path"])
 ap=Path(args["audio_path"])
 si=args["scene_images"] if args["scene_images"] else None
+sv=args["scene_videos"] if args["scene_videos"] else None
 timings=args.get("timings")
-o=render_video(s,audio_path=ap,scene_images=si,use_bgm=args["use_bgm"],scene_timings=timings)
-print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1)}))`, renderArgs));
+o=render_video(s,audio_path=ap,scene_images=si,scene_videos=sv,use_bgm=args["use_bgm"],scene_timings=timings)
+t=o.parent/(o.stem+".thumb.png")
+print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))`, renderArgs));
         send("progress", { message: `✅ 렌더링 완료 (${rr.size}MB)` });
 
-        send("done", { result: { videoPath: rr.path, size: rr.size } });
+        send("done", { result: { videoPath: rr.path, thumbnailPath: rr.thumbnailPath || "", size: rr.size } });
       } catch (e: any) {
-        send("error", { message: "재렌더링 실패" });
+        // Surface the actual error tail — silent "재렌더링 실패" hides why the
+        // pipeline (TTS / ffmpeg / Remotion) actually failed.
+        send("error", { message: `재렌더링 실패: ${(e?.message || e || "알 수 없는 오류").slice(0, 500)}` });
       }
       ctrl.close();
     },

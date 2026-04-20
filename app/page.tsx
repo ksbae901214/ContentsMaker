@@ -305,7 +305,7 @@ export default function Home() {
               emotionType={result.emotion}
               audioPath={result.audioPath}
               imageStyle={result.imageStyle || imageStyle}
-              sceneVideos={result.visualMode === "video" ? (result.sceneVideos || []) : undefined}
+              sceneVideos={(result.sceneVideos && result.sceneVideos.length > 0) ? result.sceneVideos : (result.visualMode === "video" ? [] : undefined)}
               onTitleChange={(title) => setResult({...result, title})}
               onScenesChange={(scenes) => setResult({...result, scenes})}
               onImagesChange={(images) => setResult({...result, sceneImages: images})}

@@ -347,6 +347,10 @@ export function SceneEditor({
             scene_id: img.scene_id,
             image_path: img.image_path,
           })),
+          sceneVideos: (sceneVideos || []).map((v) => ({
+            scene_id: v.scene_id,
+            video_path: v.video_path,
+          })),
           useBgm,
         }),
       });

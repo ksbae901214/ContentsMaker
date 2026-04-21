@@ -875,6 +875,14 @@ export default function Home() {
             <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
             <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
           </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🎬 화면 전환 효과</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🔊 효과음</span>
+          </label>
           <div className="flex items-center gap-2 text-xs text-gray-500 pl-7">
             <span>📺 YouTube 업로드</span>
             <span className="text-gray-600">— 유명인 탭에서는 비활성화됨</span>
@@ -889,6 +897,8 @@ export default function Home() {
             fd.set("noVideo",celebrityNoVideo?"on":"off");
             fd.set("noImages",celebrityNoImages?"on":"off");
             fd.set("bgm",bgm?"on":"off");
+            fd.set("transitions",transitions?"on":"off");
+            fd.set("sfx",sfx?"on":"off");
             fd.set("yt","off");
             fd.set("tt","off");
             generate(fd);

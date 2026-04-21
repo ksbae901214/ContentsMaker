@@ -436,6 +436,8 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
         # Step 6: Render
         print("🎬 Step 6/6: 영상 렌더링 중...")
         use_bgm = not getattr(args, "no_bgm", False)
+        enable_transitions = not getattr(args, "no_transitions", False)
+        enable_sfx = not getattr(args, "no_sfx", False)
         output_path = render_video(
             script,
             audio_path=voice_path,
@@ -443,6 +445,8 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
             scene_videos=video_paths,
             scene_timings=scene_timings,
             use_bgm=use_bgm,
+            enable_transitions=enable_transitions,
+            enable_sfx=enable_sfx,
         )
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
@@ -628,6 +632,14 @@ def build_parser() -> argparse.ArgumentParser:
     celebrity_parser.add_argument(
         "--no-bgm", action="store_true",
         help="배경음악 비활성화",
+    )
+    celebrity_parser.add_argument(
+        "--no-transitions", action="store_true",
+        help="화면 전환 효과(punch-zoom 등) 비활성화",
+    )
+    celebrity_parser.add_argument(
+        "--no-sfx", action="store_true",
+        help="효과음(whoosh·impact 등) 비활성화",
     )
 
     # crawl subcommand (P2 placeholder)

@@ -107,9 +107,17 @@ export async function POST(req: NextRequest) {
           if (noVideo) args.push("--no-video");
           if (noImages) args.push("--no-images");
           if (!useBgm) args.push("--no-bgm");
+          if (!useTransitions) args.push("--no-transitions");
+          if (!useSfx) args.push("--no-sfx");
 
           send("progress", { message: `🎬 유명인 파이프라인 시작: ${name}` });
-          send("progress", { message: `   옵션: ${[noVideo?"no-video":"", noImages?"no-images":"", useBgm?"":"no-bgm"].filter(Boolean).join(", ") || "기본"}` });
+          send("progress", { message: `   옵션: ${[
+            noVideo ? "no-video" : "",
+            noImages ? "no-images" : "",
+            useBgm ? "" : "no-bgm",
+            useTransitions ? "" : "no-transitions",
+            useSfx ? "" : "no-sfx",
+          ].filter(Boolean).join(", ") || "기본"}` });
 
           let videoOutputPath = "";
           let sourceUrl = "";

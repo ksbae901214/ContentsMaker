@@ -112,12 +112,23 @@ export async function POST(req: NextRequest) {
           const analyzeOnly = stopAfter === "analyze" && mode === "celebrity";
           const qualifier = ((fd.get("celebrityQualifier") as string) || "").trim();
           const portraitPath = ((fd.get("portraitPath") as string) || "").trim();
+          const sceneImagesJson = ((fd.get("sceneImagesJson") as string) || "").trim();
+
+          // sceneImagesJson이 있으면 tempfile에 저장해서 CLI에 경로로 전달
+          let sceneImagesJsonPath = "";
+          if (sceneImagesJson) {
+            const tmpDir = join(ROOT, "data", "tmp");
+            await mkdir(tmpDir, { recursive: true });
+            sceneImagesJsonPath = join(tmpDir, `scene_images_${uuid()}.json`);
+            await writeFile(sceneImagesJsonPath, sceneImagesJson, "utf-8");
+          }
 
           const args = ["-m", "src.main", "celebrity", name];
           if (qualifier) args.push("--qualifier", qualifier);
           if (analyzeOnly) args.push("--analyze-only");
           if (isCelebrityScript) args.push("--from-script", existingScriptPath);
-          if (portraitPath) args.push("--portrait-path", portraitPath);
+          if (sceneImagesJsonPath) args.push("--scene-images-json", sceneImagesJsonPath);
+          else if (portraitPath) args.push("--portrait-path", portraitPath);
           if (noVideo) args.push("--no-video");
           if (noImages) args.push("--no-images");
           if (symbolicImages) args.push("--symbolic-images");
@@ -189,6 +200,7 @@ print(json.dumps({"scenes":s["scenes"]}))`));
                 celebrityName: name,
                 sourceUrl: analyzeResult.source_url,
                 portraitCandidates: analyzeResult.portrait_candidates || [],
+                sceneImages: analyzeResult.scene_images || [],
               },
             });
             ctrl.close();

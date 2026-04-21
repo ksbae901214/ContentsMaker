@@ -444,9 +444,9 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
 
         # ── --analyze-only: Phase 1 종료 ──
         if analyze_only:
-            # 인물 대표 이미지 후보 다운로드 (사용자가 검수 화면에서 선택 or 교체)
-            portrait_candidates = _download_celebrity_portrait_candidates(
-                name, qualifier=qualifier,
+            # 씬마다 1장씩 이미지 다운로드 (사용자 요청 2026-04-21 v3)
+            scene_images = _download_celebrity_scene_images(
+                name, script, qualifier=qualifier,
             )
             payload = {
                 "script_path": str(script_path),
@@ -456,26 +456,41 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
                 "duration": script.metadata.duration,
                 "scene_count": len(script.scenes),
                 "source_url": info.source_url,
-                "portrait_candidates": portrait_candidates,  # [{"path": "...", "url": "..."}, ...]
+                "scene_images": scene_images,  # [{"scene_id": N, "path": "...", "filename": "...", "query": "..."}, ...]
             }
             print("ANALYZE_DONE " + _json.dumps(payload, ensure_ascii=False))
             return 0
 
-        # Step 3: Images (Naver) — optional
+        # Step 3: Images — priority: scene-images-json > portrait-path > auto 검색
         image_paths: list[dict] | None = None
         if not getattr(args, "no_images", False):
-            # 기본 single-portrait 모드: 인물 대표 이미지 1장을 모든 씬에 공유.
-            # --symbolic-images로 옛 씬별 상징 이미지 방식 선택 가능.
-            # --portrait-path 주어지면 해당 파일을 재사용 (사용자 검수 선택).
-            single_portrait = not getattr(args, "symbolic_images", False)
+            scene_images_json = getattr(args, "scene_images_json", None)
             portrait_path = getattr(args, "portrait_path", None)
-            if portrait_path and Path(portrait_path).exists():
+            if scene_images_json and Path(scene_images_json).exists():
+                # 사용자가 검수 화면에서 씬별 지정한 경로 맵 로드
+                print(f"🖼️  Step 3/6: 사용자 씬별 이미지 맵 사용 — {scene_images_json}")
+                raw_map = _json.loads(Path(scene_images_json).read_text(encoding="utf-8"))
+                # key가 str일 수 있으니 int/str 모두 허용
+                scene_map = {int(k): v for k, v in raw_map.items() if v}
+                image_paths = []
+                for s in script.scenes:
+                    path = scene_map.get(s.id)
+                    if path and Path(path).exists():
+                        image_paths.append({
+                            "scene_id": s.id, "image_path": path,
+                            "prompt": "(user selected)",
+                        })
+                if not image_paths:
+                    print("   ⚠️  맵에서 유효한 경로 없음 — 재검색으로 폴백")
+                    image_paths = None
+            elif portrait_path and Path(portrait_path).exists():
                 print(f"🖼️  Step 3/6: 사용자 선택 이미지 사용 — {portrait_path}")
                 image_paths = [
                     {"scene_id": s.id, "image_path": portrait_path, "prompt": "(user selected)"}
                     for s in script.scenes
                 ]
-            else:
+            if image_paths is None:
+                single_portrait = not getattr(args, "symbolic_images", False)
                 image_paths = _run_celebrity_images(
                     name, script, qualifier=qualifier,
                     single_portrait=single_portrait,
@@ -852,8 +867,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     celebrity_parser.add_argument(
         "--portrait-path", type=str, metavar="PATH",
-        help="검수 화면에서 사용자가 선택·업로드한 인물 이미지 경로. 지정 시 "
-             "네이버 재검색 없이 이 파일을 모든 씬에 공유.",
+        help="[Legacy] 대표 이미지 1장을 모든 씬에 공유. "
+             "scene-images-json이 더 세밀한 씬별 제어를 제공.",
+    )
+    celebrity_parser.add_argument(
+        "--scene-images-json", type=str, metavar="PATH",
+        help="사용자가 검수 화면에서 씬별 지정·업로드한 이미지 경로 JSON 맵 "
+             "({\"1\": \"/path/a.jpg\", \"2\": ...}). 지정 시 네이버 재검색 없이 이 "
+             "파일들을 각 씬에 주입.",
     )
 
     # crawl subcommand (P2 placeholder)
@@ -958,10 +979,8 @@ def main() -> int:
 def _download_celebrity_portrait_candidates(
     name: str, qualifier: str | None = None, count: int = 3,
 ) -> list[dict]:
-    """Phase 1에서 대본 검수 화면에 보여줄 인물 이미지 후보 다운로드.
-
-    Returns [{"path": "...", "filename": "..."}, ...] — 실패 시 빈 리스트.
-    API 키·네트워크 실패는 조용히 스킵 (검수 화면에 이미지 없이 진행).
+    """[Legacy] 대표 이미지 3장 후보. 씬마다 다른 이미지를 원하면
+    `_download_celebrity_scene_images`를 사용하세요.
     """
     try:
         from datetime import datetime
@@ -983,9 +1002,77 @@ def _download_celebrity_portrait_candidates(
             {"path": str(p), "filename": p.name}
             for p in saved
         ]
-    except Exception as exc:  # NaverImageSearchError 포함
+    except Exception as exc:
         logger.warning("인물 이미지 후보 다운로드 실패: %s", exc)
         return []
+
+
+def _download_celebrity_scene_images(
+    name: str, script, qualifier: str | None = None,
+) -> list[dict]:
+    """Phase 1에서 각 씬마다 1장씩 이미지 다운로드 (사용자 요청 2026-04-21 v3).
+
+    씬의 image_query가 있으면 그 쿼리 사용. 인물명 단독이면 qualifier 결합.
+    동일 쿼리는 API 1회 호출 후 결과를 씬 수만큼 분배 (쿼터 절약).
+
+    Returns [{"scene_id": N, "path": "...", "filename": "...", "query": "..."}, ...]
+    """
+    try:
+        from datetime import datetime
+        from src.config.settings import DATA_DIR
+        from src.illustrator.naver_image_search import (
+            NaverImageSearcher, NaverImageSearchError,
+        )
+    except Exception as exc:
+        logger.warning("이미지 검색 의존성 로드 실패: %s", exc)
+        return []
+
+    portrait_dir = DATA_DIR / "celebrity_portraits"
+    portrait_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_name = "".join(c if c.isalnum() else "_" for c in name)[:30]
+
+    searcher = NaverImageSearcher()
+    results: list[dict] = []
+    query_cache: dict[str, list] = {}
+    query_cursor: dict[str, int] = {}
+
+    for scene in script.scenes:
+        base_query = (scene.image_query or "").strip() or name
+        # 인물명 단독 쿼리면 qualifier 결합 (동명이인 방지)
+        query = (
+            f"{name} {qualifier}".strip()
+            if qualifier and base_query == name
+            else base_query
+        )
+        try:
+            if query not in query_cache:
+                search_res = searcher.search(query, count=3)
+                safe_q = "".join(c if c.isalnum() else "_" for c in query)[:25] or "q"
+                saved = searcher.download(
+                    search_res, portrait_dir,
+                    filename_prefix=f"{safe_name}_{timestamp}_s{scene.id:02d}_{safe_q}",
+                )
+                query_cache[query] = list(saved)
+                query_cursor[query] = 0
+            cache = query_cache[query]
+            if not cache:
+                logger.warning("씬 %d: '%s' 결과 0건", scene.id, query)
+                continue
+            idx = query_cursor[query]
+            path = cache[idx % len(cache)]
+            query_cursor[query] = idx + 1
+            results.append({
+                "scene_id": scene.id,
+                "path": str(path),
+                "filename": path.name,
+                "query": query,
+            })
+        except Exception as exc:  # NaverImageSearchError 포함
+            logger.warning("씬 %d '%s' 이미지 실패: %s", scene.id, query, exc)
+            continue
+
+    return results
 
 
 if __name__ == "__main__":

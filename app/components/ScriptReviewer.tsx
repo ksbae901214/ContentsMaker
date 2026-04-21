@@ -37,10 +37,13 @@ interface Props {
   onGenerate: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;
-  // Celebrity 모드: Phase 1에서 받은 후보 이미지 + 선택 상태.
+  // [Legacy] 단일 대표 이미지 선택 (사용자 요청 2026-04-21 v3에서 씬별로 대체)
   portraitCandidates?: PortraitCandidate[];
   selectedPortraitPath?: string;
   onPortraitChange?: (path: string) => void;
+  // 씬별 이미지 (사용자 요청 2026-04-21 v3): scene_id → path
+  sceneImages?: Record<number, string>;
+  onSceneImageChange?: (sceneId: number, path: string) => void;
   celebrityName?: string;  // 업로드 파일명 prefix
 }
 
@@ -74,10 +77,14 @@ export function ScriptReviewer({
   portraitCandidates = [],
   selectedPortraitPath = "",
   onPortraitChange,
+  sceneImages = {},
+  onSceneImageChange,
   celebrityName = "",
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  // 씬별 업로드 중 상태 (scene_id → boolean)
+  const [sceneUploading, setSceneUploading] = useState<Record<number, boolean>>({});
   const handleUpload = async (file: File) => {
     setUploading(true);
     setUploadError("");
@@ -93,6 +100,22 @@ export function ScriptReviewer({
       setUploadError(e.message || "업로드 실패");
     } finally {
       setUploading(false);
+    }
+  };
+  const handleSceneUpload = async (sceneId: number, file: File) => {
+    setSceneUploading((s) => ({ ...s, [sceneId]: true }));
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      if (celebrityName) fd.set("name", `${celebrityName}_s${sceneId}`);
+      const r = await fetch("/api/celebrity-portrait", { method: "POST", body: fd });
+      const data = await r.json();
+      if (!r.ok || !data.path) throw new Error(data.error || "upload failed");
+      onSceneImageChange?.(sceneId, data.path);
+    } catch (e: any) {
+      alert(`씬 ${sceneId} 업로드 실패: ${e.message || e}`);
+    } finally {
+      setSceneUploading((s) => ({ ...s, [sceneId]: false }));
     }
   };
   const [titleDraft, setTitleDraft] = useState(title);
@@ -349,6 +372,9 @@ export function ScriptReviewer({
           const draft = getDraft(scene);
           const isDirty =
             draft.text !== scene.text || draft.voice_text !== scene.voice_text;
+          const sceneImg = sceneImages[scene.id];
+          const isSceneUploading = sceneUploading[scene.id];
+          const hasSceneImages = onSceneImageChange !== undefined;
           return (
             <div
               key={scene.id}
@@ -370,24 +396,63 @@ export function ScriptReviewer({
                   </button>
                 )}
               </div>
-              <label className="text-xs text-gray-400 block mb-1">
-                🖼️ 화면에 표시할 글
-              </label>
-              <textarea
-                value={draft.text}
-                onChange={(e) => updateDraft(scene.id, "text", e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 mb-2 bg-gray-900 border border-gray-700 rounded focus:border-blue-500 focus:outline-none text-sm resize-y"
-              />
-              <label className="text-xs text-gray-400 block mb-1">
-                🎙️ TTS 음성 대본
-              </label>
-              <textarea
-                value={draft.voice_text}
-                onChange={(e) => updateDraft(scene.id, "voice_text", e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded focus:border-blue-500 focus:outline-none text-sm resize-y"
-              />
+              <div className="flex gap-3">
+                {/* 씬별 이미지 썸네일 (celebrity 모드에서만) */}
+                {hasSceneImages && (
+                  <div className="flex-shrink-0 w-20">
+                    <div className="aspect-square rounded overflow-hidden bg-gray-900 border border-gray-700 mb-1">
+                      {sceneImg ? (
+                        <img
+                          src={`/api/celebrity-portrait?path=${encodeURIComponent(sceneImg)}`}
+                          alt={`씬 ${scene.id}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                          이미지 없음
+                        </div>
+                      )}
+                    </div>
+                    <label className={`block text-center cursor-pointer text-[10px] px-1.5 py-1 rounded ${
+                      isSceneUploading ? "bg-gray-700 text-gray-500" : "bg-blue-600 hover:bg-blue-500"
+                    }`}>
+                      {isSceneUploading ? "..." : "📤 교체"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={isSceneUploading}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleSceneUpload(scene.id, f);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <label className="text-xs text-gray-400 block mb-1">
+                    🖼️ 화면에 표시할 글
+                  </label>
+                  <textarea
+                    value={draft.text}
+                    onChange={(e) => updateDraft(scene.id, "text", e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 mb-2 bg-gray-900 border border-gray-700 rounded focus:border-blue-500 focus:outline-none text-sm resize-y"
+                  />
+                  <label className="text-xs text-gray-400 block mb-1">
+                    🎙️ TTS 음성 대본
+                  </label>
+                  <textarea
+                    value={draft.voice_text}
+                    onChange={(e) => updateDraft(scene.id, "voice_text", e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded focus:border-blue-500 focus:outline-none text-sm resize-y"
+                  />
+                </div>
+              </div>
             </div>
           );
         })}

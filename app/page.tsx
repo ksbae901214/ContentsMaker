@@ -9,6 +9,7 @@ interface SceneData { id: number; timestamp: number; duration: number; type: str
 interface JobResult { videoPath: string; thumbnailPath?: string; title: string; emotion: string; duration: number; imageCount: number; videoCount?: number; cost: number; visualMode?: string; imageStyle?: string; sourceType?: string; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; scriptPath?: string; audioPath?: string; sceneImages?: SceneImage[]; sceneVideos?: {scene_id:number;video_path:string}[]; scenes?: SceneData[]; dryRun?: boolean; }
 // Phase 1 (analyze-only) result held during the reviewing state.
 interface PortraitCandidate { path: string; filename: string }
+interface SceneImage { scene_id: number; path: string; filename: string; query?: string }
 interface ReviewPayload {
   phase: "analyzed";
   title: string;
@@ -19,6 +20,7 @@ interface ReviewPayload {
   sourceType?: string;
   celebrityName?: string;
   portraitCandidates?: PortraitCandidate[];
+  sceneImages?: SceneImage[];
 }
 interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
@@ -69,6 +71,7 @@ export default function Home() {
   const [result, setResult] = useState<JobResult|null>(null);
   const [review, setReview] = useState<ReviewPayload|null>(null);
   const [selectedPortraitPath, setSelectedPortraitPath] = useState<string>("");
+  const [sceneImageMap, setSceneImageMap] = useState<Record<number, string>>({});
   // "analyze" during Phase 1 (input → Claude) or "render" during Phase 2
   // (script → images/videos/TTS/render). Drives the processing header.
   const [phase, setPhase] = useState<"analyze"|"render">("analyze");
@@ -200,9 +203,15 @@ export default function Home() {
           if (d.result?.phase === "analyzed") {
             const rev = d.result as ReviewPayload;
             setReview(rev);
-            // 후보 이미지가 있으면 첫 번째를 기본 선택
+            // [Legacy] 첫 후보 이미지 (단일 대표 모드)
             const firstPortrait = rev.portraitCandidates?.[0]?.path || "";
             setSelectedPortraitPath(firstPortrait);
+            // 씬별 이미지 맵 초기화 (v3: 씬마다 1장)
+            const mapInit: Record<number, string> = {};
+            (rev.sceneImages || []).forEach((si) => {
+              if (si.scene_id && si.path) mapInit[si.scene_id] = si.path;
+            });
+            setSceneImageMap(mapInit);
             setStatus("reviewing");
           } else {
             setResult(d.result);
@@ -253,8 +262,13 @@ export default function Home() {
     fd.set("mode", "script");
     fd.set("scriptPath", review.scriptPath);
     Object.entries(phase2Opts).forEach(([k, v]) => fd.set(k, v));
-    // 검수 화면에서 선택·업로드한 인물 이미지를 Phase 2에 전달
-    if (selectedPortraitPath) fd.set("portraitPath", selectedPortraitPath);
+    // 씬별 이미지 맵이 있으면 우선 전송 (사용자가 검수 화면에서 교체·업로드)
+    const hasSceneImages = Object.keys(sceneImageMap).length > 0;
+    if (hasSceneImages) {
+      fd.set("sceneImagesJson", JSON.stringify(sceneImageMap));
+    } else if (selectedPortraitPath) {
+      fd.set("portraitPath", selectedPortraitPath);  // legacy 단일 이미지 모드
+    }
     setPhase("render");
     generate(fd);
   };
@@ -293,6 +307,10 @@ export default function Home() {
       portraitCandidates={review.portraitCandidates}
       selectedPortraitPath={selectedPortraitPath}
       onPortraitChange={(path) => setSelectedPortraitPath(path)}
+      sceneImages={sceneImageMap}
+      onSceneImageChange={(sceneId, path) =>
+        setSceneImageMap((m) => ({ ...m, [sceneId]: path }))
+      }
       celebrityName={review.celebrityName || ""}
     />
   );

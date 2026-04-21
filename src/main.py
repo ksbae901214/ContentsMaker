@@ -444,6 +444,10 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
 
         # ── --analyze-only: Phase 1 종료 ──
         if analyze_only:
+            # 인물 대표 이미지 후보 다운로드 (사용자가 검수 화면에서 선택 or 교체)
+            portrait_candidates = _download_celebrity_portrait_candidates(
+                name, qualifier=qualifier,
+            )
             payload = {
                 "script_path": str(script_path),
                 "name": name,
@@ -452,8 +456,8 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
                 "duration": script.metadata.duration,
                 "scene_count": len(script.scenes),
                 "source_url": info.source_url,
+                "portrait_candidates": portrait_candidates,  # [{"path": "...", "url": "..."}, ...]
             }
-            # 마지막 줄이 JSON 결과 — route.ts가 파싱
             print("ANALYZE_DONE " + _json.dumps(payload, ensure_ascii=False))
             return 0
 
@@ -462,11 +466,20 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
         if not getattr(args, "no_images", False):
             # 기본 single-portrait 모드: 인물 대표 이미지 1장을 모든 씬에 공유.
             # --symbolic-images로 옛 씬별 상징 이미지 방식 선택 가능.
+            # --portrait-path 주어지면 해당 파일을 재사용 (사용자 검수 선택).
             single_portrait = not getattr(args, "symbolic_images", False)
-            image_paths = _run_celebrity_images(
-                name, script, qualifier=qualifier,
-                single_portrait=single_portrait,
-            )
+            portrait_path = getattr(args, "portrait_path", None)
+            if portrait_path and Path(portrait_path).exists():
+                print(f"🖼️  Step 3/6: 사용자 선택 이미지 사용 — {portrait_path}")
+                image_paths = [
+                    {"scene_id": s.id, "image_path": portrait_path, "prompt": "(user selected)"}
+                    for s in script.scenes
+                ]
+            else:
+                image_paths = _run_celebrity_images(
+                    name, script, qualifier=qualifier,
+                    single_portrait=single_portrait,
+                )
 
         # Step 4: Image-to-video (Freepik) — optional
         video_paths: list[dict] | None = None
@@ -837,6 +850,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--symbolic-images", action="store_true",
         help="씬별 image_query 기반 상징 이미지 사용 (기본: 인물 대표 사진 1장 공유).",
     )
+    celebrity_parser.add_argument(
+        "--portrait-path", type=str, metavar="PATH",
+        help="검수 화면에서 사용자가 선택·업로드한 인물 이미지 경로. 지정 시 "
+             "네이버 재검색 없이 이 파일을 모든 씬에 공유.",
+    )
 
     # crawl subcommand (P2 placeholder)
     # url subcommand
@@ -935,6 +953,39 @@ def main() -> int:
         return freepik_login()
 
     return 0
+
+
+def _download_celebrity_portrait_candidates(
+    name: str, qualifier: str | None = None, count: int = 3,
+) -> list[dict]:
+    """Phase 1에서 대본 검수 화면에 보여줄 인물 이미지 후보 다운로드.
+
+    Returns [{"path": "...", "filename": "..."}, ...] — 실패 시 빈 리스트.
+    API 키·네트워크 실패는 조용히 스킵 (검수 화면에 이미지 없이 진행).
+    """
+    try:
+        from datetime import datetime
+        from src.config.settings import DATA_DIR
+        from src.illustrator.naver_image_search import (
+            NaverImageSearcher, NaverImageSearchError,
+        )
+        portrait_dir = DATA_DIR / "celebrity_portraits"
+        portrait_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_name = "".join(c if c.isalnum() else "_" for c in name)[:30]
+        query = f"{name} {qualifier}".strip() if qualifier else name
+        searcher = NaverImageSearcher()
+        results = searcher.search(query, count=count)
+        saved = searcher.download(
+            results, portrait_dir, filename_prefix=f"{safe_name}_{timestamp}",
+        )
+        return [
+            {"path": str(p), "filename": p.name}
+            for p in saved
+        ]
+    except Exception as exc:  # NaverImageSearchError 포함
+        logger.warning("인물 이미지 후보 다운로드 실패: %s", exc)
+        return []
 
 
 if __name__ == "__main__":

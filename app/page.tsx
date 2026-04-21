@@ -8,6 +8,7 @@ interface SceneImage { scene_id: number; image_path: string; prompt: string; }
 interface SceneData { id: number; timestamp: number; duration: number; type: string; text: string; voice_text: string; emphasis: string; }
 interface JobResult { videoPath: string; thumbnailPath?: string; title: string; emotion: string; duration: number; imageCount: number; videoCount?: number; cost: number; visualMode?: string; imageStyle?: string; sourceType?: string; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; scriptPath?: string; audioPath?: string; sceneImages?: SceneImage[]; sceneVideos?: {scene_id:number;video_path:string}[]; scenes?: SceneData[]; dryRun?: boolean; }
 // Phase 1 (analyze-only) result held during the reviewing state.
+interface PortraitCandidate { path: string; filename: string }
 interface ReviewPayload {
   phase: "analyzed";
   title: string;
@@ -16,6 +17,8 @@ interface ReviewPayload {
   scriptPath: string;
   scenes: SceneData[];
   sourceType?: string;
+  celebrityName?: string;
+  portraitCandidates?: PortraitCandidate[];
 }
 interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
@@ -65,6 +68,7 @@ export default function Home() {
   const [progress, setProgress] = useState<string[]>([]);
   const [result, setResult] = useState<JobResult|null>(null);
   const [review, setReview] = useState<ReviewPayload|null>(null);
+  const [selectedPortraitPath, setSelectedPortraitPath] = useState<string>("");
   // "analyze" during Phase 1 (input → Claude) or "render" during Phase 2
   // (script → images/videos/TTS/render). Drives the processing header.
   const [phase, setPhase] = useState<"analyze"|"render">("analyze");
@@ -194,7 +198,11 @@ export default function Home() {
           // Phase 1 analyze-only result carries phase==="analyzed"
           // and no videoPath — show the review screen instead of done.
           if (d.result?.phase === "analyzed") {
-            setReview(d.result as ReviewPayload);
+            const rev = d.result as ReviewPayload;
+            setReview(rev);
+            // 후보 이미지가 있으면 첫 번째를 기본 선택
+            const firstPortrait = rev.portraitCandidates?.[0]?.path || "";
+            setSelectedPortraitPath(firstPortrait);
             setStatus("reviewing");
           } else {
             setResult(d.result);
@@ -245,6 +253,8 @@ export default function Home() {
     fd.set("mode", "script");
     fd.set("scriptPath", review.scriptPath);
     Object.entries(phase2Opts).forEach(([k, v]) => fd.set(k, v));
+    // 검수 화면에서 선택·업로드한 인물 이미지를 Phase 2에 전달
+    if (selectedPortraitPath) fd.set("portraitPath", selectedPortraitPath);
     setPhase("render");
     generate(fd);
   };
@@ -280,6 +290,10 @@ export default function Home() {
       onScenesChange={(s) => setReview({...review, scenes: s})}
       onGenerate={generateFromScript}
       onCancel={reset}
+      portraitCandidates={review.portraitCandidates}
+      selectedPortraitPath={selectedPortraitPath}
+      onPortraitChange={(path) => setSelectedPortraitPath(path)}
+      celebrityName={review.celebrityName || ""}
     />
   );
 

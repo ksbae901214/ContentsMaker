@@ -20,6 +20,11 @@ interface ScenePrompt {
   motion_prompt: string;
 }
 
+interface PortraitCandidate {
+  path: string;
+  filename: string;
+}
+
 interface Props {
   title: string;
   scenes: SceneData[];
@@ -32,6 +37,11 @@ interface Props {
   onGenerate: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;
+  // Celebrity 모드: Phase 1에서 받은 후보 이미지 + 선택 상태.
+  portraitCandidates?: PortraitCandidate[];
+  selectedPortraitPath?: string;
+  onPortraitChange?: (path: string) => void;
+  celebrityName?: string;  // 업로드 파일명 prefix
 }
 
 const EMOTION_LABELS: Record<string, string> = {
@@ -61,7 +71,30 @@ export function ScriptReviewer({
   onGenerate,
   onCancel,
   isSubmitting = false,
+  portraitCandidates = [],
+  selectedPortraitPath = "",
+  onPortraitChange,
+  celebrityName = "",
 }: Props) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    setUploadError("");
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      if (celebrityName) fd.set("name", celebrityName);
+      const r = await fetch("/api/celebrity-portrait", { method: "POST", body: fd });
+      const data = await r.json();
+      if (!r.ok || !data.path) throw new Error(data.error || "upload failed");
+      onPortraitChange?.(data.path);
+    } catch (e: any) {
+      setUploadError(e.message || "업로드 실패");
+    } finally {
+      setUploading(false);
+    }
+  };
   const [titleDraft, setTitleDraft] = useState(title);
   const [editingTitle, setEditingTitle] = useState(false);
   const [sceneDrafts, setSceneDrafts] = useState<Record<number, { text: string; voice_text: string }>>({});
@@ -194,6 +227,66 @@ export function ScriptReviewer({
           <span>{duration}초 · {scenes.length}씬</span>
         </div>
       </div>
+
+      {/* 인물 대표 이미지 선택 — celebrity 모드에서만 표시 */}
+      {(portraitCandidates.length > 0 || onPortraitChange) && (
+        <div className="bg-gray-800 rounded-lg p-4 mb-4">
+          <label className="text-xs text-gray-500 mb-3 block">
+            🖼️ 영상에 사용할 인물 이미지 (전 씬 공유) —
+            마음에 드는 걸 선택하거나 직접 업로드
+          </label>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {portraitCandidates.map((cand) => {
+              const isSelected = cand.path === selectedPortraitPath;
+              return (
+                <button
+                  key={cand.path}
+                  onClick={() => onPortraitChange?.(cand.path)}
+                  className={`relative rounded border-2 transition overflow-hidden aspect-square ${
+                    isSelected ? "border-blue-500 ring-2 ring-blue-400" : "border-gray-700 hover:border-gray-500"
+                  }`}
+                  type="button"
+                  aria-label={`이미지 선택: ${cand.filename}`}
+                >
+                  <img
+                    src={`/api/celebrity-portrait?path=${encodeURIComponent(cand.path)}`}
+                    alt={cand.filename}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  {isSelected && (
+                    <span className="absolute top-1 right-1 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded">✓</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
+            <label className={`cursor-pointer px-3 py-2 rounded text-xs font-medium transition ${uploading ? "bg-gray-700 text-gray-500" : "bg-blue-600 hover:bg-blue-500"}`}>
+              {uploading ? "업로드 중..." : "📤 직접 이미지 업로드"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploading}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleUpload(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {selectedPortraitPath && (
+              <span className="text-xs text-gray-400 truncate flex-1">
+                선택됨: {selectedPortraitPath.split("/").pop()}
+              </span>
+            )}
+          </div>
+          {uploadError && (
+            <p className="text-xs text-red-400 mt-2">⚠️ {uploadError}</p>
+          )}
+        </div>
+      )}
 
       {/* Title editor */}
       <div className="bg-gray-800 rounded-lg p-4 mb-4">

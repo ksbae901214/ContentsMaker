@@ -111,11 +111,13 @@ export async function POST(req: NextRequest) {
           const symbolicImages = (fd.get("symbolicImages") as string) === "on";
           const analyzeOnly = stopAfter === "analyze" && mode === "celebrity";
           const qualifier = ((fd.get("celebrityQualifier") as string) || "").trim();
+          const portraitPath = ((fd.get("portraitPath") as string) || "").trim();
 
           const args = ["-m", "src.main", "celebrity", name];
           if (qualifier) args.push("--qualifier", qualifier);
           if (analyzeOnly) args.push("--analyze-only");
           if (isCelebrityScript) args.push("--from-script", existingScriptPath);
+          if (portraitPath) args.push("--portrait-path", portraitPath);
           if (noVideo) args.push("--no-video");
           if (noImages) args.push("--no-images");
           if (symbolicImages) args.push("--symbolic-images");
@@ -186,6 +188,7 @@ print(json.dumps({"scenes":s["scenes"]}))`));
                 sourceType: "celebrity",
                 celebrityName: name,
                 sourceUrl: analyzeResult.source_url,
+                portraitCandidates: analyzeResult.portrait_candidates || [],
               },
             });
             ctrl.close();

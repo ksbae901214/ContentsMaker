@@ -123,6 +123,10 @@ class Scene:
     # QW-02: 강조 키워드 색 카테고리 — fact(노랑)/criticism(빨강)/neutral(emotion 색).
     # 기본 "neutral" — 기존 emotion 기반 동작 유지.
     highlight_category: str = "neutral"
+    # Phase 9 추가 (2026-04-21): 씬별 이미지 검색어. 유명인 모드에서 "서울대를 졸업했습니다"
+    # 씬의 image_query="서울대학교 정문" 식으로 내용에 맞는 이미지를 네이버에서 검색.
+    # None이면 상위 로직이 인물명 등 기본값으로 폴백.
+    image_query: str | None = None
 
     def to_dict(self) -> dict:
         d = {
@@ -153,6 +157,8 @@ class Scene:
             d["hook"] = True
         if self.highlight_category and self.highlight_category != "neutral":
             d["highlight_category"] = self.highlight_category
+        if self.image_query:  # None·빈 문자열은 키 생략
+            d["image_query"] = self.image_query
         return d
 
     @classmethod
@@ -189,6 +195,7 @@ class Scene:
             highlight_category=str(
                 data.get("highlight_category", data.get("highlightCategory", "neutral"))
             ),
+            image_query=data.get("image_query", data.get("imageQuery")) or None,
         )
 
 

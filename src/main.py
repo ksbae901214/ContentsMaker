@@ -467,7 +467,14 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
 
 
 def _run_celebrity_images(name: str, script) -> list[dict] | None:
-    """Search Naver + download portraits. Returns scene_images list or None."""
+    """씬별 image_query 에 따라 네이버 이미지 검색 + 다운로드.
+
+    Phase 9 v2 (2026-04-21): 씬마다 다른 쿼리 지원. "서울대를 졸업했다" 씬이면
+    scene.image_query="서울대학교 정문"으로 검색해 해당 이미지를 받는다.
+    None이면 인물명으로 폴백. 동일 쿼리는 한 번만 API 호출 후 재사용.
+
+    Returns scene_images list or None (전체 실패 시).
+    """
     from datetime import datetime
     from src.config.settings import DATA_DIR
     from src.illustrator.naver_image_search import (
@@ -475,25 +482,52 @@ def _run_celebrity_images(name: str, script) -> list[dict] | None:
         NaverImageSearchError,
     )
 
-    count = len(script.scenes)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_name = "".join(c if c.isalnum() else "_" for c in name)[:30]
     output_dir = DATA_DIR / "images" / "celebrity" / f"{timestamp}_{safe_name}"
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    try:
-        print(f"🖼️  Step 3/6: 네이버에서 '{name}' 사진 {count}장 검색 중...")
-        searcher = NaverImageSearcher()
-        results = searcher.search(name, count=count)
-        saved = searcher.download(results, output_dir, filename_prefix=safe_name)
-        print(f"   저장: {len(saved)}장 → {output_dir}")
-        return [
-            {"scene_id": scene.id, "image_path": str(path), "prompt": ""}
-            for scene, path in zip(script.scenes, saved)
-        ]
-    except NaverImageSearchError as e:
-        logger.warning("이미지 검색 실패: %s", e)
-        print(f"   ⚠️  이미지 검색 실패, 그라데이션 배경으로 대체: {e}")
+    print(f"🖼️  Step 3/6: 네이버 이미지 검색 ({len(script.scenes)}씬, 씬별 쿼리)...")
+    searcher = NaverImageSearcher()
+    scene_images: list[dict] = []
+    query_cache: dict[str, list] = {}  # query → downloaded paths
+    query_cursor: dict[str, int] = {}  # query → next path index
+
+    for scene in script.scenes:
+        query = (scene.image_query or "").strip() or name
+        try:
+            if query not in query_cache:
+                results = searcher.search(query, count=3)
+                safe_q = "".join(c if c.isalnum() else "_" for c in query)[:30] or "q"
+                saved = searcher.download(
+                    results, output_dir,
+                    filename_prefix=f"{safe_q}_{scene.id:02d}",
+                )
+                query_cache[query] = list(saved)
+                query_cursor[query] = 0
+                print(f"   씬 {scene.id}: '{query}' → {len(saved)}장")
+
+            cache = query_cache[query]
+            idx = query_cursor[query]
+            if not cache:
+                # 해당 쿼리에서 아무것도 못 받음 — 이 씬은 스킵 (그라데이션)
+                continue
+            path = cache[idx % len(cache)]
+            query_cursor[query] = idx + 1
+            scene_images.append({
+                "scene_id": scene.id,
+                "image_path": str(path),
+                "prompt": query,
+            })
+        except NaverImageSearchError as e:
+            logger.warning("씬 %d '%s' 검색 실패: %s", scene.id, query, e)
+            print(f"   ⚠️  씬 {scene.id}: '{query}' 실패 — 그라데이션 폴백")
+
+    if not scene_images:
+        print("   ⚠️  모든 씬 이미지 검색 실패, 그라데이션 배경으로 대체")
         return None
+    print(f"   완료: {len(scene_images)}/{len(script.scenes)} 씬 이미지 확보")
+    return scene_images
 
 
 def _run_celebrity_videos(

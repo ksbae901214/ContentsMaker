@@ -74,7 +74,44 @@ python3 -m src.main render --script data/scripts/script.json --audio data/audio/
 
 # 전체 파이프라인 (raw JSON → 영상)
 python3 -m src.main pipeline --file data/raw/sample.json
+
+# 유명인 소개 쇼츠 (Phase 9, 학습 목적 전용)
+python3 -m src.main celebrity "손흥민"                # 전체 파이프라인
+python3 -m src.main celebrity "세종대왕" --no-video   # 정지 이미지만
+python3 -m src.main celebrity "유재석" --no-images    # 그라데이션만
 ```
+
+## 유명인 소개 쇼츠 (Phase 9)
+
+인물 이름 1개 → 나무위키 정보 수집 → Claude 대본 생성 → 네이버 이미지 검색 → Freepik image-to-video → MP4.
+
+**⚠️ 학습 목적 전용**: 나무위키 CC BY-NC-SA 3.0(비상업) + 네이버 이미지(타 사이트 저작권)로 구성되므로 **공개 업로드 금지**. YouTube/TikTok 업로드 UI는 이 탭에서 비활성화됩니다.
+
+### 사전 설정
+
+```bash
+# 1. 네이버 검색 API 키 발급 (무료, 일 25,000 쿼리)
+#    https://developers.naver.com/apps/ → 애플리케이션 등록 → 검색
+echo 'NAVER_CLIENT_ID=xxx' >> .env.local
+echo 'NAVER_CLIENT_SECRET=yyy' >> .env.local
+
+# 2. Freepik 로그인 (영상 모드 사용 시)
+python3 -m src.main freepik_login
+```
+
+### 실행
+
+- **CLI**: `python3 -m src.main celebrity "이름"`
+- **웹 UI**: http://localhost:3000 → "👤 유명인" 탭
+
+### 파일 배치
+
+- 스크립트: `data/scripts/{YYYYMMDD_HHMMSS}_celebrity_{name}.json`
+- 이미지: `data/images/celebrity/{YYYYMMDD_HHMMSS}_{name}/*.jpg` + `metadata.json`
+- 영상 클립: `data/videos/celebrity/{YYYYMMDD_HHMMSS}_{name}/scene_*.mp4`
+- 최종 MP4: `data/outputs/{YYYYMMDD_HHMMSS}_{name}.mp4`
+
+영상 마지막 씬에는 자동으로 "출처: 나무위키" 문구가 포함됩니다.
 
 ## 프로젝트 구조
 

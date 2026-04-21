@@ -417,7 +417,7 @@ python3 -m src.main deevid_login
 
 ---
 
-## Phase 9: 유명인 소개 쇼츠 🚧 진행 중 (9-1~9-6 완료)
+## Phase 9: 유명인 소개 쇼츠 ✅ 구현 완료 (9-1~9-7)
 
 **브랜치 예정**: `007-celebrity-shorts`
 **참고**: YouTube @구독좋아요-x4h 채널 포맷
@@ -508,11 +508,59 @@ python3 -m src.main deevid_login
 - [x] **업로드 UI 비활성화**: 유명인 탭에 YouTube/TikTok 체크박스 없음 (회색 텍스트 안내)
 - [x] `npm run build` 통과 (TypeScript clean, 25/25 pages)
 
-### 9-7. 테스트 & 문서 📋
+### 9-7. 테스트 & 문서 ✅
 
-- [ ] pytest: 신규 3개 모듈 (모킹 기반, 커버리지 80%+)
-- [ ] `CLAUDE.md` — Input Modes 표에 `celebrity` 행 추가
-- [ ] `README.md` — 사용법 섹션 추가 + **법적 고지** 명시
+- [x] pytest: 71개 신규 테스트 (12+9+11+7+7+10+15) / 회귀 411 pass
+- [x] smoke test: 모든 모듈 import + CLI argparse + `celebrity --help` 확인
+- [x] `CLAUDE.md` — Commands 섹션 celebrity 명령어 추가, Input Modes 표 확장, Env Vars에 NAVER_* 추가, **"Celebrity Mode — Legal Notice"** 섹션 신규
+- [x] `README.md` — CLI 섹션에 celebrity 예제 추가, **"유명인 소개 쇼츠 (Phase 9)"** 전용 섹션 (사전 설정 + 실행 방법 + 파일 배치 + 학습 목적 고지)
+
+### Phase 9 누적 산출물
+
+| 신규 파일 | 역할 |
+|---|---|
+| `src/scraper/celebrity_models.py` | CelebrityInfo frozen dataclass |
+| `src/scraper/namuwiki_scraper.py` | 나무위키 HTTP + 파싱 + 캐시 |
+| `src/illustrator/naver_image_search.py` | 네이버 이미지 검색 + 다운로드 |
+| `src/analyzer/celebrity_prompt.py` | Claude 프롬프트 (팩트 제한 + 출처 의무) |
+| `src/analyzer/celebrity_analyzer.py` | analyze_celebrity orchestrator |
+| `src/video_gen/celebrity_motion.py` | 인물 전용 모션 프롬프트 (identity guard) |
+| `tests/test_celebrity_models.py` | 12 tests |
+| `tests/test_namuwiki_scraper.py` | 9 tests |
+| `tests/test_naver_image_search.py` | 11 tests |
+| `tests/test_celebrity_prompt.py` | 7 tests |
+| `tests/test_celebrity_analyzer.py` | 7 tests |
+| `tests/test_celebrity_motion.py` | 10 tests |
+| `tests/test_main_celebrity.py` | 15 tests |
+
+| 수정 파일 | 변경 |
+|---|---|
+| `src/main.py` | cmd_celebrity + _run_celebrity_images + _run_celebrity_videos + argparse 서브커맨드 |
+| `src/analyzer/script_models.py` | SourceType 리터럴에 "celebrity" 추가 |
+| `app/api/generate/route.ts` | mode="celebrity" top-level 분기 + subprocess SSE 스트리밍 |
+| `app/page.tsx` | 6번째 탭 "👤 유명인" + 학습 목적 배너 + 업로드 비활성화 |
+| `requirements.txt` | beautifulsoup4 추가 |
+| `CLAUDE.md` | Commands/Input Modes/Env Vars + Legal Notice 섹션 |
+| `README.md` | CLI 예제 + Phase 9 전용 섹션 |
+
+### 커밋 히스토리 (007-celebrity-shorts)
+
+1. `42e0a9b` — Phase 9-1 나무위키 스크래퍼
+2. `46d36ad` — Phase 9-2/9-3 네이버 검색 + 대본 생성기
+3. `eddc52c` — Phase 9-4 Freepik 모션 프롬프트
+4. `6fd8af2` — Phase 9-5 CLI cmd_celebrity
+5. `625054f` — Phase 9-6 UI + route 분기
+6. (다음 커밋) — Phase 9-7 문서 + smoke test
+
+### 후속 수동 검증 (사용자 조작 필요)
+
+구현은 끝났으나 아래는 실제 API/세션 필요해 제가 자동화 불가:
+
+- [ ] NAVER_CLIENT_ID/SECRET 발급 + `.env.local` 등록
+- [ ] `python3 -m src.main freepik_login` 로 Freepik 프로필 생성
+- [ ] CLI E2E: `python3 -m src.main celebrity "손흥민" --no-video` (빠른 검증)
+- [ ] CLI E2E: `python3 -m src.main celebrity "손흥민"` (전체 Freepik 포함)
+- [ ] 웹 UI E2E: http://localhost:3000 → 👤 유명인 탭 → 이름 입력 → 생성
 
 ### 의존성 요약
 

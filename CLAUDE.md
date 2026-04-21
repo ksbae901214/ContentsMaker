@@ -31,6 +31,9 @@ python3 -m src.main analyze --file data/raw/x.json [--with-tts]  # Analyze only
 python3 -m src.main tts --file data/scripts/x.json   # TTS only
 python3 -m src.main render --script data/scripts/x.json --audio data/audio/x.mp3  # Render only
 python3 -m src.main pipeline --file data/raw/x.json  # Full pipeline
+python3 -m src.main celebrity "손흥민"              # Celebrity intro short (학습 목적 전용)
+python3 -m src.main celebrity "세종대왕" --no-video  # Skip Freepik, use still images
+python3 -m src.main celebrity "유재석" --no-images  # Gradient background only
 python3 -m src.main freepik_login                  # One-time Freepik browser login
 python3 -m src.main deevid_login                   # One-time deevid.ai browser login
 python3 -m src.main youtube-auth                   # One-time YouTube OAuth
@@ -129,6 +132,8 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 | `manual` | Title + body text | `analyze(BlindPost)` | Manual entry |
 | `url` | URL | `analyze(BlindPost)` | DCInside / Nate Pann / Naver Cafe scrape |
 | `topic` | Free topic text | `analyze_topic(TopicInput)` | User topic |
+| `political` | YouTube URL + timestamps | `analyze_political(PoliticalInput)` | YouTube download + VTT |
+| `celebrity` | Person name | `analyze_celebrity(CelebrityInfo)` | Namuwiki scrape + Naver images (학습 목적 전용) |
 
 ### Visual Modes
 
@@ -172,8 +177,21 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 - `OPENAI_API_KEY` — required for GPT Image generation (only if using `provider='gpt'`)
 - `SEEDANCE_API_KEY` — optional, for Seedance API video provider
 - `SEEDANCE_API_BASE` — optional, Seedance API base URL (default: `https://api.seedance.ai/v1`)
+- `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` — required for `celebrity` mode image search (free, 25,000 req/day). Register at https://developers.naver.com/apps/ → 애플리케이션 등록 → 검색
 - (no env vars needed for `freepik` or `deevid` providers — they use persistent browser profiles at `.cache/freepik_profile/` and `.cache/deevid_profile/`)
 - YouTube upload requires `data/.youtube_credentials.json` (OAuth 2.0 Desktop App client secret from Google Cloud Console → YouTube Data API v3). Token saved to `data/.youtube_token.json` after `youtube-auth`.
+
+## Celebrity Mode (Phase 9) — Legal Notice
+
+The `celebrity` mode uses **Namuwiki** (CC BY-NC-SA 3.0) and **Naver Image Search** (third-party images). Generated videos are for **personal learning use only**.
+
+Hard requirements enforced in code:
+- `CelebrityInfo.source_url` must be a `https://namu.wiki/...` URL (`src/scraper/celebrity_models.py:28`)
+- `analyze_celebrity()` overrides `source_type="celebrity"` + `source_url=namu.wiki URL` regardless of Claude output (`src/analyzer/celebrity_analyzer.py:70`)
+- The Claude prompt forbids verbatim Namuwiki quotes and mandates "출처: 나무위키" in the last scene (`src/analyzer/celebrity_prompt.py`)
+- YouTube/TikTok upload UI is **hidden** on the celebrity tab (`app/page.tsx`)
+
+Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
 - 010: Cost guard — prevents accidental Premium+ credit usage

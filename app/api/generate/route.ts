@@ -146,6 +146,7 @@ export async function POST(req: NextRequest) {
           let videoOutputPath = "";
           let sourceUrl = "";
           let analyzeResult: any = null;
+          let renderResult: any = null;
 
           await new Promise<void>((resolve, reject) => {
             const p = spawn("python3", args, { cwd: ROOT, env: { ...process.env } });
@@ -161,6 +162,12 @@ export async function POST(req: NextRequest) {
                   try {
                     analyzeResult = JSON.parse(trimmed.slice("ANALYZE_DONE ".length));
                   } catch { /* ignore parse errors */ }
+                  continue;
+                }
+                if (trimmed.startsWith("RENDER_DONE ")) {
+                  try {
+                    renderResult = JSON.parse(trimmed.slice("RENDER_DONE ".length));
+                  } catch { /* ignore */ }
                   continue;
                 }
                 send("progress", { message: trimmed });
@@ -208,17 +215,47 @@ print(json.dumps({"scenes":s["scenes"]}))`));
           }
 
           // Phase 2 혹은 end-to-end: 렌더 결과
+          // scriptPath로 metadata_generator 호출해 3줄 summary + 해시태그 복원
+          const scriptPathForMeta = renderResult?.script_path || existingScriptPath || "";
+          let celebMeta: any = { summary: "", hashtags: "", scenes: [] };
+          if (scriptPathForMeta) {
+            try {
+              celebMeta = JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.script_models import ShortsScript
+from src.upload.metadata_generator import generate_metadata
+s = ShortsScript.load(Path('''${scriptPathForMeta}'''))
+m = generate_metadata(s)
+print(json.dumps({
+  "summary": m.get("summary",""),
+  "hashtags": m.get("hashtags",""),
+  "scenes": [sc.to_dict() for sc in s.scenes],
+}, ensure_ascii=False))`));
+            } catch (e) {
+              // 메타 생성 실패해도 렌더 결과는 전달
+            }
+          }
+          const fallbackSummary = sourceUrl ? `출처: ${sourceUrl}` : "학습 목적 전용";
           send("done", {
             result: {
               videoPath: videoOutputPath,
               title: name,
               emotion: "relatable",
               duration: 0,
-              imageCount: 0,
+              imageCount: (renderResult?.scene_images || []).length,
+              videoCount: (renderResult?.scene_videos || []).length,
               cost: 0,
               sourceType: "celebrity",
-              summary: sourceUrl ? `출처: ${sourceUrl}` : "학습 목적 전용",
-              hashtags: "",
+              summary: celebMeta.summary || fallbackSummary,
+              hashtags: celebMeta.hashtags || "",
+              scriptPath: scriptPathForMeta,
+              audioPath: renderResult?.audio_path || "",
+              scenes: celebMeta.scenes || [],
+              sceneImages: renderResult?.scene_images || [],
+              sceneVideos: renderResult?.scene_videos || [],
+              sourceUrl,
+              celebrityName: name,
             },
           });
           ctrl.close();

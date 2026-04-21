@@ -540,6 +540,21 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
         print(f"   크기: {file_size_mb:.1f} MB")
         print(f"   출처: {info.source_url}")
         print("   ℹ️  학습 목적 전용 — 공개 업로드 전 초상권/저작권 확인 필요")
+
+        # 결과 화면이 씬별 UI를 구성할 수 있도록 경로 맵을 stdout에 JSON으로 출력
+        render_payload = {
+            "script_path": str(script_path),
+            "audio_path": str(voice_path) if voice_path else "",
+            "scene_images": [
+                {"scene_id": d["scene_id"], "path": d["image_path"]}
+                for d in (image_paths or [])
+            ],
+            "scene_videos": [
+                {"scene_id": d["scene_id"], "path": d["video_path"]}
+                for d in (video_paths or [])
+            ],
+        }
+        print("RENDER_DONE " + _json.dumps(render_payload, ensure_ascii=False))
         return 0
 
     except (NamuwikiScraperError, AnalyzerError, RenderError) as e:

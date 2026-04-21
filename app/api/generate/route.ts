@@ -108,6 +108,7 @@ export async function POST(req: NextRequest) {
           }
           const noVideo = (fd.get("noVideo") as string) === "on";
           const noImages = (fd.get("noImages") as string) === "on";
+          const symbolicImages = (fd.get("symbolicImages") as string) === "on";
           const analyzeOnly = stopAfter === "analyze" && mode === "celebrity";
           const qualifier = ((fd.get("celebrityQualifier") as string) || "").trim();
 
@@ -117,6 +118,7 @@ export async function POST(req: NextRequest) {
           if (isCelebrityScript) args.push("--from-script", existingScriptPath);
           if (noVideo) args.push("--no-video");
           if (noImages) args.push("--no-images");
+          if (symbolicImages) args.push("--symbolic-images");
           if (!useBgm) args.push("--no-bgm");
           if (!useTransitions) args.push("--no-transitions");
           if (!useSfx) args.push("--no-sfx");

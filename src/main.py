@@ -460,7 +460,13 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
         # Step 3: Images (Naver) — optional
         image_paths: list[dict] | None = None
         if not getattr(args, "no_images", False):
-            image_paths = _run_celebrity_images(name, script, qualifier=qualifier)
+            # 기본 single-portrait 모드: 인물 대표 이미지 1장을 모든 씬에 공유.
+            # --symbolic-images로 옛 씬별 상징 이미지 방식 선택 가능.
+            single_portrait = not getattr(args, "symbolic_images", False)
+            image_paths = _run_celebrity_images(
+                name, script, qualifier=qualifier,
+                single_portrait=single_portrait,
+            )
 
         # Step 4: Image-to-video (Freepik) — optional
         video_paths: list[dict] | None = None
@@ -519,8 +525,76 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
 
 def _run_celebrity_images(
     name: str, script, qualifier: str | None = None,
+    *, single_portrait: bool = True,
 ) -> list[dict] | None:
-    """씬별 image_query 에 따라 네이버 이미지 검색 + 다운로드.
+    """씬별 이미지 확보 로직. 2가지 모드 지원.
+
+    Phase 9 v3 (2026-04-21 v2): 사용자 피드백 반영 —
+    Freepik image-to-video는 이미지 얼굴만 유지한 채 작은 모션을 붙이기 때문에
+    씬별로 다른 상징 이미지(판사봉·국회의사당…)를 쓰면 "전혀 무관한 영상"처럼 보임.
+
+    Args:
+        single_portrait (default True): 인물 얼굴 1장을 다운로드해 모든 씬에서 공유.
+            → Freepik 영상이 "인물이 말하는/응시하는" 톤으로 일관되게 생성.
+            이미지는 `data/celebrity_portraits/{name}_{ts}.jpg`에 영구 저장.
+        single_portrait=False: 기존 씬별 image_query 방식 (상징 이미지 다양화).
+
+    qualifier: 동명이인 구분용 (예: "정치인"). 쿼리에 자동 결합.
+
+    Returns scene_images list or None (전체 실패 시).
+    """
+    if single_portrait:
+        return _run_celebrity_portrait_mode(name, script, qualifier=qualifier)
+    return _run_celebrity_symbolic_mode(name, script, qualifier=qualifier)
+
+
+def _run_celebrity_portrait_mode(
+    name: str, script, qualifier: str | None = None,
+) -> list[dict] | None:
+    """인물 대표 사진 1장을 다운로드해 모든 씬에 동일 이미지 주입."""
+    from datetime import datetime
+    from src.config.settings import DATA_DIR
+    from src.illustrator.naver_image_search import (
+        NaverImageSearcher,
+        NaverImageSearchError,
+    )
+
+    portrait_dir = DATA_DIR / "celebrity_portraits"
+    portrait_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_name = "".join(c if c.isalnum() else "_" for c in name)[:30]
+    query = f"{name} {qualifier}".strip() if qualifier else name
+
+    print(f"🖼️  Step 3/6: 인물 대표 이미지 다운로드 ('{query}' 1장, 전 씬 공유)...")
+    try:
+        searcher = NaverImageSearcher()
+        # 첫 이미지가 저품질일 수 있어 3장 받고 최대 크기·확장자 우선으로 고름
+        results = searcher.search(query, count=3)
+        saved = searcher.download(
+            results, portrait_dir, filename_prefix=f"{safe_name}_{timestamp}",
+        )
+    except NaverImageSearchError as exc:
+        logger.warning("인물 이미지 검색 실패: %s", exc)
+        print(f"   ⚠️  인물 이미지 검색 실패: {exc} — 그라데이션 배경 사용")
+        return None
+
+    if not saved:
+        print("   ⚠️  이미지 결과 없음 — 그라데이션 배경 사용")
+        return None
+
+    portrait_path = saved[0]
+    print(f"   저장: {portrait_path.name}")
+
+    return [
+        {"scene_id": scene.id, "image_path": str(portrait_path), "prompt": query}
+        for scene in script.scenes
+    ]
+
+
+def _run_celebrity_symbolic_mode(
+    name: str, script, qualifier: str | None = None,
+) -> list[dict] | None:
+    """[기존] 씬별 image_query 에 따라 네이버 이미지 검색 + 다운로드.
 
     Phase 9 v2 (2026-04-21): 씬마다 다른 쿼리 지원. "서울대를 졸업했다" 씬이면
     scene.image_query="서울대학교 정문"으로 검색해 해당 이미지를 받는다.
@@ -758,6 +832,10 @@ def build_parser() -> argparse.ArgumentParser:
     celebrity_parser.add_argument(
         "--from-script", type=str, metavar="PATH",
         help="Phase 2만 실행 — 지정한 script.json으로 images/TTS/렌더만 돌림.",
+    )
+    celebrity_parser.add_argument(
+        "--symbolic-images", action="store_true",
+        help="씬별 image_query 기반 상징 이미지 사용 (기본: 인물 대표 사진 1장 공유).",
     )
 
     # crawl subcommand (P2 placeholder)

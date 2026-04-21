@@ -29,6 +29,7 @@ export default function Home() {
   const [celebrityQualifier, setCelebrityQualifier] = useState("");
   const [celebrityNoVideo, setCelebrityNoVideo] = useState(false);
   const [celebrityNoImages, setCelebrityNoImages] = useState(false);
+  const [celebritySymbolicImages, setCelebritySymbolicImages] = useState(false);
   const [topicText, setTopicText] = useState("");
   const [contentStyle, setContentStyle] = useState<"narration"|"skit"|"review">("narration");
   const [politicalUrl, setPoliticalUrl] = useState("");
@@ -227,7 +228,7 @@ export default function Home() {
       "visualMode","imageStyle","videoProvider","imageProvider",
       "bgm","transitions","sfx","yt","tt",
       // Celebrity mode extras (유명인 탭): Phase 2 재전송 시 필요
-      "celebrityName","celebrityQualifier","noVideo","noImages","celebritySource",
+      "celebrityName","celebrityQualifier","noVideo","noImages","symbolicImages","celebritySource",
     ].forEach(k => {
       const v = fd.get(k);
       if (typeof v === "string") opts[k] = v;
@@ -883,6 +884,10 @@ export default function Home() {
             <span className="text-sm text-gray-300">🎨 이미지 전체 스킵 (그라데이션 배경만)</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={celebritySymbolicImages} onChange={e=>setCelebritySymbolicImages(e.target.checked)} className="w-5 h-5 rounded"/>
+            <span className="text-sm text-gray-300">🏛️ 씬별 상징 이미지 사용 <span className="text-gray-500 text-xs">(기본 off = 인물 대표사진 1장 공유. on = 서울대/국회의사당 등)</span></span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/>
             <span className="text-sm text-gray-300">🎵 배경음악 넣기</span>
           </label>
@@ -908,6 +913,7 @@ export default function Home() {
             if(celebrityQualifier.trim()) fd.set("celebrityQualifier",celebrityQualifier.trim());
             fd.set("noVideo",celebrityNoVideo?"on":"off");
             fd.set("noImages",celebrityNoImages?"on":"off");
+            fd.set("symbolicImages",celebritySymbolicImages?"on":"off");
             fd.set("bgm",bgm?"on":"off");
             fd.set("transitions",transitions?"on":"off");
             fd.set("sfx",sfx?"on":"off");

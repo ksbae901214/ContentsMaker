@@ -35,9 +35,10 @@ class TestBuildCelebrityMotionPrompt:
         assert GENTLE_PORTRAIT_CAMERA in prompt
         assert STATIC_PORTRAIT_CAMERA not in prompt
 
-    def test_comment_scene_uses_gentle_camera(self):
+    def test_comment_scene_uses_static_camera(self):
+        # v2 (2026-04-21): comment 씬도 마무리이므로 STATIC 사용 (얼굴 안정)
         prompt = build_celebrity_motion_prompt(_scene(type_="comment"), "손흥민")
-        assert GENTLE_PORTRAIT_CAMERA in prompt
+        assert STATIC_PORTRAIT_CAMERA in prompt
 
     def test_includes_identity_guard(self):
         prompt = build_celebrity_motion_prompt(_scene(), "손흥민")

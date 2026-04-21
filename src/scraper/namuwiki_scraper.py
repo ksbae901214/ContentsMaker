@@ -165,10 +165,24 @@ class NamuwikiScraper:
 
     @staticmethod
     def _extract_summary(container) -> str:
+        """첫 번째 의미 있는 문단을 반환.
+
+        2026-04-21: namu.wiki가 `<p>` 대신 `<div class="wiki-paragraph">`로 문단을
+        감싸도록 HTML 구조를 변경. 현재 구조 우선 조회, 없으면 레거시 `<p>` 태그로
+        폴백 (하위호환).
+        """
+        # 신규 구조: div.wiki-paragraph (대부분의 현행 나무위키 페이지)
+        for para in container.find_all(class_="wiki-paragraph"):
+            text = para.get_text(" ", strip=True)
+            if text:
+                return text
+        # 레거시 구조: <p> 태그 (오래된 페이지·테스트 픽스처 호환)
         first_p = container.find("p")
-        if first_p is None:
-            return ""
-        return first_p.get_text(strip=True)
+        if first_p is not None:
+            text = first_p.get_text(strip=True)
+            if text:
+                return text
+        return ""
 
     @staticmethod
     def _extract_table_fields(container) -> tuple[str, str]:

@@ -215,3 +215,77 @@ class TestParseFields:
         assert info.summary == "간단한 설명."
         assert info.career_highlights == ()
         assert info.trivia == ()
+
+
+# --- Bugfix 2026-04-21: Namuwiki HTML 구조 변경 대응 ---------------------
+# 실제 namu.wiki 페이지는 <p> 대신 <div class="wiki-paragraph">로 문단을 감싸며,
+# 섹션 제목은 <h2> 대신 <div class="wiki-heading">를 사용한다. 장동혁 케이스에서
+# 기존 _extract_summary가 <p>만 찾아 요약 추출 실패 → "페이지에서 요약을 찾을
+# 수 없습니다" 에러로 파이프라인이 exit 1.
+
+SAMPLE_HTML_WIKI_PARAGRAPH = """
+<!DOCTYPE html>
+<html>
+<head><title>장동혁 - 나무위키</title></head>
+<body>
+<div class="wiki-heading-content">
+  <div class="wiki-paragraph">대한민국의 판사 출신 정치인. 제4대 국민의힘 대표이자 제21·22대 국회의원이다.</div>
+  <div class="wiki-paragraph">1969년 충청남도 보령에서 태어났다.</div>
+  <table>
+    <tr><th>출생</th><td>1969년</td></tr>
+    <tr><th>직업</th><td>정치인</td></tr>
+  </table>
+</div>
+</body></html>
+"""
+
+
+class TestWikiParagraphStructure:
+    """namuwiki 신규 HTML 구조 (div.wiki-paragraph) 대응."""
+
+    def test_extracts_summary_from_wiki_paragraph_div(self, tmp_path):
+        transport = _make_transport({
+            "/w/장동혁": (200, SAMPLE_HTML_WIKI_PARAGRAPH),
+        })
+        scraper = NamuwikiScraper(
+            cache_dir=tmp_path / "cache",
+            rate_limit_s=0.0,
+            transport=transport,
+        )
+        info = scraper.fetch_person("장동혁")
+        assert "판사 출신 정치인" in info.summary
+        assert info.summary.startswith("대한민국")
+
+    def test_falls_back_gracefully_when_only_p_exists(self, tmp_path):
+        """기존 <p> 구조도 계속 동작 (하위호환)."""
+        old_html = """
+        <html><body>
+          <div class="wiki-heading-content">
+            <p>구식 p 태그로만 구성된 문서.</p>
+          </div>
+        </body></html>
+        """
+        transport = _make_transport({"/w/old": (200, old_html)})
+        scraper = NamuwikiScraper(
+            cache_dir=tmp_path / "cache", rate_limit_s=0.0, transport=transport,
+        )
+        info = scraper.fetch_person("old")
+        assert info.summary == "구식 p 태그로만 구성된 문서."
+
+    def test_skips_empty_wiki_paragraphs(self, tmp_path):
+        """첫 번째 wiki-paragraph가 공백이면 다음 것을 시도."""
+        html = """
+        <html><body>
+          <div class="wiki-heading-content">
+            <div class="wiki-paragraph"></div>
+            <div class="wiki-paragraph">   </div>
+            <div class="wiki-paragraph">실제 요약 내용입니다.</div>
+          </div>
+        </body></html>
+        """
+        transport = _make_transport({"/w/x": (200, html)})
+        scraper = NamuwikiScraper(
+            cache_dir=tmp_path / "cache", rate_limit_s=0.0, transport=transport,
+        )
+        info = scraper.fetch_person("x")
+        assert info.summary == "실제 요약 내용입니다."

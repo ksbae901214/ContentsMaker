@@ -17,6 +17,7 @@ Safeguards:
 from __future__ import annotations
 
 import json
+import logging
 import time
 from pathlib import Path
 from urllib.parse import quote
@@ -25,6 +26,8 @@ import httpx
 from bs4 import BeautifulSoup
 
 from src.scraper.celebrity_models import CelebrityInfo, CelebrityInfoError
+
+logger = logging.getLogger(__name__)
 
 
 NAMUWIKI_BASE = "https://namu.wiki"
@@ -69,19 +72,45 @@ class NamuwikiScraper:
 
     # -------- Public API ---------------------------------------------------
 
-    def fetch_person(self, name: str) -> CelebrityInfo:
-        """Return CelebrityInfo for `name`, using cache when available."""
+    def fetch_person(
+        self, name: str, qualifier: str | None = None
+    ) -> CelebrityInfo:
+        """Return CelebrityInfo for `name`, using cache when available.
+
+        qualifier: 이름이 동명이인과 겹칠 때 구분자 (예: "정치인", "배우").
+            주어지면 `{name}(qualifier)` 페이지를 먼저 시도하고, 실패 시
+            일반 `{name}` 페이지로 폴백.
+        """
         if not name or not name.strip():
             raise NamuwikiScraperError("이름은 비어 있을 수 없습니다")
 
         name = name.strip()
-        cached = self._load_cache(name)
+        qualifier = (qualifier or "").strip() or None
+
+        # 캐시 키에 qualifier 반영 (다른 인물일 수 있음)
+        cache_name = f"{name}({qualifier})" if qualifier else name
+        cached = self._load_cache(cache_name)
         if cached is not None:
             return cached
 
+        # qualifier가 있으면 `{name}({qualifier})` 페이지 먼저 시도 (동명이인 관행)
+        tried_ambiguous = False
+        if qualifier:
+            try:
+                html = self._fetch_html(f"{name}({qualifier})")
+                info = self._parse_html(name, html)
+                self._save_cache(cache_name, info)
+                return info
+            except NamuwikiScraperError as exc:
+                logger.info(
+                    "'%s(%s)' 페이지 없음 — 일반 '%s'로 폴백: %s",
+                    name, qualifier, name, str(exc)[:80],
+                )
+                tried_ambiguous = True
+
         html = self._fetch_html(name)
         info = self._parse_html(name, html)
-        self._save_cache(name, info)
+        self._save_cache(cache_name, info)
         return info
 
     def close(self) -> None:

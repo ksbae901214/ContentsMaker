@@ -109,8 +109,10 @@ export async function POST(req: NextRequest) {
           const noVideo = (fd.get("noVideo") as string) === "on";
           const noImages = (fd.get("noImages") as string) === "on";
           const analyzeOnly = stopAfter === "analyze" && mode === "celebrity";
+          const qualifier = ((fd.get("celebrityQualifier") as string) || "").trim();
 
           const args = ["-m", "src.main", "celebrity", name];
+          if (qualifier) args.push("--qualifier", qualifier);
           if (analyzeOnly) args.push("--analyze-only");
           if (isCelebrityScript) args.push("--from-script", existingScriptPath);
           if (noVideo) args.push("--no-video");

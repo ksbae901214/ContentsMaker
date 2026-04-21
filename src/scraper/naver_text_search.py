@@ -118,10 +118,15 @@ class NaverTextSearcher:
 
 
 def fetch_celebrity_text_fallback(
-    name: str, searcher: NaverTextSearcher | None = None
+    name: str,
+    searcher: NaverTextSearcher | None = None,
+    qualifier: str | None = None,
 ) -> str:
     """나무위키 요약이 불충분할 때 호출. 백과 → 뉴스 → 웹문서 순으로 시도해
     첫 의미 있는 텍스트 블록을 합성 요약으로 반환.
+
+    qualifier: 동명이인 구분용 (예: "정치인", "배우"). 주어지면 `{name} {qualifier}`로
+        검색해 정확도 향상.
 
     Returns 빈 문자열 if all attempts failed or no results.
     """
@@ -129,11 +134,12 @@ def fetch_celebrity_text_fallback(
     if searcher is None:
         searcher = NaverTextSearcher()
         own = True
+    query = f"{name} {qualifier}".strip() if qualifier else name
     try:
         for fn_name in ("search_encyc", "search_news", "search_webkr"):
             try:
                 fn = getattr(searcher, fn_name)
-                results = fn(name, display=5)
+                results = fn(query, display=5)
             except NaverTextSearchError as e:
                 logger.warning("네이버 %s 실패: %s", fn_name, e)
                 continue

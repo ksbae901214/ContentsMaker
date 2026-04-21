@@ -272,6 +272,34 @@ class TestWikiParagraphStructure:
         info = scraper.fetch_person("old")
         assert info.summary == "구식 p 태그로만 구성된 문서."
 
+    def test_qualifier_tries_disambiguation_page_first(self, tmp_path):
+        """qualifier 주면 `{name}(qualifier)` 페이지를 먼저 시도."""
+        ambiguous_html = SAMPLE_HTML_WIKI_PARAGRAPH.replace(
+            "판사 출신 정치인", "정치인 장동혁 (동명이인 분기)"
+        )
+        transport = _make_transport({
+            "/w/장동혁(정치인)": (200, ambiguous_html),
+            "/w/장동혁": (200, SAMPLE_HTML_WIKI_PARAGRAPH),
+        })
+        scraper = NamuwikiScraper(
+            cache_dir=tmp_path / "cache", rate_limit_s=0.0, transport=transport,
+        )
+        info = scraper.fetch_person("장동혁", qualifier="정치인")
+        assert "정치인 장동혁" in info.summary or "동명이인 분기" in info.summary
+
+    def test_qualifier_falls_back_to_plain_when_disambig_missing(self, tmp_path):
+        """`{name}(qualifier)` 404이면 일반 `{name}` 페이지 사용."""
+        transport = _make_transport({
+            "/w/장동혁(배우)": (404, "not found"),
+            "/w/장동혁": (200, SAMPLE_HTML_WIKI_PARAGRAPH),
+        })
+        scraper = NamuwikiScraper(
+            cache_dir=tmp_path / "cache", rate_limit_s=0.0, transport=transport,
+        )
+        info = scraper.fetch_person("장동혁", qualifier="배우")
+        # 일반 페이지 내용이 반환돼야 함
+        assert "판사 출신 정치인" in info.summary
+
     def test_skips_empty_wiki_paragraphs(self, tmp_path):
         """첫 번째 wiki-paragraph가 공백이면 다음 것을 시도."""
         html = """

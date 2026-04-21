@@ -407,6 +407,7 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
 
         from_script = getattr(args, "from_script", None)
         analyze_only = getattr(args, "analyze_only", False)
+        qualifier = (getattr(args, "qualifier", None) or "").strip() or None
 
         # ── Step 1~2: namuwiki + Claude script (from_script면 스킵) ──
         if from_script:
@@ -421,18 +422,19 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
             )
             # namuwiki 정보는 캐시에서 로드 (source_url용)
             scraper = NamuwikiScraper()
-            info = scraper.fetch_person(name)  # 캐시 히트 → 네트워크 요청 안 함
+            info = scraper.fetch_person(name, qualifier=qualifier)
         else:
             # Step 1: Namuwiki fetch
-            print(f"📚 Step 1/6: 나무위키에서 '{name}' 정보 조회 중...")
+            label = f"{name}({qualifier})" if qualifier else name
+            print(f"📚 Step 1/6: 나무위키에서 '{label}' 정보 조회 중...")
             scraper = NamuwikiScraper()
-            info = scraper.fetch_person(name)
+            info = scraper.fetch_person(name, qualifier=qualifier)
             print(f"   요약: {info.summary[:60]}")
             print(f"   경력 {len(info.career_highlights)}건 / 여담 {len(info.trivia)}건")
 
             # Step 2: Script generation
             print("📝 Step 2/6: 대본 생성 중...")
-            script, script_path = analyze_celebrity(info)
+            script, script_path = analyze_celebrity(info, qualifier=qualifier)
             print(
                 f"   감정: {script.metadata.emotion_type} | "
                 f"씬: {len(script.scenes)}개 | "
@@ -458,7 +460,7 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
         # Step 3: Images (Naver) — optional
         image_paths: list[dict] | None = None
         if not getattr(args, "no_images", False):
-            image_paths = _run_celebrity_images(name, script)
+            image_paths = _run_celebrity_images(name, script, qualifier=qualifier)
 
         # Step 4: Image-to-video (Freepik) — optional
         video_paths: list[dict] | None = None
@@ -515,12 +517,17 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
         return 130
 
 
-def _run_celebrity_images(name: str, script) -> list[dict] | None:
+def _run_celebrity_images(
+    name: str, script, qualifier: str | None = None,
+) -> list[dict] | None:
     """씬별 image_query 에 따라 네이버 이미지 검색 + 다운로드.
 
     Phase 9 v2 (2026-04-21): 씬마다 다른 쿼리 지원. "서울대를 졸업했다" 씬이면
     scene.image_query="서울대학교 정문"으로 검색해 해당 이미지를 받는다.
     None이면 인물명으로 폴백. 동일 쿼리는 한 번만 API 호출 후 재사용.
+
+    qualifier 주면 "인물 자체"를 검색하는 씬(query에 인물명 단독으로 있을 때)에
+    qualifier를 붙여 동명이인 오염 방지.
 
     Returns scene_images list or None (전체 실패 시).
     """
@@ -544,6 +551,9 @@ def _run_celebrity_images(name: str, script) -> list[dict] | None:
 
     for scene in script.scenes:
         query = (scene.image_query or "").strip() or name
+        # qualifier 있고 query가 인물명만 쓰는 경우 구분자 추가
+        if qualifier and query == name:
+            query = f"{name} {qualifier}"
         try:
             if query not in query_cache:
                 results = searcher.search(query, count=3)
@@ -711,6 +721,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="유명인 이름 → 나무위키 정보 → 소개 쇼츠 (학습 목적 전용)",
     )
     celebrity_parser.add_argument("name", type=str, help="인물 이름 (예: 손흥민)")
+    celebrity_parser.add_argument(
+        "--qualifier", type=str, default=None,
+        help="동명이인 구분자 (예: '정치인', '배우', '축구선수'). 나무위키에서 "
+             "'{이름}({qualifier})' 페이지를 먼저 시도하고 Naver 검색에도 결합.",
+    )
     celebrity_parser.add_argument(
         "--no-video", action="store_true",
         help="Freepik image-to-video 스킵, 정지 이미지로 렌더링",

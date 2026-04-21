@@ -111,7 +111,7 @@ class TestCmdCelebrity:
 
     def test_happy_path_calls_namuwiki(self, base_mocks):
         cmd_celebrity(_ns())
-        base_mocks["scraper"].fetch_person.assert_called_once_with("손흥민")
+        base_mocks["scraper"].fetch_person.assert_called_once_with("손흥민", qualifier=None)
 
     def test_happy_path_calls_analyzer(self, base_mocks):
         cmd_celebrity(_ns())

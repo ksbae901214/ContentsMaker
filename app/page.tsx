@@ -26,6 +26,7 @@ export default function Home() {
   const [natvUseTts, setNavtUseTts] = useState(false);
   const [natvTone, setNavtTone] = useState<"angry"|"funny"|"touching"|"relatable">("angry");
   const [celebrityName, setCelebrityName] = useState("");
+  const [celebrityQualifier, setCelebrityQualifier] = useState("");
   const [celebrityNoVideo, setCelebrityNoVideo] = useState(false);
   const [celebrityNoImages, setCelebrityNoImages] = useState(false);
   const [topicText, setTopicText] = useState("");
@@ -226,7 +227,7 @@ export default function Home() {
       "visualMode","imageStyle","videoProvider","imageProvider",
       "bgm","transitions","sfx","yt","tt",
       // Celebrity mode extras (유명인 탭): Phase 2 재전송 시 필요
-      "celebrityName","noVideo","noImages","celebritySource",
+      "celebrityName","celebrityQualifier","noVideo","noImages","celebritySource",
     ].forEach(k => {
       const v = fd.get(k);
       if (typeof v === "string") opts[k] = v;
@@ -867,6 +868,11 @@ export default function Home() {
           <input value={celebrityName} onChange={e=>setCelebrityName(e.target.value)} placeholder="예: 손흥민, 세종대왕, 유재석" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/>
           <p className="text-gray-500 text-xs mt-1">나무위키에 문서가 있는 인물명</p>
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">추가 키워드 <span className="text-gray-500 text-xs">(선택)</span></label>
+          <input value={celebrityQualifier} onChange={e=>setCelebrityQualifier(e.target.value)} placeholder="예: 정치인, 배우, 축구선수, 가수" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none"/>
+          <p className="text-gray-500 text-xs mt-1">동명이인이 많은 이름일 때 직업·분야를 적어주세요 (나무위키 <code>이름(키워드)</code> 페이지 우선 시도 + 네이버 검색에도 결합).</p>
+        </div>
         <div className="space-y-2">
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={celebrityNoVideo} onChange={e=>setCelebrityNoVideo(e.target.checked)} className="w-5 h-5 rounded"/>
@@ -899,6 +905,7 @@ export default function Home() {
             const fd=new FormData();
             fd.set("mode","celebrity");
             fd.set("celebrityName",celebrityName.trim());
+            if(celebrityQualifier.trim()) fd.set("celebrityQualifier",celebrityQualifier.trim());
             fd.set("noVideo",celebrityNoVideo?"on":"off");
             fd.set("noImages",celebrityNoImages?"on":"off");
             fd.set("bgm",bgm?"on":"off");

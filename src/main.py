@@ -423,7 +423,12 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
             and image_paths
             and len(image_paths) > 0
         ):
-            video_paths = _run_celebrity_videos(name, script, image_paths)
+            # Freepik 2026-04 정책 변경으로 image-to-video가 모두 유료.
+            # Premium+ 크레딧 소모 허용 (원치 않으면 --no-paid-credits로 차단).
+            allow_paid = not getattr(args, "no_paid_credits", False)
+            video_paths = _run_celebrity_videos(
+                name, script, image_paths, allow_paid=allow_paid,
+            )
 
         # Step 5: TTS
         print("🎙️  Step 5/6: 음성 생성 중...")
@@ -531,9 +536,15 @@ def _run_celebrity_images(name: str, script) -> list[dict] | None:
 
 
 def _run_celebrity_videos(
-    name: str, script, image_paths: list[dict]
+    name: str, script, image_paths: list[dict], *, allow_paid: bool = True,
 ) -> list[dict] | None:
-    """Convert each portrait to a 5s clip via Freepik. Returns scene_videos or None."""
+    """Convert each portrait to a 5s clip via Freepik. Returns scene_videos or None.
+
+    2026-04-21 Freepik 정책 변경: Wan 2.2 모델이 UI에서 제거됐고, Kling 2.5 768p
+    옵션도 사라져 모든 image-to-video가 유료가 됨 (MiniMax ~150, Kling ~325 크레딧/클립).
+    Premium+ 월 크레딧으로 감당 가능하므로 기본 allow_paid=True로 호출한다.
+    credit 소모 원치 않으면 CLI에서 `--no-video`로 전체 스킵.
+    """
     import asyncio
     from datetime import datetime
     from src.config.settings import DATA_VIDEOS_DIR
@@ -570,6 +581,7 @@ def _run_celebrity_videos(
                     duration=min(scene.duration, 5.0),
                     source_image=img["image_path"],
                     output_path=str(output_path),
+                    allow_paid=allow_paid,
                 )
             )
             results.append({"scene_id": scene.id, "video_path": str(output_path)})
@@ -674,6 +686,11 @@ def build_parser() -> argparse.ArgumentParser:
     celebrity_parser.add_argument(
         "--no-sfx", action="store_true",
         help="효과음(whoosh·impact 등) 비활성화",
+    )
+    celebrity_parser.add_argument(
+        "--no-paid-credits", action="store_true",
+        help="Freepik 유료 크레딧 차감 금지 (2026-04 정책 변경 후 image-to-video는 "
+             "모두 유료이므로 기본은 허용). 이 플래그 켜면 크레딧 비용 있으면 에러.",
     )
 
     # crawl subcommand (P2 placeholder)

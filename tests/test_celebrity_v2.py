@@ -98,6 +98,18 @@ class TestCelebrityPromptV2:
         assert "친구" in prompt or "이야기" in prompt
         assert "스토리" in prompt or "훅" in prompt
 
+    def test_narrative_structure_order(self):
+        """2026-04-21: 사용자 요청 구조 순서 가이드 포함."""
+        prompt = build_celebrity_prompt(self._info())
+        # 4단계 구조 라벨 포함
+        assert "[A]" in prompt and "[B]" in prompt and "[C]" in prompt and "[D]" in prompt
+        # 이름·나이·직업을 [A]에 넣으라는 지시
+        assert "이름" in prompt and ("나이" in prompt or "출생연도" in prompt)
+        # 학력·성장 과정은 [B]
+        assert "학력" in prompt and "성장" in prompt
+        # 현재 활동은 [C]
+        assert "현재" in prompt
+
     def test_image_query_field_instruction(self):
         prompt = build_celebrity_prompt(self._info())
         assert "image_query" in prompt

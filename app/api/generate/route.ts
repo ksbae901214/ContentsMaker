@@ -93,7 +93,13 @@ export async function POST(req: NextRequest) {
         // place. Upload to YouTube/TikTok is intentionally disabled here —
         // this mode is学습-use-only and the underlying Naver images +
         // Namuwiki text have third-party rights.
-        if (mode === "celebrity") {
+        // 2-phase 지원 (2026-04-21):
+        //   stopAfter=analyze + mode=celebrity → --analyze-only
+        //   mode=script + celebritySource=on   → --from-script (편집된 script로 렌더)
+        //   mode=celebrity (위 둘 아님)        → end-to-end (하위호환)
+        const isCelebrityScript =
+          mode === "script" && existingScriptPath && (fd.get("celebritySource") as string) === "on";
+        if (mode === "celebrity" || isCelebrityScript) {
           const name = ((fd.get("celebrityName") as string) || "").trim();
           if (!name) {
             send("error", { message: "인물 이름을 입력하세요" });
@@ -102,25 +108,27 @@ export async function POST(req: NextRequest) {
           }
           const noVideo = (fd.get("noVideo") as string) === "on";
           const noImages = (fd.get("noImages") as string) === "on";
+          const analyzeOnly = stopAfter === "analyze" && mode === "celebrity";
 
           const args = ["-m", "src.main", "celebrity", name];
+          if (analyzeOnly) args.push("--analyze-only");
+          if (isCelebrityScript) args.push("--from-script", existingScriptPath);
           if (noVideo) args.push("--no-video");
           if (noImages) args.push("--no-images");
           if (!useBgm) args.push("--no-bgm");
           if (!useTransitions) args.push("--no-transitions");
           if (!useSfx) args.push("--no-sfx");
 
-          send("progress", { message: `🎬 유명인 파이프라인 시작: ${name}` });
-          send("progress", { message: `   옵션: ${[
-            noVideo ? "no-video" : "",
-            noImages ? "no-images" : "",
-            useBgm ? "" : "no-bgm",
-            useTransitions ? "" : "no-transitions",
-            useSfx ? "" : "no-sfx",
-          ].filter(Boolean).join(", ") || "기본"}` });
+          const phaseLabel = analyzeOnly
+            ? `📝 Phase 1: 대본 생성 (씬 미리보기)`
+            : isCelebrityScript
+              ? `🎬 Phase 2: 편집된 대본으로 영상 렌더`
+              : `🎬 유명인 end-to-end 파이프라인`;
+          send("progress", { message: `${phaseLabel}: ${name}` });
 
           let videoOutputPath = "";
           let sourceUrl = "";
+          let analyzeResult: any = null;
 
           await new Promise<void>((resolve, reject) => {
             const p = spawn("python3", args, { cwd: ROOT, env: { ...process.env } });
@@ -132,6 +140,12 @@ export async function POST(req: NextRequest) {
               for (const line of lines) {
                 const trimmed = line.trimEnd();
                 if (!trimmed) continue;
+                if (trimmed.startsWith("ANALYZE_DONE ")) {
+                  try {
+                    analyzeResult = JSON.parse(trimmed.slice("ANALYZE_DONE ".length));
+                  } catch { /* ignore parse errors */ }
+                  continue;
+                }
                 send("progress", { message: trimmed });
                 const videoMatch = trimmed.match(/^\s*영상:\s*(.+)$/);
                 if (videoMatch) videoOutputPath = videoMatch[1].trim();
@@ -150,6 +164,31 @@ export async function POST(req: NextRequest) {
             p.on("error", e => reject(new Error(`Python 실행 실패: ${e.message}`)));
           });
 
+          // Phase 1 종료 → ScriptReviewer로 진입
+          if (analyzeOnly && analyzeResult?.script_path) {
+            const scriptRaw = JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+s=json.loads(Path('''${analyzeResult.script_path}''').read_text())
+print(json.dumps({"scenes":s["scenes"]}))`));
+            send("done", {
+              result: {
+                phase: "analyzed",
+                title: analyzeResult.title,
+                emotion: analyzeResult.emotion,
+                duration: analyzeResult.duration,
+                scriptPath: analyzeResult.script_path,
+                scenes: scriptRaw.scenes,
+                sourceType: "celebrity",
+                celebrityName: name,
+                sourceUrl: analyzeResult.source_url,
+              },
+            });
+            ctrl.close();
+            return;
+          }
+
+          // Phase 2 혹은 end-to-end: 렌더 결과
           send("done", {
             result: {
               videoPath: videoOutputPath,

@@ -382,9 +382,20 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
 
 
 def cmd_celebrity(args: argparse.Namespace) -> int:
-    """Handle the 'celebrity' subcommand — 유명인 이름 → 소개 쇼츠 (학습 목적 전용)."""
+    """Handle the 'celebrity' subcommand — 유명인 이름 → 소개 쇼츠 (학습 목적 전용).
+
+    2-phase flow (2026-04-21):
+      --analyze-only: Step 1~2 (namuwiki fetch + Claude script)만 실행 후 종료.
+                      stdout 마지막 줄에 JSON `{"script_path": "...", "name": "..."}`
+                      을 출력해 UI에서 파싱 가능.
+      --from-script PATH: Step 1~2 스킵. 저장된 script.json + 원본 CelebrityInfo
+                          (namuwiki cache)를 로드해 Step 3~6만 실행.
+      둘 다 없으면: 기존 end-to-end 실행 (하위호환).
+    """
+    import json as _json
     from src.analyzer.celebrity_analyzer import analyze_celebrity
     from src.analyzer.claude_analyzer import AnalyzerError
+    from src.analyzer.script_models import ShortsScript
     from src.scraper.namuwiki_scraper import NamuwikiScraper, NamuwikiScraperError
     from src.video.renderer import RenderError, render_video
 
@@ -394,22 +405,55 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
             print("\n❌ 인물 이름을 입력하세요", file=sys.stderr)
             return 1
 
-        # Step 1: Namuwiki fetch
-        print(f"📚 Step 1/6: 나무위키에서 '{name}' 정보 조회 중...")
-        scraper = NamuwikiScraper()
-        info = scraper.fetch_person(name)
-        print(f"   요약: {info.summary[:60]}")
-        print(f"   경력 {len(info.career_highlights)}건 / 여담 {len(info.trivia)}건")
+        from_script = getattr(args, "from_script", None)
+        analyze_only = getattr(args, "analyze_only", False)
 
-        # Step 2: Script generation
-        print("📝 Step 2/6: 대본 생성 중...")
-        script, script_path = analyze_celebrity(info)
-        print(
-            f"   감정: {script.metadata.emotion_type} | "
-            f"씬: {len(script.scenes)}개 | "
-            f"길이: {script.metadata.duration}초"
-        )
-        print(f"   저장: {script_path}")
+        # ── Step 1~2: namuwiki + Claude script (from_script면 스킵) ──
+        if from_script:
+            # Phase 2 진입: 이미 생성·편집된 script.json을 로드
+            script_path = Path(from_script).resolve()
+            if not script_path.exists():
+                print(f"\n❌ --from-script 경로 없음: {script_path}", file=sys.stderr)
+                return 1
+            print(f"📂 기존 script 로드: {script_path}")
+            script = ShortsScript.from_dict(
+                _json.loads(script_path.read_text(encoding="utf-8"))
+            )
+            # namuwiki 정보는 캐시에서 로드 (source_url용)
+            scraper = NamuwikiScraper()
+            info = scraper.fetch_person(name)  # 캐시 히트 → 네트워크 요청 안 함
+        else:
+            # Step 1: Namuwiki fetch
+            print(f"📚 Step 1/6: 나무위키에서 '{name}' 정보 조회 중...")
+            scraper = NamuwikiScraper()
+            info = scraper.fetch_person(name)
+            print(f"   요약: {info.summary[:60]}")
+            print(f"   경력 {len(info.career_highlights)}건 / 여담 {len(info.trivia)}건")
+
+            # Step 2: Script generation
+            print("📝 Step 2/6: 대본 생성 중...")
+            script, script_path = analyze_celebrity(info)
+            print(
+                f"   감정: {script.metadata.emotion_type} | "
+                f"씬: {len(script.scenes)}개 | "
+                f"길이: {script.metadata.duration}초"
+            )
+            print(f"   저장: {script_path}")
+
+        # ── --analyze-only: Phase 1 종료 ──
+        if analyze_only:
+            payload = {
+                "script_path": str(script_path),
+                "name": name,
+                "title": script.metadata.title,
+                "emotion": script.metadata.emotion_type,
+                "duration": script.metadata.duration,
+                "scene_count": len(script.scenes),
+                "source_url": info.source_url,
+            }
+            # 마지막 줄이 JSON 결과 — route.ts가 파싱
+            print("ANALYZE_DONE " + _json.dumps(payload, ensure_ascii=False))
+            return 0
 
         # Step 3: Images (Naver) — optional
         image_paths: list[dict] | None = None
@@ -691,6 +735,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-paid-credits", action="store_true",
         help="Freepik 유료 크레딧 차감 금지 (2026-04 정책 변경 후 image-to-video는 "
              "모두 유료이므로 기본은 허용). 이 플래그 켜면 크레딧 비용 있으면 에러.",
+    )
+    celebrity_parser.add_argument(
+        "--analyze-only", action="store_true",
+        help="Phase 1만 실행 (namuwiki + Claude 대본). 씬 편집 전 리뷰용.",
+    )
+    celebrity_parser.add_argument(
+        "--from-script", type=str, metavar="PATH",
+        help="Phase 2만 실행 — 지정한 script.json으로 images/TTS/렌더만 돌림.",
     )
 
     # crawl subcommand (P2 placeholder)

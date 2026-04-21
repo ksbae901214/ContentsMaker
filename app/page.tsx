@@ -222,7 +222,12 @@ export default function Home() {
   const startAnalyze = (fd: FormData) => {
     fd.set("stopAfter", "analyze");
     const opts: Record<string, string> = {};
-    ["visualMode","imageStyle","videoProvider","imageProvider","bgm","transitions","sfx","yt","tt"].forEach(k => {
+    [
+      "visualMode","imageStyle","videoProvider","imageProvider",
+      "bgm","transitions","sfx","yt","tt",
+      // Celebrity mode extras (유명인 탭): Phase 2 재전송 시 필요
+      "celebrityName","noVideo","noImages","celebritySource",
+    ].forEach(k => {
       const v = fd.get(k);
       if (typeof v === "string") opts[k] = v;
     });
@@ -901,11 +906,13 @@ export default function Home() {
             fd.set("sfx",sfx?"on":"off");
             fd.set("yt","off");
             fd.set("tt","off");
-            generate(fd);
+            // Phase 2 재전송 시 route.ts가 celebrity 분기를 타도록 힌트 전달
+            fd.set("celebritySource","on");
+            startAnalyze(fd);
           }}
             disabled={!celebrityName.trim()}
             className={`flex-1 py-3 rounded-lg font-medium transition ${celebrityName.trim()?"bg-blue-600 hover:bg-blue-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
-            👤 유명인 쇼츠 생성
+            📝 대본 먼저 생성 → 검토 후 영상
           </button>
         </div>
         <div className="text-xs text-gray-500 space-y-1">

@@ -381,6 +381,169 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_celebrity(args: argparse.Namespace) -> int:
+    """Handle the 'celebrity' subcommand — 유명인 이름 → 소개 쇼츠 (학습 목적 전용)."""
+    from src.analyzer.celebrity_analyzer import analyze_celebrity
+    from src.analyzer.claude_analyzer import AnalyzerError
+    from src.scraper.namuwiki_scraper import NamuwikiScraper, NamuwikiScraperError
+    from src.video.renderer import RenderError, render_video
+
+    try:
+        name = (args.name or "").strip()
+        if not name:
+            print("\n❌ 인물 이름을 입력하세요", file=sys.stderr)
+            return 1
+
+        # Step 1: Namuwiki fetch
+        print(f"📚 Step 1/6: 나무위키에서 '{name}' 정보 조회 중...")
+        scraper = NamuwikiScraper()
+        info = scraper.fetch_person(name)
+        print(f"   요약: {info.summary[:60]}")
+        print(f"   경력 {len(info.career_highlights)}건 / 여담 {len(info.trivia)}건")
+
+        # Step 2: Script generation
+        print("📝 Step 2/6: 대본 생성 중...")
+        script, script_path = analyze_celebrity(info)
+        print(
+            f"   감정: {script.metadata.emotion_type} | "
+            f"씬: {len(script.scenes)}개 | "
+            f"길이: {script.metadata.duration}초"
+        )
+        print(f"   저장: {script_path}")
+
+        # Step 3: Images (Naver) — optional
+        image_paths: list[dict] | None = None
+        if not getattr(args, "no_images", False):
+            image_paths = _run_celebrity_images(name, script)
+
+        # Step 4: Image-to-video (Freepik) — optional
+        video_paths: list[dict] | None = None
+        if (
+            not getattr(args, "no_video", False)
+            and image_paths
+            and len(image_paths) > 0
+        ):
+            video_paths = _run_celebrity_videos(name, script, image_paths)
+
+        # Step 5: TTS
+        print("🎙️  Step 5/6: 음성 생성 중...")
+        tts_code, voice_path, scene_timings = _run_tts(script)
+        if tts_code != 0:
+            print("   ⚠️  TTS 실패, 무음 영상으로 계속합니다.")
+            voice_path = None
+            scene_timings = None
+
+        # Step 6: Render
+        print("🎬 Step 6/6: 영상 렌더링 중...")
+        use_bgm = not getattr(args, "no_bgm", False)
+        output_path = render_video(
+            script,
+            audio_path=voice_path,
+            scene_images=None if video_paths else image_paths,
+            scene_videos=video_paths,
+            scene_timings=scene_timings,
+            use_bgm=use_bgm,
+        )
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+
+        print(f"\n✅ 완료! '{name}' 소개 쇼츠 생성")
+        print(f"   영상: {output_path}")
+        print(f"   크기: {file_size_mb:.1f} MB")
+        print(f"   출처: {info.source_url}")
+        print("   ℹ️  학습 목적 전용 — 공개 업로드 전 초상권/저작권 확인 필요")
+        return 0
+
+    except (NamuwikiScraperError, AnalyzerError, RenderError) as e:
+        logger.error("유명인 파이프라인 오류: %s", e)
+        print(f"\n❌ 오류: {e}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\n\n취소되었습니다.")
+        return 130
+
+
+def _run_celebrity_images(name: str, script) -> list[dict] | None:
+    """Search Naver + download portraits. Returns scene_images list or None."""
+    from datetime import datetime
+    from src.config.settings import DATA_DIR
+    from src.illustrator.naver_image_search import (
+        NaverImageSearcher,
+        NaverImageSearchError,
+    )
+
+    count = len(script.scenes)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_name = "".join(c if c.isalnum() else "_" for c in name)[:30]
+    output_dir = DATA_DIR / "images" / "celebrity" / f"{timestamp}_{safe_name}"
+
+    try:
+        print(f"🖼️  Step 3/6: 네이버에서 '{name}' 사진 {count}장 검색 중...")
+        searcher = NaverImageSearcher()
+        results = searcher.search(name, count=count)
+        saved = searcher.download(results, output_dir, filename_prefix=safe_name)
+        print(f"   저장: {len(saved)}장 → {output_dir}")
+        return [
+            {"scene_id": scene.id, "image_path": str(path), "prompt": ""}
+            for scene, path in zip(script.scenes, saved)
+        ]
+    except NaverImageSearchError as e:
+        logger.warning("이미지 검색 실패: %s", e)
+        print(f"   ⚠️  이미지 검색 실패, 그라데이션 배경으로 대체: {e}")
+        return None
+
+
+def _run_celebrity_videos(
+    name: str, script, image_paths: list[dict]
+) -> list[dict] | None:
+    """Convert each portrait to a 5s clip via Freepik. Returns scene_videos or None."""
+    import asyncio
+    from datetime import datetime
+    from src.config.settings import DATA_VIDEOS_DIR
+    from src.video_gen.base import VideoGenerationError
+    from src.video_gen.celebrity_motion import build_celebrity_motion_prompt
+    from src.video_gen.factory import create_generator
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_name = "".join(c if c.isalnum() else "_" for c in name)[:30]
+    output_dir = DATA_VIDEOS_DIR / "celebrity" / f"{timestamp}_{safe_name}"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"🎥 Step 4/6: Freepik 영상 변환 ({len(image_paths)}씬)...")
+    try:
+        gen = create_generator("freepik")
+    except Exception as e:
+        logger.warning("Freepik 초기화 실패: %s", e)
+        print(f"   ⚠️  Freepik 초기화 실패: {e}")
+        return None
+
+    results: list[dict] = []
+    scene_by_id = {scene.id: scene for scene in script.scenes}
+
+    for idx, img in enumerate(image_paths, start=1):
+        scene = scene_by_id.get(img["scene_id"])
+        if scene is None:
+            continue
+        motion = build_celebrity_motion_prompt(scene, name)
+        output_path = output_dir / f"scene_{scene.id:02d}.mp4"
+        try:
+            asyncio.run(
+                gen.generate_and_wait(
+                    prompt=motion,
+                    duration=min(scene.duration, 5.0),
+                    source_image=img["image_path"],
+                    output_path=str(output_path),
+                )
+            )
+            results.append({"scene_id": scene.id, "video_path": str(output_path)})
+            print(f"   ✓ 씬 {idx}/{len(image_paths)}")
+        except VideoGenerationError as e:
+            logger.warning("씬 %d 영상 생성 실패: %s", scene.id, e)
+            print(f"   ⚠️  씬 {idx} 실패 (스킵): {e}")
+            continue
+
+    return results if results else None
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build the CLI argument parser."""
     parser = argparse.ArgumentParser(
@@ -448,6 +611,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="배경음악 비활성화 (기본: 감정별 BGM 자동 삽입)"
     )
 
+    # celebrity subcommand — Phase 9 유명인 소개 쇼츠
+    celebrity_parser = subparsers.add_parser(
+        "celebrity",
+        help="유명인 이름 → 나무위키 정보 → 소개 쇼츠 (학습 목적 전용)",
+    )
+    celebrity_parser.add_argument("name", type=str, help="인물 이름 (예: 손흥민)")
+    celebrity_parser.add_argument(
+        "--no-video", action="store_true",
+        help="Freepik image-to-video 스킵, 정지 이미지로 렌더링",
+    )
+    celebrity_parser.add_argument(
+        "--no-images", action="store_true",
+        help="이미지 없이 그라데이션 배경만 사용",
+    )
+    celebrity_parser.add_argument(
+        "--no-bgm", action="store_true",
+        help="배경음악 비활성화",
+    )
+
     # crawl subcommand (P2 placeholder)
     # url subcommand
     url_parser = subparsers.add_parser(
@@ -507,6 +689,7 @@ def main() -> int:
         "render": cmd_render,
         "pipeline": cmd_pipeline,
         "url": cmd_url,
+        "celebrity": cmd_celebrity,
     }
 
     handler = commands.get(args.command)

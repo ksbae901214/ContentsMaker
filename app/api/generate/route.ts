@@ -87,6 +87,78 @@ export async function POST(req: NextRequest) {
       }
 
       try {
+        // ── Celebrity mode (Phase 9) ───────────────────────────────
+        // This mode shells out to the `celebrity` CLI so the full orchestration
+        // (namuwiki → Claude → naver → freepik → TTS → render) lives in one
+        // place. Upload to YouTube/TikTok is intentionally disabled here —
+        // this mode is学습-use-only and the underlying Naver images +
+        // Namuwiki text have third-party rights.
+        if (mode === "celebrity") {
+          const name = ((fd.get("celebrityName") as string) || "").trim();
+          if (!name) {
+            send("error", { message: "인물 이름을 입력하세요" });
+            ctrl.close();
+            return;
+          }
+          const noVideo = (fd.get("noVideo") as string) === "on";
+          const noImages = (fd.get("noImages") as string) === "on";
+
+          const args = ["-m", "src.main", "celebrity", name];
+          if (noVideo) args.push("--no-video");
+          if (noImages) args.push("--no-images");
+          if (!useBgm) args.push("--no-bgm");
+
+          send("progress", { message: `🎬 유명인 파이프라인 시작: ${name}` });
+          send("progress", { message: `   옵션: ${[noVideo?"no-video":"", noImages?"no-images":"", useBgm?"":"no-bgm"].filter(Boolean).join(", ") || "기본"}` });
+
+          let videoOutputPath = "";
+          let sourceUrl = "";
+
+          await new Promise<void>((resolve, reject) => {
+            const p = spawn("python3", args, { cwd: ROOT, env: { ...process.env } });
+            let stdoutBuf = "";
+            p.stdout.on("data", d => {
+              stdoutBuf += d.toString();
+              const lines = stdoutBuf.split("\n");
+              stdoutBuf = lines.pop() ?? "";
+              for (const line of lines) {
+                const trimmed = line.trimEnd();
+                if (!trimmed) continue;
+                send("progress", { message: trimmed });
+                const videoMatch = trimmed.match(/^\s*영상:\s*(.+)$/);
+                if (videoMatch) videoOutputPath = videoMatch[1].trim();
+                const sourceMatch = trimmed.match(/^\s*출처:\s*(https?:\/\/\S+)/);
+                if (sourceMatch) sourceUrl = sourceMatch[1].trim();
+              }
+            });
+            p.stderr.on("data", d => {
+              const msg = d.toString().trim();
+              if (msg) send("progress", { message: `⚠️ ${msg.slice(-300)}` });
+            });
+            p.on("close", c => {
+              if (c === 0) resolve();
+              else reject(new Error(`celebrity 파이프라인 실패 (exit ${c})`));
+            });
+            p.on("error", e => reject(new Error(`Python 실행 실패: ${e.message}`)));
+          });
+
+          send("done", {
+            result: {
+              videoPath: videoOutputPath,
+              title: name,
+              emotion: "relatable",
+              duration: 0,
+              imageCount: 0,
+              cost: 0,
+              sourceType: "celebrity",
+              summary: sourceUrl ? `출처: ${sourceUrl}` : "학습 목적 전용",
+              hashtags: "",
+            },
+          });
+          ctrl.close();
+          return;
+        }
+
         let rawPath: string;
         // Holds the analyzer result: {title, emotion, duration, scenes, sp}.
         // When mode==="script", we bypass Claude and synthesize this object

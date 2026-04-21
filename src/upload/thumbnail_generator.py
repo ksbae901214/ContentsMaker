@@ -8,7 +8,7 @@ Pipeline:
     generate_thumbnail_from_script(script, video_path, output_dir)
       -> capture_hook_frame (ffmpeg subprocess)
       -> compose_thumbnail  (PIL: crop + overlay)
-      -> {output_dir}/{stem}.thumb.png (1280x720)
+      -> {output_dir}/{stem}.thumb.png (1080x1920, 9:16 쇼츠 비율)
 """
 from __future__ import annotations
 
@@ -21,12 +21,12 @@ from PIL import Image, ImageDraw, ImageFont
 from src.analyzer.script_models import ShortsScript
 
 
-THUMB_WIDTH = 1280
-THUMB_HEIGHT = 720
+THUMB_WIDTH = 1080
+THUMB_HEIGHT = 1920
 
-# Title sits in the lower half so it clears the YouTube Shorts navigation bar
-# (back button + search icon overlay the top ~10–15% of the display).
-TEXT_TOP_PERCENT = 0.50
+# Title sits at upper 13% + 20px so it clears the YouTube Shorts navigation bar
+# (back button + search icon overlay the top ~10%) but stays above the subtitle zone.
+TEXT_TOP_PERCENT = 0.13
 TEXT_Y_OFFSET = 20
 
 # Political-YouTube palette.
@@ -182,7 +182,7 @@ def compose_thumbnail(
     width: int = THUMB_WIDTH,
     height: int = THUMB_HEIGHT,
 ) -> Path:
-    """Compose a 1280x720 thumbnail: frame background + bold title overlay."""
+    """Compose a 1080x1920 (9:16) thumbnail: frame background + bold title overlay."""
     frame_path = Path(frame_path)
     if not frame_path.exists():
         raise FileNotFoundError(f"Frame not found: {frame_path}")

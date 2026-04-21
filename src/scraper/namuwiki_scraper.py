@@ -145,6 +145,12 @@ class NamuwikiScraper:
             raise NamuwikiScraperError(f"'{name}' 페이지 구조를 파싱할 수 없습니다")
 
         summary = self._extract_summary(container)
+        # 2026-04-21: 일부 페이지(예: 나경원)는 .wiki-heading-content에 문단 1개만
+        # 존재. 요약이 너무 짧으면 문서 전체에서 재탐색해 풍성한 요약 확보.
+        if len(summary) < 50 and soup.body is not None and soup.body is not container:
+            fallback = self._extract_summary(soup.body)
+            if len(fallback) > len(summary):
+                summary = fallback
         if not summary:
             raise NamuwikiScraperError(f"'{name}' 페이지에서 요약을 찾을 수 없습니다")
 
@@ -165,18 +171,49 @@ class NamuwikiScraper:
 
     @staticmethod
     def _extract_summary(container) -> str:
-        """첫 번째 의미 있는 문단을 반환.
+        """첫 번째 의미 있는 문단(들)을 반환.
 
-        2026-04-21: namu.wiki가 `<p>` 대신 `<div class="wiki-paragraph">`로 문단을
-        감싸도록 HTML 구조를 변경. 현재 구조 우선 조회, 없으면 레거시 `<p>` 태그로
-        폴백 (하위호환).
+        2026-04-21: namu.wiki HTML 구조 변경 + 페이지별 편차 대응.
+        - 신규 구조: `<div class="wiki-paragraph">` 다수
+        - 레거시 구조: `<p>` 태그
+        - 너무 짧은 문단은 노이즈(내비게이션·라벨)일 수 있어 필터
+        - 의미 있는 문단을 최대 3개까지 연결해 리치 요약 생성
         """
-        # 신규 구조: div.wiki-paragraph (대부분의 현행 나무위키 페이지)
-        for para in container.find_all(class_="wiki-paragraph"):
+        collected: list[str] = []
+        total_len = 0
+        MIN_PARA_CHARS = 20
+        TARGET_TOTAL = 200
+        MAX_COLLECT = 3
+
+        # 내비게이션·테이블 label로 보이는 문단 제외 (대부분 접기/펼치기/목록 블록)
+        NAV_MARKERS = ("[ 펼치기", "[ 편집]", "시당위원장", "··", " · · ")
+
+        def _looks_like_nav(text: str) -> bool:
+            if any(m in text for m in NAV_MARKERS):
+                return True
+            # 마침표·물음표·느낌표가 전혀 없고 `·`가 많으면 목록류
+            has_sentence_end = any(c in text for c in ".?!。")
+            bullet_count = text.count("·")
+            if not has_sentence_end and bullet_count >= 3:
+                return True
+            return False
+
+        paras = container.find_all(class_="wiki-paragraph")
+        for para in paras:
             text = para.get_text(" ", strip=True)
-            if text:
-                return text
-        # 레거시 구조: <p> 태그 (오래된 페이지·테스트 픽스처 호환)
+            if len(text) < MIN_PARA_CHARS:
+                continue
+            if _looks_like_nav(text):
+                continue
+            collected.append(text)
+            total_len += len(text)
+            if len(collected) >= MAX_COLLECT or total_len >= TARGET_TOTAL:
+                break
+
+        if collected:
+            return " ".join(collected)
+
+        # 레거시 구조 (테스트 픽스처·오래된 페이지)
         first_p = container.find("p")
         if first_p is not None:
             text = first_p.get_text(strip=True)

@@ -279,7 +279,7 @@ class TestWikiParagraphStructure:
           <div class="wiki-heading-content">
             <div class="wiki-paragraph"></div>
             <div class="wiki-paragraph">   </div>
-            <div class="wiki-paragraph">실제 요약 내용입니다.</div>
+            <div class="wiki-paragraph">실제 요약 내용이 충분히 길게 들어갑니다. 정치인 소개입니다.</div>
           </div>
         </body></html>
         """
@@ -288,4 +288,5 @@ class TestWikiParagraphStructure:
             cache_dir=tmp_path / "cache", rate_limit_s=0.0, transport=transport,
         )
         info = scraper.fetch_person("x")
-        assert info.summary == "실제 요약 내용입니다."
+        # 빈 문단 2개를 스킵하고 실제 내용 있는 문단을 가져왔는지 확인
+        assert "실제 요약 내용" in info.summary

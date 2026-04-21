@@ -38,8 +38,12 @@ def analyze_celebrity(
 ) -> tuple[ShortsScript, Path]:
     """Analyze a CelebrityInfo and generate a ShortsScript.
 
+    2026-04-21: 나무위키 요약이 짧거나 섹션이 비어 있으면 Naver 검색으로
+    인물 정보를 보강한 뒤 프롬프트에 주입한다 (사용자 요청).
+
     Returns (ShortsScript, file_path).
     """
+    info = _enrich_from_naver_if_needed(info)
     prompt = build_celebrity_prompt(info)
 
     logger.info("Claude Code 유명인 분석 시작: %s", info.name)
@@ -166,3 +170,45 @@ def _derive_image_query(
         if k in voice_text:
             return v
     return name
+
+
+def _enrich_from_naver_if_needed(info: CelebrityInfo) -> CelebrityInfo:
+    """나무위키 요약이 짧거나 경력/여담이 비어 있으면 Naver 검색으로 보강.
+
+    charter/정책:
+      - 원본 Naver 텍스트를 그대로 쓰지 않고 Claude에 "참고 정보"로 전달만
+      - Naver API 키 미설정 시 조용히 스킵 (에러 전파 안 함)
+      - 요약이 충분하면(>= 120자 AND 경력·여담 중 하나 이상) 호출 안 함
+    """
+    MIN_SUMMARY_CHARS = 120
+    has_sections = bool(info.career_highlights or info.trivia)
+    if len(info.summary) >= MIN_SUMMARY_CHARS and has_sections:
+        return info
+
+    try:
+        from src.scraper.naver_text_search import fetch_celebrity_text_fallback
+        extra = fetch_celebrity_text_fallback(info.name)
+    except Exception as exc:
+        logger.warning("Naver fallback 실패 (무시하고 진행): %s", exc)
+        return info
+
+    if not extra:
+        return info
+
+    logger.info("Naver 검색 보강 적용 (%d chars): %s", len(extra), extra[:80])
+    # summary 뒤에 별도 구분자로 덧붙여 프롬프트 빌더가 자연스럽게 포함시킴
+    combined_summary = info.summary
+    if combined_summary:
+        combined_summary += "\n\n[Naver 검색 보강]\n" + extra
+    else:
+        combined_summary = extra
+
+    return CelebrityInfo(
+        name=info.name,
+        summary=combined_summary,
+        source_url=info.source_url,
+        birth_date=info.birth_date,
+        profession=info.profession,
+        career_highlights=info.career_highlights,
+        trivia=info.trivia,
+    )

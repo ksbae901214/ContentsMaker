@@ -135,30 +135,42 @@ def fetch_celebrity_text_fallback(
         searcher = NaverTextSearcher()
         own = True
     query = f"{name} {qualifier}".strip() if qualifier else name
+
+    # 2026-04-22: 모든 endpoint 결과 합쳐서 풍성하게 (이전엔 첫 성공 시 stop)
+    all_pieces: list[str] = []
+    seen_descs: set[str] = set()
     try:
-        for fn_name in ("search_encyc", "search_news", "search_webkr"):
+        for fn_name, label in (
+            ("search_encyc", "백과"),
+            ("search_news", "뉴스"),
+            ("search_webkr", "웹"),
+        ):
             try:
                 fn = getattr(searcher, fn_name)
-                results = fn(query, display=5)
+                results = fn(query, display=10)
             except NaverTextSearchError as e:
                 logger.warning("네이버 %s 실패: %s", fn_name, e)
                 continue
-            # 인물명이 title에 실제 포함된 결과만 (동명이인·광고 제거)
             relevant = [r for r in results if name in r.title or name in r.description]
             if not relevant:
-                relevant = results[:2]
-            if relevant:
-                pieces = []
-                for r in relevant[:3]:
-                    title = r.title.strip()
-                    desc = r.description.strip()
-                    if title and desc:
-                        pieces.append(f"{title} — {desc}")
-                    elif desc:
-                        pieces.append(desc)
-                if pieces:
-                    return " / ".join(pieces)[:800]
+                relevant = results[:3]
+            for r in relevant[:5]:
+                title = r.title.strip()
+                desc = r.description.strip()
+                # 중복 제거 (동일 description이 여러 endpoint에 나옴)
+                key = desc[:80]
+                if not desc or key in seen_descs:
+                    continue
+                seen_descs.add(key)
+                if title and desc:
+                    all_pieces.append(f"[{label}] {title} — {desc}")
+                else:
+                    all_pieces.append(f"[{label}] {desc}")
     finally:
         if own:
             searcher.close()
-    return ""
+
+    if not all_pieces:
+        return ""
+    # 최대 2500자 (기존 800자 → 풍성한 보강)
+    return "\n".join(all_pieces)[:2500]

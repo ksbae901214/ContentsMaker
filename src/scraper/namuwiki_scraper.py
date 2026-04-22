@@ -211,8 +211,9 @@ class NamuwikiScraper:
         collected: list[str] = []
         total_len = 0
         MIN_PARA_CHARS = 20
-        TARGET_TOTAL = 200
-        MAX_COLLECT = 3
+        # 2026-04-22: 스크립트 풍부도 향상 — 더 많은 본문 수집
+        TARGET_TOTAL = 800
+        MAX_COLLECT = 10
 
         # 내비게이션·테이블 label로 보이는 문단 제외 (대부분 접기/펼치기/목록 블록)
         NAV_MARKERS = ("[ 펼치기", "[ 편집]", "시당위원장", "··", " · · ")

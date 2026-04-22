@@ -168,55 +168,114 @@ def analyze_political(
     return script, file_path
 
 
-def _call_claude(prompt: str) -> str:
+# Claude CLI 일시적 오류 마커 — 응답이 이 패턴 중 하나면 retry.
+_TRANSIENT_PATTERNS = (
+    "Execution error",
+    "execution error",
+    "Internal error",
+    "Service Unavailable",
+    "rate limit",
+    "Rate limit",
+    "Too Many Requests",
+    "Connection reset",
+    "ECONNRESET",
+)
+
+
+def _looks_transient(output: str) -> bool:
+    """Claude CLI 응답이 일시적 오류로 보이는지 판단.
+
+    JSON-like 응답이 아니면서 짧은 에러 문구만 포함된 경우 True.
+    """
+    out = (output or "").strip()
+    if len(out) < 200 and not out.startswith(("{", "[", "```")):
+        if any(pat in out for pat in _TRANSIENT_PATTERNS):
+            return True
+    return False
+
+
+def _call_claude(prompt: str, *, max_attempts: int = 3) -> str:
     """Call Claude Code headless mode and return raw output.
 
+    2026-04-22: Claude CLI가 가끔 "Execution error" 같은 일시적 오류 텍스트만
+    반환 (returncode 0). 자동 재시도 로직 추가 — 최대 max_attempts회 시도.
+
     Passes stdin=DEVNULL so the subprocess never blocks waiting for input.
-    On timeout we include any partial stdout/stderr so the caller can see
-    what state the CLI was in when it hung.
     """
-    try:
-        env = {
-            **os.environ,
-            "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:" + os.environ.get("PATH", ""),
-        }
-        result = subprocess.run(
-            ["claude", "-p", prompt],
-            capture_output=True,
-            text=True,
-            timeout=CLAUDE_TIMEOUT_SECONDS,
-            env=env,
-            stdin=subprocess.DEVNULL,
-        )
-    except FileNotFoundError:
-        raise AnalyzerError(
-            "Claude Code가 설치되지 않았습니다. "
-            "'claude' 명령어가 PATH에 있는지 확인하세요."
-        )
-    except subprocess.TimeoutExpired as exc:
-        partial_out = (exc.stdout or b"").decode("utf-8", "replace")[:300] if isinstance(exc.stdout, bytes) else (exc.stdout or "")[:300]
-        partial_err = (exc.stderr or b"").decode("utf-8", "replace")[:300] if isinstance(exc.stderr, bytes) else (exc.stderr or "")[:300]
-        detail = ""
-        if partial_err:
-            detail = f" | stderr: {partial_err.strip()}"
-        elif partial_out:
-            detail = f" | stdout: {partial_out.strip()}"
-        raise AnalyzerError(
-            f"Claude Code 응답 시간 초과 ({CLAUDE_TIMEOUT_SECONDS}초). "
-            f"네트워크/Claude CLI 상태를 확인하세요.{detail}"
-        )
+    last_output = ""
+    for attempt in range(1, max_attempts + 1):
+        try:
+            env = {
+                **os.environ,
+                "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:" + os.environ.get("PATH", ""),
+            }
+            result = subprocess.run(
+                ["claude", "-p", prompt],
+                capture_output=True,
+                text=True,
+                timeout=CLAUDE_TIMEOUT_SECONDS,
+                env=env,
+                stdin=subprocess.DEVNULL,
+            )
+        except FileNotFoundError:
+            raise AnalyzerError(
+                "Claude Code가 설치되지 않았습니다. "
+                "'claude' 명령어가 PATH에 있는지 확인하세요."
+            )
+        except subprocess.TimeoutExpired as exc:
+            partial_out = (exc.stdout or b"").decode("utf-8", "replace")[:300] if isinstance(exc.stdout, bytes) else (exc.stdout or "")[:300]
+            partial_err = (exc.stderr or b"").decode("utf-8", "replace")[:300] if isinstance(exc.stderr, bytes) else (exc.stderr or "")[:300]
+            detail = ""
+            if partial_err:
+                detail = f" | stderr: {partial_err.strip()}"
+            elif partial_out:
+                detail = f" | stdout: {partial_out.strip()}"
+            raise AnalyzerError(
+                f"Claude Code 응답 시간 초과 ({CLAUDE_TIMEOUT_SECONDS}초). "
+                f"네트워크/Claude CLI 상태를 확인하세요.{detail}"
+            )
 
-    if result.returncode != 0:
-        stderr = result.stderr[:300] if result.stderr else ""
-        stdout = result.stdout[:300] if result.stdout else ""
-        detail = stderr or stdout or "(no output)"
-        raise AnalyzerError(f"Claude Code 실행 실패 (exit {result.returncode}): {detail}")
+        if result.returncode != 0:
+            stderr = result.stderr[:300] if result.stderr else ""
+            stdout = result.stdout[:300] if result.stdout else ""
+            detail = stderr or stdout or "(no output)"
+            # exit code != 0 는 영구 실패로 보지만, 일시적 오류 패턴이면 retry
+            if attempt < max_attempts and _looks_transient(detail):
+                logger.warning(
+                    "Claude CLI 일시적 오류 (exit %d, attempt %d/%d): %s",
+                    result.returncode, attempt, max_attempts, detail[:120],
+                )
+                continue
+            raise AnalyzerError(f"Claude Code 실행 실패 (exit {result.returncode}): {detail}")
 
-    output = result.stdout.strip()
-    if not output:
-        raise AnalyzerError("Claude Code가 빈 응답을 반환했습니다.")
+        output = result.stdout.strip()
+        last_output = output
+        if not output:
+            if attempt < max_attempts:
+                logger.warning(
+                    "Claude CLI 빈 응답 (attempt %d/%d) — 재시도",
+                    attempt, max_attempts,
+                )
+                continue
+            raise AnalyzerError("Claude Code가 빈 응답을 반환했습니다 (3회 모두).")
 
-    return output
+        # "Execution error" 같은 짧은 transient 응답 감지 → 재시도
+        if _looks_transient(output):
+            if attempt < max_attempts:
+                logger.warning(
+                    "Claude CLI 일시적 오류 응답 (attempt %d/%d): %r — 재시도",
+                    attempt, max_attempts, output[:120],
+                )
+                continue
+            raise AnalyzerError(
+                f"Claude Code가 {max_attempts}회 모두 일시적 오류 반환: {output[:200]}. "
+                "잠시 후 다시 시도해 주세요."
+            )
+
+        return output
+
+    # 안전망 (이론상 도달 안 함)
+    raise AnalyzerError(f"Claude Code 호출 실패 (최종 응답: {last_output[:200]})")
 
 
 def _parse_response(raw: str) -> ShortsScript:

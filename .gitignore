@@ -21,9 +21,22 @@ data/.tiktok_credentials.json
 # Data (generated outputs)
 data/raw/*.json
 data/scripts/*.json
-data/audio/*.mp3
-data/outputs/*.mp4
+data/audio/
+data/outputs/
 data/backgrounds/
+data/political_pro/
+data/tts_cache/
+data/natv_clips/
+data/videos/
+data/celebrity_portraits/
+data/projects/
+data/dem_shorts/
+data/tmp/
+data/cache/
+data/qw01_preview/
+data/qw03_preview/
+data/tts_samples/
+data/fixtures/
 
 # IDE
 .vscode/
@@ -44,6 +57,17 @@ htmlcov/
 node_modules/
 .next/
 next-env.d.ts
+tsconfig.tsbuildinfo
+src/video/remotion/public/
+
+# Remotion runtime asset cache (copied from data/ before render)
+public/audio_*.mp3
+public/bgm_*.mp3
+public/bgm/
+public/sfx/
+
+# Claude Code local agents (machine-specific)
+.claude/agents/
 
 # Data (temporary/reference/generated)
 data/temp/

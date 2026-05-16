@@ -76,6 +76,85 @@ export async function POST(req: NextRequest) {
         ctrl.enqueue(enc.encode(`data: ${JSON.stringify({ type, ...data })}\n\n`));
 
       try {
+        // V2 Phase A (2026-05-14): political_pro 모드 분기 자동 감지.
+        // 스크립트의 metadata.source_type을 먼저 확인해 분기.
+        const probeArgs = JSON.stringify({ script_path: scriptPath });
+        const probe = JSON.parse(await pyWithStdin(`
+import sys,json
+sys.path.insert(0,${JSON.stringify(ROOT)})
+from src.analyzer.script_models import ShortsScript
+args=json.loads(sys.stdin.read())
+s=ShortsScript.load(args["script_path"])
+print(json.dumps({
+  "source_type": s.metadata.source_type or "blind",
+  "source_url": s.metadata.source_url or "",
+}))`, probeArgs));
+
+        const isPoliticalPro = probe.source_type === "political_pro";
+
+        // ── political_pro 분기: Gemini TTS Charon + 원본 클립 재cut ──
+        if (isPoliticalPro) {
+          send("progress", { message: "🎙️ Gemini TTS Charon 재합성 중..." });
+          const ttsArgs = JSON.stringify({ script_path: scriptPath });
+          const ttsResult = JSON.parse(await pyWithStdin(`
+import sys,json,os
+sys.path.insert(0,${JSON.stringify(ROOT)})
+from src.analyzer.script_models import ShortsScript
+from src.tts.gemini_tts_generator import generate_voice_with_timing_gemini, GeminiTTSError
+args=json.loads(sys.stdin.read())
+s=ShortsScript.load(args["script_path"])
+if not os.environ.get("GEMINI_API_KEY"):
+  print(json.dumps({"error":"tts_failed","detail":"GEMINI_API_KEY 미설정"}))
+else:
+  try:
+    ap,timings=generate_voice_with_timing_gemini(
+      s, voice_name="Charon",
+      style_prompt="Read in a fast, clear newscaster tone with neutral political delivery:",
+      temperature=0.5, include_outro=False,
+    )
+    print(json.dumps({"audio_path":str(ap),"timings":timings}))
+  except GeminiTTSError as e:
+    print(json.dumps({"error":"tts_failed","detail":str(e)[:300]}))`, ttsArgs));
+          if (ttsResult.error) {
+            send("error", { message: `재렌더링 실패 (TTS): ${ttsResult.detail}` });
+            ctrl.close(); return;
+          }
+          send("progress", { message: `✅ Gemini TTS 완료 (${ttsResult.timings.length}씬)` });
+
+          // 기존 scene_videos가 있으면 재사용. 없으면 사용자에게 알림.
+          // (정치 모드 재렌더는 원본 클립을 다시 자르지 않고 기존 씬 클립을 사용)
+          send("progress", { message: "🎬 정치 모드 영상 재렌더링 중..." });
+          const renderArgs = JSON.stringify({
+            script_path: scriptPath,
+            scene_images: validImages,
+            scene_videos: validVideos,
+            use_bgm: safeBgm,
+            enable_transitions: false,  // V2 Phase B 정치 모드: 화면 전환 OFF
+            enable_sfx: false,           // V2 Phase B 정치 모드: 효과음 OFF
+            audio_path: ttsResult.audio_path,
+            timings: ttsResult.timings,
+          });
+          const rr = JSON.parse(await pyWithStdin(`
+import sys,json
+sys.path.insert(0,${JSON.stringify(ROOT)})
+from pathlib import Path
+from src.analyzer.script_models import ShortsScript
+from src.video.renderer import render_video
+args=json.loads(sys.stdin.read())
+s=ShortsScript.load(args["script_path"])
+ap=Path(args["audio_path"])
+si=args["scene_images"] if args["scene_images"] else None
+sv=args["scene_videos"] if args["scene_videos"] else None
+timings=args.get("timings")
+o=render_video(s,audio_path=ap,scene_images=si,scene_videos=sv,use_bgm=args["use_bgm"],scene_timings=timings,enable_transitions=args.get("enable_transitions",False),enable_sfx=args.get("enable_sfx",False))
+t=o.parent/(o.stem+".thumb.png")
+print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))`, renderArgs));
+          send("progress", { message: `✅ 렌더링 완료 (${rr.size}MB)` });
+          send("done", { result: { videoPath: rr.path, thumbnailPath: rr.thumbnailPath || "", size: rr.size } });
+          ctrl.close(); return;
+        }
+
+        // ── 기존 분기 (blind/topic/celebrity/...): edge-tts + render ──
         send("progress", { message: "🎙️ 음성 재생성 중..." });
 
         const ttsArgs = JSON.stringify({ script_path: scriptPath });

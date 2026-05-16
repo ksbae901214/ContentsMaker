@@ -35,7 +35,20 @@ interface SceneData {
   // QW-02: 강조 키워드 색 카테고리.
   highlight_category?: string;
   highlightCategory?: string;
+  // Feature 011 V2 Phase B: 정치 모드 자막 색·강조
+  subtitle_color?: string;
+  subtitleColor?: string;
+  subtitle_emphasis?: boolean;
+  subtitleEmphasis?: boolean;
 }
+
+// V2 Phase B: 자막 색 keyword → hex (subtitle_color_map.py와 동일 매핑)
+const V2_SUBTITLE_COLOR_HEX: Record<string, string> = {
+  white: "#FFFFFF",
+  red: "#FF4444",
+  yellow: "#FFD93D",
+  blue: "#5DADE2",
+};
 
 interface SceneTextProps {
   scene: SceneData;
@@ -103,12 +116,18 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
   const style: SubtitleStyle | undefined =
     scene.subtitleStyle || scene.subtitle_style;
 
+  // Feature 011 V2 Phase B: scene.subtitle_color/emphasis 우선 적용
+  const v2Color = (scene.subtitleColor || scene.subtitle_color || "").toLowerCase().trim();
+  const v2Emphasis = scene.subtitleEmphasis || scene.subtitle_emphasis || false;
+
   const baseFontSize = style?.font_size ?? DEFAULT_FONT_SIZE;
-  // QW-01: hook 씬은 1.4x 폰트로 임팩트 강화
-  const fontSize = isHook ? Math.round(baseFontSize * 1.4) : baseFontSize;
-  const fontWeight = style?.font_weight ?? "700";
+  // QW-01: hook 씬은 1.4x 폰트. V2: subtitle_emphasis도 동일 1.4x.
+  const fontSize = (isHook || v2Emphasis) ? Math.round(baseFontSize * 1.4) : baseFontSize;
+  const fontWeight = (isHook || v2Emphasis) ? "900" : (style?.font_weight ?? "700");
   const fontFamily = style?.font_family ?? "Noto Sans KR, sans-serif";
-  const textColor = style?.color ?? "#FFFFFF";
+  // V2 색이 white가 아닌 경우 우선 적용. white이거나 비어있으면 기존 textColor.
+  const v2HexColor = v2Color && v2Color !== "white" ? V2_SUBTITLE_COLOR_HEX[v2Color] : undefined;
+  const textColor = v2HexColor || style?.color || "#FFFFFF";
   // QW-03: 기존 `style.shadow`는 drop shadow로 흡수. 외곽선은 별도 합성.
   const dropShadow = style?.shadow ?? DEFAULT_DROP_SHADOW;
   const strokeColor = style?.stroke_color ?? DEFAULT_STROKE_COLOR;

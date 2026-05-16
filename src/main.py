@@ -175,7 +175,9 @@ def cmd_tts(args: argparse.Namespace) -> int:
             return 1
 
         script = ShortsScript.load(file_path)
-        code, _, _ = _run_tts(script)
+        provider = getattr(args, "provider", "edge")
+        voice = getattr(args, "voice", None)
+        code, _, _ = _run_tts(script, provider=provider, voice=voice)
         return code
 
     except Exception as e:
@@ -184,13 +186,40 @@ def cmd_tts(args: argparse.Namespace) -> int:
         return 1
 
 
-def _run_tts(script):
+def _run_tts(script, provider: str = "edge", voice: str | None = None):
     """Run TTS generation with per-scene timing.
 
+    Args:
+        script: ShortsScript instance.
+        provider: "edge" (Microsoft, default) or "gemini" (Google AI Studio).
+        voice: Gemini voice name (e.g. "Leda"); ignored when provider="edge".
+
     Returns (exit_code, voice_path, scene_timings).
-    scene_timings is a list of {scene_id, start_ms, end_ms} dicts for
-    precise audio-to-scene synchronization.
+    scene_timings is a list of {scene_id, start_ms, end_ms} dicts.
+    On Gemini failure, automatically falls back to edge-tts.
     """
+    if provider == "gemini":
+        from src.tts.gemini_tts_generator import (
+            DEFAULT_VOICE,
+            GeminiTTSError,
+            generate_voice_with_timing_gemini,
+        )
+        try:
+            logger.info("Gemini TTS 생성 시작 (voice=%s)...", voice or DEFAULT_VOICE)
+            voice_path, scene_timings = generate_voice_with_timing_gemini(
+                script, voice_name=voice or DEFAULT_VOICE,
+            )
+            file_size_kb = voice_path.stat().st_size / 1024
+            print(f"\n✅ Gemini 음성 생성 완료")
+            print(f"   파일: {voice_path}")
+            print(f"   크기: {file_size_kb:.1f} KB")
+            print(f"   보이스: {voice or DEFAULT_VOICE}")
+            return 0, voice_path, scene_timings
+        except GeminiTTSError as e:
+            logger.warning("Gemini TTS 실패, edge-tts로 폴백: %s", e)
+            print(f"\n⚠️  Gemini TTS 실패 → edge-tts 폴백: {e}", file=sys.stderr)
+            # fall through to edge-tts below
+
     from src.tts.edge_tts_generator import TTSError, generate_voice_with_timing
 
     try:
@@ -381,6 +410,217 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_political_pro(args: argparse.Namespace) -> int:
+    """Handle the 'political-pro' subcommand (Feature 009).
+
+    YouTube URL → download + transcript → 3 ShortsPlan (Claude single-call)
+    → user picks 1 → plan_to_script → render 9:16 MP4 (original clip + Gemini
+    TTS Charon).
+
+    Exit codes:
+        0 = success
+        2 = invalid input
+        3 = youtube download failed
+        4 = transcript unavailable
+        5 = Claude plan generation failed
+        6 = TTS failed
+        7 = render failed
+    """
+    import json as _json
+    import subprocess as _sub
+    from datetime import datetime
+
+    from src.analyzer.political_planner import (
+        PoliticalPlannerError,
+        generate_three_plans,
+        plan_to_script,
+    )
+    from src.config.settings import DATA_DIR
+    from src.scraper.youtube_downloader import (
+        TranscriptUnavailableError,
+        download_video,
+        get_video_metadata,
+        transcribe_video_or_fallback,
+    )
+
+    url = args.youtube_url.strip()
+    if not url.startswith(("https://", "http://")):
+        print("❌ 유효한 URL이 아닙니다", file=sys.stderr)
+        return 2
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_dir = DATA_DIR / "political_pro" / f"{ts}_cli"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"🎬 영상 메타데이터 + 다운로드 중... ({url})", file=sys.stderr)
+    meta = get_video_metadata(url)
+    try:
+        vp = download_video(url, out_dir)
+    except Exception as e:
+        print(f"❌ YouTube 다운로드 실패: {e}", file=sys.stderr)
+        return 3
+    yt_title = (meta.get("title") or "").strip() or vp.stem
+    yt_channel = (meta.get("channel") or "").strip()
+
+    print(f"🎙️ Transcript 확보 중...", file=sys.stderr)
+    try:
+        transcript = transcribe_video_or_fallback(url=url, video_path=vp, out_dir=out_dir)
+    except TranscriptUnavailableError as e:
+        print(f"❌ Transcript 확보 실패: {e}", file=sys.stderr)
+        return 4
+    if not transcript:
+        print("❌ 유효한 transcript가 비어 있습니다", file=sys.stderr)
+        return 4
+
+    probe = _sub.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+         "-of", "default=nw=1:nk=1", str(vp)],
+        capture_output=True, text=True,
+    )
+    try:
+        duration_sec = float(probe.stdout.strip())
+    except Exception:
+        duration_sec = transcript[-1]["end"] if transcript else 0.0
+
+    tp = out_dir / "transcript.json"
+    tp.write_text(
+        _json.dumps({"segments": transcript}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    print(f"🤔 3개 기획안 생성 중 (Hybrid: Gemini + Claude)...", file=sys.stderr)
+    try:
+        result = generate_three_plans(
+            youtube_url=url,
+            transcript=transcript,
+            video_title=yt_title,
+            video_duration_sec=duration_sec,
+            video_path=str(vp),
+            transcript_path=str(tp),
+            output_dir=out_dir,
+            video_channel=yt_channel,
+        )
+    except PoliticalPlannerError as e:
+        print(f"❌ 기획안 생성 실패: {e}", file=sys.stderr)
+        return 5
+
+    if args.plans_only:
+        print(_json.dumps(result.to_dict(), ensure_ascii=False))
+        return 0
+
+    # Print plan summary to stderr (so plans-only stdout JSON stays clean)
+    print("\n────────────────────────────────────────", file=sys.stderr)
+    for i, p in enumerate(result.plans):
+        print(
+            f"[Plan {i + 1}] angle={p.angle}\n"
+            f"  주제: {p.topic}\n"
+            f"  Hook: \"{p.hook}\"\n"
+            f"  구간: {int(p.clip_start_sec // 60):02d}:{int(p.clip_start_sec % 60):02d} "
+            f"~ {int(p.clip_end_sec // 60):02d}:{int(p.clip_end_sec % 60):02d}\n"
+            f"  CTA: {p.cta}\n",
+            file=sys.stderr,
+        )
+    print("────────────────────────────────────────", file=sys.stderr)
+
+    # Select plan
+    if args.interactive:
+        try:
+            sel = int(input("어떤 기획안으로 영상을 만들까요? (1/2/3): ").strip())
+        except (ValueError, EOFError):
+            print("❌ 잘못된 입력", file=sys.stderr)
+            return 2
+        plan_idx = sel - 1
+    elif args.plan_idx is not None:
+        plan_idx = args.plan_idx
+    else:
+        print("❌ --plan-idx 또는 --interactive 필요", file=sys.stderr)
+        return 2
+
+    if plan_idx not in (0, 1, 2):
+        print(f"❌ plan-idx 0/1/2 범위 외 ({plan_idx})", file=sys.stderr)
+        return 2
+
+    plan = result.plans[plan_idx]
+    print(f"✅ Plan {plan_idx + 1} 선택됨 — {plan.topic}", file=sys.stderr)
+
+    script = plan_to_script(
+        plan,
+        video_title=yt_title,
+        video_duration_sec=duration_sec,
+        source_channel=yt_channel,
+        source_title=yt_title,
+        youtube_url=url,
+    )
+    print(f"✅ 스크립트 변환 완료 ({len(script.scenes)}씬, {script.metadata.duration}초)", file=sys.stderr)
+
+    # Render: Gemini TTS + scene clip cut + Remotion
+    print(f"🎙️ Gemini TTS Charon 합성 중...", file=sys.stderr)
+    try:
+        from src.tts.gemini_tts_generator import (
+            GeminiTTSError,
+            generate_voice_with_timing_gemini,
+        )
+        audio_path, timings = generate_voice_with_timing_gemini(
+            script,
+            voice_name="Charon",
+            style_prompt="Read in a fast, clear newscaster tone with neutral political delivery:",
+            temperature=0.5,
+            include_outro=False,
+        )
+    except GeminiTTSError as e:
+        print(f"❌ Gemini TTS 실패: {e}", file=sys.stderr)
+        return 6
+    print(f"✅ 음성 합성 완료", file=sys.stderr)
+
+    print(f"✂️ 씬 클립 분할 (9:16)...", file=sys.stderr)
+    from src.dem_shorts.editor.segment_cutter import cut_segment
+    main_timings = [t for t in timings if t["scene_id"] != -1]
+    if not main_timings:
+        print("❌ 씬 타이밍 비어 있음", file=sys.stderr)
+        return 7
+    tts_total_ms = max(t["end_ms"] for t in main_timings)
+    clip_duration = plan.clip_end_sec - plan.clip_start_sec
+    import time as _time
+    ts2 = int(_time.time())
+    scene_videos = []
+    for t in main_timings:
+        sid = t["scene_id"]
+        ns = plan.clip_start_sec + (t["start_ms"] / tts_total_ms) * clip_duration
+        ne = plan.clip_start_sec + (t["end_ms"] / tts_total_ms) * clip_duration
+        out_file = out_dir / f"scene_{ts2}_{sid:02d}.mp4"
+        # political_pro: TTS가 메인 음성이므로 영상 음성은 mute (중첩·에코 방지)
+        cut_segment(input_path=vp, output_path=out_file, start_sec=ns, end_sec=ne, mute=True)
+        scene_videos.append({"scene_id": sid, "video_path": str(out_file)})
+    print(f"✅ 씬 클립 {len(scene_videos)}개 분할 완료", file=sys.stderr)
+
+    print(f"🎬 Remotion 렌더 중...", file=sys.stderr)
+    try:
+        from src.video.renderer import render_video
+        mp4 = render_video(
+            script,
+            audio_path=audio_path,
+            scene_videos=scene_videos,
+            use_bgm=not args.no_bgm,
+            scene_timings=timings,
+            # political_pro: 뉴스 톤. 화면 전환 효과(fade/slide/zoom) + 전환 효과음
+            # (whoosh/impact 등) 모두 강제 OFF. 사용자 --no-* 인자와 무관 (정치 모드 컨벤션).
+            enable_transitions=False,
+            enable_sfx=False,
+        )
+    except Exception as e:
+        print(f"❌ 렌더 실패: {e}", file=sys.stderr)
+        return 7
+
+    size_mb = mp4.stat().st_size / (1024 * 1024)
+    print(f"\n📁 출력: {mp4} ({size_mb:.1f}MB, {script.metadata.duration:.0f}s)", file=sys.stderr)
+    print(
+        "⚠️  주의: 출력은 자동 생성 결과입니다. 게시 전 반드시 사용자 검수가 필요합니다.",
+        file=sys.stderr,
+    )
+    print(str(mp4))  # stdout: 최종 mp4 경로 (스크립팅용)
+    return 0
+
+
 def cmd_celebrity(args: argparse.Namespace) -> int:
     """Handle the 'celebrity' subcommand — 유명인 이름 → 소개 쇼츠 (학습 목적 전용).
 
@@ -560,6 +800,10 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
     except (NamuwikiScraperError, AnalyzerError, RenderError) as e:
         logger.error("유명인 파이프라인 오류: %s", e)
         print(f"\n❌ 오류: {e}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        logger.error("유명인 파이프라인 예상치 못한 오류: %s", e, exc_info=True)
+        print(f"\n❌ 예상치 못한 오류: {e}", file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print("\n\n취소되었습니다.")
@@ -807,9 +1051,21 @@ def build_parser() -> argparse.ArgumentParser:
 
     # tts subcommand
     tts_parser = subparsers.add_parser(
-        "tts", help="스크립트 → 음성 변환 (edge-tts)"
+        "tts", help="스크립트 → 음성 변환 (edge-tts 또는 Gemini)"
     )
     tts_parser.add_argument("--file", "-f", type=str, required=True, help="script.json 경로")
+    tts_parser.add_argument(
+        "--provider",
+        choices=["edge", "gemini"],
+        default="edge",
+        help="TTS 공급자 (기본: edge). gemini 선택 시 GEMINI_API_KEY 필요.",
+    )
+    tts_parser.add_argument(
+        "--voice",
+        type=str,
+        default=None,
+        help="Gemini 보이스 이름 (기본: Leda). edge 공급자에서는 무시됩니다.",
+    )
 
     # render subcommand
     render_parser = subparsers.add_parser(
@@ -892,6 +1148,34 @@ def build_parser() -> argparse.ArgumentParser:
              "파일들을 각 씬에 주입.",
     )
 
+    # political-pro subcommand — Feature 009 (정치 숏츠 기획자)
+    political_pro_parser = subparsers.add_parser(
+        "political-pro",
+        help="정치 YouTube 영상 → 3 기획안(RTF 6요소) → 1 선택 → 9:16 쇼츠",
+    )
+    political_pro_parser.add_argument("youtube_url", type=str, help="YouTube URL")
+    political_pro_parser.add_argument(
+        "--plan-idx", type=int, choices=[0, 1, 2], default=None,
+        help="비인터랙티브 모드: 사용할 plan 인덱스 (0/1/2)",
+    )
+    political_pro_parser.add_argument(
+        "--interactive", action="store_true",
+        help="3개 plan 표시 후 stdin으로 선택 입력 받음",
+    )
+    political_pro_parser.add_argument(
+        "--plans-only", action="store_true",
+        help="기획안만 출력하고 종료 (영상 생성 안 함)",
+    )
+    political_pro_parser.add_argument(
+        "--no-bgm", action="store_true", help="배경음악 비활성화",
+    )
+    political_pro_parser.add_argument(
+        "--no-transitions", action="store_true", help="화면 전환 효과 비활성화",
+    )
+    political_pro_parser.add_argument(
+        "--no-sfx", action="store_true", help="효과음 비활성화",
+    )
+
     # crawl subcommand (P2 placeholder)
     # url subcommand
     url_parser = subparsers.add_parser(
@@ -952,6 +1236,7 @@ def main() -> int:
         "pipeline": cmd_pipeline,
         "url": cmd_url,
         "celebrity": cmd_celebrity,
+        "political-pro": cmd_political_pro,
     }
 
     handler = commands.get(args.command)

@@ -127,6 +127,15 @@ class Scene:
     # 씬의 image_query="서울대학교 정문" 식으로 내용에 맞는 이미지를 네이버에서 검색.
     # None이면 상위 로직이 인물명 등 기본값으로 폴백.
     image_query: str | None = None
+    # Feature 011 V2 Phase B (2026-05-14): 정치 모드 자막 색·시각 연출.
+    # subtitle_color: white(기본)/red(비판·충돌)/yellow(강조)/blue(인용)
+    # subtitle_emphasis: True면 폰트 1.4x + 굵게
+    # visual_layout: "normal"(기본) | "split"(좌·우 분할 화면)
+    # secondary_clip_path: split 레이아웃 시 우측에 보일 보조 클립 경로
+    subtitle_color: str = "white"
+    subtitle_emphasis: bool = False
+    visual_layout: str = "normal"
+    secondary_clip_path: str | None = None
 
     def to_dict(self) -> dict:
         d = {
@@ -159,6 +168,15 @@ class Scene:
             d["highlight_category"] = self.highlight_category
         if self.image_query:  # None·빈 문자열은 키 생략
             d["image_query"] = self.image_query
+        # Feature 011 V2 Phase B — default가 아닐 때만 직렬화 (V1 호환)
+        if self.subtitle_color != "white":
+            d["subtitle_color"] = self.subtitle_color
+        if self.subtitle_emphasis:
+            d["subtitle_emphasis"] = True
+        if self.visual_layout != "normal":
+            d["visual_layout"] = self.visual_layout
+        if self.secondary_clip_path:
+            d["secondary_clip_path"] = self.secondary_clip_path
         return d
 
     @classmethod
@@ -196,10 +214,23 @@ class Scene:
                 data.get("highlight_category", data.get("highlightCategory", "neutral"))
             ),
             image_query=data.get("image_query", data.get("imageQuery")) or None,
+            # Feature 011 V2 Phase B — default fallback으로 V1 JSON 호환
+            subtitle_color=str(
+                data.get("subtitle_color", data.get("subtitleColor", "white"))
+            ),
+            subtitle_emphasis=bool(
+                data.get("subtitle_emphasis", data.get("subtitleEmphasis", False))
+            ),
+            visual_layout=str(
+                data.get("visual_layout", data.get("visualLayout", "normal"))
+            ),
+            secondary_clip_path=(
+                data.get("secondary_clip_path", data.get("secondaryClipPath")) or None
+            ),
         )
 
 
-SourceType = Literal["blind", "topic", "political", "celebrity"]
+SourceType = Literal["blind", "topic", "political", "political_pro", "celebrity"]
 
 
 @dataclass(frozen=True)
@@ -210,24 +241,50 @@ class Metadata:
     duration: float
     source_url: str = ""
     source_type: str = "blind"  # SourceType
+    # Feature 009 political_pro: 출처 표시용 (화면 하단 "출처: {channel} : {title}")
+    source_channel: str = ""
+    source_title: str = ""
+    # Feature 011 V2 political_pro 업그레이드 — gemini-code 지침
+    # Phase A에서는 추적·디버깅 메타로만 보존, Phase B에서 렌더 분기에 활용 예정.
+    format_type: str = ""           # "A"=인터뷰/논평/MBC라디오, "B"=현장/뉴스핌, ""=N/A
+    format_reason: str = ""
+    visual_directives: tuple[str, ...] = ()
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "title": self.title,
             "emotion_type": self.emotion_type,
             "duration": self.duration,
             "source_url": self.source_url,
             "source_type": self.source_type,
         }
+        if self.source_channel:
+            d["source_channel"] = self.source_channel
+        if self.source_title:
+            d["source_title"] = self.source_title
+        # V2 부가 필드 (default가 아닐 때만 직렬화 → V1 JSON 호환)
+        if self.format_type:
+            d["format_type"] = self.format_type
+        if self.format_reason:
+            d["format_reason"] = self.format_reason
+        if self.visual_directives:
+            d["visual_directives"] = list(self.visual_directives)
+        return d
 
     @classmethod
     def from_dict(cls, data: dict) -> Metadata:
+        vd_raw = data.get("visual_directives", data.get("visualDirectives", ()))
         return cls(
             title=data["title"],
             emotion_type=data.get("emotion_type", data.get("emotionType", "relatable")),
             duration=float(data.get("duration", 45)),
             source_url=data.get("source_url", data.get("sourceUrl", "")),
             source_type=data.get("source_type", data.get("sourceType", "blind")),
+            source_channel=data.get("source_channel", data.get("sourceChannel", "")),
+            source_title=data.get("source_title", data.get("sourceTitle", "")),
+            format_type=str(data.get("format_type", data.get("formatType", ""))),
+            format_reason=str(data.get("format_reason", data.get("formatReason", ""))),
+            visual_directives=tuple(vd_raw) if vd_raw else (),
         )
 
 

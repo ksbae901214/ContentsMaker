@@ -24,6 +24,37 @@ class YouTubeDownloadError(Exception):
 # ── Download ──────────────────────────────────────────────────────────────
 
 
+def get_video_metadata(url: str) -> dict:
+    """Fetch video metadata (title + channel/uploader) without downloading.
+
+    Returns: ``{"title": str, "channel": str, "id": str, "duration_sec": float}``.
+    Empty strings on extraction failure (never raises — caller decides fallback).
+    """
+    try:
+        import yt_dlp
+    except ImportError:
+        return {"title": "", "channel": "", "id": "", "duration_sec": 0.0}
+
+    opts = {
+        "quiet": True,
+        "no_warnings": True,
+        "skip_download": True,
+        "extract_flat": False,
+    }
+    try:
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(url, download=False) or {}
+        return {
+            "title": (info.get("title") or "").strip(),
+            "channel": (info.get("channel") or info.get("uploader") or "").strip(),
+            "id": (info.get("id") or "").strip(),
+            "duration_sec": float(info.get("duration") or 0.0),
+        }
+    except Exception as e:
+        logger.warning("get_video_metadata 실패 (%s): %s", url, e)
+        return {"title": "", "channel": "", "id": "", "duration_sec": 0.0}
+
+
 def download_video(url: str, output_dir: Path) -> Path:
     """Download a YouTube video as MP4. Returns path to downloaded file.
 

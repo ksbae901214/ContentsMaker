@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SceneEditor } from "./components/SceneEditor";
 import { ScriptReviewer } from "./components/ScriptReviewer";
+import PoliticalPlanPicker, { ShortsPlanDTO } from "./components/PoliticalPlanPicker";
 
 type Status = "idle" | "processing" | "reviewing" | "done" | "error";
 interface SceneImage { scene_id: number; image_path: string; prompt: string; }
@@ -21,12 +22,29 @@ interface ReviewPayload {
   celebrityName?: string;
   portraitCandidates?: PortraitCandidate[];
   sceneImages?: SceneImage[];
+  // Feature 009 (political_pro) — Phase 2 clip cut metadata
+  politicalProMeta?: {
+    videoPath: string;
+    clipStartSec: number;
+    clipEndSec: number;
+    youtubeUrl: string;
+  };
 }
 interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
 const EL: Record<string, string> = { funny: "😂 재밌음", touching: "🥹 감동", angry: "😤 분노", relatable: "🤝 공감" };
 
 export default function Home() {
-  const [tab, setTab] = useState<"image"|"manual"|"url"|"topic"|"political"|"natv_clip"|"celebrity">("image");
+  const [tab, setTab] = useState<"image"|"manual"|"url"|"topic"|"political"|"political_pro"|"natv_clip"|"celebrity">("image");
+  // political_pro (Feature 009) — RTF 6요소 3 기획안 비교 → 1 선택 → 검수 → 영상
+  const [politicalProUrl, setPoliticalProUrl] = useState("");
+  const [politicalProPlans, setPoliticalProPlans] = useState<any[] | null>(null);
+  const [politicalProVideoPath, setPoliticalProVideoPath] = useState("");
+  const [politicalProVideoDuration, setPoliticalProVideoDuration] = useState(0);
+  const [politicalProYoutubeUrl, setPoliticalProYoutubeUrl] = useState("");
+  const [politicalProChannel, setPoliticalProChannel] = useState("");
+  const [politicalProTitle, setPoliticalProTitle] = useState("");
+  const [politicalProLoading, setPoliticalProLoading] = useState(false);
+  const [politicalProError, setPoliticalProError] = useState("");
   const [natvClipUrl, setNavtClipUrl] = useState("");
   const [natvUseTts, setNavtUseTts] = useState(false);
   const [natvTone, setNavtTone] = useState<"angry"|"funny"|"touching"|"relatable">("angry");
@@ -79,6 +97,9 @@ export default function Home() {
   // Phase 2 (mode=script) can resubmit with the same settings.
   const [phase2Opts, setPhase2Opts] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
+  // Snapshot of review state saved before Phase 2 starts so we can restore
+  // it if the render pipeline fails (instead of dropping to the error screen).
+  const reviewSnapshot = useRef<ReviewPayload | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [title, setTitle] = useState("");
@@ -233,7 +254,18 @@ export default function Home() {
         buf = lines.pop() ?? ""; // last element may be a partial line
         for (const line of lines) processLine(line);
       }
-    } catch (e: any) { setError(e.message); setStatus("error"); }
+    } catch (e: any) {
+      setError(e.message);
+      // Phase 2 failure: restore the review screen so the user can retry
+      // without losing their edits.
+      if (reviewSnapshot.current) {
+        setReview(reviewSnapshot.current);
+        reviewSnapshot.current = null;
+        setStatus("reviewing");
+      } else {
+        setStatus("error");
+      }
+    }
   };
 
   // Kick off Phase 1 (analyze-only). Stores the visual/upload options so
@@ -258,10 +290,18 @@ export default function Home() {
   // Phase 2: from the reviewed script → images/videos/TTS/render.
   const generateFromScript = () => {
     if (!review) return;
+    // Capture review before generate() clears it (setReview(null) at line 170).
+    // Restored in catch block if Phase 2 fails.
+    reviewSnapshot.current = review;
     const fd = new FormData();
     fd.set("mode", "script");
     fd.set("scriptPath", review.scriptPath);
     Object.entries(phase2Opts).forEach(([k, v]) => fd.set(k, v));
+    // Feature 009: political_pro Phase 2 needs clip metadata to cut the original
+    // YouTube video into per-scene 9:16 clips + use Gemini TTS Charon.
+    if (review.politicalProMeta) {
+      fd.set("politicalProMeta", JSON.stringify(review.politicalProMeta));
+    }
     // 씬별 이미지 맵이 있으면 우선 전송 (사용자가 검수 화면에서 교체·업로드)
     const hasSceneImages = Object.keys(sceneImageMap).length > 0;
     if (hasSceneImages) {
@@ -293,26 +333,35 @@ export default function Home() {
   );
 
   if (status === "reviewing" && review) return (
-    <ScriptReviewer
-      title={review.title}
-      scenes={review.scenes}
-      scriptPath={review.scriptPath}
-      emotion={review.emotion}
-      duration={review.duration}
-      imageStyle={imageStyle}
-      onTitleChange={(t) => setReview({...review, title: t})}
-      onScenesChange={(s) => setReview({...review, scenes: s})}
-      onGenerate={generateFromScript}
-      onCancel={reset}
-      portraitCandidates={review.portraitCandidates}
-      selectedPortraitPath={selectedPortraitPath}
-      onPortraitChange={(path) => setSelectedPortraitPath(path)}
-      sceneImages={sceneImageMap}
-      onSceneImageChange={(sceneId, path) =>
-        setSceneImageMap((m) => ({ ...m, [sceneId]: path }))
-      }
-      celebrityName={review.celebrityName || ""}
-    />
+    <>
+      {error && (
+        <div className="max-w-2xl mx-auto px-4 pt-4">
+          <div className="p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-200 text-sm">
+            ⚠️ 영상 생성 실패 — 스크립트를 수정하거나 다시 시도해 주세요: {error}
+          </div>
+        </div>
+      )}
+      <ScriptReviewer
+        title={review.title}
+        scenes={review.scenes}
+        scriptPath={review.scriptPath}
+        emotion={review.emotion}
+        duration={review.duration}
+        imageStyle={imageStyle}
+        onTitleChange={(t) => setReview({...review, title: t})}
+        onScenesChange={(s) => setReview({...review, scenes: s})}
+        onGenerate={generateFromScript}
+        onCancel={reset}
+        portraitCandidates={review.portraitCandidates}
+        selectedPortraitPath={selectedPortraitPath}
+        onPortraitChange={(path) => setSelectedPortraitPath(path)}
+        sceneImages={sceneImageMap}
+        onSceneImageChange={(sceneId, path) =>
+          setSceneImageMap((m) => ({ ...m, [sceneId]: path }))
+        }
+        celebrityName={review.celebrityName || ""}
+      />
+    </>
   );
 
   if (status === "done" && result) {
@@ -320,6 +369,16 @@ export default function Home() {
     return (
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="text-center mb-6"><div className="text-5xl mb-3">{result.dryRun?"🧪":"🎉"}</div><h2 className="text-2xl font-bold">{result.dryRun?"파이프라인 테스트 완료!":"영상 생성 완료!"}</h2>{result.dryRun&&<p className="text-yellow-400 text-sm mt-1">이미지 생성 / 음성 / 렌더링 / 업로드를 건너뛰었습니다</p>}</div>
+        {result.sourceType==="political_pro" && (
+          <>
+            <div className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 rounded-lg p-3 text-sm mb-4">
+              ⚠️ <strong>출력은 자동 생성 결과입니다.</strong> 게시 전 사용자 검수가 필요합니다 (정치 콘텐츠 — FR-021).
+            </div>
+            <div className="bg-rose-900/20 border border-rose-700/50 text-rose-200 rounded-lg p-3 text-sm mb-4">
+              ✏️ <strong>아래 씬 편집기에서 수정 가능합니다.</strong> 자막 텍스트·순서·분할/병합·이미지 교체 후 <strong className="text-yellow-300">"재렌더"</strong> 버튼을 누르면 Gemini Charon TTS로 다시 합성됩니다.
+            </div>
+          </>
+        )}
         {result.videoPath ? (
           <div className="bg-gray-900 rounded-xl overflow-hidden flex justify-center mb-6">
             <video key={result.videoPath} src={url} controls className="max-h-[500px]" style={{aspectRatio:"9/16",maxWidth:"300px"}}/>
@@ -424,10 +483,51 @@ export default function Home() {
         <h1 className="text-3xl font-bold mb-2">ContentsMaker</h1>
         <p className="text-gray-400">인기글/자유주제 → 만화 쇼츠 자동 생성</p>
       </header>
+
+      {/* Feature 011 V2 — 정치 숏츠 V2 추천 카드 (대형 CTA) */}
+      {tab !== "political_pro" && (
+        <div className="mb-6 bg-gradient-to-br from-rose-900/40 via-orange-900/30 to-amber-900/30 border border-rose-700/50 rounded-xl p-5 shadow-lg">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs px-2 py-0.5 bg-rose-600 rounded-full font-semibold">✨ NEW V2</span>
+                <span className="text-xs text-rose-300">잘나가는 정치 유튜버 지침</span>
+              </div>
+              <h2 className="text-xl font-bold mb-1">🏛️ 정치 숏츠 자동 생성</h2>
+              <p className="text-sm text-gray-300 leading-relaxed">
+                YouTube 정치 영상 → <strong className="text-yellow-300">A/B 포맷 자동 분류</strong> + 3 기획안<br/>
+                <strong className="text-red-300">컬러 자막</strong> · <strong className="text-blue-300">대조 분할 화면</strong> · <strong className="text-amber-300">"댓글 고래잡기" CTA</strong> · Gemini Charon TTS
+              </p>
+            </div>
+            <div className="text-4xl">🎬</div>
+          </div>
+          <button
+            onClick={() => setTab("political_pro")}
+            className="w-full py-3 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 rounded-lg font-bold text-base transition shadow-md"
+          >
+            ▶ 정치 숏츠 V2 시작하기
+          </button>
+          <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
+            <div className="text-center">
+              <div className="text-gray-400">📥 입력</div>
+              <div className="font-medium">YouTube URL</div>
+            </div>
+            <div className="text-center">
+              <div className="text-gray-400">⚙️ 처리</div>
+              <div className="font-medium">~3분</div>
+            </div>
+            <div className="text-center">
+              <div className="text-gray-400">📁 출력</div>
+              <div className="font-medium">9:16 MP4</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2 mb-6">
-        {(["image","manual","url","topic","political","natv_clip","celebrity"] as const).map(t=>(
-          <button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2.5 rounded-lg font-medium transition text-xs ${tab===t?"bg-blue-600":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
-            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":t==="political"?"🎙️ 정치 해설":t==="natv_clip"?"📺 NATV 클립":"👤 유명인"}
+        {(["image","manual","url","topic","political","political_pro","natv_clip","celebrity"] as const).map(t=>(
+          <button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2.5 rounded-lg font-medium transition text-xs ${tab===t?(t==="political_pro"?"bg-rose-600":"bg-blue-600"):"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
+            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":t==="political"?"🎙️ 정치 해설":t==="political_pro"?"🏛️ 정치 V2":t==="natv_clip"?"📺 NATV 클립":"👤 유명인"}
           </button>
         ))}
       </div>
@@ -656,6 +756,99 @@ export default function Home() {
           className={`w-full py-3 rounded-lg font-medium transition ${natvClipUrl.trim()?"bg-emerald-600 hover:bg-emerald-500":"bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
           📺 NATV 클립 쇼츠 생성
         </button>
+      </div>
+
+      {/* Political Pro tab (Feature 009) — 3 기획안 비교 → 1 선택 → 검수 → 영상 */}
+      <div className="space-y-4" style={{display:tab==="political_pro"?"block":"none"}}>
+        {!politicalProPlans && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">YouTube URL *</label>
+              <input
+                value={politicalProUrl}
+                onChange={e=>setPoliticalProUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">정치 영상 URL을 붙여넣으면 RTF 영상생성지침 6요소(주제/Hook/구간/흐름/나레이션/CTA) 구조의 3개 기획안을 비교 제시합니다.</p>
+            </div>
+            <div className="text-xs text-yellow-400/80 bg-yellow-900/20 border border-yellow-800 rounded-lg p-3">
+              ⚠️ 정치 중립 가드는 프롬프트에 명시되어 있으나, 출력 결과는 게시 전 반드시 직접 검수하세요.
+            </div>
+            {politicalProError && (
+              <div className="text-xs text-red-300 bg-red-900/30 border border-red-800 rounded-lg p-3">
+                ❌ {politicalProError}
+              </div>
+            )}
+            <button
+              onClick={async ()=>{
+                if(!politicalProUrl.trim()) return;
+                setPoliticalProLoading(true);
+                setPoliticalProError("");
+                try {
+                  const res = await fetch("/api/political-pro/plans", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ youtubeUrl: politicalProUrl.trim() }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) {
+                    setPoliticalProError(`${data.error || "오류"}: ${data.detail || "알 수 없는 실패"}`);
+                  } else {
+                    setPoliticalProPlans(data.plans);
+                    setPoliticalProVideoPath(data.video_path || data.videoPath || "");
+                    setPoliticalProVideoDuration(data.video_duration_sec || data.videoDurationSec || 0);
+                    setPoliticalProYoutubeUrl(data.youtube_url || data.youtubeUrl || politicalProUrl.trim());
+                    setPoliticalProChannel(data.video_channel || data.videoChannel || "");
+                    setPoliticalProTitle(data.video_title || data.videoTitle || "");
+                  }
+                } catch (e: any) {
+                  setPoliticalProError(`네트워크 실패: ${e.message}`);
+                } finally {
+                  setPoliticalProLoading(false);
+                }
+              }}
+              disabled={!politicalProUrl.trim() || politicalProLoading}
+              className={`w-full py-3 rounded-lg font-medium transition ${politicalProUrl.trim() && !politicalProLoading ? "bg-rose-600 hover:bg-rose-500" : "bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
+              {politicalProLoading ? "⏳ 3 기획안 생성 중 (~90초)..." : "🏛️ 3 기획안 생성"}
+            </button>
+          </>
+        )}
+        {politicalProPlans && (
+          <>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-gray-300">📋 3개 기획안 — 1개를 선택하세요</h3>
+              <button
+                onClick={()=>{
+                  setPoliticalProPlans(null);
+                  setPoliticalProVideoPath("");
+                  setPoliticalProVideoDuration(0);
+                  setPoliticalProYoutubeUrl("");
+                  setPoliticalProError("");
+                }}
+                className="text-gray-400 hover:text-white text-xs">← 다른 URL로 다시</button>
+            </div>
+            <PoliticalPlanPicker
+              plans={politicalProPlans as ShortsPlanDTO[]}
+              onSelect={(idx)=>{
+                const fd = new FormData();
+                fd.set("mode","political_pro");
+                fd.set("selectedPlanIdx", String(idx));
+                fd.set("plansJson", JSON.stringify(politicalProPlans));
+                fd.set("youtubeUrl", politicalProYoutubeUrl);
+                fd.set("videoPath", politicalProVideoPath);
+                fd.set("videoDurationSec", String(politicalProVideoDuration));
+                fd.set("videoChannel", politicalProChannel);
+                fd.set("videoTitle", politicalProTitle);
+                fd.set("bgm", bgm?"on":"off");
+                fd.set("transitions", transitions?"on":"off");
+                fd.set("sfx", sfx?"on":"off");
+                fd.set("yt","off"); fd.set("tt","off"); // FR-020: 자동 업로드 차단
+                startAnalyze(fd);
+              }}
+            />
+          </>
+        )}
       </div>
 
       {/* Political tab */}

@@ -90,6 +90,7 @@ def build_ffmpeg_cmd(
     end_sec: float,
     width: int = SHORTS_WIDTH,
     height: int = SHORTS_HEIGHT,
+    mute: bool = False,
 ) -> list[str]:
     """FFmpeg 명령어 생성. 9:16 비율 세로형 변환 + 구간 자르기.
 
@@ -105,6 +106,14 @@ def build_ffmpeg_cmd(
         f"scale='if(gt(a,{width}/{height}),{width},-2)':'if(gt(a,{width}/{height}),-2,{height})',"
         f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black"
     )
+
+    audio_args: list[str]
+    if mute:
+        # 정치 모드(political_pro) 등에서 TTS 나레이션을 메인 트랙으로 쓰는 경우
+        # 원본 영상 음성을 제거해 더블 트랙 충돌(에코·중첩)을 방지한다.
+        audio_args = ["-an"]
+    else:
+        audio_args = ["-c:a", "aac", "-b:a", RENDER_AUDIO_BITRATE]
 
     return [
         "ffmpeg",
@@ -123,10 +132,7 @@ def build_ffmpeg_cmd(
         str(RENDER_CRF),
         "-preset",
         "medium",
-        "-c:a",
-        "aac",
-        "-b:a",
-        RENDER_AUDIO_BITRATE,
+        *audio_args,
         "-movflags",
         "+faststart",
         str(output_path),
@@ -139,8 +145,14 @@ def cut_segment(
     output_path: Path,
     start_sec: float,
     end_sec: float,
+    mute: bool = False,
 ) -> Path:
-    """구간 자르기 + 9:16 변환을 실제 실행."""
+    """구간 자르기 + 9:16 변환을 실제 실행.
+
+    Args:
+        mute: True 면 원본 음성을 제거(`-an`). TTS 나레이션을 메인 음성으로
+            쓰는 political_pro 모드 기본값.
+    """
     if not input_path.exists():
         raise SegmentCutError(f"input not found: {input_path}")
     if shutil.which("ffmpeg") is None:
@@ -170,6 +182,7 @@ def cut_segment(
         output_path=output_path,
         start_sec=start_sec,
         end_sec=end_sec,
+        mute=mute,
     )
     result = subprocess.run(
         cmd,

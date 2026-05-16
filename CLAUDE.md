@@ -133,6 +133,7 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 | `url` | URL | `analyze(BlindPost)` | DCInside / Nate Pann / Naver Cafe scrape |
 | `topic` | Free topic text | `analyze_topic(TopicInput)` | User topic |
 | `political` | YouTube URL + timestamps | `analyze_political(PoliticalInput)` | YouTube download + VTT |
+| `political_pro` | YouTube URL | `generate_three_plans` + `plan_to_script` | RTF 6요소 3 기획안 비교 → 1 선택 → 검수 → 영상 (Feature 009) |
 | `celebrity` | Person name | `analyze_celebrity(CelebrityInfo)` | Namuwiki scrape + Naver images (학습 목적 전용) |
 
 ### Visual Modes
@@ -178,6 +179,7 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 - `SEEDANCE_API_KEY` — optional, for Seedance API video provider
 - `SEEDANCE_API_BASE` — optional, Seedance API base URL (default: `https://api.seedance.ai/v1`)
 - `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` — required for `celebrity` mode image search (free, 25,000 req/day). Register at https://developers.naver.com/apps/ → 애플리케이션 등록 → 검색
+- `GEMINI_API_KEY` — required for `political_pro` mode (Gemini TTS Charon voice). Free tier: 5 RPM, 10 req/day. Get key at https://aistudio.google.com/app/apikey. **Quota fallback**: 429 RESOURCE_EXHAUSTED 발생 시 `data/tts_cache/{hash}.mp3`(콘텐츠 해시 캐시) 또는 `data/audio/*{slug}*.mp3`(제목 매칭 폴백)에서 자동 재사용. 성공한 호출은 자동 캐시.
 - (no env vars needed for `freepik` or `deevid` providers — they use persistent browser profiles at `.cache/freepik_profile/` and `.cache/deevid_profile/`)
 - YouTube upload requires `data/.youtube_credentials.json` (OAuth 2.0 Desktop App client secret from Google Cloud Console → YouTube Data API v3). Token saved to `data/.youtube_token.json` after `youtube-auth`.
 
@@ -194,9 +196,16 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 013: 정치 숏츠 V2 (Feature 011 Phase B) — Remotion 시각 연출 강화. Scene 모델에 `subtitle_color`/`subtitle_emphasis`/`visual_layout`/`secondary_clip_path` 추가. plan_to_script가 Narration의 자막 색을 Scene으로 매핑 + visual_directives의 "분할/split" 키워드 자동 검출 → 매칭 씬에 layout=split. SceneText.tsx에 V2 색·강조 적용 (yellow/red/blue/white + 1.4x 폰트). 신규 SplitScreenScene 컴포넌트(상·하 분할, 각 1080x960). Hook/CTA 씬은 자동 yellow+emphasis. e2e: 8씬 30초 영상에 7가지 색·강조·split 모두 적용 확인.
+- 012: 정치 숏츠 V2 (Feature 011 Phase A) — "잘나가는 정치 유튜버" 지침(MBC 라디오 시사 + 뉴스핌TV) 반영. ShortsPlan에 `format_type` (A=인터뷰/논평, B=현장 밀착) + `format_reason` + `visual_directives`(좌·우 분할 등 시각 연출 지시) 추가. Narration에 `subtitle_color` (white/red/yellow/blue) + `subtitle_emphasis` 추가. Stage A 프롬프트에 A/B 자동 분류 가이드 + 예시. Stage B 프롬프트에 자막 색 프리셋 + 시각 연출 지시 + "댓글 고래잡기" 강화 CTA. V1 plans.json 호환 유지(default fallback). 영상 렌더는 Phase B에서 적용 예정.
+- 011: Political Shorts Planner (Feature 009) — RTF 6요소 3 기획안 + Gemini TTS Charon (정치 모드)
+  - 신규: `political_pro` 모드 (탭 + API + CLI `python3 -m src.main political-pro`)
+  - 3 기획안 Claude 단일 호출, angle 3종(title_anchor / audience_resonance / comparison)
+  - Gemini TTS Charon voice + Newscaster style (British RP, Rapid, Temp 0.5) — `style_prompt` + `temperature` 파라미터 추가
+  - 원본 9:16 클립 + Remotion 렌더 (변동비 $0)
+  - FR-020 자동 업로드 차단 (백엔드 강제 가드), FR-021 검수 필수 경고 배너
+  - 33 신규 테스트 통과
 - 010: Cost guard — prevents accidental Premium+ credit usage
-- 009: `MAX_SCENE_DURATION_SECONDS=5.0` enforced; `scene_ops.split_scenes_to_max_duration()` added so Kling 2.5 clips never freeze
-- 008: Freepik Premium+ 무제한 최적화
   - 영상: `MODEL_DATA_CY` 맵 41개 모델 + `_select_model()` + 폴백 체인 (Kling 2.5 → MiniMax → Wan 2.2)
   - 이미지: `FreepikImageGenerator` 신규 — 1 세션 N 이미지 + Nano Banana Pro 무제한 + `_generate_via_freepik()` 분기
   - UI: 만화 모드에 `imageProvider` 토글 (freepik/gpt)
@@ -204,14 +213,12 @@ Do not enable the upload toggles or post these videos publicly without verifying
   - 월 90편 변동비 $0 (Premium+ $34/월 고정비만)
   - 18개 신규 테스트 (228 total passing), Next.js 빌드 통과
   - E2E 검증: Kling 2.5 영상 50초 생성, Nano Banana Pro 이미지 2장 140초 생성
-- 007: Phase 7 deevid.ai 브라우저 자동화 (Veo 3.1)
   - DeevidGenerator (Playwright 기반, generate_and_wait 오버라이드)
   - deevid_selectors.py (UI selector 외부화)
   - factory.py에 deevid 등록 (lazy import)
   - `python3 -m src.main deevid_login` CLI 추가
   - UI: videoProvider 토글 (deevid / seedance)
   - 12개 신규 테스트 (197 total passing)
-- 006: Phase 6 영상 쇼츠 모드 구현 완료
   - 범용 주제 입력 (TopicInput, analyze_topic, TOPIC_ANALYZE_PROMPT)
   - 이미지 스타일 프리셋 4종 (webtoon/3d_pixar/realistic/anime)
   - Seedance API 완전 구현 (generate/poll/download/generate_and_wait)
@@ -219,10 +226,7 @@ Do not enable the upload toggles or post these videos publicly without verifying
   - UI: 주제 탭, 비주얼 모드 토글, 이미지 스타일 선택
   - renderer.py: scene_videos 파라미터 + public/ 복사
   - 테스트: 7개 신규/수정 테스트 파일
-- 005: Data model extensions (SubtitleStyle, TransitionConfig, SfxConfig)
-- 005: scene_ops.py (split, merge, reorder, resize) + API endpoints
 
 ## Active Technologies
-- Python 3.11+ (백엔드), TypeScript + React (Remotion 영상, Next.js 16 프론트엔드)
-- edge-tts, openai, httpx, remotion
-- JSON 파일 기반 (`data/raw/`, `data/scripts/`, `data/audio/`, `data/images/`, `data/videos/`)
+- Python 3.11+ (백엔드), TypeScript 5.x + React 19 / Next.js 16 (프론트엔드 + API 라우트), Remotion 4.x (영상 렌더링) + Claude Code CLI (분석), `google-genai` (Gemini TTS, 기존 import), `yt-dlp` + `openai-whisper` (영상/자막), `ffmpeg` (클립 cut), `playwright`(기존 다른 모드용, 본 기능에서는 미사용) (009-political-pro-planner)
+- 로컬 JSON/MP4 파일 (`data/political_pro/{timestamp}_{slug}/` — 영상·transcript·plans 보관, `data/scripts/` — 검수 가능한 ShortsScript, `data/outputs/` — 최종 MP4). 데이터베이스 없음. (009-political-pro-planner)

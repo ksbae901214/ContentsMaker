@@ -207,6 +207,26 @@ def scene_merge(
     return _rebuild_script(script, new_scenes)
 
 
+def scene_delete(
+    script: ShortsScript,
+    scene_id: int,
+) -> ShortsScript:
+    """Remove a scene from the script.
+
+    Returns a new ShortsScript with the scene removed and remaining scenes
+    renumbered and timestamps recalculated. Raises SceneOpsError if only
+    one scene remains or the scene_id does not exist.
+    """
+    if len(script.scenes) <= 1:
+        raise SceneOpsError("마지막 씬은 삭제할 수 없습니다")
+    _find_scene(script, scene_id)  # raises if not found
+
+    new_scenes = [s for s in script.scenes if s.id != scene_id]
+    new_scenes = _renumber_scenes(new_scenes)
+    new_scenes = _recalculate_timestamps(new_scenes)
+    return _rebuild_script(script, new_scenes)
+
+
 def scene_reorder(
     script: ShortsScript,
     new_order: list[int],

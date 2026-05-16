@@ -253,6 +253,27 @@ def render_video(
         else:
             script_dict["metadata"]["duration"] = base_duration
 
+    # Feature 009 political_pro: 화면 하단에 출처 표시.
+    # 우선순위: channel + title 형식 ("출처: 채널 : 영상 제목") → 둘 다 있으면 사용.
+    # 없으면 URL fallback.
+    source_label = ""
+    if script.metadata.source_type == "political_pro":
+        ch = (script.metadata.source_channel or "").strip()
+        ti = (script.metadata.source_title or "").strip()
+        if ch and ti:
+            # 너무 긴 제목은 잘라냄 (총 60자 안)
+            max_title = max(20, 60 - len(ch) - 6)
+            short_ti = ti if len(ti) <= max_title else ti[:max_title - 1] + "…"
+            source_label = f"출처: {ch} : {short_ti}"
+        elif ch:
+            source_label = f"출처: {ch}"
+        elif ti:
+            source_label = f"출처: {ti}"
+        elif script.metadata.source_url:
+            url = script.metadata.source_url
+            compact = url.replace("https://", "").replace("http://", "").replace("www.", "")
+            source_label = f"출처: {compact}"
+
     props = {
         "scriptData": script_dict,
         "audioFile": audio_filename,
@@ -260,6 +281,7 @@ def render_video(
         "sceneVideos": scene_video_props,
         "bgmFile": bgm_filename,
         "introBgmFile": intro_bgm_filename,
+        "sourceLabel": source_label,
     }
 
     props_path = target_dir / f"{timestamp}_props.json"

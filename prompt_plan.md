@@ -2,11 +2,72 @@
 
 > 블라인드 / NATV 영상을 YouTube Shorts / 롱폼으로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-04-20
+**마지막 업데이트**: 2026-05-14
 
 ---
 
-## 🚧 진행 예정: 010 PPP(국민의힘) 관점 영상 생성 — H2 Axis 방식 (2026-04-20 확정)
+## 🚧 진행 중: 014 OpenCut-Inspired 인라인 영상 에디터 Phase A
+
+**확정일**: 2026-05-14 / **참고**: https://github.com/OpenCut-app/OpenCut (CapCut 오픈소스 대안)
+
+### 목표
+자동 생성된 영상을 사용자가 GUI로 미세 조정 — 기존 SceneEditor/Timeline 자산을 정치 모드 결과 화면에 연결하여 즉시 사용 가능하게 함. OpenCut 풀스택 통합은 deferred.
+
+### 범위 (Phase A만, ~2시간)
+- 기존 자산(`SceneEditor.tsx` 884줄 + `Timeline.tsx` 291줄 + 8개 `/api/scene/*` endpoint) 점검
+- political_pro 모드와 호환성 검증 + 누락된 V2 메타데이터(`subtitle_color`, `visual_layout`) 표시·편집 지원
+- 결과 화면(`status==="done"`)에 "✏️ 영상 수정하기" 버튼 추가 → SceneEditor 진입
+- 편집 후 "재렌더" → `/api/generate?mode=script&scriptPath=...` 재호출
+- 7개 scene API의 political_pro script 호환성 회귀 테스트
+
+### 산출물
+정치 모드 자동 생성 → 결과 보기 → **[✏️ 영상 수정하기]** → 기존 편집기 → 재렌더 → 최종 MP4. 새 UI 컴포넌트 0개, 기존 자산을 정치 모드에서 쓰게만 함.
+
+### 다음 Phase 예고 (deferred)
+- **Phase B** (5h): OpenCut-스타일 멀티트랙 가로 타임라인 + 트림 핸들 + 양방향 미리보기 동기화
+- **Phase C** (4h): 부분 재렌더 + Undo/Redo
+- **Phase D** (3h, 옵션): OpenCut export/import 호환
+
+---
+
+## ✅ 완료: 011 정치 숏츠 V2 — Phase A (프롬프트·모델 업그레이드)
+
+**확정일**: 2026-05-14 / **참고 지침**: `/Users/kyusik/Downloads/gemini-code-1778733157887.txt` (잘나가는 정치 유튜버 — MBC 라디오 시사 + 뉴스핌TV)
+
+### 범위 (Phase A만)
+- Hybrid 구조 유지: Stage A(Gemini) = 1,2,3 + 신규 **포맷 분류**, Stage B(Claude) = 4,5,6 + 신규 **자막 색·시각연출·강화 CTA**.
+- 영상 렌더 변경 없음 — V1 동일 (Phase B에서 처리).
+- UI 변경 없음 — Phase C에서 처리.
+
+### 신규 출력 필드
+- `ShortsPlan.format_type: "A" | "B"` (A=인터뷰/논평/MBC라디오, B=현장/뉴스핌)
+- `ShortsPlan.format_reason: str` (1줄 선택 이유)
+- `ShortsPlan.visual_directives: tuple[str, ...]` (예: "0~3초 좌:과거 우:현재 분할")
+- `Narration.subtitle_color: str` (white/red/yellow/blue)
+- `Narration.subtitle_emphasis: bool`
+
+### 작업 단계 (Step 1~6)
+1. 데이터 모델 확장 (V1 호환 default) — 30분
+2. Stage A 프롬프트 (A/B 분류 가이드 + 예시) — 40분
+3. Stage B 프롬프트 (자막색·visual_directives·"댓글 고래잡기" CTA) — 40분
+4. plan_to_script V2 매핑 — 30분
+5. 테스트 (TDD): 모델 라운드트립 + V1 호환 + 프롬프트 키워드 — 1.5시간
+6. 검증 + CLAUDE.md 1행 — 30분
+
+### V1 호환성 보장
+- 모든 신규 필드 Optional + default
+- 기존 plans.json 그대로 로드
+- plan_to_script도 V1 입력으로 정상 동작
+
+### 다음 Phase 예고
+- Phase B: Remotion split-screen + per-keyword 컬러 자막 (5h)
+- Phase C: 뉴스 URL 입력 + UI 포맷 배지 (4.5h)
+
+---
+
+## 이전 계획
+
+
 
 ### 목표
 운영자 YouTube 채널(@국회직캠-d6r)이 **한국은행 총재 인사청문회 비판**과 같은 야당(국민의힘) 관점 콘텐츠를 올리고 있어, 현행 007 "민주당 친화형" 파이프라인을 **양 정당 관점 공존(H2 Axis)** 으로 일반화.

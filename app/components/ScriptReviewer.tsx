@@ -122,6 +122,7 @@ export function ScriptReviewer({
   const [editingTitle, setEditingTitle] = useState(false);
   const [sceneDrafts, setSceneDrafts] = useState<Record<number, { text: string; voice_text: string }>>({});
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [showPrompts, setShowPrompts] = useState(false);
   const [prompts, setPrompts] = useState<ScenePrompt[] | null>(null);
@@ -214,6 +215,32 @@ export function ScriptReviewer({
       setErrorMsg(e.message || `씬 ${sceneId} 저장 실패`);
     } finally {
       setSavingId(null);
+    }
+  };
+
+  const deleteScene = async (sceneId: number) => {
+    if (scenes.length <= 1) {
+      setErrorMsg("마지막 씬은 삭제할 수 없습니다");
+      return;
+    }
+    if (!confirm(`씬 ${sceneId}를 삭제하시겠습니까?`)) return;
+    setDeletingId(sceneId);
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/scene/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scene_id: sceneId, script_path: scriptPath }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "씬 삭제 실패");
+      onScenesChange(data.scenes);
+      const { [sceneId]: _, ...rest } = sceneDrafts;
+      setSceneDrafts(rest);
+    } catch (e: any) {
+      setErrorMsg(e.message || `씬 ${sceneId} 삭제 실패`);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -386,15 +413,25 @@ export function ScriptReviewer({
                 <span className="text-xs text-gray-500">
                   씬 {scene.id} · {scene.type} · {scene.duration.toFixed(1)}초
                 </span>
-                {isDirty && (
+                <div className="flex gap-1.5 items-center">
+                  {isDirty && (
+                    <button
+                      onClick={() => saveScene(scene.id)}
+                      disabled={savingId === scene.id}
+                      className="px-2 py-1 bg-yellow-600 hover:bg-yellow-500 rounded text-xs font-medium disabled:opacity-50"
+                    >
+                      {savingId === scene.id ? "저장 중..." : "💾 저장"}
+                    </button>
+                  )}
                   <button
-                    onClick={() => saveScene(scene.id)}
-                    disabled={savingId === scene.id}
-                    className="px-2 py-1 bg-yellow-600 hover:bg-yellow-500 rounded text-xs font-medium disabled:opacity-50"
+                    onClick={() => deleteScene(scene.id)}
+                    disabled={deletingId === scene.id || scenes.length <= 1}
+                    className="px-2 py-1 bg-red-700 hover:bg-red-600 rounded text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                    title={scenes.length <= 1 ? "마지막 씬은 삭제할 수 없습니다" : `씬 ${scene.id} 삭제`}
                   >
-                    {savingId === scene.id ? "저장 중..." : "💾 저장"}
+                    {deletingId === scene.id ? "삭제 중..." : "🗑️"}
                   </button>
-                )}
+                </div>
               </div>
               <div className="flex gap-3">
                 {/* 씬별 이미지 썸네일 (celebrity 모드에서만) */}

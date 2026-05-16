@@ -12,6 +12,7 @@ import { Background } from "./components/Background";
 import { SceneText } from "./components/SceneText";
 import { Transition } from "./components/Transition";
 import { SceneWithVideo } from "./components/SceneWithVideo";
+import { SplitScreenScene } from "./components/SplitScreenScene";
 import { Outro } from "./components/Outro";
 import type { ShortsScriptData, TransitionType } from "./types";
 import { GRADIENT_THEMES } from "./types";
@@ -37,6 +38,9 @@ interface ShortsCompositionProps {
   bgmFile?: string;
   // QW-07: hook 씬 동안만 재생되는 인트로 빌드업 BGM (선택).
   introBgmFile?: string;
+  // Feature 009 political_pro: 화면 하단에 출처 표시 ("출처: youtube.com/...").
+  // 비어있으면 표시 안 함.
+  sourceLabel?: string;
 }
 
 export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
@@ -46,12 +50,21 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   sceneVideos = [],
   bgmFile = "",
   introBgmFile = "",
+  sourceLabel = "",
 }) => {
   const emotion =
     (scriptData.metadata as any).emotionType ||
     scriptData.metadata.emotion_type;
-  const colors =
-    scriptData.background.colors.length > 0
+  // Feature 009 political_pro: 모든 씬에 영상 클립이 깔리므로 배경 그라데이션 불필요.
+  // 씬 사이가 깜빡일 때 빨강·주황 gradient(angry 테마)이 비치는 현상을 차단하기
+  // 위해 검정 단색으로 강제 (2026-05-14 사용자 보고).
+  const sourceType =
+    (scriptData.metadata as any).sourceType ||
+    (scriptData.metadata as any).source_type;
+  const isPoliticalPro = sourceType === "political_pro";
+  const colors = isPoliticalPro
+    ? ["#000000", "#000000"]
+    : scriptData.background.colors.length > 0
       ? scriptData.background.colors
       : GRADIENT_THEMES[emotion as keyof typeof GRADIENT_THEMES] || GRADIENT_THEMES.relatable;
 
@@ -87,7 +100,20 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         const transitionType: TransitionType = (transition?.type as TransitionType) ?? "fade";
         const transitionDur = Math.round((transition?.duration ?? 0.5) * FPS);
 
-        const content = videoFile ? (
+        // Feature 011 V2 Phase B: visual_layout="split" → SplitScreenScene 사용.
+        // secondary_clip_path가 있으면 그 클립을, 없으면 primary clip 한 번 더.
+        const visualLayout = (scene as any).visualLayout || (scene as any).visual_layout;
+        const secondaryClipPath = (scene as any).secondaryClipPath || (scene as any).secondary_clip_path;
+        const isSplit = visualLayout === "split" && !!videoFile;
+
+        const content = isSplit ? (
+          <SplitScreenScene
+            videoFile={videoFile!}
+            secondaryVideoFile={secondaryClipPath || undefined}
+            scene={scene}
+            emotion={emotion}
+          />
+        ) : videoFile ? (
           <SceneWithVideo videoFile={videoFile} scene={scene} emotion={emotion} />
         ) : imageFile ? (
           <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} />
@@ -116,6 +142,13 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
       <Sequence from={0} durationInFrames={contentEndFrame}>
         <TitleBar title={title} />
       </Sequence>
+
+      {/* Feature 009: 화면 하단 출처 표시 (political_pro 모드 등에서 source URL 명시) */}
+      {sourceLabel && (
+        <Sequence from={0} durationInFrames={contentEndFrame}>
+          <SourceAttribution label={sourceLabel} />
+        </Sequence>
+      )}
 
       {/* Outro: standardized CTA — see src/video/outro_template.py */}
       <Sequence from={contentEndFrame} durationInFrames={OUTRO_DURATION_FRAMES}>
@@ -161,6 +194,49 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
           );
         });
       })}
+    </AbsoluteFill>
+  );
+};
+
+const SourceAttribution: React.FC<{ label: string }> = ({ label }) => {
+  const frame = useCurrentFrame();
+  const opacity = interpolate(frame, [0, 15], [0, 0.85], {
+    extrapolateRight: "clamp",
+  });
+  // 위치를 화면 하단에서 ~21% 위로 (1920px 영상에서 paddingBottom 400 ≒ 자막/CTA 영역 위).
+  // 사용자 피드백: 기존 80px는 너무 아래라 자막과 겹침 → 더 위로 이동 (2026-05-14).
+  return (
+    <AbsoluteFill
+      style={{
+        justifyContent: "flex-end",
+        alignItems: "center",
+        pointerEvents: "none",
+        paddingBottom: 400,
+      }}
+    >
+      <div
+        style={{
+          opacity,
+          padding: "10px 22px",
+          background: "rgba(0,0,0,0.7)",
+          borderRadius: 8,
+          maxWidth: "92%",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 30,
+            color: "#FFFFFF",
+            fontFamily: "Noto Sans KR, sans-serif",
+            textShadow: "1px 1px 3px rgba(0,0,0,0.85)",
+            textAlign: "center",
+            wordBreak: "keep-all",
+            lineHeight: 1.3,
+          }}
+        >
+          {label}
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

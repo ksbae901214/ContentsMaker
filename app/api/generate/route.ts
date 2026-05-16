@@ -39,8 +39,12 @@ export async function POST(req: NextRequest) {
   // Default on: only explicit "off" disables scene transitions / SFX.
   const useTransitions = (fd.get("transitions") as string) !== "off";
   const useSfx = (fd.get("sfx") as string) !== "off";
-  const useYt = (fd.get("yt") as string) === "on";
-  const useTt = (fd.get("tt") as string) === "on";
+  // Feature 009 — FR-020: political_pro mode (and Phase 2 with politicalProMeta)
+  // MUST never auto-upload, even if the client misbehaves.
+  const _isPoliticalPro = (fd.get("mode") as string) === "political_pro"
+    || !!(fd.get("politicalProMeta") as string);
+  const useYt = !_isPoliticalPro && (fd.get("yt") as string) === "on";
+  const useTt = !_isPoliticalPro && (fd.get("tt") as string) === "on";
   const dryRun = (fd.get("dryRun") as string) === "on";
   const customTitle = (fd.get("customTitle") as string) || "";
   // 2-phase flow support:
@@ -350,6 +354,57 @@ print(json.dumps({"path":str(p),"url":pi.youtube_url}))`)));
           if (!ytUrl) { send("error",{message:"NATV YouTube URL을 입력해주세요"}); ctrl.close(); return; }
           rawPath = "";
           send("progress",{message:`🔗 NATV URL: ${ytUrl}`});
+        } else if (mode === "political_pro") {
+          // Feature 009: pre-generated plans flow.
+          // Plans are produced by POST /api/political-pro/plans BEFORE we hit
+          // this endpoint. Here we receive the selected plan index + cached
+          // metadata and convert that plan into a ShortsScript.
+          const planIdxRaw = fd.get("selectedPlanIdx") as string;
+          const plansJson = fd.get("plansJson") as string;
+          const ytUrl = (fd.get("youtubeUrl") as string) || "";
+          const videoPath = (fd.get("videoPath") as string) || "";
+          const videoDurationSec = parseFloat((fd.get("videoDurationSec") as string) || "0") || 0;
+          // Feature 009: 출처 표시용 채널/영상 제목 (Phase 1 plans API 응답에서 전달)
+          const sourceChannel = (fd.get("videoChannel") as string) || "";
+          const sourceTitle = (fd.get("videoTitle") as string) || "";
+          if (!plansJson || planIdxRaw === null || planIdxRaw === undefined) {
+            send("error", {message: "정치 기획안 정보가 없습니다 (plansJson / selectedPlanIdx 필수)"});
+            ctrl.close(); return;
+          }
+          rawPath = "";
+          send("progress", {message: `🏛️ 기획안 #${parseInt(planIdxRaw)+1} 선택`});
+
+          a = await withStage("기획안 → 스크립트 변환", 10, async () => JSON.parse(await py(`
+import sys,json
+sys.path.insert(0,'${ROOT}')
+from src.analyzer.political_plan_models import ShortsPlan
+from src.analyzer.political_planner import plan_to_script
+plans=json.loads(r"""${plansJson}""")
+idx=int(${parseInt(planIdxRaw)})
+plan=ShortsPlan.from_dict(plans[idx])
+script=plan_to_script(
+  plan,
+  video_title=${JSON.stringify(sourceTitle || "political_pro")},
+  video_duration_sec=${videoDurationSec},
+  youtube_url=${JSON.stringify(ytUrl)},
+  source_channel=${JSON.stringify(sourceChannel)},
+  source_title=${JSON.stringify(sourceTitle)},
+)
+# Resolve the saved path back from the most recent file matching slug
+from src.config.settings import DATA_SCRIPTS_DIR
+saved=sorted(DATA_SCRIPTS_DIR.glob("*_political_pro.json"), key=lambda p: p.stat().st_mtime)[-1]
+print(json.dumps({
+  "title": script.metadata.title,
+  "emotion": script.metadata.emotion_type,
+  "duration": script.metadata.duration,
+  "scenes": len(script.scenes),
+  "sp": str(saved),
+  "clip_start": float(plan.clip_start_sec),
+  "clip_end": min(float(plan.clip_end_sec), ${videoDurationSec}),
+  "video_path": ${JSON.stringify(videoPath)},
+  "youtube_url": ${JSON.stringify(ytUrl)},
+}))`)));
+          send("progress", {message: `✅ 스크립트 변환 완료 (${a.scenes}씬, ${a.duration}초)`});
         } else {
           const t=fd.get("title") as string, b=fd.get("body") as string, c=fd.get("comments") as string||"[]";
           if(!t||!b){send("error",{message:"제목과 본문 필수"});ctrl.close();return;}
@@ -367,8 +422,10 @@ print(json.dumps({"path":str(save_post(post)),"title":post.title}))`)));
         const imageStyle = (fd.get("imageStyle") as string) || "webtoon";
 
         // Claude CLI analysis — typically 30s–5min. Skipped entirely when
-        // mode==="script" (Phase 2 entry already loaded the script above).
-        if (mode !== "script") {
+        // mode==="script" (Phase 2 entry already loaded the script above) or
+        // mode==="political_pro" (Feature 009; plan→script already produced
+        // `a` and the script JSON above).
+        if (mode !== "script" && mode !== "political_pro") {
           if (mode === "political") {
             // Political mode: download video + subtitles, then analyze
             const ytUrl = fd.get("youtubeUrl") as string;
@@ -512,15 +569,27 @@ import sys,json;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 s=json.loads(Path('''${a.sp}''').read_text())
 print(json.dumps({"scenes":s["scenes"]}))`));
-          send("done", {result: {
+          const reviewSourceType = mode === "topic" ? "topic"
+            : mode === "political_pro" ? "political_pro"
+            : "blind";
+          const reviewPayload: any = {
             phase: "analyzed",
             title: finalTitle,
             emotion: a.emotion,
             duration: a.duration,
             scriptPath: a.sp,
             scenes: scriptRaw.scenes,
-            sourceType: mode === "topic" ? "topic" : "blind",
-          }});
+            sourceType: reviewSourceType,
+          };
+          if (mode === "political_pro") {
+            reviewPayload.politicalProMeta = {
+              videoPath: a.video_path,
+              clipStartSec: a.clip_start,
+              clipEndSec: a.clip_end,
+              youtubeUrl: a.youtube_url,
+            };
+          }
+          send("done", {result: reviewPayload});
           ctrl.close();
           return;
         }
@@ -614,6 +683,110 @@ print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"th
           send("progress",{message:`✅ 렌더링 완료 (${rr0.size}MB)`});
           videoPath = rr0.path;
           thumbnailPath = rr0.thumbnailPath || "";
+        } else if (
+          mode === "script" &&
+          (fd.get("politicalProMeta") as string)
+        ) {
+          // ── Feature 009 political_pro Phase 2 ──
+          // Cut original YouTube clip into per-scene 9:16 segments + use
+          // Gemini TTS Charon (fast newscaster tone, neutral delivery).
+          // NOTE 2026-05-13: 초기에 "British RP newscaster" 지시했으나, 한국어 본문
+          // + 영국식 RP 액센트 조합이 finish_reason=OTHER로 차단됨. 단순 newscaster
+          // 톤으로 변경 — 한국어는 voice "Charon" 기본 발음대로 출력.
+          let meta: { videoPath: string; clipStartSec: number; clipEndSec: number; youtubeUrl: string };
+          try {
+            meta = JSON.parse(fd.get("politicalProMeta") as string);
+          } catch {
+            send("error", {message:"politicalProMeta JSON 파싱 실패"});
+            ctrl.close(); return;
+          }
+          if (!meta.videoPath) {
+            send("error", {message:"politicalProMeta.videoPath 누락 — Phase 1 결과를 확인하세요"});
+            ctrl.close(); return;
+          }
+
+          // Step 1: Gemini TTS with Charon voice + newscaster style
+          try {
+            ttsResult = await withStage("Gemini TTS (Charon, 영국식 RP 아나운서 톤)", 30, async () => JSON.parse(await py(`
+import sys,json,os;sys.path.insert(0,'${ROOT}')
+from src.analyzer.script_models import ShortsScript
+from src.tts.gemini_tts_generator import generate_voice_with_timing_gemini, GeminiTTSError
+if not os.environ.get("GEMINI_API_KEY"):
+  print(json.dumps({"error":"tts_failed","detail":"GEMINI_API_KEY 환경변수가 설정되지 않았습니다 (정치 모드는 Gemini TTS 필수)."}))
+else:
+  try:
+    s = ShortsScript.load('''${a.sp}''')
+    ap, timings = generate_voice_with_timing_gemini(
+      s,
+      voice_name="Charon",
+      style_prompt="Read in a fast, clear newscaster tone with neutral political delivery:",
+      temperature=0.5,
+      include_outro=False,
+    )
+    print(json.dumps({"audio_path": str(ap), "timings": timings}))
+  except GeminiTTSError as e:
+    print(json.dumps({"error":"tts_failed","detail":str(e)[:300]}))
+`)));
+          } catch (e: any) {
+            send("error", {message: `Gemini TTS 실패: ${(e?.message || String(e)).slice(0, 300)}`});
+            ctrl.close(); return;
+          }
+          if ((ttsResult as any).error === "tts_failed") {
+            send("error", {message: (ttsResult as any).detail || "Gemini TTS 실패"});
+            ctrl.close(); return;
+          }
+          send("progress", {message:`✅ Gemini TTS 합성 완료 (${ttsResult!.timings.length}씬)`});
+
+          // Step 2: Cut original YouTube video into per-scene 9:16 clips
+          const timingsJsonPP = JSON.stringify(ttsResult!.timings);
+          const sceneClipsPP = await withStage(`정치 클립 분할 (9:16 변환, ${a.scenes}씬)`, 60, async () => JSON.parse(await py(`
+import sys,json,time;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.dem_shorts.editor.segment_cutter import cut_segment
+src_video=Path(${JSON.stringify(meta.videoPath)})
+clip_start=${meta.clipStartSec}
+clip_end=${meta.clipEndSec}
+clip_duration=max(0.1, clip_end - clip_start)
+out_dir=src_video.parent
+timings=[t for t in json.loads(r"""${timingsJsonPP}""") if t["scene_id"]!=-1]
+if not timings:
+  print(json.dumps([]))
+else:
+  tts_total_ms=max(t["end_ms"] for t in timings)
+  ts=int(time.time())
+  clips=[]
+  for t in timings:
+    sid=t["scene_id"]
+    ns=clip_start+(t["start_ms"]/tts_total_ms)*clip_duration
+    ne=clip_start+(t["end_ms"]/tts_total_ms)*clip_duration
+    out=out_dir/f"scene_{ts}_{sid:02d}.mp4"
+    # political_pro: TTS가 메인 음성이므로 영상 음성은 mute (중첩·에코 방지)
+    cut_segment(input_path=src_video, output_path=out, start_sec=ns, end_sec=ne, mute=True)
+    clips.append({"scene_id": sid, "video_path": str(out)})
+  print(json.dumps(clips))
+`)));
+          generatedVideos = sceneClipsPP;
+          vc = sceneClipsPP.length;
+          send("progress", {message: `✅ 씬 클립 ${vc}개 분할 완료`});
+
+          // Step 3: Remotion render
+          const vidJsonPP = JSON.stringify(generatedVideos);
+          const timingsJsonPP2 = JSON.stringify(ttsResult!.timings);
+          const rrPP = await withStage("Remotion 최종 렌더", Math.max(60, a.scenes * 10), async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.script_models import ShortsScript
+from src.video.renderer import render_video
+s=ShortsScript.load('''${a.sp}''')
+sv=json.loads(r"""${vidJsonPP}""") or None
+timings=json.loads(r"""${timingsJsonPP2}""")
+o=render_video(s, audio_path=Path('''${ttsResult!.audio_path}'''), scene_videos=sv, use_bgm=${useBgm?"True":"False"}, scene_timings=timings, enable_transitions=False, enable_sfx=False)
+t=o.parent/(o.stem+".thumb.png")
+print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"thumbnailPath":str(t) if t.exists() else ""}))
+`)));
+          send("progress", {message:`✅ 렌더링 완료 (${rrPP.size}MB)`});
+          videoPath = rrPP.path;
+          thumbnailPath = rrPP.thumbnailPath || "";
         } else if (mode === "political" && a.clip && a.clip_audio) {
           // ── Political mode: audio stitching + scene clip extraction ──
           const polStitch = await withStage("오디오 스티칭 (원본+TTS)", 60, async () => JSON.parse(await py(`
@@ -912,7 +1085,14 @@ print(json.dumps({"scenes":s["scenes"]}))`));
           return sc;
         })};
 
-        send("done",{result:{videoPath,thumbnailPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,videoCount:vc,cost,visualMode,imageStyle,sourceType:mode==="topic"?"topic":"blind",summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,audioPath:ttsResult?.audio_path||"",sceneImages:generatedImages,sceneVideos:generatedVideos,scenes:scriptData.scenes,dryRun}});
+        // Detect political_pro Phase 2 (mode=script with politicalProMeta) so
+        // the result screen shows the FR-021 review-required warning and the
+        // UI hides upload toggles.
+        const finalSourceType =
+          mode === "topic" ? "topic"
+          : (mode === "script" && (fd.get("politicalProMeta") as string)) ? "political_pro"
+          : "blind";
+        send("done",{result:{videoPath,thumbnailPath,title:finalTitle,emotion:a.emotion,duration:a.duration,imageCount:ic,videoCount:vc,cost,visualMode,imageStyle,sourceType:finalSourceType,summary:meta.summary,hashtags:meta.hashtags,scriptPath:a.sp,audioPath:ttsResult?.audio_path||"",sceneImages:generatedImages,sceneVideos:generatedVideos,scenes:scriptData.scenes,dryRun}});
       } catch(e:any){ send("error",{message:e.message||"오류"}); }
       ctrl.close();
     }

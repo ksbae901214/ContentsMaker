@@ -496,6 +496,57 @@ def _safe_slug(s: str) -> str:
 # ─────────────────────────────── plan_to_script ───────────────────────────────
 
 
+_MAX_SUBTITLE_CHARS = 30  # 한 자막 2줄 한계 (한국어 약 15자/줄 × 2)
+
+
+def _split_subtitle_segments(text: str, max_chars: int = _MAX_SUBTITLE_CHARS) -> list[str]:
+    """긴 텍스트를 max_chars 이내 세그먼트로 분할 (말줄임표 사용 안 함).
+
+    사용자 피드백 (2026-05-16): "...으로 생략 NG. 2줄로 압축하거나 여러 번 보여줘".
+    분할 우선순위:
+        1. 구두점(. , ! ? · …) 경계
+        2. 공백(단어) 경계
+        3. 강제 분할 (마지막 수단)
+    """
+    text = (text or "").strip()
+    if not text:
+        return []
+    if len(text) <= max_chars:
+        return [text]
+
+    segments: list[str] = []
+    remaining = text
+    while remaining:
+        if len(remaining) <= max_chars:
+            segments.append(remaining)
+            break
+
+        cut = remaining[:max_chars]
+        split_at: int | None = None
+
+        # 1) 구두점 경계 (max_chars*0.5 이후에 있는 경우만)
+        for sep in [". ", "? ", "! ", ", ", " · ", "·", ". ", ", "]:
+            idx = cut.rfind(sep)
+            if idx >= max_chars * 0.5:
+                split_at = idx + len(sep)
+                break
+
+        # 2) 공백 경계
+        if split_at is None:
+            idx = cut.rfind(" ")
+            if idx >= max_chars * 0.5:
+                split_at = idx + 1
+
+        # 3) 강제 분할 (한국어는 단어 경계 없을 수 있음)
+        if split_at is None:
+            split_at = max_chars
+
+        segments.append(remaining[:split_at].rstrip(" ,.·"))
+        remaining = remaining[split_at:].lstrip()
+
+    return [s for s in segments if s]
+
+
 def plan_to_script(
     plan: ShortsPlan,
     *,
@@ -527,59 +578,75 @@ def plan_to_script(
     gradient = get_gradient(emotion)
 
     scenes: list[Scene] = []
-    # Scene 0 — Hook (V2: hook 자체는 강조 색 yellow + emphasis로 임팩트)
-    scenes.append(Scene(
-        id=0,
-        timestamp=0.0,
-        duration=min(3.0, MAX_SCENE_DURATION_SECONDS),
-        type="title",
+
+    def _add_split_scenes(
+        *,
+        text: str,
+        total_duration: float,
+        scene_type: str,
+        color: str,
+        emphasis: bool,
+    ) -> None:
+        """텍스트가 길면 30자 세그먼트로 분할해 여러 씬 추가.
+        2026-05-16 사용자 요청: "..." 생략 금지, 분할 표시.
+        TTS는 첫 세그먼트에만 풀텍스트 → 한 번만 합성. 자막만 시간 분할.
+        """
+        segs = _split_subtitle_segments(text)
+        if not segs:
+            return
+        per_seg = max(0.6, total_duration / len(segs))
+        nonlocal_cursor = scenes[-1].timestamp + scenes[-1].duration if scenes else 0.0
+        for j, seg in enumerate(segs):
+            scenes.append(Scene(
+                id=len(scenes),
+                timestamp=nonlocal_cursor,
+                duration=per_seg,
+                type=scene_type,
+                text=seg,
+                # 각 분할 자식도 자기 자막 텍스트로 TTS 합성 → 음성도 자연스럽게 분할.
+                # char ratio로 timing 자동 분배되어 자막·음성·영상 동기화 보장.
+                voice_text=seg,
+                emphasis=emphasis,
+                highlight_words=(),
+                subtitle_color=color,
+                subtitle_emphasis=emphasis,
+            ))
+            nonlocal_cursor += per_seg
+
+    # Scene 0 — Hook
+    _add_split_scenes(
         text=plan.hook,
-        voice_text=plan.hook,
+        total_duration=min(3.0, MAX_SCENE_DURATION_SECONDS),
+        scene_type="title",
+        color="yellow",
         emphasis=True,
-        highlight_words=(),
-        # V2 Phase B — Hook 씬은 노란색 강조
-        subtitle_color="yellow",
-        subtitle_emphasis=True,
-    ))
+    )
 
-    cursor = scenes[-1].duration
-    for i, narr in enumerate(plan.narrations, start=1):
-        dur = max(0.5, narr.end_sec - narr.start_sec)
-        scenes.append(Scene(
-            id=i,
-            timestamp=cursor,
-            duration=dur,
-            type="body",
+    for narr in plan.narrations:
+        narr_dur = max(0.5, narr.end_sec - narr.start_sec)
+        _add_split_scenes(
             text=narr.text,
-            voice_text=narr.text,
-            emphasis=False,
-            highlight_words=(),
-            # V2 Phase B — Narration 색·강조 그대로 매핑
-            subtitle_color=narr.subtitle_color,
-            subtitle_emphasis=narr.subtitle_emphasis,
-        ))
-        cursor += dur
+            total_duration=narr_dur,
+            scene_type="body",
+            color=narr.subtitle_color,
+            emphasis=narr.subtitle_emphasis,
+        )
 
-    # CTA — final scene (V2: CTA는 yellow 강조)
-    cta_dur = 3.0
-    scenes.append(Scene(
-        id=len(scenes),
-        timestamp=cursor,
-        duration=cta_dur,
-        type="comment",
+    # CTA
+    _add_split_scenes(
         text=plan.cta,
-        voice_text=plan.cta,
+        total_duration=3.0,
+        scene_type="comment",
+        color="yellow",
         emphasis=True,
-        highlight_words=(),
-        subtitle_color="yellow",
-        subtitle_emphasis=True,
-    ))
-    cursor += cta_dur
+    )
+    cursor = scenes[-1].timestamp + scenes[-1].duration if scenes else 0.0
 
-    # V2 Phase B — visual_directives 파싱: "분할" / "split" 키워드 검출 시
-    # 매칭되는 씬에 visual_layout="split" 적용. 디렉티브의 시각 범위(예: "0~3초")가
-    # 명시되어 있으면 그 범위와 겹치는 씬에만, 없으면 첫 body 씬에 적용.
-    scenes = _apply_visual_directives_to_scenes(scenes, plan.visual_directives)
+    # 2026-05-16: split-screen 자동 적용 비활성화 (사용자 피드백).
+    # 정치_pro 모드는 원본 영상 1개만 있어서 좌·우/상·하 분할이 동일 영상의
+    # 다른 구간만 보여줘 어색함. 진짜 비교 클립이 있을 때만 의미 있음 → Phase D
+    # (수동 secondary_clip_path 지정)로 미룸. 자동 매핑 OFF.
+    # scenes = _apply_visual_directives_to_scenes(scenes, plan.visual_directives)
 
     total_duration = min(cursor, 60.0)
 

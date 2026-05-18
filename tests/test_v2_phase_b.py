@@ -108,8 +108,13 @@ def test_plan_to_script_maps_subtitle_color_to_scenes():
     assert red_scene.subtitle_emphasis is True
 
 
-def test_plan_to_script_maps_visual_directive_split_to_scene():
-    """visual_directives에 '분할' 키워드 → 첫 씬에 visual_layout='split'."""
+def test_plan_to_script_split_directive_no_longer_auto_applied():
+    """2026-05-16 사용자 피드백: split-screen 자동 매핑 비활성화.
+
+    visual_directives에 '분할' 키워드가 있어도 visual_layout='normal' 유지.
+    이유: political_pro 모드는 원본 영상 1개라 좌·우 분할이 의미 없고 어색.
+    진짜 비교 클립(secondary_clip_path)이 있을 때만 split 활용 — Phase D로 미룸.
+    """
     plan = ShortsPlan(
         topic="t", hook="h",
         clip_start_sec=0, clip_end_sec=20, clip_reason="r",
@@ -126,9 +131,9 @@ def test_plan_to_script_maps_visual_directive_split_to_scene():
         plan, video_title="t", video_duration_sec=60.0,
         youtube_url="https://youtu.be/x",
     )
-    # 적어도 하나의 씬에 split 레이아웃 적용
-    split_scenes = [s for s in script.scenes if s.visual_layout == "split"]
-    assert len(split_scenes) >= 1, f"split 씬 부재 — layouts={[s.visual_layout for s in script.scenes]}"
+    # 모든 씬이 normal 유지 (split 자동 적용 안 됨)
+    assert all(s.visual_layout == "normal" for s in script.scenes), \
+        f"split 씬 발견 — layouts={[s.visual_layout for s in script.scenes]}"
 
 
 def test_plan_to_script_no_split_directive_keeps_normal():

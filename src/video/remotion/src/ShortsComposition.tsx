@@ -203,15 +203,17 @@ const SourceAttribution: React.FC<{ label: string }> = ({ label }) => {
   const opacity = interpolate(frame, [0, 15], [0, 0.85], {
     extrapolateRight: "clamp",
   });
-  // 위치를 화면 하단에서 ~21% 위로 (1920px 영상에서 paddingBottom 400 ≒ 자막/CTA 영역 위).
-  // 사용자 피드백: 기존 80px는 너무 아래라 자막과 겹침 → 더 위로 이동 (2026-05-14).
+  // 위치 조정 히스토리:
+  // 2026-05-13: paddingBottom: 80 (너무 아래, 자막과 겹침)
+  // 2026-05-14: paddingBottom: 400 (자막 영역 위로 이동, 사용자 피드백 반영)
+  // 2026-05-16: paddingBottom: 150 (사용자 요청 — 조금 더 아래로)
   return (
     <AbsoluteFill
       style={{
         justifyContent: "flex-end",
         alignItems: "center",
         pointerEvents: "none",
-        paddingBottom: 400,
+        paddingBottom: 150,
       }}
     >
       <div

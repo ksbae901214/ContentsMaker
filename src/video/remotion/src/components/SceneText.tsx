@@ -209,10 +209,16 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
             fontWeight: fontWeight as any,
             color: textColor,
             fontFamily,
-            lineHeight: 1.5,
+            lineHeight: 1.4,
             textShadow,
             whiteSpace: "pre-wrap",
             wordBreak: "keep-all",
+            // 2026-05-16 사용자 피드백: 자막 최대 2줄. 3줄 이상 노출 금지.
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            maxHeight: `${Math.round(fontSize * 1.4 * 2)}px`,
           }}
         >
           <HighlightedText

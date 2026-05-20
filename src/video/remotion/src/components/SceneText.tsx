@@ -3,13 +3,16 @@ import {
   AbsoluteFill,
   useCurrentFrame,
   interpolate,
+  Easing,
 } from "remotion";
 import { resolveHighlightColor } from "../types";
 import type { EmotionType, SubtitleStyle } from "../types";
 import { buildSubtitleTextShadow } from "./SubtitleBlock";
 
 /** Default values when no SubtitleStyle is provided. */
-const DEFAULT_FONT_SIZE = 80;
+// 2026-05-18 사용자 피드백: 폰트가 너무 커서 30자 자막도 2줄 초과해
+// CSS WebkitLineClamp:2가 "…"를 부착. 80→56으로 줄여 2줄에 더 넉넉히.
+const DEFAULT_FONT_SIZE = 56;
 const DEFAULT_POSITION_Y = 192; // 10% below center of 1920px
 // QW-03 (B안): 시그니처 색 정보가 없는 SceneText는 검정 6px 기본 외곽선.
 const DEFAULT_STROKE_COLOR = "#000000";
@@ -40,6 +43,12 @@ interface SceneData {
   subtitleColor?: string;
   subtitle_emphasis?: boolean;
   subtitleEmphasis?: boolean;
+  // Phase 3 (2026-05-20): 자막 그룹 — 같은 원본 문장의 분할 자식 씬 식별.
+  // group_first=false면 fade-in 생략 → 텍스트만 즉시 교체(끊김 제거).
+  subtitle_group_id?: number | null;
+  subtitleGroupId?: number | null;
+  subtitle_group_first?: boolean;
+  subtitleGroupFirst?: boolean;
 }
 
 // V2 Phase B: 자막 색 keyword → hex (subtitle_color_map.py와 동일 매핑)
@@ -93,24 +102,47 @@ const HighlightedText: React.FC<{
 export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
   const frame = useCurrentFrame();
   const isHook = scene.hook === true;
+  // Phase 3 (2026-05-20): 분할 자식 씬(같은 그룹의 2번째 이후) 식별.
+  // groupId가 set이고 group_first=false면 fade-in 생략(텍스트만 교체).
+  const groupId = scene.subtitleGroupId ?? scene.subtitle_group_id ?? null;
+  const groupFirstRaw = scene.subtitleGroupFirst ?? scene.subtitle_group_first;
+  const isGroupContinuation = groupId !== null && groupFirstRaw === false;
 
-  // QW-01: hook 씬은 펀치 줌으로 등장. 일반 씬은 기존 fade+up 진입.
-  // 30fps 기준 frame 0/3/9 — 0.88 → 1.08 (overshoot) → 1.0 (settle).
+  // Phase 4 (2026-05-20): 애니메이션 톤다운.
+  // - hook 줌: 0.88→1.08→1.0 (overshoot 20%) → 0.96→1.02→1.0 (overshoot 2%) 정치 톤에 신뢰감
+  // - 일반 fade: 15프레임 linear → 9프레임 easeOutQuad (300ms, 부드럽고 빠르게)
+  // - slide-up: 40px → 16px (작은 움직임이 안정감)
+  // - emphasis는 폰트 1.25x + 색으로 충분 → 펀치줌 제거 (isHook에만)
   const punchScale = interpolate(
     frame,
     [0, 3, 9],
-    [0.88, 1.08, 1.0],
-    { extrapolateRight: "clamp" },
+    [0.96, 1.02, 1.0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
-  const opacity = interpolate(
-    frame,
-    isHook ? [0, 3] : [0, 15],
-    [0, 1],
-    { extrapolateRight: "clamp" },
-  );
-  const animateY = isHook
+  const opacity = isGroupContinuation
+    ? 1
+    : interpolate(
+        frame,
+        isHook ? [0, 3] : [0, 9],
+        [0, 1],
+        {
+          easing: isHook ? Easing.linear : Easing.out(Easing.quad),
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        },
+      );
+  const animateY = (isHook || isGroupContinuation)
     ? 0
-    : interpolate(frame, [0, 15], [40, 0], { extrapolateRight: "clamp" });
+    : interpolate(
+        frame,
+        [0, 9],
+        [16, 0],
+        {
+          easing: Easing.out(Easing.quad),
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        },
+      );
 
   // Support both camelCase and snake_case from props
   const style: SubtitleStyle | undefined =
@@ -121,8 +153,9 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
   const v2Emphasis = scene.subtitleEmphasis || scene.subtitle_emphasis || false;
 
   const baseFontSize = style?.font_size ?? DEFAULT_FONT_SIZE;
-  // QW-01: hook 씬은 1.4x 폰트. V2: subtitle_emphasis도 동일 1.4x.
-  const fontSize = (isHook || v2Emphasis) ? Math.round(baseFontSize * 1.4) : baseFontSize;
+  // QW-01: hook 씬은 1.25x 폰트 (이전 1.4x → 너무 커서 2줄 넘김 → 1.25x).
+  // V2: subtitle_emphasis도 동일.
+  const fontSize = (isHook || v2Emphasis) ? Math.round(baseFontSize * 1.25) : baseFontSize;
   const fontWeight = (isHook || v2Emphasis) ? "900" : (style?.font_weight ?? "700");
   const fontFamily = style?.font_family ?? "Noto Sans KR, sans-serif";
   // V2 색이 white가 아닌 경우 우선 적용. white이거나 비어있으면 기존 textColor.
@@ -168,6 +201,8 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
       <div
         style={{
           opacity,
+          // Phase 4: 펀치줌은 isHook 전용 (emphasis는 펀치줌 없이 폰트만 키움).
+          // 연속 자막(group_first=false)은 animateY도 0 → 즉시 교체.
           transform: isHook
             ? `translateY(${verticalOffset}px) scale(${punchScale})`
             : `translateY(${animateY + verticalOffset}px)`,

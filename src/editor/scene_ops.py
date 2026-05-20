@@ -98,6 +98,8 @@ def scene_split(
     dur_a = round(target.duration * ratio, 1)
     dur_b = round(target.duration - dur_a, 1)
 
+    # Phase 3 (2026-05-20): subtitle_group_id 등 V2 필드 전파 — 안 그러면
+    # split_scenes_to_max_duration이 정치_pro 씬을 자를 때 색·강조·그룹 정보가 사라짐.
     scene_a = Scene(
         id=target.id,
         timestamp=target.timestamp,
@@ -111,6 +113,12 @@ def scene_split(
         subtitle_style=target.subtitle_style,
         transition=None,
         sfx=target.sfx,
+        hook=target.hook,
+        highlight_category=target.highlight_category,
+        subtitle_color=target.subtitle_color,
+        subtitle_emphasis=target.subtitle_emphasis,
+        subtitle_group_id=target.subtitle_group_id,
+        subtitle_group_first=target.subtitle_group_first,
     )
     scene_b = Scene(
         id=target.id + 1,
@@ -124,6 +132,13 @@ def scene_split(
         visual_type=target.visual_type,
         subtitle_style=target.subtitle_style,
         transition=target.transition,
+        hook=False,  # hook은 첫 씬만
+        highlight_category=target.highlight_category,
+        subtitle_color=target.subtitle_color,
+        subtitle_emphasis=target.subtitle_emphasis,
+        # 그룹 있으면 이어받지만 항상 group_first=False (연속 씬). 그룹 없으면 default(None/True).
+        subtitle_group_id=target.subtitle_group_id,
+        subtitle_group_first=(False if target.subtitle_group_id is not None else True),
     )
 
     new_scenes = []

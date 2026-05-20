@@ -75,15 +75,42 @@ def generate_voice(script: ShortsScript, output_dir: Path | None = None) -> Path
     return output_path
 
 
+def _group_scenes_by_subtitle_group(scenes) -> list[list]:
+    """연속된 같은 subtitle_group_id 씬들을 묶음. group_id=None은 단독 그룹.
+
+    Phase 6 (2026-05-20): 분할 자식들을 1번에 TTS 합성 → 양 끝 무음 누적 제거.
+    """
+    if not scenes:
+        return []
+    groups: list[list] = []
+    current: list = [scenes[0]]
+    for s in scenes[1:]:
+        prev = current[-1]
+        # 연속이고 같은 group_id이며 둘 다 None이 아니면 같은 그룹
+        if (
+            s.subtitle_group_id is not None
+            and prev.subtitle_group_id == s.subtitle_group_id
+        ):
+            current.append(s)
+        else:
+            groups.append(current)
+            current = [s]
+    groups.append(current)
+    return groups
+
+
 def generate_voice_with_timing(
     script: ShortsScript,
     output_dir: Path | None = None,
 ) -> tuple[Path, list[dict]]:
     """Generate per-scene TTS audio and concatenate with precise timing.
 
-    Strategy: generate each scene's voice_text as a separate MP3,
-    measure its duration, then concatenate all segments into one file.
-    This gives exact start/end timing per scene.
+    Strategy: group consecutive scenes by subtitle_group_id, synthesize each
+    group as ONE TTS call (eliminates accumulated silence at segment boundaries),
+    then split timing per scene by character ratio.
+
+    Phase 6 (2026-05-20): 분할 자식 씬들의 TTS 텀 단축. 같은 group_id 자식들은
+    " ".join 후 1번 합성 → 양 끝 무음 누적 제거 → 자연스러운 흐름.
 
     Returns (audio_path, scene_timings) where scene_timings is:
     [{"scene_id": int, "start_ms": int, "end_ms": int}, ...]
@@ -98,35 +125,73 @@ def generate_voice_with_timing(
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_title = _safe_filename(script.metadata.title)
 
-    # Generate per-scene audio segments
+    # Phase 6: 자막 그룹 단위로 묶어서 합성 — 분할 자식들 사이 무음 누적 제거.
+    grouped = _group_scenes_by_subtitle_group(list(script.scenes))
+
+    # Generate per-group audio segments
     scene_segments: list[dict] = []
     temp_files: list[Path] = []
 
-    for scene in script.scenes:
-        text = _strip_ssml_tags(scene.voice_text)
-        if not text:
+    for gi, group in enumerate(grouped):
+        # 자막용 text는 \n 보존, voice_text는 SSML strip + \n → space
+        texts: list[str] = []
+        for s in group:
+            t = _strip_ssml_tags((s.voice_text or "").replace("\n", " "))
+            texts.append(t)
+        # 빈 텍스트 자식 제외
+        valid_idx = [i for i, t in enumerate(texts) if t]
+        if not valid_idx:
             continue
+        valid_scenes = [group[i] for i in valid_idx]
+        valid_texts = [texts[i] for i in valid_idx]
 
-        seg_path = target_dir / f"{timestamp}_seg_{scene.id:02d}.mp3"
+        # 그룹 자식들을 공백으로 join → 1번 합성. 양 끝 무음이 그룹 전체에 1쌍만 적용됨.
+        combined = " ".join(valid_texts)
+        seg_path = target_dir / f"{timestamp}_grp_{gi:02d}.mp3"
         temp_files.append(seg_path)
 
         try:
-            asyncio.run(_generate_async(text, voice, rate, pitch, seg_path))
+            asyncio.run(_generate_async(combined, voice, rate, pitch, seg_path))
         except Exception as e:
-            logger.warning("씬 %d TTS 실패: %s", scene.id, e)
+            logger.warning("그룹 %d TTS 실패: %s", gi, e)
             continue
 
         if not seg_path.exists() or seg_path.stat().st_size == 0:
-            logger.warning("씬 %d TTS 빈 파일", scene.id)
+            logger.warning("그룹 %d TTS 빈 파일", gi)
             continue
 
-        dur_ms = _get_mp3_duration_ms(seg_path)
-        scene_segments.append({
-            "scene_id": scene.id,
-            "path": seg_path,
-            "duration_ms": dur_ms,
-        })
-        logger.info("  씬 %d: %.1fs (%s)", scene.id, dur_ms / 1000, text[:30])
+        group_dur_ms = _get_mp3_duration_ms(seg_path)
+
+        if len(valid_scenes) == 1:
+            # 단일 씬 — 직접 할당
+            scene_segments.append({
+                "scene_id": valid_scenes[0].id,
+                "path": seg_path,
+                "duration_ms": group_dur_ms,
+            })
+            logger.info(
+                "  씬 %d: %.2fs (%s)",
+                valid_scenes[0].id, group_dur_ms / 1000, valid_texts[0][:30],
+            )
+        else:
+            # 그룹 자식 — 글자수 비율로 timing 분배. 마지막 자식이 그룹 end 보장.
+            total_chars = sum(len(t) for t in valid_texts)
+            cum_ms = 0
+            for ci, (sc, tx) in enumerate(zip(valid_scenes, valid_texts)):
+                if ci == len(valid_scenes) - 1:
+                    child_ms = group_dur_ms - cum_ms  # 잔여 — 누적 오차 흡수
+                else:
+                    child_ms = int(group_dur_ms * len(tx) / total_chars)
+                scene_segments.append({
+                    "scene_id": sc.id,
+                    "path": seg_path if ci == 0 else None,  # concat은 첫 자식에서만
+                    "duration_ms": child_ms,
+                })
+                cum_ms += child_ms
+            logger.info(
+                "  그룹 %d (%d자식): %.2fs '%s'",
+                gi, len(valid_scenes), group_dur_ms / 1000, combined[:40],
+            )
 
     # Generate outro segment
     outro_path = target_dir / f"{timestamp}_seg_outro.mp3"
@@ -137,10 +202,12 @@ def generate_voice_with_timing(
     except Exception:
         outro_dur_ms = 0
 
-    # Concatenate all segments into one MP3
+    # Concatenate all segments into one MP3. 그룹 자식들은 첫 자식의 path만 보유 (공유 합성),
+    # 나머지는 None — concat 시 None은 건너뜀.
     output_path = target_dir / f"{timestamp}_{safe_title}.mp3"
     _concat_mp3(
-        [s["path"] for s in scene_segments] + ([outro_path] if outro_dur_ms > 0 else []),
+        [s["path"] for s in scene_segments if s.get("path") is not None]
+        + ([outro_path] if outro_dur_ms > 0 else []),
         output_path,
     )
 

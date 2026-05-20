@@ -39,7 +39,7 @@ def analyze(post: BlindPost, output_dir: Path | None = None) -> tuple[ShortsScri
     )
 
     logger.info("Claude Code 분석 시작: %s", post.title)
-    raw_json = _call_claude(prompt)
+    raw_json = _call_analyzer(prompt)
     script = _parse_response(raw_json)
     script = _apply_voice_config(script)
     script = _ensure_line_breaks(script)
@@ -75,7 +75,7 @@ def analyze_topic(
     )
 
     logger.info("Claude Code 주제 분석 시작: %s", topic_input.topic)
-    raw_json = _call_claude(prompt)
+    raw_json = _call_analyzer(prompt)
     script = _parse_response(raw_json)
 
     # Ensure source_type is "topic"
@@ -134,7 +134,7 @@ def analyze_political(
     )
 
     logger.info("Claude Code 정치 해설 분석 시작: %s", political_input.youtube_url)
-    raw_json = _call_claude(prompt)
+    raw_json = _call_analyzer(prompt)
     script = _parse_response(raw_json)
 
     # Ensure source_type is "political"
@@ -192,6 +192,16 @@ def _looks_transient(output: str) -> bool:
         if any(pat in out for pat in _TRANSIENT_PATTERNS):
             return True
     return False
+
+
+def _call_analyzer(prompt: str) -> str:
+    """Phase 1B 추상 호출 — ANALYZER_BACKEND 환경변수로 백엔드 선택.
+
+    기본 백엔드는 'claude'. 'gemini' 설정 시 Gemini 2.5 Flash 우선,
+    실패 시 Claude 폴백.
+    """
+    from src.analyzer.gemini_backend import call_analyzer
+    return call_analyzer(prompt, claude_caller=_call_claude)
 
 
 def _call_claude(prompt: str, *, max_attempts: int = 3) -> str:
@@ -318,43 +328,17 @@ def _parse_response(raw: str) -> ShortsScript:
 
 
 def _ensure_line_breaks(script: ShortsScript) -> ShortsScript:
-    """Fallback: add line breaks if AI didn't insert them (15 chars max per line)."""
-    from src.analyzer.script_models import Scene
+    """자막 분할 + 명시적 줄바꿈 적용 (2026-05-20 Phase 6+).
 
-    new_scenes = []
-    for scene in script.scenes:
-        text = scene.text
-        if "\n" not in text and len(text) > 15:
-            words = text.replace(" ", " ").split(" ")
-            lines = []
-            current = ""
-            for word in words:
-                if current and len(current) + len(word) + 1 > 15:
-                    lines.append(current)
-                    current = word
-                else:
-                    current = f"{current} {word}" if current else word
-            if current:
-                lines.append(current)
-            text = "\n".join(lines)
+    이전 구현은 15자 greedy 분할로 한국어 조사/어미 미인식, 28자 초과 씬 분할 안 함,
+    Scene V2 필드 누락 버그까지 있었음. apply_subtitle_split로 교체.
 
-        new_scenes.append(Scene(
-            id=scene.id,
-            timestamp=scene.timestamp,
-            duration=scene.duration,
-            type=scene.type,
-            text=text,
-            voice_text=scene.voice_text,
-            emphasis=scene.emphasis,
-            highlight_words=scene.highlight_words,
-        ))
-
-    return ShortsScript(
-        metadata=script.metadata,
-        scenes=tuple(new_scenes),
-        audio=script.audio,
-        background=script.background,
-    )
+    - 28자 초과 씬 → 자식 씬들로 분할 (동일 subtitle_group_id) → TTS 그룹 단위 1회 합성
+    - 15자 초과 단일 씬 → 명시적 '\\n' 삽입 (한국어 조사·종결어미 인식)
+    - 모든 V2 필드 (subtitle_color, hook, highlight_category, image_query 등) 보존
+    """
+    from src.editor.subtitle_split import apply_subtitle_split
+    return apply_subtitle_split(script)
 
 
 def _apply_voice_config(script: ShortsScript) -> ShortsScript:

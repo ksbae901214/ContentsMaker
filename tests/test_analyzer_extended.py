@@ -54,18 +54,46 @@ class TestEnsureLineBreaks:
         for line in lines:
             assert len(line) <= 20  # roughly 15 chars boundary
 
-    def test_voice_text_preserved(self):
+    def test_voice_text_preserved_when_no_split(self):
+        """28자 이하 단일 씬은 voice_text 원본 보존 (분할 없음)."""
         script = ShortsScript(
             metadata=Metadata(title="t", emotion_type="funny", duration=30),
             scenes=(
                 Scene(id=1, timestamp=0, duration=5, type="body",
-                      text="아주 긴 텍스트가 여기에 들어가서 줄바꿈이 필요합니다",
+                      text="22자 이하 짧은 텍스트 한 줄",
                       voice_text="원래 음성 텍스트는 그대로"),
             ),
             audio=AudioConfig(tts_script="test"),
         )
         result = _ensure_line_breaks(script)
+        # 단일 씬 — voice_text 원본 보존
+        assert len(result.scenes) == 1
         assert result.scenes[0].voice_text == "원래 음성 텍스트는 그대로"
+
+    def test_voice_text_per_segment_when_split(self):
+        """28자 초과 씬은 자식들로 분할되고 각 자식이 자기 voice_text로 합성됨 (그룹 TTS)."""
+        long_text = "회사에서 3년 동안 일했는데 월급이 200만원도 안 돼서 너무 화가 납니다"
+        script = ShortsScript(
+            metadata=Metadata(title="t", emotion_type="angry", duration=30),
+            scenes=(
+                Scene(id=1, timestamp=0, duration=6, type="body",
+                      text=long_text, voice_text=long_text),
+            ),
+            audio=AudioConfig(tts_script="test"),
+        )
+        result = _ensure_line_breaks(script)
+        # 분할 — 2개 이상 자식
+        assert len(result.scenes) >= 2
+        # 모든 자식이 같은 group_id (TTS 1회 합성용)
+        gids = {s.subtitle_group_id for s in result.scenes}
+        assert len(gids) == 1 and None not in gids
+        # 첫 자식만 group_first=True
+        assert result.scenes[0].subtitle_group_first is True
+        for s in result.scenes[1:]:
+            assert s.subtitle_group_first is False
+        # 각 자식의 voice_text가 자기 자막 텍스트
+        for s in result.scenes:
+            assert s.voice_text == s.text.replace("\n", " ").strip()
 
     def test_multiple_scenes(self):
         script = ShortsScript(

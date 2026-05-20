@@ -496,55 +496,14 @@ def _safe_slug(s: str) -> str:
 # ─────────────────────────────── plan_to_script ───────────────────────────────
 
 
-_MAX_SUBTITLE_CHARS = 30  # 한 자막 2줄 한계 (한국어 약 15자/줄 × 2)
-
-
-def _split_subtitle_segments(text: str, max_chars: int = _MAX_SUBTITLE_CHARS) -> list[str]:
-    """긴 텍스트를 max_chars 이내 세그먼트로 분할 (말줄임표 사용 안 함).
-
-    사용자 피드백 (2026-05-16): "...으로 생략 NG. 2줄로 압축하거나 여러 번 보여줘".
-    분할 우선순위:
-        1. 구두점(. , ! ? · …) 경계
-        2. 공백(단어) 경계
-        3. 강제 분할 (마지막 수단)
-    """
-    text = (text or "").strip()
-    if not text:
-        return []
-    if len(text) <= max_chars:
-        return [text]
-
-    segments: list[str] = []
-    remaining = text
-    while remaining:
-        if len(remaining) <= max_chars:
-            segments.append(remaining)
-            break
-
-        cut = remaining[:max_chars]
-        split_at: int | None = None
-
-        # 1) 구두점 경계 (max_chars*0.5 이후에 있는 경우만)
-        for sep in [". ", "? ", "! ", ", ", " · ", "·", ". ", ", "]:
-            idx = cut.rfind(sep)
-            if idx >= max_chars * 0.5:
-                split_at = idx + len(sep)
-                break
-
-        # 2) 공백 경계
-        if split_at is None:
-            idx = cut.rfind(" ")
-            if idx >= max_chars * 0.5:
-                split_at = idx + 1
-
-        # 3) 강제 분할 (한국어는 단어 경계 없을 수 있음)
-        if split_at is None:
-            split_at = max_chars
-
-        segments.append(remaining[:split_at].rstrip(" ,.·"))
-        remaining = remaining[split_at:].lstrip()
-
-    return [s for s in segments if s]
+# 자막 분할 + 줄바꿈 알고리즘은 src/editor/subtitle_split.py로 추출 (2026-05-20 Phase 6+).
+# 모든 영상 생성 경로(blind/topic/celebrity/political/political_pro)가 공유.
+from src.editor.subtitle_split import (
+    _MAX_SUBTITLE_CHARS,
+    _insert_linebreak,
+    _score_split_position,
+    _split_subtitle_segments,
+)
 
 
 def plan_to_script(
@@ -587,15 +546,18 @@ def plan_to_script(
         color: str,
         emphasis: bool,
     ) -> None:
-        """텍스트가 길면 30자 세그먼트로 분할해 여러 씬 추가.
+        """텍스트가 길면 28자 세그먼트로 분할해 여러 씬 추가.
         2026-05-16 사용자 요청: "..." 생략 금지, 분할 표시.
-        TTS는 첫 세그먼트에만 풀텍스트 → 한 번만 합성. 자막만 시간 분할.
+        Phase 3 (2026-05-20): 같은 원본 문장의 분할 자식들에 동일 group_id 부여.
+        SceneText.tsx가 group_first=False면 fade-in 생략 → 같은 문장 안에서 끊김 제거.
         """
         segs = _split_subtitle_segments(text)
         if not segs:
             return
         per_seg = max(0.6, total_duration / len(segs))
         nonlocal_cursor = scenes[-1].timestamp + scenes[-1].duration if scenes else 0.0
+        # 분할이 일어나는 경우(2+개 segs)에만 group_id 부여. 단일 세그먼트는 group_id=None.
+        group_id = len(scenes) if len(segs) >= 2 else None
         for j, seg in enumerate(segs):
             scenes.append(Scene(
                 id=len(scenes),
@@ -610,6 +572,8 @@ def plan_to_script(
                 highlight_words=(),
                 subtitle_color=color,
                 subtitle_emphasis=emphasis,
+                subtitle_group_id=group_id,
+                subtitle_group_first=(j == 0),
             ))
             nonlocal_cursor += per_seg
 

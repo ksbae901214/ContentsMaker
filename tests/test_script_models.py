@@ -93,6 +93,69 @@ class TestSceneHookField:
         assert s.hook is False
 
 
+class TestSceneSubtitleGroup:
+    """Phase 3 (2026-05-20): subtitle_group_id / subtitle_group_first 필드."""
+
+    def test_defaults(self):
+        """Default: group_id=None, group_first=True (독립 씬, 항상 fade-in)."""
+        s = Scene(id=1, timestamp=0, duration=5, type="title",
+                  text="제목", voice_text="제목입니다")
+        assert s.subtitle_group_id is None
+        assert s.subtitle_group_first is True
+
+    def test_group_roundtrip(self):
+        """그룹 필드 to_dict/from_dict 보존."""
+        original = Scene(id=1, timestamp=0, duration=2, type="body",
+                         text="첫줄", voice_text="첫줄",
+                         subtitle_group_id=5, subtitle_group_first=True)
+        restored = Scene.from_dict(original.to_dict())
+        assert restored.subtitle_group_id == 5
+        assert restored.subtitle_group_first is True
+        assert restored == original
+
+    def test_group_continuation_roundtrip(self):
+        """group_first=False (연속 씬) 라운드트립."""
+        original = Scene(id=2, timestamp=2, duration=2, type="body",
+                         text="둘째줄", voice_text="둘째줄",
+                         subtitle_group_id=5, subtitle_group_first=False)
+        restored = Scene.from_dict(original.to_dict())
+        assert restored.subtitle_group_id == 5
+        assert restored.subtitle_group_first is False
+
+    def test_defaults_omitted_from_dict(self):
+        """기본값(group_id=None, group_first=True)은 직렬화 시 생략 (V1·V2 JSON 호환)."""
+        s = Scene(id=1, timestamp=0, duration=5, type="title",
+                  text="제목", voice_text="제목입니다")
+        d = s.to_dict()
+        assert "subtitle_group_id" not in d
+        assert "subtitle_group_first" not in d
+
+    def test_legacy_json_loads_with_defaults(self):
+        """그룹 필드 없는 V1·V2 JSON → default (None / True) 로드."""
+        data = {
+            "id": 1, "timestamp": 0, "duration": 5, "type": "title",
+            "text": "제목", "voice_text": "제목입니다",
+            "subtitle_color": "yellow", "subtitle_emphasis": True,  # V2 필드만 있음
+        }
+        s = Scene.from_dict(data)
+        assert s.subtitle_group_id is None
+        assert s.subtitle_group_first is True
+        # V2 필드도 그대로 로드
+        assert s.subtitle_color == "yellow"
+        assert s.subtitle_emphasis is True
+
+    def test_camel_case_keys(self):
+        """camelCase 키(subtitleGroupId / subtitleGroupFirst)도 인식."""
+        data = {
+            "id": 3, "timestamp": 0, "duration": 1, "type": "body",
+            "text": "x", "voice_text": "x",
+            "subtitleGroupId": 7, "subtitleGroupFirst": False,
+        }
+        s = Scene.from_dict(data)
+        assert s.subtitle_group_id == 7
+        assert s.subtitle_group_first is False
+
+
 class TestMetadata:
     def test_create(self):
         m = Metadata(title="테스트", emotion_type="funny", duration=45)

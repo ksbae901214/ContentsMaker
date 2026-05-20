@@ -136,6 +136,11 @@ class Scene:
     subtitle_emphasis: bool = False
     visual_layout: str = "normal"
     secondary_clip_path: str | None = None
+    # Phase 3 (2026-05-20): 분할 자식 씬 연속성. 같은 원본 텍스트가 _split_subtitle_segments로
+    # N개 자식 씬으로 나뉘면 모두 같은 group_id. group_first=True인 첫 자식만 fade-in 실행,
+    # 나머지는 텍스트만 교체(끊김 없음). None = 그룹 없음(독립 씬, 항상 fade-in).
+    subtitle_group_id: int | None = None
+    subtitle_group_first: bool = True
 
     def to_dict(self) -> dict:
         d = {
@@ -177,6 +182,11 @@ class Scene:
             d["visual_layout"] = self.visual_layout
         if self.secondary_clip_path:
             d["secondary_clip_path"] = self.secondary_clip_path
+        # Phase 3 — default가 아닐 때만 직렬화 (V1·V2 JSON 호환)
+        if self.subtitle_group_id is not None:
+            d["subtitle_group_id"] = self.subtitle_group_id
+        if not self.subtitle_group_first:  # default True → False만 직렬화
+            d["subtitle_group_first"] = False
         return d
 
     @classmethod
@@ -226,6 +236,11 @@ class Scene:
             ),
             secondary_clip_path=(
                 data.get("secondary_clip_path", data.get("secondaryClipPath")) or None
+            ),
+            # Phase 3 — default fallback (없으면 None / True)
+            subtitle_group_id=data.get("subtitle_group_id", data.get("subtitleGroupId")),
+            subtitle_group_first=bool(
+                data.get("subtitle_group_first", data.get("subtitleGroupFirst", True))
             ),
         )
 

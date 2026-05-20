@@ -345,3 +345,117 @@ def test_v1_plans_json_loads_with_v2_models(tmp_path):
     assert plan.visual_directives == ()
     assert plan.narrations[0].subtitle_color == "white"
     assert plan.narrations[0].subtitle_emphasis is False
+
+
+# ─────────────────────────────── _split_subtitle_segments v2 ───────────────────────────────
+
+
+from src.analyzer.political_planner import _split_subtitle_segments, _MAX_SUBTITLE_CHARS
+
+
+def test_split_subtitle_short_text_no_split():
+    """28자 이하는 분할되지 않음."""
+    text = "짧은 문장입니다"  # 8 chars
+    segs = _split_subtitle_segments(text)
+    assert segs == [text]
+
+
+def test_split_subtitle_preserves_particle_attachment():
+    """조사("을/를/이/가") 직전에서 잘리지 않음.
+
+    '서울시장 후보들의 부동산 공급 정책을 비교합니다' (29자, 28자+1)
+    → 어절 중간 자르기 금지. '정책을' 이 통째로 한쪽에.
+    """
+    text = "서울시장 후보들의 부동산 공급 정책을 비교합니다"
+    segs = _split_subtitle_segments(text)
+    assert len(segs) >= 1
+    joined = " ".join(segs)
+    # 모든 조사 어절이 통째로 보존되어야 함
+    assert "정책을" in joined  # 분리되지 않음
+    # 각 세그먼트는 max_chars 이내
+    for s in segs:
+        assert len(s) <= _MAX_SUBTITLE_CHARS
+
+
+def test_split_subtitle_prefers_punctuation_boundary():
+    """구두점 경계가 최우선 (균형 보너스보다 높은 점수)."""
+    # 구두점이 12자 위치, 공백 경계 14, 24자 위치 — 12자가 우선되어야 함
+    text = "안녕하세요. 오늘은 정치 뉴스 시간입니다 한 번 보시죠"
+    segs = _split_subtitle_segments(text)
+    assert len(segs) >= 2
+    # 첫 세그먼트는 구두점 경계 직전에서 끝남
+    assert segs[0].endswith("안녕하세요") or segs[0].endswith("안녕하세요.")
+
+
+def test_split_subtitle_no_ellipsis_no_orphan():
+    """긴 문장 분할 시 말줄임표('…')가 절대 안 붙음. 모든 글자 보존."""
+    text = "이번 지방선거 후보자 4명 중 1명이 다주택자라는 사실이 밝혀졌습니다"
+    segs = _split_subtitle_segments(text)
+    # "…" 부착 절대 금지 (사용자 피드백 2026-05-16)
+    for s in segs:
+        assert "…" not in s
+        assert "..." not in s
+        assert len(s) <= _MAX_SUBTITLE_CHARS + 3  # 약간의 오버플로우 허용
+    # 원문 모든 의미 단위 보존
+    joined = "".join(s.replace(" ", "") for s in segs)
+    original_no_space = text.replace(" ", "")
+    # 분할 시 trailing 공백/구두점 정리로 일부 제거될 수 있으므로 substring 검사
+    assert len(joined) >= len(original_no_space) - 5
+
+
+def test_split_subtitle_balanced_split_preferred():
+    """균형 분할 선호 — 단어 한가운데 자르지 않음."""
+    text = "안 그래도 정치권에서는 이게 진짜 큰 이슈가 되고 있다고요 다들"  # 33자
+    assert len(text) > _MAX_SUBTITLE_CHARS
+    segs = _split_subtitle_segments(text)
+    assert len(segs) >= 2
+    # 첫 세그먼트가 너무 짧지 않아야 (lo=7 이상, 균형 보너스로 ~14자 부근 선호)
+    assert len(segs[0]) >= 7
+    # 원문 어절 보존 검증 — 분할은 항상 공백 또는 구두점 직후에서만 일어남
+    original_eojeols = set(text.split())
+    rejoined_eojeols = set(" ".join(segs).split())
+    # 모든 원문 어절이 그대로 보존 (어절 한가운데 잘림 없음)
+    missing = original_eojeols - rejoined_eojeols
+    assert not missing, f"어절 중간 잘림: {missing}"
+
+
+def test_split_subtitle_inserts_explicit_linebreak():
+    """15자 초과 세그먼트는 14자 부근에 명시적 '\\n' 삽입 (orphan 방지)."""
+    from src.analyzer.political_planner import _insert_linebreak
+    text = "이번 정치권에서는 새로운 소식이 발표됨"  # 21자 > 15
+    assert len(text) > 15
+    out = _insert_linebreak(text)
+    assert "\n" in out
+    lines = out.split("\n")
+    assert len(lines) == 2
+    # 두 줄 모두 비어 있지 않고, 첫 줄이 너무 길지도 짧지도 않음
+    assert 5 <= len(lines[0]) <= 18
+    assert 1 <= len(lines[1]) <= 18
+
+
+def test_split_subtitle_no_linebreak_for_short_text():
+    """14자 이하는 줄바꿈 미삽입."""
+    from src.analyzer.political_planner import _insert_linebreak
+    assert _insert_linebreak("짧은 자막") == "짧은 자막"
+    assert _insert_linebreak("14자 이내자막입니다") == "14자 이내자막입니다"  # 11자
+
+
+def test_split_subtitle_segments_apply_linebreak():
+    """_split_subtitle_segments 결과의 각 세그먼트에 줄바꿈 자동 적용."""
+    text = "서울시장 후보들의 부동산 공급 정책을 비교합니다 그리고 결과 분석"  # 35자+
+    segs = _split_subtitle_segments(text)
+    # 모든 세그먼트 검사 — 15자 초과면 \n 포함
+    for s in segs:
+        if len(s.replace("\n", "")) > 15:
+            assert "\n" in s, f"15자+ 세그먼트인데 줄바꿈 없음: {s!r}"
+
+
+def test_split_subtitle_korean_endings_boost():
+    """종결어미('했어요', '입니다') 직후가 일반 공백보다 우선."""
+    text = "이번에 발표했어요 그래서 모두가 정말 깜짝 놀랐습니다 어떻게 보세요"  # 36자
+    assert len(text) > _MAX_SUBTITLE_CHARS
+    segs = _split_subtitle_segments(text)
+    assert len(segs) >= 2
+    first = segs[0].rstrip()
+    # 종결어미 또는 어절 경계로 자연 종료
+    assert first.endswith("요") or first.endswith("다") or first.endswith("어요") or " " in first

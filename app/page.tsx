@@ -10,7 +10,7 @@ interface SceneData { id: number; timestamp: number; duration: number; type: str
 interface JobResult { videoPath: string; thumbnailPath?: string; title: string; emotion: string; duration: number; imageCount: number; videoCount?: number; cost: number; visualMode?: string; imageStyle?: string; sourceType?: string; youtubeUrl?: string; tiktokStatus?: string; summary?: string; hashtags?: string; scriptPath?: string; audioPath?: string; sceneImages?: SceneImage[]; sceneVideos?: {scene_id:number;video_path:string}[]; scenes?: SceneData[]; dryRun?: boolean; }
 // Phase 1 (analyze-only) result held during the reviewing state.
 interface PortraitCandidate { path: string; filename: string }
-interface SceneImage { scene_id: number; path: string; filename: string; query?: string }
+interface ReviewSceneImage { scene_id: number; path: string; filename: string; query?: string }
 interface ReviewPayload {
   phase: "analyzed";
   title: string;
@@ -21,7 +21,7 @@ interface ReviewPayload {
   sourceType?: string;
   celebrityName?: string;
   portraitCandidates?: PortraitCandidate[];
-  sceneImages?: SceneImage[];
+  sceneImages?: ReviewSceneImage[];
   // Feature 009 (political_pro) — Phase 2 clip cut metadata
   politicalProMeta?: {
     videoPath: string;
@@ -82,8 +82,10 @@ export default function Home() {
   const [imageStyle, setImageStyle] = useState<"webtoon"|"3d_pixar"|"realistic"|"anime">("realistic");
   // Default = video mode (Kling 2.5 + Premium+ unlimited). User-confirmed default.
   const [visualMode, setVisualMode] = useState<"manga"|"video">("video");
-  const [videoProvider, setVideoProvider] = useState<"seedance"|"deevid"|"freepik">("freepik");
-  const [imageProvider, setImageProvider] = useState<"freepik"|"gpt">("freepik");
+  // 2026-05-19 Phase 2B: Veo 3 (gemini.google.com) 추가. 기본은 검증 진행 중이라 deevid 유지.
+  const [videoProvider, setVideoProvider] = useState<"seedance"|"deevid"|"freepik"|"gemini">("deevid");
+  // 2026-05-19 Phase 2A: Imagen 4 (gemini.google.com) 활성화. 기본을 gemini로 전환.
+  const [imageProvider, setImageProvider] = useState<"freepik"|"gpt"|"gemini">("gemini");
   const [status, setStatus] = useState<Status>("idle");
   const [progress, setProgress] = useState<string[]>([]);
   const [result, setResult] = useState<JobResult|null>(null);
@@ -480,7 +482,16 @@ export default function Home() {
   return (
     <main className="max-w-2xl mx-auto px-4 py-8">
       <header className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">ContentsMaker</h1>
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h1 className="text-3xl font-bold">ContentsMaker</h1>
+          <a
+            href="/daily-briefing"
+            className="text-xs px-3 py-1.5 bg-amber-700 hover:bg-amber-600 rounded-full font-medium transition self-center"
+            title="어제 정치 YouTube + 뉴스 → 핫한 이슈 기획안 자동 생성"
+          >
+            🗞️ 오늘의 브리핑
+          </a>
+        </div>
         <p className="text-gray-400">인기글/자유주제 → 만화 쇼츠 자동 생성</p>
       </header>
 
@@ -555,22 +566,25 @@ export default function Home() {
       {visualMode==="video"&&<div className="mb-4">
         <label className="block text-sm font-medium text-gray-300 mb-2">영상 생성 제공업체</label>
         <div className="grid grid-cols-3 gap-2">
-          <button onClick={()=>setVideoProvider("freepik")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="freepik"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎨 Freepik (구독)</button>
+          <button onClick={()=>setVideoProvider("gemini")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="gemini"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎬 Veo 3 (Gemini Pro)</button>
           <button onClick={()=>setVideoProvider("deevid")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="deevid"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🌐 deevid.ai (무료)</button>
           <button onClick={()=>setVideoProvider("seedance")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="seedance"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>⚡ Seedance API</button>
+          <button disabled title="Freepik 구독 해지 (2026-05-19)" className="py-2 rounded-lg text-xs bg-gray-900 text-gray-600 cursor-not-allowed line-through">🎨 Freepik (해지)</button>
         </div>
-        {videoProvider==="freepik"&&<p className="mt-2 text-xs text-gray-500">⚠️ 사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main freepik_login</code> 실행 필요</p>}
+        {videoProvider==="gemini"&&<p className="mt-2 text-xs text-gray-500">⚡ 변동비 $0 (Pro 구독 한도, 8초 720p + 네이티브 오디오). 사전 <code className="text-yellow-400">gemini_login</code> 필요</p>}
+        {videoProvider==="freepik"&&<p className="mt-2 text-xs text-red-400">⛔ Freepik 구독 해지됨</p>}
         {videoProvider==="deevid"&&<p className="mt-2 text-xs text-gray-500">⚠️ 사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main deevid_login</code> 실행 필요</p>}
       </div>}
 
       {/* Image provider selector (manga mode only) */}
       {visualMode==="manga"&&<div className="mb-4">
         <label className="block text-sm font-medium text-gray-300 mb-2">이미지 생성 제공업체</label>
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={()=>setImageProvider("freepik")} className={`py-2 rounded-lg text-xs transition ${imageProvider==="freepik"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎨 Freepik 무제한 (Premium+)</button>
+        <div className="grid grid-cols-3 gap-2">
+          <button onClick={()=>setImageProvider("gemini")} className={`py-2 rounded-lg text-xs transition ${imageProvider==="gemini"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>✨ Imagen 4 (Gemini Pro)</button>
           <button onClick={()=>setImageProvider("gpt")} className={`py-2 rounded-lg text-xs transition ${imageProvider==="gpt"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>💎 GPT Image ($0.005/씬)</button>
+          <button disabled title="Freepik 구독 해지 (2026-05-19)" className="py-2 rounded-lg text-xs bg-gray-900 text-gray-600 cursor-not-allowed line-through">🎨 Freepik (해지)</button>
         </div>
-        {imageProvider==="freepik"&&<p className="mt-2 text-xs text-gray-500">⚠️ 사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main freepik_login</code> 실행 필요. 실패 시 GPT로 자동 폴백</p>}
+        {imageProvider==="gemini"&&<p className="mt-2 text-xs text-gray-500">⚡ 변동비 $0 (Pro 구독 한도 내). 사전 <code className="text-yellow-400">python3 -m src.main gemini_login</code> 필요</p>}
         {imageProvider==="gpt"&&<p className="mt-2 text-xs text-gray-500">💡 레퍼런스 이미지 지원 (일관된 캐릭터/스타일). <code className="text-yellow-400">OPENAI_API_KEY</code> 필요</p>}
       </div>}
 
@@ -1100,10 +1114,14 @@ export default function Home() {
           <p className="text-gray-500 text-xs mt-1">동명이인이 많은 이름일 때 직업·분야를 적어주세요 (나무위키 <code>이름(키워드)</code> 페이지 우선 시도 + 네이버 검색에도 결합).</p>
         </div>
         <div className="space-y-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={celebrityNoVideo} onChange={e=>setCelebrityNoVideo(e.target.checked)} className="w-5 h-5 rounded"/>
-            <span className="text-sm text-gray-300">🖼️ Freepik 영상 변환 스킵 (정지 이미지만, 훨씬 빠름)</span>
-          </label>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">영상 생성 방식</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={()=>setCelebrityNoVideo(false)} className={`py-2 rounded-lg text-xs transition ${!celebrityNoVideo?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎬 Freepik 영상 생성</button>
+              <button onClick={()=>setCelebrityNoVideo(true)} className={`py-2 rounded-lg text-xs transition ${celebrityNoVideo?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🖼️ 이미지만 사용 (빠름)</button>
+            </div>
+            {!celebrityNoVideo&&<p className="mt-1 text-xs text-gray-500">사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main freepik_login</code> 실행 필요</p>}
+          </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={celebrityNoImages} onChange={e=>setCelebrityNoImages(e.target.checked)} className="w-5 h-5 rounded"/>
             <span className="text-sm text-gray-300">🎨 이미지 전체 스킵 (그라데이션 배경만)</span>
@@ -1157,7 +1175,6 @@ export default function Home() {
           <p>💡 실행 전 체크리스트:</p>
           <ul className="list-disc list-inside space-y-0.5 pl-2">
             <li><code className="text-yellow-400">NAVER_CLIENT_ID</code> / <code className="text-yellow-400">NAVER_CLIENT_SECRET</code> <code>.env.local</code>에 설정 (이미지 사용 시)</li>
-            <li>터미널에서 <code className="text-yellow-400">python3 -m src.main freepik_login</code> 사전 1회 실행 (영상 모드 사용 시)</li>
           </ul>
         </div>
       </div>

@@ -57,9 +57,16 @@ export async function POST(req: NextRequest) {
   const existingScriptPath = (fd.get("scriptPath") as string) || "";
   const enc = new TextEncoder();
 
+  let _ctrlClosed = false;
   const stream = new ReadableStream({
+    cancel() { _ctrlClosed = true; },
     async start(ctrl) {
-      const send = (type: string, data: any) => ctrl.enqueue(enc.encode(`data: ${JSON.stringify({type,...data})}\n\n`));
+      const send = (type: string, data: any) => {
+        if (_ctrlClosed) return;
+        try {
+          ctrl.enqueue(enc.encode(`data: ${JSON.stringify({type,...data})}\n\n`));
+        } catch { _ctrlClosed = true; }
+      };
 
       // withStage wraps a long-running operation with:
       //  1. An initial "시작" message showing expected duration
@@ -847,7 +854,7 @@ print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"th
           thumbnailPath = rr.thumbnailPath || "";
         } else if (visualMode === "video") {
           // AI Video clip mode — provider selectable
-          const videoProvider = (fd.get("videoProvider") as string) || "seedance";
+          const videoProvider = (fd.get("videoProvider") as string) || "deevid";
 
           // Provider-specific pre-checks
           if (videoProvider === "seedance" && !process.env.SEEDANCE_API_KEY) {
@@ -935,8 +942,37 @@ print(json.dumps({"results":results,"cost":gen.estimate_cost()*len(s.scenes)}))`
             send("progress",{message:`✅ AI 영상 ${vc}개 ($${cost.toFixed(3)})`});
           } catch(e:any) { send("progress",{message:`⚠️ ${e.message?.slice(0,200) || "영상 생성 실패"} → 이미지 모드로 진행`}); }
         } else {
-          // Manga (image) mode — provider selectable (gpt | freepik)
-          const imageProvider = (fd.get("imageProvider") as string) || "freepik";
+          // Manga (image) mode — provider selectable (gemini | gpt | freepik)
+          // 2026-05-19 Phase 2A: Imagen 4 (gemini.google.com) 활성화, 기본 gemini.
+          const imageProvider = (fd.get("imageProvider") as string) || "gemini";
+
+          // Gemini Imagen 4 branch (Phase 2A — Pro 구독 변동비 $0)
+          if (imageProvider === "gemini") {
+            const profileExists = JSON.parse(await py(`
+import json
+from src.config.settings import GEMINI_PROFILE_DIR
+print(json.dumps({"ok": GEMINI_PROFILE_DIR.exists() and any(GEMINI_PROFILE_DIR.iterdir()),
+                  "path": str(GEMINI_PROFILE_DIR)}))`));
+            if (!profileExists.ok) {
+              send("error",{message:`Gemini 세션 없음 (${profileExists.path}). 'python3 -m src.main gemini_login' 먼저 실행해주세요.`});
+              ctrl.close(); return;
+            }
+            const im = await withStage(
+              `Imagen 4 이미지 생성 (${a.scenes}씬, Gemini Pro)`,
+              a.scenes * 40,
+              async () => JSON.parse(await py(`
+import sys,json;sys.path.insert(0,'${ROOT}')
+from src.analyzer.script_models import ShortsScript
+from src.illustrator.gemini_web_image_gen import generate_scene_images_sync
+script = ShortsScript.load('''${a.sp}''')
+prompts = [{"scene_id": s.id, "prompt": s.text} for s in script.scenes]
+r = generate_scene_images_sync(prompts)
+print(json.dumps({"c": len(r), "cost": 0.0, "images": r}))`))
+            );
+            ic = im.c; cost = im.cost; generatedImages = im.images || [];
+            send("progress",{message:`✅ Imagen 4 이미지 ${ic}장 (Pro 구독, 변동비 $0)`});
+            // skip the freepik/gpt blocks below
+          } else {
 
           // Provider-specific pre-checks
           let canProceed = false;
@@ -995,6 +1031,7 @@ print(json.dumps({"c":len(r),"cost":len(r)*0.005,"images":[{"scene_id":x["scene_
           } else {
             send("progress",{message:"🎨 이미지 스킵 (Freepik 세션 없음 + OPENAI_API_KEY 미설정)"});
           }
+          }  // close else block from Phase 2A gemini branch
         }
 
         // ───── Common pipeline for BOTH video and manga modes ─────

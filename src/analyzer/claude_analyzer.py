@@ -10,6 +10,7 @@ import logging
 import os
 import re
 import subprocess
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -204,13 +205,14 @@ def _call_analyzer(prompt: str) -> str:
     return call_analyzer(prompt, claude_caller=_call_claude)
 
 
-def _call_claude(prompt: str, *, max_attempts: int = 3) -> str:
+def _call_claude(prompt: str, *, max_attempts: int = 5) -> str:
     """Call Claude Code headless mode and return raw output.
 
     2026-04-22: Claude CLI가 가끔 "Execution error" 같은 일시적 오류 텍스트만
     반환 (returncode 0). 자동 재시도 로직 추가 — 최대 max_attempts회 시도.
 
-    Passes stdin=DEVNULL so the subprocess never blocks waiting for input.
+    2026-05-21: CLI v2.1.146+ 에서 TTY 없이 실행 시 항상 "Execution error" 반환.
+    --output-format json 플래그로 TTY 없이도 정상 응답을 받을 수 있음.
     """
     last_output = ""
     for attempt in range(1, max_attempts + 1):
@@ -220,7 +222,7 @@ def _call_claude(prompt: str, *, max_attempts: int = 3) -> str:
                 "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:" + os.environ.get("PATH", ""),
             }
             result = subprocess.run(
-                ["claude", "-p", prompt],
+                ["claude", "-p", prompt, "--output-format", "json"],
                 capture_output=True,
                 text=True,
                 timeout=CLAUDE_TIMEOUT_SECONDS,
@@ -258,8 +260,32 @@ def _call_claude(prompt: str, *, max_attempts: int = 3) -> str:
                 continue
             raise AnalyzerError(f"Claude Code 실행 실패 (exit {result.returncode}): {detail}")
 
-        output = result.stdout.strip()
-        last_output = output
+        raw = result.stdout.strip()
+        last_output = raw
+
+        # --output-format json → {"type":"result","subtype":"success","result":"..."}
+        # subtype != "success" 또는 result 빈 값이면 일시적 오류로 재시도
+        output = raw
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict):
+                subtype = parsed.get("subtype", "")
+                result_text = parsed.get("result") or ""
+                if subtype != "success" or not result_text:
+                    err_msg = result_text or f"subtype={subtype}"
+                    if attempt < max_attempts:
+                        logger.warning(
+                            "Claude CLI 비정상 응답 (attempt %d/%d, subtype=%s) — 재시도",
+                            attempt, max_attempts, subtype,
+                        )
+                        time.sleep(1)
+                        continue
+                    raise AnalyzerError(f"Claude Code 오류 응답 ({subtype}): {err_msg[:200]}")
+                output = result_text
+        except (json.JSONDecodeError, TypeError):
+            # JSON 파싱 실패 → 원본 텍스트 그대로 사용 (하위호환)
+            pass
+
         if not output:
             if attempt < max_attempts:
                 logger.warning(

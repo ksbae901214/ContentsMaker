@@ -160,7 +160,14 @@ export async function POST(req: NextRequest) {
           let renderResult: any = null;
 
           await new Promise<void>((resolve, reject) => {
-            const p = spawn("python3", args, { cwd: ROOT, env: { ...process.env } });
+            const p = spawn("python3", ["-u", ...args], { cwd: ROOT, env: { ...process.env, PYTHONUNBUFFERED: "1" } });
+            // Heartbeat: Freepik 영상 변환 등 Python 침묵 구간(60~120초)에
+            // Safari가 SSE 스트림을 "Load failed"로 끊지 않도록 5초마다 진행 메시지 전송
+            const pStart = Date.now();
+            const heartbeat = setInterval(() => {
+              const elapsed = Math.floor((Date.now() - pStart) / 1000);
+              send("progress", { message: `⏳ [유명인 파이프라인] 진행 중 · 경과 ${fmtTime(elapsed)}` });
+            }, 5000);
             let stdoutBuf = "";
             p.stdout.on("data", d => {
               stdoutBuf += d.toString();
@@ -193,10 +200,11 @@ export async function POST(req: NextRequest) {
               if (msg) send("progress", { message: `⚠️ ${msg.slice(-300)}` });
             });
             p.on("close", c => {
+              clearInterval(heartbeat);
               if (c === 0) resolve();
               else reject(new Error(`celebrity 파이프라인 실패 (exit ${c})`));
             });
-            p.on("error", e => reject(new Error(`Python 실행 실패: ${e.message}`)));
+            p.on("error", e => { clearInterval(heartbeat); reject(new Error(`Python 실행 실패: ${e.message}`)); });
           });
 
           // Phase 1 종료 → ScriptReviewer로 진입

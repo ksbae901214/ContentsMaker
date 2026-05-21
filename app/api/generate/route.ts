@@ -614,13 +614,25 @@ print(json.dumps({"scenes":s["scenes"]}))`));
           const natvUseTts = (fd.get("tts") as string) === "on";
 
           if (natvUseTts) {
-            ttsResult = await withStage("edge-tts 음성 + 씬 타이밍", 30, async () => JSON.parse(await py(`
-import sys,json;sys.path.insert(0,'${ROOT}')
+            ttsResult = await withStage("Gemini TTS 음성 + 씬 타이밍 (edge-tts 폴백)", 30, async () => JSON.parse(await py(`
+import sys,json,os;sys.path.insert(0,'${ROOT}')
 from src.analyzer.script_models import ShortsScript
-from src.tts.edge_tts_generator import generate_voice_with_timing
-ap,timings=generate_voice_with_timing(ShortsScript.load('''${a.sp}'''))
-print(json.dumps({"audio_path":str(ap),"timings":timings}))`)));
-            send("progress",{message:`✅ 음성 완료 (${ttsResult!.timings.length}씬)`});
+s=ShortsScript.load('''${a.sp}''')
+provider="edge"
+ap=None;timings=None
+if os.environ.get("GEMINI_API_KEY"):
+  try:
+    from src.tts.gemini_tts_generator import generate_voice_with_timing_gemini, GeminiTTSError
+    ap,timings=generate_voice_with_timing_gemini(s)
+    provider="gemini"
+  except GeminiTTSError as e:
+    print(f"[gemini-tts-fallback] {e}", file=sys.stderr)
+if ap is None:
+  from src.tts.edge_tts_generator import generate_voice_with_timing
+  ap,timings=generate_voice_with_timing(s)
+print(json.dumps({"audio_path":str(ap),"timings":timings,"provider":provider}))`)));
+            const natvProvider = (ttsResult as any).provider === "gemini" ? "Gemini (Google AI Studio)" : "edge-tts (폴백)";
+            send("progress",{message:`✅ 음성 완료 — ${natvProvider} · ${ttsResult!.timings.length}씬`});
           } else {
             // No TTS: build synthetic timings from script scene durations
             ttsResult = await withStage("씬 타이밍 계산 (TTS 없음)", 5, async () => JSON.parse(await py(`
@@ -989,16 +1001,28 @@ print(json.dumps({"c":len(r),"cost":len(r)*0.005,"images":[{"scene_id":x["scene_
         // Skipped for natv_clip and political, which have their own full pipelines above.
         if (!dryRun && mode !== "natv_clip" && mode !== "political") {
           ttsResult = await withStage(
-            "edge-tts 음성 + 씬 타이밍",
+            "Gemini TTS 음성 + 씬 타이밍 (edge-tts 폴백)",
             30,
             async () => JSON.parse(await py(`
-import sys,json;sys.path.insert(0,'${ROOT}')
+import sys,json,os;sys.path.insert(0,'${ROOT}')
 from src.analyzer.script_models import ShortsScript
-from src.tts.edge_tts_generator import generate_voice_with_timing
-ap,timings=generate_voice_with_timing(ShortsScript.load('''${a.sp}'''))
-print(json.dumps({"audio_path":str(ap),"timings":timings}))`))
+s=ShortsScript.load('''${a.sp}''')
+provider="edge"
+ap=None;timings=None
+if os.environ.get("GEMINI_API_KEY"):
+  try:
+    from src.tts.gemini_tts_generator import generate_voice_with_timing_gemini, GeminiTTSError
+    ap,timings=generate_voice_with_timing_gemini(s)
+    provider="gemini"
+  except GeminiTTSError as e:
+    print(f"[gemini-tts-fallback] {e}", file=sys.stderr)
+if ap is None:
+  from src.tts.edge_tts_generator import generate_voice_with_timing
+  ap,timings=generate_voice_with_timing(s)
+print(json.dumps({"audio_path":str(ap),"timings":timings,"provider":provider}))`))
           );
-          send("progress",{message:`✅ 음성 완료 (${ttsResult!.timings.length}씬 타이밍)`});
+          const ttsProvider = (ttsResult as any).provider === "gemini" ? "Gemini (Google AI Studio)" : "edge-tts (폴백)";
+          send("progress",{message:`✅ 음성 완료 — ${ttsProvider} · ${ttsResult!.timings.length}씬 타이밍`});
 
           const imgJson=JSON.stringify(generatedImages);
           const vidJson=JSON.stringify(generatedVideos);

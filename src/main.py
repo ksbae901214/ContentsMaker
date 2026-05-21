@@ -186,17 +186,17 @@ def cmd_tts(args: argparse.Namespace) -> int:
         return 1
 
 
-def _run_tts(script, provider: str = "edge", voice: str | None = None):
+def _run_tts(script, provider: str = "gemini", voice: str | None = None):
     """Run TTS generation with per-scene timing.
 
     Args:
         script: ShortsScript instance.
-        provider: "edge" (Microsoft, default) or "gemini" (Google AI Studio).
+        provider: "gemini" (Google AI Studio, default) or "edge" (Microsoft).
         voice: Gemini voice name (e.g. "Leda"); ignored when provider="edge".
 
     Returns (exit_code, voice_path, scene_timings).
     scene_timings is a list of {scene_id, start_ms, end_ms} dicts.
-    On Gemini failure, automatically falls back to edge-tts.
+    On Gemini failure (no API key, quota, network), automatically falls back to edge-tts.
     """
     if provider == "gemini":
         from src.tts.gemini_tts_generator import (
@@ -1057,8 +1057,8 @@ def build_parser() -> argparse.ArgumentParser:
     tts_parser.add_argument(
         "--provider",
         choices=["edge", "gemini"],
-        default="edge",
-        help="TTS 공급자 (기본: edge). gemini 선택 시 GEMINI_API_KEY 필요.",
+        default="gemini",
+        help="TTS 공급자 (기본: gemini, Google AI Studio). GEMINI_API_KEY 없으면 edge로 자동 폴백.",
     )
     tts_parser.add_argument(
         "--voice",

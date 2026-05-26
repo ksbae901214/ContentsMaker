@@ -418,6 +418,8 @@ print(json.dumps({
   "clip_end": min(float(plan.clip_end_sec), ${videoDurationSec}),
   "video_path": ${JSON.stringify(videoPath)},
   "youtube_url": ${JSON.stringify(ytUrl)},
+  "plan_source_type": getattr(plan, "source_type", "youtube"),
+  "youtube_search_keywords": list(getattr(plan, "youtube_search_keywords", ())),
 }))`)));
           send("progress", {message: `✅ 스크립트 변환 완료 (${a.scenes}씬, ${a.duration}초)`});
         } else {
@@ -602,6 +604,9 @@ print(json.dumps({"scenes":s["scenes"]}))`));
               clipStartSec: a.clip_start,
               clipEndSec: a.clip_end,
               youtubeUrl: a.youtube_url,
+              // Feature 023: topic 모드 식별 + 씬별 검색 키워드 (Phase 2 재렌더 시 사용)
+              planSourceType: a.plan_source_type || "youtube",
+              youtubeSearchKeywords: a.youtube_search_keywords || [],
             };
           }
           send("done", {result: reviewPayload});
@@ -720,14 +725,24 @@ print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"th
           // NOTE 2026-05-13: 초기에 "British RP newscaster" 지시했으나, 한국어 본문
           // + 영국식 RP 액센트 조합이 finish_reason=OTHER로 차단됨. 단순 newscaster
           // 톤으로 변경 — 한국어는 voice "Charon" 기본 발음대로 출력.
-          let meta: { videoPath: string; clipStartSec: number; clipEndSec: number; youtubeUrl: string };
+          let meta: {
+            videoPath: string;
+            clipStartSec: number;
+            clipEndSec: number;
+            youtubeUrl: string;
+            // Feature 023
+            planSourceType?: string;
+            youtubeSearchKeywords?: string[];
+          };
           try {
             meta = JSON.parse(fd.get("politicalProMeta") as string);
           } catch {
             send("error", {message:"politicalProMeta JSON 파싱 실패"});
             ctrl.close(); return;
           }
-          if (!meta.videoPath) {
+          // Feature 023: topic 모드는 videoPath 없어도 OK (YouTube 자동 검색)
+          const metaIsTopicMode = (meta.planSourceType || "youtube") === "topic";
+          if (!metaIsTopicMode && !meta.videoPath) {
             send("error", {message:"politicalProMeta.videoPath 누락 — Phase 1 결과를 확인하세요"});
             ctrl.close(); return;
           }
@@ -765,8 +780,63 @@ else:
           send("progress", {message:`✅ Gemini TTS 합성 완료 (${ttsResult!.timings.length}씬)`});
 
           // Step 2: Cut original YouTube video into per-scene 9:16 clips
+          // Feature 023: topic 모드면 원본 영상 대신 youtube_search_keywords로
+          // 뉴스 클립 자동 다운로드 후 씬 매핑.
+          // Phase 1 (mode=political_pro) → a.plan_source_type, Phase 2 (mode=script) → meta.planSourceType
           const timingsJsonPP = JSON.stringify(ttsResult!.timings);
-          const sceneClipsPP = await withStage(`정치 클립 분할 (9:16 변환, ${a.scenes}씬)`, 60, async () => JSON.parse(await py(`
+          const planSourceType = (a.plan_source_type as string)
+            || (meta.planSourceType || "youtube");
+          const planKeywordsJson = JSON.stringify(
+            a.youtube_search_keywords || meta.youtubeSearchKeywords || []
+          );
+          const isTopicMode = planSourceType === "topic";
+          const cutStageLabel = isTopicMode
+            ? `뉴스 클립 자동 검색·다운로드 (${a.scenes}씬)`
+            : `정치 클립 분할 (9:16 변환, ${a.scenes}씬)`;
+          const cutStageTimeout = isTopicMode ? Math.max(120, a.scenes * 30) : 60;
+
+          const sceneClipsPP = await withStage(cutStageLabel, cutStageTimeout, async () => JSON.parse(await py(
+            isTopicMode
+              ? `
+import sys,json,time;sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.config.settings import DATA_DIR
+from src.scraper.youtube_news_searcher import build_scene_clips, safe_search_keyword
+from src.analyzer.script_models import ShortsScript
+
+# script 로드 + 씬별 duration 추출 + TTS 비율 보정
+s = ShortsScript.load('''${a.sp}''')
+timings=[t for t in json.loads(r"""${timingsJsonPP}""") if t["scene_id"]!=-1]
+if not timings:
+  print(json.dumps([]))
+else:
+  # TTS 타이밍에서 씬별 실제 길이 계산 (script.duration보다 정확)
+  tts_total_ms = max(t["end_ms"] for t in timings)
+  scene_durations = []
+  for t in timings:
+    dur_ms = t["end_ms"] - t["start_ms"]
+    scene_durations.append(max(0.5, dur_ms / 1000.0))
+
+  raw_keywords = json.loads(r"""${planKeywordsJson}""")
+  keywords = [safe_search_keyword(k) for k in raw_keywords]
+  # 씬 수와 키워드 수 맞춤: 부족하면 마지막 키워드 반복, 키워드 0이면 plan.topic으로 폴백
+  if len(keywords) < len(scene_durations):
+    fallback = keywords[-1] if keywords else (s.metadata.title or "정치 뉴스")
+    keywords = keywords + [fallback] * (len(scene_durations) - len(keywords))
+  keywords = keywords[:len(scene_durations)]
+
+  ts = int(time.time())
+  work_dir = DATA_DIR / 'political_pro' / f'topic_{ts}_clips'
+  clips = build_scene_clips(scene_durations, keywords=keywords, out_dir=work_dir, crop_9x16=True)
+
+  out = []
+  for sid_t, clip in zip(timings, clips):
+    if clip is None:
+      continue
+    out.append({"scene_id": sid_t["scene_id"], "video_path": str(clip)})
+  print(json.dumps(out))
+`
+              : `
 import sys,json,time;sys.path.insert(0,'${ROOT}')
 from pathlib import Path
 from src.dem_shorts.editor.segment_cutter import cut_segment
@@ -791,7 +861,8 @@ else:
     cut_segment(input_path=src_video, output_path=out, start_sec=ns, end_sec=ne, mute=True)
     clips.append({"scene_id": sid, "video_path": str(out)})
   print(json.dumps(clips))
-`)));
+`
+          )));
           generatedVideos = sceneClipsPP;
           vc = sceneClipsPP.length;
           send("progress", {message: `✅ 씬 클립 ${vc}개 분할 완료`});

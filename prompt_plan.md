@@ -2,7 +2,164 @@
 
 > 블라인드 / NATV / 정치 / 셀럽 영상을 YouTube Shorts로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-05-20
+**마지막 업데이트**: 2026-05-26
+
+---
+
+## ✅ 완료: 023 정치쇼츠 V2 — 주제 입력 모드 추가 (2026-05-26)
+
+### 검증 결과
+- 단위 테스트 25/25 통과 (test_political_topic_plans 10개 + test_youtube_news_search 15개)
+- TypeScript 컴파일 통과 (`tsc --noEmit`)
+- Next.js 프로덕션 빌드 성공 (`npm run build`)
+- Dev 서버 API endpoint 동작 확인 (`POST /api/political-pro/plans` topic validation)
+- 기존 정치_pro YouTube 모드 회귀 테스트 통과 (test_political_planner 84개)
+
+### 변경 파일
+- `src/analyzer/political_plan_models.py` — ShortsPlan에 `source_type` + `youtube_search_keywords` 추가
+- `src/analyzer/political_planner.py` — `generate_three_plans_from_topic()` + `_stage_a_topic_gemini` + `_stage_b_topic_claude` 추가; `plan_to_script()` topic 모드 분기
+- `src/analyzer/political_planner_stage_a_prompt.py` — `build_stage_a_topic_prompt()` 추가
+- `src/analyzer/political_planner_stage_b_prompt.py` — `build_stage_b_topic_prompt()` 추가 (youtube_search_keywords 출력 요구)
+- `src/scraper/youtube_news_searcher.py` — 신규 (yt-dlp 검색 + ffmpeg 9:16 크롭)
+- `src/main.py` — `political-pro` 서브커맨드 `--source-type/--topic/--tone/--details` 인자 추가
+- `app/api/political-pro/plans/route.ts` — sourceType 분기 + `handleTopicMode()`
+- `app/api/generate/route.ts` — political_pro 분기에 plan_source_type/youtube_search_keywords 전달 + Step 2 (씬 cut) 토픽 모드 분기 (build_scene_clips 호출)
+- `app/page.tsx` — political_pro 탭 토글 (📺 YouTube URL / ✏️ 주제 입력) + 주제 입력 폼 (주제·톤·상세) + politicalProMeta 인터페이스 확장
+- `tests/test_political_topic_plans.py` — 신규 10 테스트
+- `tests/test_youtube_news_search.py` — 신규 15 테스트
+
+---
+
+## 🚧 진행 완료 기록: 023 정치쇼츠 V2 — 주제 입력 모드 추가 (2026-05-26)
+
+### 목표
+정치쇼츠 V2(political_pro)에 YouTube URL 외에 **주제 텍스트 입력** 모드 추가. 3 기획안 비교 → 선택 → ScriptReviewer 편집 → YouTube 자동 검색 클립으로 렌더.
+
+### 사용자 결정사항
+- 영상 소스: **YouTube 자동 검색** (yt-dlp `ytsearch1` + ffmpeg 9:16 크롭)
+- 기획 톤: **기존 정치_pro와 동일** (MBC 라디오 시사 + 뉴스핌TV 패턴, A/B 포맷 자동 분류, 자막 색 자동 지정)
+- 편집 흐름: **3 기획안 → 선택 → ScriptReviewer → 렌더**
+
+### Phase 1: Backend — 주제 기반 기획안 생성기
+- `src/analyzer/political_planner.py`에 `generate_three_plans_from_topic(topic, tone, details)` 추가 (기존 `generate_three_plans()` 보존)
+- Stage A: transcript 자리에 topic 텍스트 주입 → 3 angle 생성
+- Stage B: 기존 그대로 + `youtube_search_keywords: list[str]` 출력 추가 (씬별 검색어)
+- ShortsPlan에 `source_type: "youtube"|"topic"` + `youtube_search_keywords` 필드 추가
+
+### Phase 2: Backend — YouTube 뉴스 자동 검색·다운로드
+- `src/scraper/youtube_news_searcher.py` 신규
+- `yt-dlp` API로 키워드별 `ytsearch1` + `duration<=300` 필터링
+- ffmpeg `scale=-2:1920,crop=1080:1920` 9:16 크롭 (스타벅스 5·18 영상에서 검증)
+- 씬-클립 매핑 + 폴백: 검색 실패 시 그라데이션 배경
+
+### Phase 3: Backend — API 라우트
+- `app/api/political-pro/plans/route.ts`: `sourceType: "youtube"|"topic"` 분기
+- `app/api/generate/route.ts`: political_pro + sourceType=topic 분기
+- `src/main.py` political-pro 서브커맨드: `--source-type {youtube,topic}` 인자 추가
+
+### Phase 4: Frontend — UI 토글
+- `app/page.tsx` political_pro 탭 상단에 `📺 YouTube URL ↔ ✏️ 주제 입력` 토글
+- 주제 모드 입력란: 주제(필수), 톤(선택, 기본 "분노·격앙"), 상세(선택)
+- PoliticalPlanPicker → ScriptReviewer → 재렌더 흐름은 기존 그대로
+
+### Phase 5: 테스트 + E2E 검증
+- `tests/test_political_topic_plans.py` — 주제 → 3 plans 단위 테스트
+- `tests/test_youtube_news_search.py` — yt-dlp 검색 mock 테스트
+- E2E: "스타벅스 5·18 탱크데이" 주제 → 3 plans → B 선택 → 편집 → 60초 영상 출력
+
+### 위험
+- HIGH: YouTube 검색 결과 품질 — Stage B 프롬프트에서 키워드 구체화로 완화
+- MEDIUM: 검색 클립 부족 시 폴백 (그라데이션 배경)
+- LOW: 기존 정치_pro는 sourceType 분기로 100% 호환
+
+### 영향 받는 파일
+- `src/analyzer/political_planner.py` (확장)
+- `src/scraper/youtube_news_searcher.py` (신규)
+- `src/main.py` (인자 추가)
+- `app/api/political-pro/plans/route.ts` (분기)
+- `app/api/generate/route.ts` (분기)
+- `app/page.tsx` (UI 토글)
+- `tests/test_political_topic_plans.py`, `tests/test_youtube_news_search.py` (신규)
+
+---
+
+## ✅ 완료: 022 Celebrity TTS 자연화 + BGM 다양화 (2026-05-25)
+
+### 변경 사항
+- `VOICE_CONFIG` 감정별 목소리 분리: funny=SunHiNeural+25%, touching=JiMinNeural+10%, angry=InJoonNeural+15%, relatable=SoonBokNeural+15%
+- `CELEBRITY_VOICE_CONFIG` 추가: SeoHyeonNeural +12% (전문 내레이터)
+- `_apply_voice_config()` celebrity source_type 분기 추가
+- `BGM_FILES["celebrity"]` 추가: celebrity_1/2/3.mp3 (inspirational/uplifting/epic)
+- `select_bgm_for_script()` celebrity source_type이면 celebrity 풀 사용
+- celebrity BGM 에너지 선택: 짧고 hook 없음→_1, 중간→_2, 길고 hook 多→_3
+
+---
+
+## ✅ 완료: 021 Gemini 웹 자동화 폴백 + 브리핑 안정성 패치 (2026-05-21)
+
+**문제**: API Free Tier (gemini-2.5-flash 일 20건) 빠르게 소진. Pro 구독자도 API 한도는 별개.
+
+**완료 항목**:
+- `src/analyzer/gemini_web_chat.py` 신규 — gemini.google.com Playwright 자동화. 기존 `.cache/gemini_profile/` 재사용. JSON 자동 추출(`extract_json_block`).
+- `call_gemini` + `_stage_a_gemini` 에 자동 폴백 — API 모든 재시도 실패 + 일시적 오류 시 웹 자동화 호출. `GEMINI_WEB_FALLBACK=0` 으로 비활성화 가능.
+- Gemini API 지수 backoff 강화: 2초 고정 → (1/5/15/30s) + 일시적 오류 ×2. max_attempts 2→5.
+- 네이버 뉴스 페이지네이션 + 동적 키워드 검색 (영상 제목에서 한글 명사 추출 → 좁은 쿼리). **0건 → 1011건 도달**.
+- `plan_runner` retry queue — 1차 패스 실패 rank들 30초 대기 후 재시도.
+- 신규 테스트 9건 (`test_gemini_web_chat.py`), 전체 1143 통과.
+
+**검증**:
+- 직접 chat 호출 e2e — 54초 만에 JSON 응답 정확 수신
+  ```
+  {"clusters":[{"topic":"대선 후보 간 부동산 정책 공약 및 발언 공방","member_ids":["v1","v2"]}]}
+  ```
+- 단위 테스트로 폴백 트리거 + GEMINI_WEB_FALLBACK=0 비활성화 + 비일시적 오류 미폴백 모두 검증
+
+**운영**:
+- 평소: API (1~5초/호출, gemini-2.5-flash, 일 20건)
+- 한도 소진 또는 503: 자동 웹 폴백 (30~60초/호출, gemini-2.5-pro, 사실상 무제한)
+- launchd 자동 실행 시 `GEMINI_HEADLESS=1` 환경변수로 백그라운드 보장
+
+---
+
+## ✅ 완료: 020 매일 정치 이슈 자동 브리핑 + 기획안 준비 (2026-05-20)
+
+**완료 항목**:
+- Phase 1 — `src/briefing/{models, channel_config, youtube_collector, naver_news_collector}.py`. YouTube Data API v3 (API Key 우선, OAuth 폴백) + 네이버 검색 API. KST 기준 어제 범위 자동 계산. 13 단위 테스트.
+- Phase 2 — `src/briefing/{issue_clusterer, scorer}.py` + `prompts/cluster.txt`. Gemini 2.5 Flash로 영상+기사 클러스터링. 점수: views + 10×comments + 1000×news. 폴백: 응답 실패 시 단일-멤버 클러스터. 10 단위 테스트.
+- Phase 3 — `src/briefing/plan_runner.py`. 상위 N개 이슈의 대표 영상 자막 → `generate_three_plans()` 호출 → `data/daily_briefing/YYYY-MM-DD/`에 저장. 자막 부재 시 `manual_required` 표시. 4 통합 테스트.
+- Phase 4 — `python3 -m src.main daily-briefing --top N` CLI + `app/api/daily-briefing/route.ts` (GET/POST) + `app/daily-briefing/page.tsx` 페이지 + 메인 page.tsx에 "🗞️ 오늘의 브리핑" 헤더 버튼.
+- Phase 5 — `scripts/com.contentsmaker.daily-briefing.plist` (07:00 KST launchd) + `scripts/README_daily_briefing.md` 설치 가이드.
+
+**검증 결과**:
+- 27 신규 briefing 테스트 통과, 전체 1134 테스트 통과
+- Next.js TypeScript 빌드 0 errors
+- CLI `daily-briefing --help` 정상 등록 확인
+
+**비용**: $0/일 (YouTube 60 units / 네이버 4 req / Gemini 1 호출 / Claude 15 호출 모두 무료 한도 내)
+
+**사용자가 추가로 할 일**:
+1. `data/briefing_channels.json`에 모니터링 채널 5~10개 등록 (균형 권장)
+2. `NAVER_CLIENT_ID/SECRET` + `GEMINI_API_KEY` 환경변수 확인 (이미 설정됨)
+3. (선택) launchd plist 편집 후 `~/Library/LaunchAgents/`로 복사하여 매일 자동 실행
+
+---
+
+## ✅ 완료: 019 자막 분할/줄바꿈/그룹 TTS 전 영상 모드 확대 (2026-05-20)
+
+**목표**: 매일 아침 어제(KST) YouTube 정치 채널 + 네이버 정치 뉴스를 수집 → 이슈 클러스터링 + 점수화(조회수 + 10×댓글수 + 1000×기사수) → 상위 N개 이슈에 `generate_three_plans()` 자동 호출 → 웹 UI에서 사용자가 선택하면 기존 정치_pro 파이프라인으로 영상 제작.
+
+**제약**: 출력은 기획안 리스트까지만 (영상 자동 제작 X, 자동 업로드 X). 변동비 $0 유지.
+
+**5단계 계획**:
+- Phase 1 — `src/briefing/{models, channel_config, youtube_collector, naver_news_collector}.py` (KST 어제 범위, 모킹 테스트)
+- Phase 2 — `src/briefing/{issue_clusterer, scorer}.py` + Gemini 클러스터링 프롬프트
+- Phase 3 — `src/briefing/plan_runner.py` (대표 클립 자막 → generate_three_plans 재사용) + `data/daily_briefing/{date}/` 저장
+- Phase 4 — `python3 -m src.main daily-briefing` CLI + `/api/daily-briefing` + `/daily-briefing` 페이지 + page.tsx 탭
+- Phase 5 — `scripts/com.contentsmaker.daily-briefing.plist` launchd (07:00 KST 자동) + Gmail draft 알림
+
+**리스크**: 정치적 편향(HIGH — 채널 균형 권장), 이슈 클러스터링 정확도(MEDIUM — Gemini 응답 검증 + 폴백), YouTube quota(MEDIUM — 채널 20개에서 0.4% 사용)
+
+**예상 시간**: 16~24h (Phase 1: 4~6h / 2: 3~5h / 3: 2~3h / 4: 5~7h / 5: 2~3h)
 
 ---
 

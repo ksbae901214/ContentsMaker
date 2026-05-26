@@ -17,6 +17,10 @@ _ALLOWED_FORMAT_TYPES = ("A", "B")  # A=인터뷰/논평/MBC라디오, B=현장/
 _ALLOWED_SUBTITLE_COLORS = ("white", "red", "yellow", "blue")
 FormatType = Literal["A", "B"]
 
+# Feature 023 — 입력 소스 분기
+_ALLOWED_SOURCE_TYPES = ("youtube", "topic")
+PlanSourceType = Literal["youtube", "topic"]
+
 
 class PlanValidationError(ValueError):
     """Raised when ShortsPlan / Narration / ThreePlansResult validation fails."""
@@ -115,6 +119,9 @@ class ShortsPlan:
     format_type: FormatType = "A"  # A=인터뷰/논평/MBC라디오, B=현장/뉴스핌
     format_reason: str = ""
     visual_directives: tuple[str, ...] = ()
+    # Feature 023 — 주제 입력 모드 지원
+    source_type: PlanSourceType = "youtube"  # "youtube"(기존) | "topic"(주제 입력)
+    youtube_search_keywords: tuple[str, ...] = ()  # source_type=topic 일 때 씬별 검색어
 
     def __post_init__(self) -> None:
         required_text_fields = {
@@ -138,6 +145,12 @@ class ShortsPlan:
             raise PlanValidationError(
                 f"clip_end_sec > clip_start_sec 필요 "
                 f"(start={self.clip_start_sec}, end={self.clip_end_sec})"
+            )
+
+        # Feature 023: source_type 화이트리스트
+        if self.source_type not in _ALLOWED_SOURCE_TYPES:
+            raise PlanValidationError(
+                f"source_type은 {_ALLOWED_SOURCE_TYPES} 중 하나 (현재 {self.source_type!r})"
             )
 
         if not self.narrations:
@@ -176,6 +189,10 @@ class ShortsPlan:
             d["format_reason"] = self.format_reason
         if self.visual_directives:
             d["visual_directives"] = list(self.visual_directives)
+        # Feature 023: source_type은 항상 직렬화 (분기 키로 사용)
+        d["source_type"] = self.source_type
+        if self.youtube_search_keywords:
+            d["youtube_search_keywords"] = list(self.youtube_search_keywords)
         return d
 
     @classmethod
@@ -199,6 +216,16 @@ class ShortsPlan:
             format_type=str(data.get("format_type", data.get("formatType", "A"))),  # type: ignore[arg-type]
             format_reason=str(data.get("format_reason", data.get("formatReason", ""))),
             visual_directives=tuple(vd_raw) if vd_raw else (),
+            # Feature 023: source_type/youtube_search_keywords default fallback → V2 JSON 호환
+            source_type=str(  # type: ignore[arg-type]
+                data.get("source_type", data.get("sourceType", "youtube"))
+            ),
+            youtube_search_keywords=tuple(
+                data.get(
+                    "youtube_search_keywords",
+                    data.get("youtubeSearchKeywords", ()),
+                )
+            ),
         )
 
 

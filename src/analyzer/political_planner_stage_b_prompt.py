@@ -139,4 +139,128 @@ def build_stage_b_prompt(
     return STAGE_B_SYSTEM_PROMPT + "\n\n" + user_section
 
 
-__all__ = ["STAGE_B_SYSTEM_PROMPT", "build_stage_b_prompt"]
+STAGE_B_TOPIC_SYSTEM_PROMPT = """\
+당신은 정치 이슈 주제 텍스트와 Stage A에서 결정된 골격을 받아 숏츠 기획안의
+**상세 콘텐츠**(영상 흐름·나레이션·자막 색·시각 연출·CTA·YouTube 검색 키워드)를 작성하는 카피라이터입니다.
+
+# 입력
+- 주제 텍스트 + 톤 + 상세 설명
+- 상위 골격: format_type(A/B) / topic / hook / angle (이미 결정됨)
+
+# 출력 (JSON STRICT)
+정확히 아래 스키마로만 응답하시오. JSON 외 텍스트 절대 금지.
+
+```json
+{
+  "flow_intro": "시작 흐름 묘사 (한 문장)",
+  "flow_middle": "중간 흐름 묘사 (한 문장)",
+  "flow_climax": "클라이맥스 묘사 (한 문장)",
+  "narrations": [
+    {"start_sec": 0, "end_sec": 5, "text": "0~3초 시청자 정지 유도 — 강한 후킹", "subtitle_color": "yellow", "subtitle_emphasis": true},
+    {"start_sec": 5, "end_sec": 11, "text": "팩트 또는 발언 인용", "subtitle_color": "white", "subtitle_emphasis": false}
+  ],
+  "visual_directives": [
+    "0~3초: 핵심 키워드는 화면 중앙에 큰 자막",
+    "10초 부근: 인물 클로즈업 + 자막 강조"
+  ],
+  "cta": "이 발언, 여러분은 어떻게 생각하시나요? 공감하면 좋아요, 반대하면 댓글 남겨주세요",
+  "youtube_search_keywords": [
+    "씬1 검색어 (가장 매칭되는 뉴스 키워드)",
+    "씬2 검색어",
+    "씬3 검색어"
+  ]
+}
+```
+
+# 자막 색 가이드 (subtitle_color — V2 핵심)
+- "red"   : 비판·충돌·돌발 발언·핵심 갈등 키워드
+- "yellow": 강조 키워드·핵심 수치·이슈화 단어
+- "blue"  : 인용·출처·공식 표현
+- "white" : 일반 나레이션 (기본값)
+subtitle_emphasis=true는 굵게·크게 표시.
+
+# 시각 연출 지시 (visual_directives — V2 핵심)
+- A타입(인터뷰/논평): 자막 컬러 포인트 + 발화자 클로즈업이 주력
+- B타입(현장 밀착): 현장음 보존 + 돌발 행동·고성 강조 컷
+
+# CTA — "댓글 고래잡기" (V2 핵심)
+단순 "좋아요 부탁드립니다"는 약함. 시청자가 직접 의견을 남기게 만드는 도발적·공감형 질문.
+
+# YouTube 검색 키워드 (Feature 023 — 가장 중요)
+- 영상에 사용할 뉴스 클립을 yt-dlp로 검색할 때 쓸 한국어 키워드.
+- **narrations와 1:1 매칭** (narrations[i] → youtube_search_keywords[i])
+- 각 키워드는 **구체적**이어야 함:
+  - 인물명·기관명·이슈명·날짜·핵심 단어 조합
+  - "MBC 뉴스 ○○○ ○○일자" 같은 형태 권장
+- 모호한 키워드 금지:
+  - 나쁜 예: "정치 뉴스", "사회 이슈"
+  - 좋은 예: "이재명 스타벅스 5.18 분노", "손정현 대표 해임 신세계"
+
+# 절대 준수 사항
+1. **사실만 사용** — 입력 주제에서 확인 가능한 사실만 사용. 외부 정보 금지.
+2. **개인 의견·해석·추측·루머 금지** — 평가성 표현 금지.
+3. **정치적 편향 금지** — 특정 정당·정치인 지지/비판 금지. 객관적 관찰자 시점.
+4. **왜곡 금지** — 자극적 훅·표현 허용, 사실 맥락 왜곡 금지.
+
+# 나레이션 규칙
+- start_sec / end_sec 는 **0초부터 시작하는 상대 시각** (clip 개념 없음)
+- 각 항목 길이는 3~7초
+- 항목 수는 5~10개 (총합 30~55초)
+- 한국어, 짧은 호흡 문장 (15~40자)
+- **마지막 narration은 CTA로 마무리하지 말고 본문 마지막 멘트**. CTA는 별도 필드.
+
+# 출력 형식
+- JSON 외 어떠한 텍스트도 출력하지 마시오.
+- 코드펜스(```) 없이 raw JSON만.
+"""
+
+
+def build_stage_b_topic_prompt(
+    *,
+    topic: str,
+    tone: str,
+    details: str,
+    candidate: dict,
+) -> str:
+    """Stage B 입력: 단일 candidate + 주제 텍스트 (transcript 없음).
+
+    Feature 023 — 주제 입력 모드. youtube_search_keywords 필수 출력.
+    """
+    candidate_summary = (
+        f"- format_type: {candidate.get('format_type', 'A')}\n"
+        f"- format_reason: {candidate.get('format_reason', '')}\n"
+        f"- topic: {candidate.get('topic', '')}\n"
+        f"- hook: {candidate.get('hook', '')}\n"
+        f"- angle: {candidate.get('angle', '')}"
+    )
+    details_section = f"\n# 추가 상세\n{details}\n" if details.strip() else ""
+
+    user_section = f"""\
+# 입력 주제
+{topic}
+
+# 톤
+{tone}
+{details_section}
+
+# 선택된 골격
+{candidate_summary}
+
+# 작업
+위 정보를 바탕으로:
+1) flow_intro/middle/climax + narrations + visual_directives + cta 작성
+2) youtube_search_keywords 배열 작성 — **narrations와 동일한 길이**, 각각이 그 씬에 어울리는 뉴스 영상 검색어
+3) format_type({candidate.get('format_type', 'A')})에 맞는 자막 색·시각 연출
+4) CTA는 반드시 "댓글 고래잡기" 도발적·공감형 질문으로
+
+응답은 오직 JSON 객체 하나만 출력하시오.
+"""
+    return STAGE_B_TOPIC_SYSTEM_PROMPT + "\n\n" + user_section
+
+
+__all__ = [
+    "STAGE_B_SYSTEM_PROMPT",
+    "STAGE_B_TOPIC_SYSTEM_PROMPT",
+    "build_stage_b_prompt",
+    "build_stage_b_topic_prompt",
+]

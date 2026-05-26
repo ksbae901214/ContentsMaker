@@ -27,8 +27,14 @@ from src.analyzer.political_plan_models import (
     ThreePlansResult,
 )
 from src.analyzer.political_planner_prompt import build_political_planner_prompt
-from src.analyzer.political_planner_stage_a_prompt import build_stage_a_prompt
-from src.analyzer.political_planner_stage_b_prompt import build_stage_b_prompt
+from src.analyzer.political_planner_stage_a_prompt import (
+    build_stage_a_prompt,
+    build_stage_a_topic_prompt,
+)
+from src.analyzer.political_planner_stage_b_prompt import (
+    build_stage_b_prompt,
+    build_stage_b_topic_prompt,
+)
 from src.analyzer.script_models import (
     AudioConfig,
     BackgroundConfig,
@@ -134,6 +140,148 @@ def generate_three_plans(
     logger.info("기획안 저장: %s", plans_path)
 
     return result
+
+
+# ───────────────── generate_three_plans_from_topic (Feature 023) ─────────────────
+
+
+# topic 모드 더미 clip 값 (YouTube 영상 없음).
+# ShortsPlan dataclass가 clip_end_sec > clip_start_sec를 검증하므로 0/60 사용.
+_TOPIC_DUMMY_CLIP_START_SEC = 0.0
+_TOPIC_DUMMY_CLIP_END_SEC = 60.0
+
+
+def generate_three_plans_from_topic(
+    *,
+    topic: str,
+    tone: str = "분노·격앙",
+    details: str = "",
+    output_dir: Path | None = None,
+) -> ThreePlansResult:
+    """Generate 3 ShortsPlan candidates from a topic text (no YouTube URL).
+
+    Feature 023 — 주제 입력 모드. transcript 없이 topic 텍스트만으로 3개 angle 생성.
+    YouTube 영상 클립은 추후 plan.youtube_search_keywords로 자동 검색하여 매칭.
+
+    Args:
+        topic: 정치 이슈 핵심 주제 (필수).
+        tone: 톤 (예: "분노·격앙", "차분·분석적", "유머·풍자"). 기본 "분노·격앙".
+        details: 추가 상세 (선택).
+        output_dir: plans.json 저장 디렉토리.
+
+    Returns:
+        ThreePlansResult — youtube_url / video_path 등은 빈 문자열, source_type="topic".
+    """
+    if not topic.strip():
+        raise PoliticalPlannerError("topic은 비어 있을 수 없습니다")
+
+    logger.info("정치 기획안 3개 생성 시작 (topic 모드) — %s", topic[:60])
+
+    plans = _generate_three_plans_topic_hybrid(
+        topic=topic,
+        tone=tone,
+        details=details,
+    )
+
+    try:
+        result = ThreePlansResult(
+            plans=plans,
+            youtube_url="",
+            video_path="",
+            video_duration_sec=0.0,
+            transcript_path="",
+            video_title=topic[:80],
+            generated_at=datetime.now().isoformat(timespec="seconds"),
+            video_channel="",
+        )
+    except PlanValidationError as e:
+        raise PoliticalPlannerError(f"3 기획안 검증 실패: {e}") from e
+
+    target_dir = output_dir
+    if target_dir is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        slug = _safe_slug(topic) or "politicalpro_topic"
+        target_dir = DATA_DIR / "political_pro" / f"{timestamp}_{slug}"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    plans_path = target_dir / "plans.json"
+    plans_path.write_text(
+        json.dumps(result.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    logger.info("기획안 저장 (topic 모드): %s", plans_path)
+
+    return result
+
+
+def _generate_three_plans_topic_hybrid(
+    *,
+    topic: str,
+    tone: str,
+    details: str,
+) -> tuple[ShortsPlan, ShortsPlan, ShortsPlan]:
+    """topic 모드: Stage A (Gemini) → Stage B (Claude) × 3 (병렬).
+
+    Stage A: topic + tone + details → 3 angle 후보 (clip 정보 없음).
+    Stage B: 각 후보 → narrations + youtube_search_keywords + 시각 연출.
+
+    Bug fix (2026-05-26): Stage B 3회 호출을 ThreadPoolExecutor로 병렬화.
+    순차(45~60s) → 병렬(~20s)로 단축. Safari fetch 60초 timeout 회피.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    logger.info("Stage A (topic): Gemini로 3 angle 후보 추출 중...")
+    candidates = _stage_a_topic_gemini(topic=topic, tone=tone, details=details)
+    logger.info("Stage A 완료: %d개 후보", len(candidates))
+
+    def _run_stage_b(idx_candidate: tuple[int, dict]) -> tuple[int, dict, dict]:
+        idx, candidate = idx_candidate
+        logger.info("Stage B[%d/%d] 시작 (angle=%s)",
+                     idx + 1, len(candidates), candidate.get("angle"))
+        data = _stage_b_topic_claude(
+            topic=topic, tone=tone, details=details, candidate=candidate,
+        )
+        return idx, candidate, data
+
+    # 3개 후보 동시 호출 — Claude CLI는 IO-bound이므로 ThreadPool이면 충분.
+    with ThreadPoolExecutor(max_workers=len(candidates)) as pool:
+        results = list(pool.map(_run_stage_b, enumerate(candidates)))
+
+    # idx 순서로 정렬 (병렬 실행 결과 순서 보존)
+    results.sort(key=lambda r: r[0])
+
+    plans: list[ShortsPlan] = []
+    for idx, candidate, details_data in results:
+        merged = {
+            "topic": candidate.get("topic", ""),
+            "hook": candidate.get("hook", ""),
+            # topic 모드: clip 정보 없음 → 더미값 (검증 통과 + downstream에서 무시됨)
+            "clip_start_sec": _TOPIC_DUMMY_CLIP_START_SEC,
+            "clip_end_sec": _TOPIC_DUMMY_CLIP_END_SEC,
+            "clip_reason": "topic 모드 — YouTube 영상 없음",
+            "flow_intro": details_data.get("flow_intro", ""),
+            "flow_middle": details_data.get("flow_middle", ""),
+            "flow_climax": details_data.get("flow_climax", ""),
+            "narrations": details_data.get("narrations", []),
+            "cta": details_data.get("cta", ""),
+            "angle": candidate.get("angle", ""),
+            "format_type": candidate.get("format_type", "A"),
+            "format_reason": candidate.get("format_reason", ""),
+            "visual_directives": details_data.get("visual_directives", []),
+            # Feature 023 핵심: source_type + youtube 검색 키워드
+            "source_type": "topic",
+            "youtube_search_keywords": details_data.get("youtube_search_keywords", []),
+        }
+        try:
+            plans.append(ShortsPlan.from_dict(merged))
+        except PlanValidationError as e:
+            raise PoliticalPlannerError(
+                f"Stage B 후보 {idx + 1} 병합 결과 검증 실패: {e}"
+            ) from e
+
+    if len(plans) != 3:
+        raise PoliticalPlannerError(f"3개 plan 필요, {len(plans)}개 생성됨")
+
+    return plans[0], plans[1], plans[2]
 
 
 def _generate_three_plans_legacy(
@@ -327,7 +475,28 @@ def _stage_a_gemini(
 
     client = genai.Client(api_key=api_key)
     last_error: Exception | None = None
-    for attempt in (1, 2):
+    # 2026-05-20: 지수 backoff 강화. 503/429 high demand 시간대 회복 시간 확보.
+    # 일시적 오류는 추가 2배 대기 (총 최대 ~100초).
+    import time as _time
+    _BACKOFF = (1.0, 5.0, 15.0, 30.0)
+    _MAX_ATTEMPTS = 5
+
+    def _is_transient(err: Exception) -> bool:
+        s = str(err)
+        return any(t in s for t in (
+            "503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED",
+            "DEADLINE", "INTERNAL", "TIMEOUT", "timeout",
+        ))
+
+    def _backoff_sleep(attempt_idx: int, err: Exception) -> None:
+        idx = min(attempt_idx, len(_BACKOFF) - 1)
+        wait = _BACKOFF[idx]
+        if _is_transient(err):
+            wait *= 2
+        logger.info("Stage A 재시도 %.1fs 대기...", wait)
+        _time.sleep(wait)
+
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
         try:
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
@@ -339,7 +508,10 @@ def _stage_a_gemini(
             )
         except Exception as e:
             last_error = e
-            logger.warning("Stage A Gemini 호출 실패 (시도 %d/2): %s", attempt, e)
+            logger.warning("Stage A Gemini 호출 실패 (시도 %d/%d): %s",
+                           attempt, _MAX_ATTEMPTS, e)
+            if attempt < _MAX_ATTEMPTS:
+                _backoff_sleep(attempt - 1, e)
             continue
 
         cand = response.candidates[0] if response.candidates else None
@@ -347,7 +519,9 @@ def _stage_a_gemini(
             last_error = PoliticalPlannerError(
                 f"Gemini 빈 응답 (finish_reason={getattr(cand, 'finish_reason', 'N/A')})"
             )
-            logger.warning("Stage A 빈 응답 (시도 %d/2)", attempt)
+            logger.warning("Stage A 빈 응답 (시도 %d/%d)", attempt, _MAX_ATTEMPTS)
+            if attempt < _MAX_ATTEMPTS:
+                _backoff_sleep(attempt - 1, last_error)
             continue
 
         raw = cand.content.parts[0].text or ""
@@ -355,7 +529,10 @@ def _stage_a_gemini(
             data = _extract_json_object(raw)
         except PoliticalPlannerError as e:
             last_error = e
-            logger.warning("Stage A JSON 파싱 실패 (시도 %d/2): %s", attempt, e)
+            logger.warning("Stage A JSON 파싱 실패 (시도 %d/%d): %s",
+                           attempt, _MAX_ATTEMPTS, e)
+            if attempt < _MAX_ATTEMPTS:
+                _backoff_sleep(attempt - 1, e)
             continue
 
         candidates = data.get("candidates") if isinstance(data, dict) else None
@@ -363,7 +540,10 @@ def _stage_a_gemini(
             last_error = PoliticalPlannerError(
                 f"Stage A: candidates 배열(3개) 누락 — got {type(candidates).__name__}"
             )
-            logger.warning("Stage A schema 위반 (시도 %d/2): %s", attempt, last_error)
+            logger.warning("Stage A schema 위반 (시도 %d/%d): %s",
+                           attempt, _MAX_ATTEMPTS, last_error)
+            if attempt < _MAX_ATTEMPTS:
+                _backoff_sleep(attempt - 1, last_error)
             continue
 
         # 각 항목에 angle/topic/hook/clip_*가 있는지 최소 검증
@@ -383,8 +563,219 @@ def _stage_a_gemini(
         else:
             return candidates
 
+    # 모든 API 시도 실패 — 일시적 오류면 웹 자동화 폴백 시도.
+    if last_error is not None and _is_transient(last_error) \
+            and os.environ.get("GEMINI_WEB_FALLBACK", "1") != "0":
+        logger.warning(
+            "Stage A API %d회 모두 실패(일시적) — 웹 자동화 폴백 시도...",
+            _MAX_ATTEMPTS,
+        )
+        try:
+            from src.analyzer.gemini_web_chat import chat as _web_chat
+            raw = _web_chat(prompt, json_mode=True)
+            data = _extract_json_object(raw)
+            candidates = data.get("candidates") if isinstance(data, dict) else None
+            if isinstance(candidates, list) and len(candidates) == 3:
+                for c in candidates:
+                    c.setdefault("format_type", "A")
+                    c.setdefault("format_reason", "")
+                    missing = [k for k in ("topic", "hook", "clip_start_sec",
+                                            "clip_end_sec", "angle") if k not in c]
+                    if missing:
+                        raise PoliticalPlannerError(
+                            f"Stage A 웹 폴백: 필드 {missing!r} 누락"
+                        )
+                logger.info("✅ Stage A 웹 자동화 폴백 성공")
+                return candidates
+            raise PoliticalPlannerError(
+                f"Stage A 웹 폴백: candidates 배열(3개) 누락 "
+                f"— got {type(candidates).__name__}"
+            )
+        except Exception as web_err:
+            logger.warning("Stage A 웹 폴백도 실패: %s", web_err)
+            raise PoliticalPlannerError(
+                f"Stage A API {_MAX_ATTEMPTS}회 실패 + 웹 폴백 실패: "
+                f"api={last_error} web={web_err}"
+            ) from web_err
+
     raise PoliticalPlannerError(
-        f"Stage A (Gemini) 실패 (2회 시도 모두): {last_error}"
+        f"Stage A (Gemini) 실패 ({_MAX_ATTEMPTS}회 시도 모두): {last_error}"
+    )
+
+
+def _stage_a_topic_gemini(
+    *,
+    topic: str,
+    tone: str,
+    details: str,
+) -> list[dict]:
+    """Stage A (topic 모드): Gemini API로 주제 텍스트 → 3 angle 후보.
+
+    Returns: list of dicts with format_type, format_reason, topic, hook, angle.
+             clip_* 필드는 없음 (topic 모드는 YouTube 영상 없음).
+    """
+    import os
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        raise PoliticalPlannerError(
+            "GEMINI_API_KEY 환경변수가 설정되지 않았습니다 "
+            "(political_pro topic 모드는 Stage A에 Gemini 필요)."
+        )
+
+    try:
+        from google import genai
+        from google.genai import types
+    except ImportError as e:
+        raise PoliticalPlannerError(f"google-genai 패키지 미설치: {e}") from e
+
+    prompt = build_stage_a_topic_prompt(topic=topic, tone=tone, details=details)
+
+    client = genai.Client(api_key=api_key)
+    last_error: Exception | None = None
+    import time as _time
+    _BACKOFF = (1.0, 5.0, 15.0, 30.0)
+    _MAX_ATTEMPTS = 5
+
+    def _is_transient(err: Exception) -> bool:
+        s = str(err)
+        return any(t in s for t in (
+            "503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED",
+            "DEADLINE", "INTERNAL", "TIMEOUT", "timeout",
+        ))
+
+    def _backoff_sleep(attempt_idx: int, err: Exception) -> None:
+        idx = min(attempt_idx, len(_BACKOFF) - 1)
+        wait = _BACKOFF[idx]
+        if _is_transient(err):
+            wait *= 2
+        logger.info("Stage A (topic) 재시도 %.1fs 대기...", wait)
+        _time.sleep(wait)
+
+    def _validate_candidates(raw_candidates) -> list[dict] | None:
+        if not isinstance(raw_candidates, list) or len(raw_candidates) != 3:
+            return None
+        for c in raw_candidates:
+            if not isinstance(c, dict):
+                return None
+            c.setdefault("format_type", "A")
+            c.setdefault("format_reason", "")
+            for k in ("topic", "hook", "angle"):
+                if k not in c:
+                    return None
+        return raw_candidates
+
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.4,
+                    response_mime_type="application/json",
+                ),
+            )
+        except Exception as e:
+            last_error = e
+            logger.warning("Stage A (topic) Gemini 호출 실패 (시도 %d/%d): %s",
+                           attempt, _MAX_ATTEMPTS, e)
+            if attempt < _MAX_ATTEMPTS:
+                _backoff_sleep(attempt - 1, e)
+            continue
+
+        cand = response.candidates[0] if response.candidates else None
+        if not cand or not cand.content or not cand.content.parts:
+            last_error = PoliticalPlannerError("Gemini 빈 응답")
+            if attempt < _MAX_ATTEMPTS:
+                _backoff_sleep(attempt - 1, last_error)
+            continue
+
+        raw = cand.content.parts[0].text or ""
+        try:
+            data = _extract_json_object(raw)
+        except PoliticalPlannerError as e:
+            last_error = e
+            if attempt < _MAX_ATTEMPTS:
+                _backoff_sleep(attempt - 1, e)
+            continue
+
+        candidates = data.get("candidates") if isinstance(data, dict) else None
+        validated = _validate_candidates(candidates)
+        if validated is not None:
+            return validated
+
+        last_error = PoliticalPlannerError(
+            f"Stage A (topic): candidates 배열 검증 실패 — got {type(candidates).__name__}"
+        )
+        if attempt < _MAX_ATTEMPTS:
+            _backoff_sleep(attempt - 1, last_error)
+
+    # Web fallback
+    if last_error is not None and _is_transient(last_error) \
+            and os.environ.get("GEMINI_WEB_FALLBACK", "1") != "0":
+        logger.warning("Stage A (topic) API 실패 — 웹 자동화 폴백 시도...")
+        try:
+            from src.analyzer.gemini_web_chat import chat as _web_chat
+            raw = _web_chat(prompt, json_mode=True)
+            data = _extract_json_object(raw)
+            candidates = data.get("candidates") if isinstance(data, dict) else None
+            validated = _validate_candidates(candidates)
+            if validated is not None:
+                logger.info("✅ Stage A (topic) 웹 자동화 폴백 성공")
+                return validated
+            raise PoliticalPlannerError(
+                f"Stage A (topic) 웹 폴백: 검증 실패 — got {type(candidates).__name__}"
+            )
+        except Exception as web_err:
+            logger.warning("Stage A (topic) 웹 폴백도 실패: %s", web_err)
+            raise PoliticalPlannerError(
+                f"Stage A (topic) API+웹 모두 실패: api={last_error} web={web_err}"
+            ) from web_err
+
+    raise PoliticalPlannerError(
+        f"Stage A (topic, Gemini) 실패 ({_MAX_ATTEMPTS}회 시도 모두): {last_error}"
+    )
+
+
+def _stage_b_topic_claude(
+    *,
+    topic: str,
+    tone: str,
+    details: str,
+    candidate: dict,
+) -> dict:
+    """Stage B (topic 모드): Claude로 단일 candidate의 narrations + 검색어 생성."""
+    prompt = build_stage_b_topic_prompt(
+        topic=topic, tone=tone, details=details, candidate=candidate,
+    )
+    last_error: Exception | None = None
+    for attempt in (1, 2):
+        try:
+            raw = _call_claude(prompt)
+        except AnalyzerError as e:
+            last_error = e
+            logger.warning("Stage B (topic) Claude 호출 실패 (시도 %d/2): %s", attempt, e)
+            continue
+        try:
+            data = _extract_json_object(raw)
+        except PoliticalPlannerError as e:
+            last_error = e
+            continue
+        if not isinstance(data, dict):
+            last_error = PoliticalPlannerError("Stage B (topic): 응답이 dict 아님")
+            continue
+        for k in ("flow_intro", "flow_middle", "flow_climax", "narrations", "cta"):
+            if k not in data:
+                last_error = PoliticalPlannerError(f"Stage B (topic): 필드 {k!r} 누락")
+                break
+        else:
+            # youtube_search_keywords가 없으면 빈 리스트로 보강 (downstream에서 폴백 처리)
+            data.setdefault("youtube_search_keywords", [])
+            data.setdefault("visual_directives", [])
+            return data
+        logger.warning("Stage B (topic) schema 위반 (시도 %d/2)", attempt)
+
+    raise PoliticalPlannerError(
+        f"Stage B (topic, Claude) 실패 (2회 시도 모두): {last_error}"
     )
 
 
@@ -523,14 +914,21 @@ def plan_to_script(
     - 각 Narration → Scene (≤ MAX_SCENE_DURATION_SECONDS, 자동 분할)
     - CTA → 마지막 추가 씬
     - source_type = "political_pro"
-    - clip_end_sec ≤ video_duration_sec 클램프 (FR-013)
+    - youtube 모드: clip_end_sec ≤ video_duration_sec 클램프 (FR-013)
+    - topic 모드 (Feature 023): clip clamp 스킵 — plan.clip_*는 더미값
     """
-    clip_start = max(0.0, plan.clip_start_sec)
-    clip_end = min(plan.clip_end_sec, video_duration_sec)
-    if clip_end <= clip_start:
-        raise PoliticalPlannerError(
-            f"클램프 후 clip 범위가 유효하지 않음 (start={clip_start}, end={clip_end})"
-        )
+    is_topic = getattr(plan, "source_type", "youtube") == "topic"
+
+    if is_topic:
+        # topic 모드: plan.clip_*는 더미 (0/60). 검증·클램프 모두 스킵.
+        clip_start, clip_end = 0.0, max(plan.clip_end_sec, 60.0)
+    else:
+        clip_start = max(0.0, plan.clip_start_sec)
+        clip_end = min(plan.clip_end_sec, video_duration_sec)
+        if clip_end <= clip_start:
+            raise PoliticalPlannerError(
+                f"클램프 후 clip 범위가 유효하지 않음 (start={clip_start}, end={clip_end})"
+            )
 
     emotion = "angry"  # 정치 모드 기본 — 강한 톤
     vc = get_voice_config(emotion)
@@ -657,5 +1055,6 @@ def plan_to_script(
 __all__ = [
     "PoliticalPlannerError",
     "generate_three_plans",
+    "generate_three_plans_from_topic",
     "plan_to_script",
 ]

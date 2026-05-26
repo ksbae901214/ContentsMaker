@@ -433,6 +433,7 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
     from src.analyzer.political_planner import (
         PoliticalPlannerError,
         generate_three_plans,
+        generate_three_plans_from_topic,
         plan_to_script,
     )
     from src.config.settings import DATA_DIR
@@ -443,9 +444,46 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
         transcribe_video_or_fallback,
     )
 
+    source_type = getattr(args, "source_type", "youtube")
+
+    # Feature 023: topic 모드 분기 — YouTube 다운로드 + transcript 단계 스킵.
+    if source_type == "topic":
+        topic_text = (getattr(args, "topic", "") or "").strip()
+        if not topic_text:
+            print("❌ --source-type topic 사용 시 --topic 인자 필수", file=sys.stderr)
+            return 2
+
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_dir = DATA_DIR / "political_pro" / f"{ts}_cli_topic"
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        print(f"🤔 3개 기획안 생성 중 (topic 모드, Hybrid: Gemini + Claude)...",
+              file=sys.stderr)
+        try:
+            result = generate_three_plans_from_topic(
+                topic=topic_text,
+                tone=getattr(args, "tone", "분노·격앙"),
+                details=getattr(args, "details", "") or "",
+                output_dir=out_dir,
+            )
+        except PoliticalPlannerError as e:
+            print(f"❌ topic 기획안 생성 실패: {e}", file=sys.stderr)
+            return 5
+
+        if args.plans_only:
+            print(_json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+            return 0
+
+        # topic 모드: 영상 다운로드·cut은 web UI 흐름에서 처리. CLI는 기획안 출력까지만.
+        # (CLI에서 영상까지 만들고 싶다면 별도 작업 필요 — 추후 확장)
+        print("\n💡 topic 모드 CLI는 기획안 출력까지만 지원. "
+              "영상 생성은 웹 UI에서 진행하세요.", file=sys.stderr)
+        print(_json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+
     url = args.youtube_url.strip()
     if not url.startswith(("https://", "http://")):
-        print("❌ 유효한 URL이 아닙니다", file=sys.stderr)
+        print("❌ 유효한 URL이 아닙니다 (source-type=youtube)", file=sys.stderr)
         return 2
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -618,6 +656,49 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
         file=sys.stderr,
     )
     print(str(mp4))  # stdout: 최종 mp4 경로 (스크립팅용)
+    return 0
+
+
+def cmd_daily_briefing(args: argparse.Namespace) -> int:
+    """매일 정치 이슈 자동 브리핑 + 기획안 (Feature 020).
+
+    어제(KST) YouTube 정치 채널 + 네이버 뉴스 → 클러스터링 → 점수화 →
+    상위 N개 이슈에 generate_three_plans 자동 호출.
+    """
+    print("🗞️  매일 정치 이슈 브리핑 시작...", file=sys.stderr)
+    try:
+        from src.briefing.plan_runner import run_briefing
+        result = run_briefing(top_n=args.top, date_str=args.date)
+    except Exception as e:
+        print(f"\n❌ 브리핑 실패: {e}", file=sys.stderr)
+        return 1
+
+    print(
+        f"\n✅ 브리핑 완료 — date={result.date}, "
+        f"채널 {result.channel_count}개, "
+        f"영상 {result.raw_video_count}개, "
+        f"기사 {result.raw_news_count}개 수집",
+        file=sys.stderr,
+    )
+    print(f"\n📊 상위 {min(args.top, len(result.ranked_issues))} 이슈:", file=sys.stderr)
+    for ri in result.ranked_issues[: args.top]:
+        topv = ri.cluster.top_video
+        print(
+            f"  [{ri.rank}] score={ri.score:>10,.0f}  "
+            f"{ri.cluster.topic}  "
+            f"(영상 {len(ri.cluster.videos)}, 기사 {len(ri.cluster.news)})",
+            file=sys.stderr,
+        )
+        if topv:
+            print(
+                f"        대표: {topv.url}  ({topv.view_count:,}회 · {topv.comment_count:,}댓글)",
+                file=sys.stderr,
+            )
+    from src.briefing.plan_runner import BRIEFING_DATA_DIR
+    print(
+        f"\n📁 결과: {BRIEFING_DATA_DIR / result.date}",
+        file=sys.stderr,
+    )
     return 0
 
 
@@ -1147,13 +1228,41 @@ def build_parser() -> argparse.ArgumentParser:
              "({\"1\": \"/path/a.jpg\", \"2\": ...}). 지정 시 네이버 재검색 없이 이 "
              "파일들을 각 씬에 주입.",
     )
+    celebrity_parser.add_argument(
+        "--image-gem", type=str, metavar="KEY", default=None,
+        help="이미지 생성에 사용할 Gem 키 (e.g. webtoon). "
+             "지정 시 해당 Gem으로 이동 후 씬 내용만 전송.",
+    )
+    celebrity_parser.add_argument(
+        "--video-gem", type=str, metavar="KEY", default=None,
+        help="영상 생성에 사용할 Gem 키 (e.g. news, drama).",
+    )
 
     # political-pro subcommand — Feature 009 (정치 숏츠 기획자)
     political_pro_parser = subparsers.add_parser(
         "political-pro",
         help="정치 YouTube 영상 → 3 기획안(RTF 6요소) → 1 선택 → 9:16 쇼츠",
     )
-    political_pro_parser.add_argument("youtube_url", type=str, help="YouTube URL")
+    political_pro_parser.add_argument(
+        "youtube_url", type=str, nargs="?", default="",
+        help="YouTube URL (source-type=youtube 일 때 필수, topic 일 때 무시)",
+    )
+    political_pro_parser.add_argument(
+        "--source-type", type=str, choices=["youtube", "topic"], default="youtube",
+        help="입력 소스: youtube(기존) / topic(주제 텍스트만, Feature 023)",
+    )
+    political_pro_parser.add_argument(
+        "--topic", type=str, default="",
+        help="주제 텍스트 (source-type=topic 일 때 필수)",
+    )
+    political_pro_parser.add_argument(
+        "--tone", type=str, default="분노·격앙",
+        help="기획 톤 (source-type=topic 일 때 사용). 기본: '분노·격앙'",
+    )
+    political_pro_parser.add_argument(
+        "--details", type=str, default="",
+        help="추가 상세 정보 (source-type=topic 일 때 사용)",
+    )
     political_pro_parser.add_argument(
         "--plan-idx", type=int, choices=[0, 1, 2], default=None,
         help="비인터랙티브 모드: 사용할 plan 인덱스 (0/1/2)",
@@ -1174,6 +1283,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     political_pro_parser.add_argument(
         "--no-sfx", action="store_true", help="효과음 비활성화",
+    )
+    political_pro_parser.add_argument(
+        "--video-gem", type=str, metavar="KEY", default=None,
+        help="영상 생성에 사용할 Gem 키 (e.g. news, drama).",
     )
 
     # crawl subcommand (P2 placeholder)
@@ -1196,6 +1309,20 @@ def build_parser() -> argparse.ArgumentParser:
         "youtube-auth", help="YouTube API OAuth 인증 (최초 1회)"
     )
 
+    # daily-briefing subcommand (Feature 020) — 매일 정치 이슈 자동 브리핑
+    briefing_parser = subparsers.add_parser(
+        "daily-briefing",
+        help="어제(KST) 정치 YouTube + 네이버 뉴스 → 핫한 순 N개 이슈 기획안 자동 생성",
+    )
+    briefing_parser.add_argument(
+        "--top", type=int, default=5,
+        help="기획안 생성할 상위 이슈 수 (default: 5)",
+    )
+    briefing_parser.add_argument(
+        "--date", type=str, default=None,
+        help="명시적 어제 날짜 (YYYY-MM-DD). 미지정 시 KST 기준 자동 계산",
+    )
+
     # tiktok-auth subcommand
     subparsers.add_parser(
         "tiktok-auth", help="TikTok API OAuth 인증 (최초 1회)"
@@ -1213,6 +1340,35 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "freepik_login",
         help="Freepik 1회 수동 로그인 (브라우저 자동화 영상 생성용)",
+    )
+
+    # gemini_login subcommand (Phase 2A/2B: Imagen 4 + Veo 3 web automation)
+    subparsers.add_parser(
+        "gemini_login",
+        help="gemini.google.com 1회 수동 로그인 (Imagen 4 / Veo 3 자동화용)",
+    )
+
+    # gems subcommand — Gemini Gems 프롬프트 프리셋 관리
+    gems_parser = subparsers.add_parser(
+        "gems",
+        help="Gemini Gems 프리셋 관리 (list / show-prompt)",
+    )
+    gems_sub = gems_parser.add_subparsers(dest="gems_action")
+    gems_sub.add_parser("list", help="등록된 Gem 목록 출력")
+    gems_show = gems_sub.add_parser(
+        "show-prompt",
+        help="Gem 지침 텍스트 출력 (Gemini Gem 생성 시 붙여넣기용)",
+    )
+    gems_show.add_argument(
+        "key",
+        type=str,
+        help="Gem 키 (e.g. webtoon, news, drama)",
+    )
+    gems_show.add_argument(
+        "--kind",
+        choices=["image", "video"],
+        default="image",
+        help="Gem 종류 (기본: image)",
     )
 
     return parser
@@ -1237,6 +1393,7 @@ def main() -> int:
         "url": cmd_url,
         "celebrity": cmd_celebrity,
         "political-pro": cmd_political_pro,
+        "daily-briefing": cmd_daily_briefing,
     }
 
     handler = commands.get(args.command)
@@ -1273,7 +1430,72 @@ def main() -> int:
         from src.video_gen.freepik_gen import run_interactive_login as freepik_login
         return freepik_login()
 
+    if args.command == "gemini_login":
+        from src.illustrator.gemini_web_login import run_interactive_login as gemini_login
+        return gemini_login()
+
+    if args.command == "gems":
+        return _cmd_gems(args)
+
     return 0
+
+
+def _cmd_gems(args: argparse.Namespace) -> int:
+    """Gemini Gems 프리셋 관리 커맨드."""
+    from src.illustrator.gem_navigator import (
+        list_gems,
+        get_gem_config,
+        get_system_prompt_text,
+        GemNotFoundError,
+    )
+
+    action = getattr(args, "gems_action", None)
+
+    if not action or action == "list":
+        gems = list_gems()
+        print("\n📋 등록된 Gemini Gems 프리셋\n")
+        for kind, items in gems.items():
+            label = "🖼️  이미지 Gems" if kind == "image" else "🎬 영상 Gems"
+            print(f"{label}")
+            if not items:
+                print("  (없음)")
+            for item in items:
+                print(f"  [{item['key']}]  {item['gem_name']}  —  {item['description']}")
+        print()
+        print("사용 예시:")
+        print("  python3 -m src.main celebrity 손흥민 --image-gem webtoon")
+        print("  python3 -m src.main political-pro URL --video-gem news")
+        print()
+        print("Gem 지침 보기:")
+        print("  python3 -m src.main gems show-prompt webtoon --kind image")
+        print("  python3 -m src.main gems show-prompt news --kind video")
+        return 0
+
+    if action == "show-prompt":
+        key = args.key
+        kind = args.kind
+        try:
+            gem_cfg = get_gem_config(kind, key)
+        except GemNotFoundError as e:
+            print(f"\n❌ {e}", file=sys.stderr)
+            return 1
+
+        gem_name = gem_cfg["gem_name"]
+        prompt_file = gem_cfg.get("prompt_file", "")
+        prompt_text = get_system_prompt_text(prompt_file) if prompt_file else "(지침 파일 미등록)"
+
+        print(f"\n📋 Gem 지침: [{kind}/{key}]  {gem_name}")
+        print("─" * 60)
+        print("아래 내용을 복사하여 gemini.google.com/gems 에서")
+        print(f"새 Gem 이름을 '{gem_name}' 으로 설정하고 지침란에 붙여넣으세요.")
+        print("─" * 60)
+        print()
+        print(prompt_text)
+        print()
+        return 0
+
+    print(f"❌ 알 수 없는 gems 액션: {action}", file=sys.stderr)
+    return 1
 
 
 def _download_celebrity_portrait_candidates(

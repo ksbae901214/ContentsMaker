@@ -28,6 +28,9 @@ interface ReviewPayload {
     clipStartSec: number;
     clipEndSec: number;
     youtubeUrl: string;
+    // Feature 023: 주제 입력 모드 식별 + 씬별 YouTube 검색 키워드
+    planSourceType?: "youtube" | "topic";
+    youtubeSearchKeywords?: string[];
   };
 }
 interface Stats { imageCount: number; videoCount: number; audioCount: number; scriptCount: number; imageCost: number; videoSizeMB: number; }
@@ -45,6 +48,11 @@ export default function Home() {
   const [politicalProTitle, setPoliticalProTitle] = useState("");
   const [politicalProLoading, setPoliticalProLoading] = useState(false);
   const [politicalProError, setPoliticalProError] = useState("");
+  // Feature 023: 주제 입력 모드 토글 + 입력값
+  const [politicalProSource, setPoliticalProSource] = useState<"youtube"|"topic">("youtube");
+  const [politicalProTopic, setPoliticalProTopic] = useState("");
+  const [politicalProTone, setPoliticalProTone] = useState("분노·격앙");
+  const [politicalProDetails, setPoliticalProDetails] = useState("");
   const [natvClipUrl, setNavtClipUrl] = useState("");
   const [natvUseTts, setNavtUseTts] = useState(false);
   const [natvTone, setNavtTone] = useState<"angry"|"funny"|"touching"|"relatable">("angry");
@@ -772,20 +780,75 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Political Pro tab (Feature 009) — 3 기획안 비교 → 1 선택 → 검수 → 영상 */}
+      {/* Political Pro tab (Feature 009 + 023) — 3 기획안 비교 → 1 선택 → 검수 → 영상 */}
       <div className="space-y-4" style={{display:tab==="political_pro"?"block":"none"}}>
         {!politicalProPlans && (
           <>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">YouTube URL *</label>
-              <input
-                value={politicalProUrl}
-                onChange={e=>setPoliticalProUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-              />
-              <p className="text-xs text-gray-500 mt-1">정치 영상 URL을 붙여넣으면 RTF 영상생성지침 6요소(주제/Hook/구간/흐름/나레이션/CTA) 구조의 3개 기획안을 비교 제시합니다.</p>
+            {/* Feature 023: 입력 모드 토글 */}
+            <div className="flex gap-2 bg-gray-800/50 p-1 rounded-lg">
+              <button
+                onClick={()=>setPoliticalProSource("youtube")}
+                className={`flex-1 py-2 text-xs rounded-md transition ${politicalProSource==="youtube" ? "bg-rose-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                📺 YouTube URL
+              </button>
+              <button
+                onClick={()=>setPoliticalProSource("topic")}
+                className={`flex-1 py-2 text-xs rounded-md transition ${politicalProSource==="topic" ? "bg-rose-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                ✏️ 주제 입력
+              </button>
             </div>
+
+            {politicalProSource === "youtube" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">YouTube URL *</label>
+                <input
+                  value={politicalProUrl}
+                  onChange={e=>setPoliticalProUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">정치 영상 URL을 붙여넣으면 RTF 6요소(주제/Hook/구간/흐름/나레이션/CTA) 구조의 3개 기획안을 비교 제시합니다.</p>
+              </div>
+            )}
+
+            {politicalProSource === "topic" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">주제 *</label>
+                  <textarea
+                    value={politicalProTopic}
+                    onChange={e=>setPoliticalProTopic(e.target.value)}
+                    placeholder="예: 스타벅스 5·18 탱크데이 논란 — 5월 18일 광주민주화운동 기념일에 탱크 텀블러를 출시해 정치권·시민이 분노한 사건"
+                    rows={3}
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">YouTube 원본 영상 없이 주제 텍스트만으로 3 기획안 생성. 영상 클립은 키워드별 자동 검색.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">톤</label>
+                  <select
+                    value={politicalProTone}
+                    onChange={e=>setPoliticalProTone(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-sm">
+                    <option value="분노·격앙">분노·격앙 (강한 비판)</option>
+                    <option value="차분·분석적">차분·분석적 (추적 검증형)</option>
+                    <option value="유머·풍자">유머·풍자</option>
+                    <option value="공감·연대">공감·연대</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">추가 상세 (선택)</label>
+                  <textarea
+                    value={politicalProDetails}
+                    onChange={e=>setPoliticalProDetails(e.target.value)}
+                    placeholder="포함해야 할 인물/날짜/세부 사실. 예: 손정현 대표 해임, 이재명 대통령 분노, '책상에 탁' 박종철 사건 연관 등"
+                    rows={2}
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+                  />
+                </div>
+              </>
+            )}
+
             <div className="text-xs text-yellow-400/80 bg-yellow-900/20 border border-yellow-800 rounded-lg p-3">
               ⚠️ 정치 중립 가드는 프롬프트에 명시되어 있으나, 출력 결과는 게시 전 반드시 직접 검수하세요.
             </div>
@@ -796,14 +859,24 @@ export default function Home() {
             )}
             <button
               onClick={async ()=>{
-                if(!politicalProUrl.trim()) return;
+                const isTopic = politicalProSource === "topic";
+                const inputValid = isTopic ? politicalProTopic.trim() : politicalProUrl.trim();
+                if (!inputValid) return;
                 setPoliticalProLoading(true);
                 setPoliticalProError("");
                 try {
+                  const body = isTopic
+                    ? {
+                        sourceType: "topic",
+                        topic: politicalProTopic.trim(),
+                        tone: politicalProTone,
+                        details: politicalProDetails.trim(),
+                      }
+                    : { sourceType: "youtube", youtubeUrl: politicalProUrl.trim() };
                   const res = await fetch("/api/political-pro/plans", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ youtubeUrl: politicalProUrl.trim() }),
+                    body: JSON.stringify(body),
                   });
                   const data = await res.json();
                   if (!res.ok) {
@@ -812,19 +885,39 @@ export default function Home() {
                     setPoliticalProPlans(data.plans);
                     setPoliticalProVideoPath(data.video_path || data.videoPath || "");
                     setPoliticalProVideoDuration(data.video_duration_sec || data.videoDurationSec || 0);
-                    setPoliticalProYoutubeUrl(data.youtube_url || data.youtubeUrl || politicalProUrl.trim());
+                    // topic 모드는 youtube_url이 빈 문자열 — fallback으로 입력 주제 보관
+                    setPoliticalProYoutubeUrl(data.youtube_url || data.youtubeUrl || (isTopic ? "" : politicalProUrl.trim()));
                     setPoliticalProChannel(data.video_channel || data.videoChannel || "");
-                    setPoliticalProTitle(data.video_title || data.videoTitle || "");
+                    setPoliticalProTitle(data.video_title || data.videoTitle || (isTopic ? politicalProTopic.trim().slice(0, 80) : ""));
                   }
                 } catch (e: any) {
-                  setPoliticalProError(`네트워크 실패: ${e.message}`);
+                  // Safari fetch는 ~60초 무응답 시 'Load failed' 던짐. 사용자에게 원인 안내.
+                  const msg = (e?.message || String(e));
+                  const isTimeout = /load failed|timed?\s*out|aborted/i.test(msg);
+                  setPoliticalProError(
+                    isTimeout
+                      ? `네트워크 시간 초과 (${msg}). 서버는 계속 처리 중일 수 있으니 30초 후 새로고침 후 동일 입력으로 재시도하거나, 브라우저를 Chrome으로 바꿔보세요.`
+                      : `네트워크 실패: ${msg}`,
+                  );
                 } finally {
                   setPoliticalProLoading(false);
                 }
               }}
-              disabled={!politicalProUrl.trim() || politicalProLoading}
-              className={`w-full py-3 rounded-lg font-medium transition ${politicalProUrl.trim() && !politicalProLoading ? "bg-rose-600 hover:bg-rose-500" : "bg-gray-700 text-gray-500 cursor-not-allowed"}`}>
-              {politicalProLoading ? "⏳ 3 기획안 생성 중 (~90초)..." : "🏛️ 3 기획안 생성"}
+              disabled={
+                politicalProLoading
+                || (politicalProSource === "youtube" && !politicalProUrl.trim())
+                || (politicalProSource === "topic" && !politicalProTopic.trim())
+              }
+              className={`w-full py-3 rounded-lg font-medium transition ${
+                !politicalProLoading
+                && ((politicalProSource === "youtube" && politicalProUrl.trim())
+                    || (politicalProSource === "topic" && politicalProTopic.trim()))
+                ? "bg-rose-600 hover:bg-rose-500"
+                : "bg-gray-700 text-gray-500 cursor-not-allowed"
+              }`}>
+              {politicalProLoading
+                ? (politicalProSource === "topic" ? "⏳ 주제 분석 + 3 기획안 생성 중 (~30초, 끊지 마세요)..." : "⏳ 3 기획안 생성 중 (~90초, 끊지 마세요)...")
+                : "🏛️ 3 기획안 생성"}
             </button>
           </>
         )}
@@ -840,7 +933,9 @@ export default function Home() {
                   setPoliticalProYoutubeUrl("");
                   setPoliticalProError("");
                 }}
-                className="text-gray-400 hover:text-white text-xs">← 다른 URL로 다시</button>
+                className="text-gray-400 hover:text-white text-xs">
+                ← {politicalProSource === "topic" ? "다른 주제로 다시" : "다른 URL로 다시"}
+              </button>
             </div>
             <PoliticalPlanPicker
               plans={politicalProPlans as ShortsPlanDTO[]}

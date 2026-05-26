@@ -42,14 +42,23 @@ function isValidYouTubeUrl(u: string): boolean {
 /**
  * POST /api/political-pro/plans
  *
- * Body: { youtubeUrl: string }
+ * Body:
+ *   - { sourceType: "youtube", youtubeUrl: string } — 기존 방식
+ *   - { sourceType: "topic", topic: string, tone?: string, details?: string } — Feature 023
+ *
+ * sourceType 미지정 시 youtubeUrl 존재 여부로 자동 추론 (하위 호환).
+ *
  * Response: { plans: ShortsPlan[], videoPath, videoDurationSec,
  *             transcriptPath, videoTitle, generatedAt }
- *
- * See specs/009-political-pro-planner/contracts/api-political-pro-plans.md
  */
 export async function POST(req: NextRequest) {
-  let body: { youtubeUrl?: string };
+  let body: {
+    sourceType?: string;
+    youtubeUrl?: string;
+    topic?: string;
+    tone?: string;
+    details?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -57,6 +66,16 @@ export async function POST(req: NextRequest) {
       { error: "invalid_request", detail: "JSON body required" },
       { status: 400 },
     );
+  }
+
+  // sourceType 자동 추론 — 명시 안 됐으면 youtubeUrl 존재 여부로 분기
+  const explicitSourceType = (body.sourceType || "").trim().toLowerCase();
+  const inferredSourceType = explicitSourceType
+    || (body.youtubeUrl ? "youtube" : (body.topic ? "topic" : "youtube"));
+
+  // ── Feature 023: topic 모드 분기 ────────────────────────────────────
+  if (inferredSourceType === "topic") {
+    return handleTopicMode(body);
   }
 
   const youtubeUrl = (body.youtubeUrl || "").trim();
@@ -195,6 +214,66 @@ except PoliticalPlannerError as e:
         error: "claude_plan_generation_failed",
         detail: (e?.message || String(e)).slice(0, 500),
         youtubeUrl,
+      },
+      { status: 502 },
+    );
+  }
+}
+
+
+// ── Feature 023: 주제 입력 모드 핸들러 ────────────────────────────────────
+async function handleTopicMode(body: {
+  topic?: string;
+  tone?: string;
+  details?: string;
+}): Promise<NextResponse> {
+  const topic = (body.topic || "").trim();
+  const tone = (body.tone || "분노·격앙").trim();
+  const details = (body.details || "").trim();
+
+  if (!topic) {
+    return NextResponse.json(
+      { error: "invalid_request", detail: "topic은 필수입니다 (주제 입력 모드)" },
+      { status: 400 },
+    );
+  }
+
+  const escTopic = JSON.stringify(topic);
+  const escTone = JSON.stringify(tone);
+  const escDetails = JSON.stringify(details);
+
+  try {
+    const raw = await py(`
+import sys, json
+sys.path.insert(0, '${ROOT}')
+from src.analyzer.political_planner import (
+    generate_three_plans_from_topic,
+    PoliticalPlannerError,
+)
+try:
+    result = generate_three_plans_from_topic(
+        topic=${escTopic},
+        tone=${escTone},
+        details=${escDetails},
+    )
+    print(json.dumps(result.to_dict(), ensure_ascii=False))
+except PoliticalPlannerError as e:
+    print(json.dumps({"error": "topic_plan_generation_failed", "detail": str(e)[:400]}))
+`);
+    const parsed = JSON.parse(raw);
+    if (parsed.error === "topic_plan_generation_failed") {
+      return NextResponse.json(
+        { error: parsed.error, detail: parsed.detail, topic },
+        { status: 502 },
+      );
+    }
+    return NextResponse.json(parsed, { status: 200 });
+  } catch (e: any) {
+    return NextResponse.json(
+      {
+        error: "topic_plan_generation_failed",
+        detail: (e?.message || String(e)).slice(0, 500),
+        topic,
       },
       { status: 502 },
     );

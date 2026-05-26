@@ -8,8 +8,14 @@
 
 ## ✅ 완료: 023 정치쇼츠 V2 — 주제 입력 모드 추가 (2026-05-26)
 
+### Bug fix (2026-05-26 17:30) — Safari 'Load failed' (60s timeout)
+- 원인: Stage B의 3회 Claude 호출이 순차 실행되어 총 ~60초 소요. Safari/WebKit fetch 기본 60초 timeout에 걸려 "Load failed" 에러.
+- 수정: `_generate_three_plans_topic_hybrid` Stage B를 `ThreadPoolExecutor(max_workers=3)`로 병렬 실행 → 약 20초로 단축.
+- UI: fetch catch 블록에서 timeout 감지 + 사용자 진단 안내 메시지 추가.
+- 테스트: `test_topic_stage_b_runs_in_parallel` (시작 시간 spread<200ms) + `test_topic_stage_b_preserves_candidate_order` (병렬 결과 순서 보존) 신규 추가.
+
 ### 검증 결과
-- 단위 테스트 25/25 통과 (test_political_topic_plans 10개 + test_youtube_news_search 15개)
+- 단위 테스트 27/27 통과 (test_political_topic_plans 12개 + test_youtube_news_search 15개, bugfix 2개 추가)
 - TypeScript 컴파일 통과 (`tsc --noEmit`)
 - Next.js 프로덕션 빌드 성공 (`npm run build`)
 - Dev 서버 API endpoint 동작 확인 (`POST /api/political-pro/plans` topic validation)

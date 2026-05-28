@@ -834,6 +834,7 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
                 use_bgm=use_bgm,
                 enable_transitions=enable_transitions,
                 enable_sfx=enable_sfx,
+                speed_multiplier=1.2,
             )
             image_paths = None
         else:
@@ -910,6 +911,7 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
                 use_bgm=use_bgm,
                 enable_transitions=enable_transitions,
                 enable_sfx=enable_sfx,
+                speed_multiplier=1.2,
             )
 
         file_size_mb = output_path.stat().st_size / (1024 * 1024)

@@ -63,12 +63,14 @@ def render_video(
     scene_videos: list[dict] | None = None,
     output_dir: Path | None = None,
     use_bgm: bool = True,
+    use_intro_bgm: bool = True,
     scene_timings: list[dict] | None = None,
     auto_sfx: bool = True,
     auto_transition: bool = True,
     auto_thumbnail: bool = True,
     enable_sfx: bool = True,
     enable_transitions: bool = True,
+    speed_multiplier: float = 1.0,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
@@ -169,21 +171,20 @@ def render_video(
     # BGM
     bgm_filename = ""
     if use_bgm:
-        from src.tts.voice_config import get_bgm_file
-        emotion = script.metadata.emotion_type
-        bgm_src = PROJECT_ROOT / "data" / "bgm" / get_bgm_file(emotion)
+        from src.tts.voice_config import select_bgm_for_script
+        bgm_src = PROJECT_ROOT / "data" / "bgm" / select_bgm_for_script(script)
         if bgm_src.exists():
             bgm_filename = f"bgm_{timestamp}.mp3"
             shutil.copy2(bgm_src, public_dir / bgm_filename)
             temp_files.append(public_dir / bgm_filename)
-            logger.info("BGM 적용: %s (%s)", bgm_src.name, emotion)
+            logger.info("BGM 적용: %s (%s)", bgm_src.name, script.metadata.emotion_type)
         else:
             logger.warning("BGM 파일 없음: %s — BGM 없이 진행", bgm_src)
 
     # QW-07: hook 씬에 인트로 빌드업 BGM 자동 매칭. public/bgm/ 에 사전
     # 수집된 트랙을 staticFile() 로 직접 로드 (별도 복사 불필요).
     intro_bgm_filename = ""
-    if find_hook_scene(script) is not None:
+    if use_intro_bgm and find_hook_scene(script) is not None:
         track = intro_bgm_for_emotion(script.metadata.emotion_type)
         track_path = PROJECT_ROOT / "public" / "bgm" / track
         if track_path.exists():
@@ -253,15 +254,20 @@ def render_video(
         else:
             script_dict["metadata"]["duration"] = base_duration
 
-    # Feature 009 political_pro: 화면 하단에 출처 표시.
-    # 우선순위: channel + title 형식 ("출처: 채널 : 영상 제목") → 둘 다 있으면 사용.
-    # 없으면 URL fallback.
+    # 화면 하단에 출처 표시.
+    # 우선순위: 1) metadata.source_label (명시적 — 복수 출처 등 자유 텍스트),
+    #          2) source_channel + source_title (political_pro 자동 생성),
+    #          3) source_url 폴백.
+    # political / political_pro / topic 모드 모두 적용.
     source_label = ""
-    if script.metadata.source_type == "political_pro":
+    explicit_label = (script.metadata.source_label or "").strip()
+    if explicit_label:
+        # 명시적 라벨은 그대로 사용. 너무 길면 잘라냄 (총 80자).
+        source_label = explicit_label[:80]
+    elif script.metadata.source_type in ("political", "political_pro"):
         ch = (script.metadata.source_channel or "").strip()
         ti = (script.metadata.source_title or "").strip()
         if ch and ti:
-            # 너무 긴 제목은 잘라냄 (총 60자 안)
             max_title = max(20, 60 - len(ch) - 6)
             short_ti = ti if len(ti) <= max_title else ti[:max_title - 1] + "…"
             source_label = f"출처: {ch} : {short_ti}"
@@ -341,7 +347,35 @@ def render_video(
         except Exception as exc:
             logger.warning("썸네일 생성 실패 (비치명적): %s", exc)
 
+    if speed_multiplier != 1.0:
+        output_path = _apply_speed(output_path, speed_multiplier)
+
     return output_path
+
+
+def _apply_speed(input_path: Path, multiplier: float) -> Path:
+    """ffmpeg으로 영상 + 오디오를 multiplier 배속으로 처리. 원본 파일 덮어씀."""
+    tmp_path = input_path.with_suffix(".speed_tmp.mp4")
+    pts = 1.0 / multiplier  # setpts: PTS/multiplier
+    cmd = [
+        "ffmpeg", "-y",
+        "-i", str(input_path),
+        "-filter_complex",
+        f"[0:v]setpts={pts:.6f}*PTS[v];[0:a]atempo={multiplier:.2f}[a]",
+        "-map", "[v]",
+        "-map", "[a]",
+        "-c:v", "libx264", "-preset", "fast",
+        "-loglevel", "error",
+        str(tmp_path),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    if result.returncode != 0:
+        raise RenderError(
+            f"영상 배속 처리 실패 (exit {result.returncode}): {(result.stderr or '')[:200]}"
+        )
+    tmp_path.replace(input_path)
+    logger.info("%.1fx 배속 처리 완료: %s", multiplier, input_path.name)
+    return input_path
 
 
 def _convert_to_camel_case(data):
@@ -360,42 +394,30 @@ def _snake_to_camel(name: str) -> str:
 
 
 def _get_audio_duration(audio_path: Path) -> float | None:
-    """Get MP3 audio duration in seconds by reading MPEG frame headers.
+    """Get audio duration in seconds using ffprobe.
 
-    Handles MPEG1 and MPEG2/2.5 bitrate tables correctly.
-    edge-tts outputs MPEG2 Layer3 at 24kHz/48kbps.
+    HyunsuMultilingualNeural outputs MPEG1 Layer3; the old bitrate-estimation
+    approach returned ~50% of actual duration for that encoding.
     """
-    import struct
-
-    MPEG1_L3 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0]
-    MPEG2_L3 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0]
+    import json
+    import subprocess
 
     try:
-        file_size = audio_path.stat().st_size
-        if file_size < 100:
-            return None
-
-        with open(audio_path, "rb") as f:
-            data = f.read(8192)
-
-        for i in range(len(data) - 4):
-            if data[i] == 0xFF and (data[i + 1] & 0xE0) == 0xE0:
-                header = struct.unpack(">I", data[i : i + 4])[0]
-                version_bits = (header >> 19) & 0x3
-                bitrate_idx = (header >> 12) & 0xF
-                if 0 < bitrate_idx < 15:
-                    if version_bits == 3:
-                        bitrate_kbps = MPEG1_L3[bitrate_idx]
-                    else:
-                        bitrate_kbps = MPEG2_L3[bitrate_idx]
-                    if bitrate_kbps > 0:
-                        duration = (file_size * 8) / (bitrate_kbps * 1000)
-                        logger.info("오디오 길이: %.1fs (%dkbps MPEG%s)", duration, bitrate_kbps,
-                                    "1" if version_bits == 3 else "2")
-                        return duration
-
-        logger.warning("오디오 프레임 헤더를 찾을 수 없습니다: %s", audio_path)
-        return None
+        result = subprocess.run(
+            [
+                "ffprobe", "-v", "quiet",
+                "-print_format", "json",
+                "-show_entries", "format=duration",
+                "-i", str(audio_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        info = json.loads(result.stdout)
+        duration = float(info["format"]["duration"])
+        logger.info("오디오 길이: %.1fs (ffprobe)", duration)
+        return duration
     except Exception as e:
         logger.warning("오디오 길이 측정 실패: %s", e)
         return None

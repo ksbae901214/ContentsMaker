@@ -115,13 +115,60 @@ class TestEnsureLineBreaks:
 class TestCallClaude:
     @patch("src.analyzer.claude_analyzer.subprocess.run")
     def test_success(self, mock_run, sample_script_dict):
+        # --output-format json → Claude CLI wraps response in type/subtype/result
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout=json.dumps({
+                "type": "result",
+                "subtype": "success",
+                "result": json.dumps(sample_script_dict),
+            }),
+            stderr="",
+        )
+        result = _call_claude("test prompt")
+        assert "metadata" in result or "테스트" in result
+
+    @patch("src.analyzer.claude_analyzer.subprocess.run")
+    def test_plain_json_response_accepted(self, mock_run, sample_script_dict):
+        """Plain JSON (without Claude CLI wrapper) is accepted as-is for backward compat."""
         mock_run.return_value = MagicMock(
             returncode=0,
             stdout=json.dumps(sample_script_dict),
             stderr="",
         )
         result = _call_claude("test prompt")
-        assert "metadata" in result or "테스트" in result
+        assert "metadata" in result
+
+    @patch("src.analyzer.claude_analyzer.subprocess.run")
+    @patch("src.analyzer.claude_analyzer.time.sleep")
+    def test_error_during_execution_retries_with_backoff(self, mock_sleep, mock_run):
+        """error_during_execution triggers retry with exponential backoff."""
+        error_response = MagicMock(
+            returncode=0,
+            stdout='{"type":"result","subtype":"error_during_execution","result":""}',
+            stderr="",
+        )
+        success_response = MagicMock(
+            returncode=0,
+            stdout='{"type":"result","subtype":"success","result":"{}"}',
+            stderr="",
+        )
+        mock_run.side_effect = [error_response, error_response, success_response]
+        result = _call_claude("test", max_attempts=5)
+        assert result == "{}"
+        assert mock_run.call_count == 3
+        # Exponential backoff: 1s then 2s
+        assert mock_sleep.call_count == 2
+        assert mock_sleep.call_args_list[0][0][0] == 1.0
+        assert mock_sleep.call_args_list[1][0][0] == 2.0
+
+    @patch("src.analyzer.claude_analyzer.subprocess.run")
+    def test_max_attempts_default_at_least_8(self, mock_run):
+        """Default max_attempts must be >= 8 for robustness."""
+        import inspect
+        sig = inspect.signature(_call_claude)
+        default = sig.parameters["max_attempts"].default
+        assert default >= 8
 
     @patch("src.analyzer.claude_analyzer.subprocess.run", side_effect=FileNotFoundError)
     def test_missing_claude_raises(self, _):

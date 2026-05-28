@@ -18,7 +18,7 @@ from src.analyzer.prompt_template import build_prompt, build_topic_prompt
 from src.analyzer.script_models import ShortsScript, Metadata, AudioConfig, BackgroundConfig
 from src.config.settings import DATA_SCRIPTS_DIR, CLAUDE_TIMEOUT_SECONDS
 from src.scraper.models import BlindPost
-from src.tts.voice_config import get_voice_config, get_gradient
+from src.tts.voice_config import get_voice_config, get_gradient, CELEBRITY_VOICE_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +205,7 @@ def _call_analyzer(prompt: str) -> str:
     return call_analyzer(prompt, claude_caller=_call_claude)
 
 
-def _call_claude(prompt: str, *, max_attempts: int = 5) -> str:
+def _call_claude(prompt: str, *, max_attempts: int = 8) -> str:
     """Call Claude Code headless mode and return raw output.
 
     2026-04-22: Claude CLI가 가끔 "Execution error" 같은 일시적 오류 텍스트만
@@ -264,11 +264,16 @@ def _call_claude(prompt: str, *, max_attempts: int = 5) -> str:
         last_output = raw
 
         # --output-format json → {"type":"result","subtype":"success","result":"..."}
-        # subtype != "success" 또는 result 빈 값이면 일시적 오류로 재시도
+        # type=="result" and "subtype" in parsed → Claude CLI 응답 래퍼, result 필드 추출.
+        # 그 외 JSON (plain script dict 등) → 원본 raw 그대로 사용.
         output = raw
         try:
             parsed = json.loads(raw)
-            if isinstance(parsed, dict):
+            if (
+                isinstance(parsed, dict)
+                and parsed.get("type") == "result"
+                and "subtype" in parsed
+            ):
                 subtype = parsed.get("subtype", "")
                 result_text = parsed.get("result") or ""
                 if subtype != "success" or not result_text:
@@ -278,7 +283,8 @@ def _call_claude(prompt: str, *, max_attempts: int = 5) -> str:
                             "Claude CLI 비정상 응답 (attempt %d/%d, subtype=%s) — 재시도",
                             attempt, max_attempts, subtype,
                         )
-                        time.sleep(1)
+                        # 지수 backoff: 1s → 2s → 4s → 8s (최대)
+                        time.sleep(min(2 ** (attempt - 1), 8.0))
                         continue
                     raise AnalyzerError(f"Claude Code 오류 응답 ({subtype}): {err_msg[:200]}")
                 output = result_text
@@ -368,9 +374,13 @@ def _ensure_line_breaks(script: ShortsScript) -> ShortsScript:
 
 
 def _apply_voice_config(script: ShortsScript) -> ShortsScript:
-    """Fill in voice config and gradient based on emotion type."""
+    """Fill in voice config and gradient based on emotion type.
+
+    celebrity source_type이면 전문 내레이터 전용 설정 사용.
+    """
     emotion = script.metadata.emotion_type
-    vc = get_voice_config(emotion)
+    is_celebrity = getattr(script.metadata, "source_type", "") == "celebrity"
+    vc = CELEBRITY_VOICE_CONFIG if is_celebrity else get_voice_config(emotion)
     gradient = get_gradient(emotion)
 
     new_audio = AudioConfig(

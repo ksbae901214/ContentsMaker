@@ -23,6 +23,8 @@ class YouTubeNewsSearchError(Exception):
 
 # 9:16 크롭 + 영상만(오디오 제거): scale로 높이 1920 맞춤 + 중앙 1080폭 크롭
 _VF_9x16_CROP = "scale=-2:1920,crop=1080:1920"
+# 9:16 레터박스: scale로 가로 1080 맞춤 + 위아래 검은 여백으로 1920 채움
+_VF_9x16_LETTERBOX = "scale=1080:-2,pad=1080:1920:0:(1920-ih)/2:color=black"
 
 
 def search_and_download_news_clips(
@@ -126,7 +128,8 @@ def cut_scene_clip(
     output: Path,
     start_sec: float,
     duration_sec: float,
-    crop_9x16: bool = True,
+    crop_mode: str | None = None,  # "crop" | "letterbox" | None (falls back to crop_9x16)
+    crop_9x16: bool = True,        # deprecated — use crop_mode
 ) -> Path:
     """소스 영상에서 ``start_sec`` 부터 ``duration_sec`` 만큼 잘라 9:16로 크롭.
 
@@ -135,8 +138,12 @@ def cut_scene_clip(
         output: 출력 파일 경로 (.mp4).
         start_sec: 시작 시간 (초).
         duration_sec: 자를 길이 (초).
-        crop_9x16: True면 1080x1920 9:16 중앙 크롭. False면 원본 비율 유지.
+        crop_mode: "crop"(중앙 크롭), "letterbox"(위아래 검은 여백), None(crop_9x16 폴백).
+        crop_9x16: 기존 파라미터 (deprecated). crop_mode가 None일 때만 참조.
     """
+    # crop_mode가 명시적이면 우선, 없으면 crop_9x16 레거시 동작
+    effective_mode = crop_mode if crop_mode is not None else ("crop" if crop_9x16 else "none")
+
     output.parent.mkdir(parents=True, exist_ok=True)
     cmd = [
         "ffmpeg", "-y",
@@ -144,8 +151,11 @@ def cut_scene_clip(
         "-i", str(source),
         "-t", str(max(0.5, duration_sec)),
     ]
-    if crop_9x16:
+    if effective_mode == "crop":
         cmd += ["-vf", _VF_9x16_CROP]
+    elif effective_mode == "letterbox":
+        cmd += ["-vf", _VF_9x16_LETTERBOX]
+    # else: no -vf (original aspect ratio)
     cmd += [
         "-c:v", "libx264", "-preset", "fast",
         "-an",  # 오디오 제거 (TTS가 메인)
@@ -184,7 +194,8 @@ def build_scene_clips(
     *,
     keywords: list[str],
     out_dir: Path,
-    crop_9x16: bool = True,
+    crop_mode: str = "crop",
+    crop_9x16: bool = True,  # deprecated — use crop_mode
 ) -> list[Path | None]:
     """주제 모드용 통합 함수 — 검색 + 다운로드 + 씬별 cut.
 
@@ -192,7 +203,8 @@ def build_scene_clips(
         scene_durations: 씬별 길이 (초). 길이가 keywords와 다르면 짧은 쪽 기준.
         keywords: 씬별 검색어. 길이가 scene_durations와 다르면 짧은 쪽 기준.
         out_dir: 작업 디렉토리. ``out_dir/sources/``에 원본 다운로드, ``out_dir/scenes/``에 cut 결과.
-        crop_9x16: 9:16 크롭 여부.
+        crop_mode: 9:16 처리 방식 — "crop"(기본, 중앙 크롭), "letterbox"(위아래 여백).
+        crop_9x16: deprecated. crop_mode 사용 권장.
 
     Returns:
         씬별 클립 경로 (실패는 None). 길이는 min(len(scene_durations), len(keywords))과 동일.
@@ -228,7 +240,7 @@ def build_scene_clips(
                 output=out_path,
                 start_sec=offset,
                 duration_sec=scene_durations[i],
-                crop_9x16=crop_9x16,
+                crop_mode=crop_mode,
             )
             clips.append(out_path)
         except YouTubeNewsSearchError as e:

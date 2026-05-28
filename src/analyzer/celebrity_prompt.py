@@ -112,6 +112,16 @@ CELEBRITY_ANALYZE_PROMPT = """다음 인물 정보를 유튜브 쇼츠 영상용
 
 **주의**: 각 씬 텍스트에서 가장 시각적으로 뚜렷한 명사 1개를 골라 검색어로 사용하세요.
 
+## ⭐ 씬별 `clip_query` 필드 (YouTube 클립 검색용, 선택)
+
+각 씬에 `clip_query` 필드를 추가하면 YouTube에서 실제 영상을 자동 검색해
+씬 배경에 씁니다. 없으면 `image_query`나 인물명으로 폴백됩니다.
+
+- 인물 등장 씬: 인물명 + 대표 장면 (예: "손흥민 골 장면", "손흥민 인터뷰")
+- 특정 사건·경기 씬: 사건·경기 설명 (예: "손흥민 챔피언스리그", "손흥민 아시안컵")
+- 인터뷰·수상 씬: "손흥민 수상 소감"
+- 적합한 영상 없으면 생략 (image_query 폴백)
+
 ## 출력 형식 (반드시 이 JSON 형식으로만 출력)
 
 ```json
@@ -133,7 +143,8 @@ CELEBRITY_ANALYZE_PROMPT = """다음 인물 정보를 유튜브 쇼츠 영상용
       "voice_text": "TTS가 읽을 텍스트… (예: [A] 훅)",
       "emphasis": "high",
       "highlight_words": ["핵심단어"],
-      "image_query": "{name}"
+      "image_query": "{name}",
+      "clip_query": null
     }},
     {{
       "id": 2,
@@ -144,7 +155,8 @@ CELEBRITY_ANALYZE_PROMPT = """다음 인물 정보를 유튜브 쇼츠 영상용
       "voice_text": "예: [A] 이름·나이·현재 직업 한 번에 (1963년생 ~씨, 현직 ~)",
       "emphasis": "medium",
       "highlight_words": ["이름", "직업"],
-      "image_query": "{name}"
+      "image_query": "{name}",
+      "clip_query": null
     }},
     {{
       "id": 3,
@@ -155,7 +167,8 @@ CELEBRITY_ANALYZE_PROMPT = """다음 인물 정보를 유튜브 쇼츠 영상용
       "voice_text": "예: [B] 출생지·학력·성장 과정",
       "emphasis": "medium",
       "highlight_words": ["학력 키워드"],
-      "image_query": "학력 관련 이미지 (예: 서울대학교 정문)"
+      "image_query": "학력 관련 이미지 (예: 서울대학교 정문)",
+      "clip_query": null
     }},
     {{
       "id": 4,
@@ -166,7 +179,8 @@ CELEBRITY_ANALYZE_PROMPT = """다음 인물 정보를 유튜브 쇼츠 영상용
       "voice_text": "예: [C] 주요 경력 + 현재 활동 ('지금은 ~ 하고 있습니다')",
       "emphasis": "high",
       "highlight_words": ["경력"],
-      "image_query": "직업·경력 관련 이미지"
+      "image_query": "직업·경력 관련 이미지",
+      "clip_query": null
     }},
     {{
       "id": 5,
@@ -177,7 +191,8 @@ CELEBRITY_ANALYZE_PROMPT = """다음 인물 정보를 유튜브 쇼츠 영상용
       "voice_text": "예: [D] 여운/공감 한 마디 (출처 표기 금지)",
       "emphasis": "low",
       "highlight_words": ["마무리 키워드"],
-      "image_query": "{name}"
+      "image_query": "{name}",
+      "clip_query": null
     }}
   ],
   "audio": {{

@@ -61,6 +61,8 @@ export default function Home() {
   const [celebrityNoVideo, setCelebrityNoVideo] = useState(false);
   const [celebrityNoImages, setCelebrityNoImages] = useState(false);
   const [celebritySymbolicImages, setCelebritySymbolicImages] = useState(false);
+  const [celebrityVideoSource, setCelebrityVideoSource] = useState<"gradient"|"freepik"|"youtube">("gradient");
+  const [celebrityClipCrop, setCelebrityClipCrop] = useState<"crop"|"letterbox">("crop");
   const [topicText, setTopicText] = useState("");
   const [contentStyle, setContentStyle] = useState<"narration"|"skit"|"review">("narration");
   const [politicalUrl, setPoliticalUrl] = useState("");
@@ -1210,12 +1212,22 @@ export default function Home() {
         </div>
         <div className="space-y-2">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">영상 생성 방식</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={()=>setCelebrityNoVideo(false)} className={`py-2 rounded-lg text-xs transition ${!celebrityNoVideo?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎬 Freepik 영상 생성</button>
-              <button onClick={()=>setCelebrityNoVideo(true)} className={`py-2 rounded-lg text-xs transition ${celebrityNoVideo?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🖼️ 이미지만 사용 (빠름)</button>
+            <label className="block text-sm font-medium text-gray-300 mb-1">영상 소스</label>
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={()=>setCelebrityVideoSource("gradient")} className={`py-2 rounded-lg text-xs transition ${celebrityVideoSource==="gradient"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎨 그라데이션</button>
+              <button onClick={()=>setCelebrityVideoSource("freepik")} className={`py-2 rounded-lg text-xs transition ${celebrityVideoSource==="freepik"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎬 Freepik 영상</button>
+              <button onClick={()=>setCelebrityVideoSource("youtube")} className={`py-2 rounded-lg text-xs transition ${celebrityVideoSource==="youtube"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>📺 유튜브 클립</button>
             </div>
-            {!celebrityNoVideo&&<p className="mt-1 text-xs text-gray-500">사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main freepik_login</code> 실행 필요</p>}
+            {celebrityVideoSource==="freepik"&&<p className="mt-1 text-xs text-gray-500">사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main freepik_login</code> 실행 필요</p>}
+            {celebrityVideoSource==="youtube"&&(
+              <div className="mt-2">
+                <label className="block text-xs text-gray-400 mb-1">클립 9:16 처리 방식</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={()=>setCelebrityClipCrop("crop")} className={`py-1.5 rounded text-xs transition ${celebrityClipCrop==="crop"?"bg-gray-600 ring-1 ring-gray-400":"bg-gray-800 text-gray-500 hover:bg-gray-700"}`}>✂️ 중앙 크롭</button>
+                  <button onClick={()=>setCelebrityClipCrop("letterbox")} className={`py-1.5 rounded text-xs transition ${celebrityClipCrop==="letterbox"?"bg-gray-600 ring-1 ring-gray-400":"bg-gray-800 text-gray-500 hover:bg-gray-700"}`}>▣ 레터박스</button>
+                </div>
+              </div>
+            )}
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={celebrityNoImages} onChange={e=>setCelebrityNoImages(e.target.checked)} className="w-5 h-5 rounded"/>
@@ -1249,9 +1261,12 @@ export default function Home() {
             fd.set("mode","celebrity");
             fd.set("celebrityName",celebrityName.trim());
             if(celebrityQualifier.trim()) fd.set("celebrityQualifier",celebrityQualifier.trim());
-            fd.set("noVideo",celebrityNoVideo?"on":"off");
-            fd.set("noImages",celebrityNoImages?"on":"off");
+            // noVideo / noImages derived from video source selection
+            fd.set("noVideo",(celebrityVideoSource==="gradient")?"on":"off");
+            fd.set("noImages",(celebrityVideoSource==="gradient"||celebrityVideoSource==="youtube")?"on":"off");
             fd.set("symbolicImages",celebritySymbolicImages?"on":"off");
+            fd.set("celebrityVideoSource",celebrityVideoSource);
+            fd.set("celebrityClipCrop",celebrityClipCrop);
             fd.set("bgm",bgm?"on":"off");
             fd.set("transitions",transitions?"on":"off");
             fd.set("sfx",sfx?"on":"off");

@@ -127,6 +127,10 @@ class Scene:
     # 씬의 image_query="서울대학교 정문" 식으로 내용에 맞는 이미지를 네이버에서 검색.
     # None이면 상위 로직이 인물명 등 기본값으로 폴백.
     image_query: str | None = None
+    # Phase 9 YouTube 소스 (2026-05-28): 씬별 YouTube 검색어.
+    # 설정 시 YouTube에서 실제 영상을 검색해 씬 배경에 사용.
+    # None이면 image_query+name 또는 name으로 폴백.
+    clip_query: str | None = None
     # Feature 011 V2 Phase B (2026-05-14): 정치 모드 자막 색·시각 연출.
     # subtitle_color: white(기본)/red(비판·충돌)/yellow(강조)/blue(인용)
     # subtitle_emphasis: True면 폰트 1.4x + 굵게
@@ -173,6 +177,8 @@ class Scene:
             d["highlight_category"] = self.highlight_category
         if self.image_query:  # None·빈 문자열은 키 생략
             d["image_query"] = self.image_query
+        if self.clip_query:  # None·빈 문자열은 키 생략
+            d["clip_query"] = self.clip_query
         # Feature 011 V2 Phase B — default가 아닐 때만 직렬화 (V1 호환)
         if self.subtitle_color != "white":
             d["subtitle_color"] = self.subtitle_color
@@ -224,6 +230,7 @@ class Scene:
                 data.get("highlight_category", data.get("highlightCategory", "neutral"))
             ),
             image_query=data.get("image_query", data.get("imageQuery")) or None,
+            clip_query=data.get("clip_query", data.get("clipQuery")) or None,
             # Feature 011 V2 Phase B — default fallback으로 V1 JSON 호환
             subtitle_color=str(
                 data.get("subtitle_color", data.get("subtitleColor", "white"))
@@ -259,6 +266,9 @@ class Metadata:
     # Feature 009 political_pro: 출처 표시용 (화면 하단 "출처: {channel} : {title}")
     source_channel: str = ""
     source_title: str = ""
+    # 명시적 출처 라벨 — 설정되면 source_channel/title보다 우선해 그대로 하단에 표시.
+    # 복수 출처 (예: "MBC뉴스, 헤럴드경제, 뉴스핌, 세계일보") 처리에 사용.
+    source_label: str = ""
     # Feature 011 V2 political_pro 업그레이드 — gemini-code 지침
     # Phase A에서는 추적·디버깅 메타로만 보존, Phase B에서 렌더 분기에 활용 예정.
     format_type: str = ""           # "A"=인터뷰/논평/MBC라디오, "B"=현장/뉴스핌, ""=N/A
@@ -277,6 +287,8 @@ class Metadata:
             d["source_channel"] = self.source_channel
         if self.source_title:
             d["source_title"] = self.source_title
+        if self.source_label:
+            d["source_label"] = self.source_label
         # V2 부가 필드 (default가 아닐 때만 직렬화 → V1 JSON 호환)
         if self.format_type:
             d["format_type"] = self.format_type
@@ -297,6 +309,7 @@ class Metadata:
             source_type=data.get("source_type", data.get("sourceType", "blind")),
             source_channel=data.get("source_channel", data.get("sourceChannel", "")),
             source_title=data.get("source_title", data.get("sourceTitle", "")),
+            source_label=data.get("source_label", data.get("sourceLabel", "")),
             format_type=str(data.get("format_type", data.get("formatType", ""))),
             format_reason=str(data.get("format_reason", data.get("formatReason", ""))),
             visual_directives=tuple(vd_raw) if vd_raw else (),

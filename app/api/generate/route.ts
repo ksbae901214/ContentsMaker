@@ -134,6 +134,9 @@ export async function POST(req: NextRequest) {
             await writeFile(sceneImagesJsonPath, sceneImagesJson, "utf-8");
           }
 
+          const celebrityVideoSource = ((fd.get("celebrityVideoSource") as string) || "freepik").trim();
+          const celebrityClipCrop = ((fd.get("celebrityClipCrop") as string) || "crop").trim();
+
           const args = ["-m", "src.main", "celebrity", name];
           if (qualifier) args.push("--qualifier", qualifier);
           if (analyzeOnly) args.push("--analyze-only");
@@ -143,6 +146,12 @@ export async function POST(req: NextRequest) {
           if (noVideo) args.push("--no-video");
           if (noImages) args.push("--no-images");
           if (symbolicImages) args.push("--symbolic-images");
+          if (celebrityVideoSource && celebrityVideoSource !== "freepik") {
+            args.push("--video-source", celebrityVideoSource);
+          }
+          if (celebrityClipCrop && celebrityClipCrop !== "crop") {
+            args.push("--clip-crop", celebrityClipCrop);
+          }
           if (!useBgm) args.push("--no-bgm");
           if (!useTransitions) args.push("--no-transitions");
           if (!useSfx) args.push("--no-sfx");

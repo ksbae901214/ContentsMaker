@@ -205,6 +205,58 @@ class TestArgparse:
         with pytest.raises(SystemExit):
             parser.parse_args(["celebrity"])
 
+    def test_video_source_default_freepik(self):
+        parser = build_parser()
+        args = parser.parse_args(["celebrity", "손흥민"])
+        assert args.video_source == "freepik"
+
+    def test_video_source_youtube(self):
+        parser = build_parser()
+        args = parser.parse_args(["celebrity", "손흥민", "--video-source", "youtube"])
+        assert args.video_source == "youtube"
+
+    def test_clip_crop_default_crop(self):
+        parser = build_parser()
+        args = parser.parse_args(["celebrity", "손흥민"])
+        assert args.clip_crop == "crop"
+
+    def test_clip_crop_letterbox(self):
+        parser = build_parser()
+        args = parser.parse_args(["celebrity", "손흥민", "--clip-crop", "letterbox"])
+        assert args.clip_crop == "letterbox"
+
+
+class TestCmdCelebrityYoutubeSource:
+    """Tests for youtube video_source flow in cmd_celebrity."""
+
+    def test_youtube_source_calls_youtube_clips(self, base_mocks):
+        """With video_source='youtube', _run_celebrity_youtube_clips is called."""
+        with patch("src.main._run_celebrity_youtube_clips") as mock_yt_clips:
+            mock_yt_clips.return_value = [
+                {"scene_id": 1, "video_path": "/tmp/s01.mp4"},
+            ]
+            ns = _ns(
+                video_source="youtube",
+                clip_crop="crop",
+                no_video=True,   # irrelevant for youtube flow
+                no_images=True,
+            )
+            result = cmd_celebrity(ns)
+        assert result == 0
+        mock_yt_clips.assert_called_once()
+
+    def test_youtube_source_skips_freepik_video(self, base_mocks):
+        """With video_source='youtube', _run_celebrity_videos is NOT called."""
+        with patch("src.main._run_celebrity_videos") as mock_freepik, \
+             patch("src.main._run_celebrity_youtube_clips", return_value=None):
+            ns = _ns(
+                video_source="youtube",
+                clip_crop="crop",
+                no_images=True,
+            )
+            cmd_celebrity(ns)
+        mock_freepik.assert_not_called()
+
 
 class TestCommandsDict:
     def test_celebrity_dispatched(self):

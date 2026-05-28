@@ -782,78 +782,136 @@ def cmd_celebrity(args: argparse.Namespace) -> int:
             print("ANALYZE_DONE " + _json.dumps(payload, ensure_ascii=False))
             return 0
 
-        # Step 3: Images — priority: scene-images-json > portrait-path > auto 검색
-        image_paths: list[dict] | None = None
-        if not getattr(args, "no_images", False):
-            scene_images_json = getattr(args, "scene_images_json", None)
-            portrait_path = getattr(args, "portrait_path", None)
-            if scene_images_json and Path(scene_images_json).exists():
-                # 사용자가 검수 화면에서 씬별 지정한 경로 맵 로드
-                print(f"🖼️  Step 3/6: 사용자 씬별 이미지 맵 사용 — {scene_images_json}")
-                raw_map = _json.loads(Path(scene_images_json).read_text(encoding="utf-8"))
-                # key가 str일 수 있으니 int/str 모두 허용
-                scene_map = {int(k): v for k, v in raw_map.items() if v}
-                image_paths = []
-                for s in script.scenes:
-                    path = scene_map.get(s.id)
-                    if path and Path(path).exists():
-                        image_paths.append({
-                            "scene_id": s.id, "image_path": path,
-                            "prompt": "(user selected)",
-                        })
-                if not image_paths:
-                    print("   ⚠️  맵에서 유효한 경로 없음 — 재검색으로 폴백")
-                    image_paths = None
-            elif portrait_path and Path(portrait_path).exists():
-                print(f"🖼️  Step 3/6: 사용자 선택 이미지 사용 — {portrait_path}")
-                image_paths = [
-                    {"scene_id": s.id, "image_path": portrait_path, "prompt": "(user selected)"}
-                    for s in script.scenes
-                ]
-            if image_paths is None:
-                single_portrait = not getattr(args, "symbolic_images", False)
-                image_paths = _run_celebrity_images(
-                    name, script, qualifier=qualifier,
-                    single_portrait=single_portrait,
+        video_source = getattr(args, "video_source", "freepik")
+        clip_crop_mode = getattr(args, "clip_crop", "crop")
+
+        if video_source == "youtube":
+            # ── YouTube 소스 플로우: TTS → YouTube 클립 → Render ──
+            print("🎙️  Step 4/6: 음성 합성 중... (YouTube 클립 싱크용)")
+            tts_code, voice_path, scene_timings = _run_tts(script)
+            if tts_code != 0:
+                print("   ⚠️  TTS 실패, 무음 영상으로 계속합니다.")
+                voice_path = None
+                scene_timings = None
+
+            print("📹 Step 5/6: YouTube 클립 다운로드 및 9:16 컷...")
+            video_paths = _run_celebrity_youtube_clips(
+                name, script, scene_timings=scene_timings, crop_mode=clip_crop_mode,
+            )
+            if video_paths:
+                print(f"   ✅ {len(video_paths)}개 씬 클립 준비 완료")
+            else:
+                print("   ⚠️  YouTube 클립 실패 — 그라데이션 배경으로 렌더링합니다.")
+
+            # source_label 주입 (없는 경우)
+            if not script.metadata.source_label:
+                from src.analyzer.script_models import Metadata as _Metadata
+                from src.analyzer.script_models import ShortsScript as _SS
+                new_meta = _Metadata(
+                    title=script.metadata.title,
+                    emotion_type=script.metadata.emotion_type,
+                    duration=script.metadata.duration,
+                    source_url=script.metadata.source_url,
+                    source_type=script.metadata.source_type,
+                    source_label="출처: YouTube",
+                )
+                script = _SS(
+                    metadata=new_meta,
+                    scenes=script.scenes,
+                    audio=script.audio,
+                    background=script.background,
                 )
 
-        # Step 4: Image-to-video (Freepik) — optional
-        video_paths: list[dict] | None = None
-        if (
-            not getattr(args, "no_video", False)
-            and image_paths
-            and len(image_paths) > 0
-        ):
-            # Freepik 2026-04 정책 변경으로 image-to-video가 모두 유료.
-            # Premium+ 크레딧 소모 허용 (원치 않으면 --no-paid-credits로 차단).
-            allow_paid = not getattr(args, "no_paid_credits", False)
-            video_paths = _run_celebrity_videos(
-                name, script, image_paths, allow_paid=allow_paid,
+            use_bgm = not getattr(args, "no_bgm", False)
+            enable_transitions = not getattr(args, "no_transitions", False)
+            enable_sfx = not getattr(args, "no_sfx", False)
+            print("🎬 Step 6/6: 영상 렌더링 중...")
+            output_path = render_video(
+                script,
+                audio_path=voice_path,
+                scene_videos=video_paths,
+                scene_timings=scene_timings,
+                use_bgm=use_bgm,
+                enable_transitions=enable_transitions,
+                enable_sfx=enable_sfx,
+            )
+            image_paths = None
+        else:
+            # ── Freepik 소스 플로우 (기존) ──
+
+            # Step 3: Images — priority: scene-images-json > portrait-path > auto 검색
+            image_paths: list[dict] | None = None
+            if not getattr(args, "no_images", False):
+                scene_images_json = getattr(args, "scene_images_json", None)
+                portrait_path = getattr(args, "portrait_path", None)
+                if scene_images_json and Path(scene_images_json).exists():
+                    # 사용자가 검수 화면에서 씬별 지정한 경로 맵 로드
+                    print(f"🖼️  Step 3/6: 사용자 씬별 이미지 맵 사용 — {scene_images_json}")
+                    raw_map = _json.loads(Path(scene_images_json).read_text(encoding="utf-8"))
+                    # key가 str일 수 있으니 int/str 모두 허용
+                    scene_map = {int(k): v for k, v in raw_map.items() if v}
+                    image_paths = []
+                    for s in script.scenes:
+                        path = scene_map.get(s.id)
+                        if path and Path(path).exists():
+                            image_paths.append({
+                                "scene_id": s.id, "image_path": path,
+                                "prompt": "(user selected)",
+                            })
+                    if not image_paths:
+                        print("   ⚠️  맵에서 유효한 경로 없음 — 재검색으로 폴백")
+                        image_paths = None
+                elif portrait_path and Path(portrait_path).exists():
+                    print(f"🖼️  Step 3/6: 사용자 선택 이미지 사용 — {portrait_path}")
+                    image_paths = [
+                        {"scene_id": s.id, "image_path": portrait_path, "prompt": "(user selected)"}
+                        for s in script.scenes
+                    ]
+                if image_paths is None:
+                    single_portrait = not getattr(args, "symbolic_images", False)
+                    image_paths = _run_celebrity_images(
+                        name, script, qualifier=qualifier,
+                        single_portrait=single_portrait,
+                    )
+
+            # Step 4: Image-to-video (Freepik) — optional
+            video_paths: list[dict] | None = None
+            if (
+                not getattr(args, "no_video", False)
+                and image_paths
+                and len(image_paths) > 0
+            ):
+                # Freepik 2026-04 정책 변경으로 image-to-video가 모두 유료.
+                # Premium+ 크레딧 소모 허용 (원치 않으면 --no-paid-credits로 차단).
+                allow_paid = not getattr(args, "no_paid_credits", False)
+                video_paths = _run_celebrity_videos(
+                    name, script, image_paths, allow_paid=allow_paid,
+                )
+
+            # Step 5: TTS
+            print("🎙️  Step 5/6: 음성 생성 중...")
+            tts_code, voice_path, scene_timings = _run_tts(script)
+            if tts_code != 0:
+                print("   ⚠️  TTS 실패, 무음 영상으로 계속합니다.")
+                voice_path = None
+                scene_timings = None
+
+            # Step 6: Render
+            print("🎬 Step 6/6: 영상 렌더링 중...")
+            use_bgm = not getattr(args, "no_bgm", False)
+            enable_transitions = not getattr(args, "no_transitions", False)
+            enable_sfx = not getattr(args, "no_sfx", False)
+            output_path = render_video(
+                script,
+                audio_path=voice_path,
+                scene_images=None if video_paths else image_paths,
+                scene_videos=video_paths,
+                scene_timings=scene_timings,
+                use_bgm=use_bgm,
+                enable_transitions=enable_transitions,
+                enable_sfx=enable_sfx,
             )
 
-        # Step 5: TTS
-        print("🎙️  Step 5/6: 음성 생성 중...")
-        tts_code, voice_path, scene_timings = _run_tts(script)
-        if tts_code != 0:
-            print("   ⚠️  TTS 실패, 무음 영상으로 계속합니다.")
-            voice_path = None
-            scene_timings = None
-
-        # Step 6: Render
-        print("🎬 Step 6/6: 영상 렌더링 중...")
-        use_bgm = not getattr(args, "no_bgm", False)
-        enable_transitions = not getattr(args, "no_transitions", False)
-        enable_sfx = not getattr(args, "no_sfx", False)
-        output_path = render_video(
-            script,
-            audio_path=voice_path,
-            scene_images=None if video_paths else image_paths,
-            scene_videos=video_paths,
-            scene_timings=scene_timings,
-            use_bgm=use_bgm,
-            enable_transitions=enable_transitions,
-            enable_sfx=enable_sfx,
-        )
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
         print(f"\n✅ 완료! '{name}' 소개 쇼츠 생성")
@@ -1090,6 +1148,67 @@ def _run_celebrity_videos(
     return results if results else None
 
 
+def _build_celebrity_clip_keywords(name: str, script) -> list[str]:
+    """씬별 YouTube 검색어 빌드. 우선순위: clip_query → image_query+name → name."""
+    from src.scraper.youtube_news_searcher import safe_search_keyword
+    keywords = []
+    for scene in script.scenes:
+        if scene.clip_query:
+            keywords.append(safe_search_keyword(scene.clip_query))
+        elif scene.image_query:
+            keywords.append(safe_search_keyword(f"{name} {scene.image_query}"))
+        else:
+            keywords.append(safe_search_keyword(name))
+    return keywords
+
+
+def _run_celebrity_youtube_clips(
+    name: str,
+    script,
+    *,
+    scene_timings: list[dict] | None = None,
+    crop_mode: str = "crop",
+) -> list[dict] | None:
+    """유튜브 클립을 씬별 다운로드·컷. [{scene_id, video_path}, ...] or None."""
+    import time as _time
+    from src.config.settings import DATA_VIDEOS_DIR
+    from src.scraper.youtube_news_searcher import build_scene_clips
+
+    safe_name = "".join(c if c.isalnum() else "_" for c in name)[:30]
+    ts = int(_time.time())
+    out_dir = DATA_VIDEOS_DIR / "celebrity" / f"{ts}_{safe_name}"
+
+    keywords = _build_celebrity_clip_keywords(name, script)
+
+    # scene_durations: timing 기반이면 TTS 실제 길이, 없으면 scene.duration
+    if scene_timings:
+        timing_map = {
+            t["scene_id"]: (t["end_ms"] - t["start_ms"]) / 1000.0
+            for t in scene_timings if t.get("scene_id", -1) != -1
+        }
+        scene_durations = [timing_map.get(s.id, s.duration) for s in script.scenes]
+    else:
+        scene_durations = [s.duration for s in script.scenes]
+
+    try:
+        clips = build_scene_clips(
+            scene_durations,
+            keywords=keywords,
+            out_dir=out_dir,
+            crop_mode=crop_mode,
+        )
+    except Exception as e:
+        logger.warning("YouTube 클립 다운로드 실패: %s", e)
+        return None
+
+    result = []
+    for scene, clip in zip(script.scenes, clips):
+        if clip is not None and clip.exists():
+            result.append({"scene_id": scene.id, "video_path": str(clip)})
+
+    return result if result else None
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build the CLI argument parser."""
     parser = argparse.ArgumentParser(
@@ -1236,6 +1355,19 @@ def build_parser() -> argparse.ArgumentParser:
     celebrity_parser.add_argument(
         "--video-gem", type=str, metavar="KEY", default=None,
         help="영상 생성에 사용할 Gem 키 (e.g. news, drama).",
+    )
+    celebrity_parser.add_argument(
+        "--video-source",
+        choices=["freepik", "youtube"],
+        default="freepik",
+        help="영상 소스: freepik(기본, Freepik image-to-video) | youtube(YouTube 클립 자동 검색·컷)",
+    )
+    celebrity_parser.add_argument(
+        "--clip-crop",
+        choices=["crop", "letterbox"],
+        default="crop",
+        dest="clip_crop",
+        help="YouTube 클립 9:16 처리 방식: crop(기본, 중앙 크롭) | letterbox(위아래 검은 여백)",
     )
 
     # political-pro subcommand — Feature 009 (정치 숏츠 기획자)

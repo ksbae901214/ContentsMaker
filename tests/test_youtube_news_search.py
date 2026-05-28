@@ -198,7 +198,7 @@ def test_build_scene_clips_happy_path(tmp_path):
     def fake_duration(p: Path) -> float:
         return 60.0  # 충분히 긴 소스
 
-    def fake_cut(src, *, output, start_sec, duration_sec, crop_9x16):
+    def fake_cut(src, *, output, start_sec, duration_sec, **kwargs):
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_bytes(b"cut")
         return output
@@ -234,7 +234,7 @@ def test_build_scene_clips_failed_source_returns_none(tmp_path):
         src1.write_bytes(b"src1")
         return [src1, None]
 
-    def fake_cut(src, *, output, start_sec, duration_sec, crop_9x16):
+    def fake_cut(src, *, output, start_sec, duration_sec, **kwargs):
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_bytes(b"cut")
         return output
@@ -270,3 +270,97 @@ def test_build_scene_clips_mismatched_lengths(tmp_path):
             out_dir=tmp_path,
         )
     assert len(clips) == 1  # 짧은 쪽 기준
+
+
+# ────────────────── crop_mode / letterbox ──────────────────
+
+
+def test_cut_scene_clip_letterbox_mode(tmp_path):
+    """crop_mode='letterbox' → letterbox vf filter (위아래 검은 여백)."""
+    src = tmp_path / "src.mp4"
+    src.write_bytes(b"src")
+    out = tmp_path / "out.mp4"
+
+    def fake_run(cmd, *args, **kwargs):
+        vf_idx = cmd.index("-vf")
+        vf = cmd[vf_idx + 1]
+        assert "pad=1080:1920" in vf, f"Expected letterbox pad, got: {vf}"
+        assert "scale=1080:-2" in vf, f"Expected letterbox scale, got: {vf}"
+        # Must NOT use crop
+        assert "crop=1080:1920" not in vf
+        out.write_bytes(b"out")
+        return MagicMock(returncode=0, stdout="", stderr="")
+
+    with patch("subprocess.run", side_effect=fake_run):
+        result = cut_scene_clip(
+            src, output=out, start_sec=0, duration_sec=3.0, crop_mode="letterbox",
+        )
+
+    assert result == out
+
+
+def test_cut_scene_clip_crop_mode_explicit_crop(tmp_path):
+    """crop_mode='crop' → same crop filter as crop_9x16=True."""
+    src = tmp_path / "src.mp4"
+    src.write_bytes(b"src")
+    out = tmp_path / "out.mp4"
+
+    def fake_run(cmd, *args, **kwargs):
+        vf_idx = cmd.index("-vf")
+        vf = cmd[vf_idx + 1]
+        assert "scale=-2:1920" in vf
+        assert "crop=1080:1920" in vf
+        out.write_bytes(b"out")
+        return MagicMock(returncode=0, stdout="", stderr="")
+
+    with patch("subprocess.run", side_effect=fake_run):
+        cut_scene_clip(src, output=out, start_sec=0, duration_sec=3.0, crop_mode="crop")
+
+
+def test_cut_scene_clip_crop_mode_none_no_filter(tmp_path):
+    """crop_mode=None and crop_9x16=False → no -vf filter."""
+    src = tmp_path / "src.mp4"
+    src.write_bytes(b"src")
+    out = tmp_path / "out.mp4"
+
+    def fake_run(cmd, *args, **kwargs):
+        assert "-vf" not in cmd
+        out.write_bytes(b"out")
+        return MagicMock(returncode=0, stdout="", stderr="")
+
+    with patch("subprocess.run", side_effect=fake_run):
+        cut_scene_clip(
+            src, output=out, start_sec=0, duration_sec=3.0,
+            crop_mode=None, crop_9x16=False,
+        )
+
+
+def test_build_scene_clips_passes_crop_mode_letterbox(tmp_path):
+    """build_scene_clips(crop_mode='letterbox') passes it to cut_scene_clip."""
+    src = tmp_path / "sources" / "search00_a.mp4"
+    captured_modes: list = []
+
+    def fake_download(kws, *, out_dir):
+        out_dir.mkdir(parents=True, exist_ok=True)
+        src.write_bytes(b"src")
+        return [src]
+
+    def fake_cut(s, *, output, start_sec, duration_sec, crop_mode="crop", **kwargs):
+        captured_modes.append(crop_mode)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_bytes(b"cut")
+        return output
+
+    with patch(
+        "src.scraper.youtube_news_searcher.search_and_download_news_clips",
+        side_effect=fake_download,
+    ), patch(
+        "src.scraper.youtube_news_searcher.get_video_duration_sec",
+        return_value=30.0,
+    ), patch(
+        "src.scraper.youtube_news_searcher.cut_scene_clip",
+        side_effect=fake_cut,
+    ):
+        build_scene_clips([4.0], keywords=["kw1"], out_dir=tmp_path, crop_mode="letterbox")
+
+    assert captured_modes == ["letterbox"]

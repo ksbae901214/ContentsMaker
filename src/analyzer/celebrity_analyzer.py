@@ -21,6 +21,16 @@ from src.analyzer.claude_analyzer import (
     _ensure_line_breaks,
     _parse_response,
 )
+
+
+def _call_analyzer(prompt: str) -> str:
+    """Phase 1B 추상 호출 — ANALYZER_BACKEND 토글.
+
+    모듈 로컬 `_call_claude` 참조를 사용하므로 테스트에서
+    ``patch("src.analyzer.celebrity_analyzer._call_claude")`` 가 그대로 동작한다.
+    """
+    from src.analyzer.gemini_backend import call_analyzer
+    return call_analyzer(prompt, claude_caller=_call_claude)
 from src.analyzer.script_models import Metadata, ShortsScript
 from src.config.settings import DATA_SCRIPTS_DIR
 from src.scraper.celebrity_models import CelebrityInfo
@@ -52,7 +62,7 @@ def analyze_celebrity(
     prompt = build_celebrity_prompt(info)
 
     logger.info("Claude Code 유명인 분석 시작: %s", info.name)
-    raw_json = _call_claude(prompt)
+    raw_json = _call_analyzer(prompt)
     script = _parse_response(raw_json)
 
     script = _force_celebrity_metadata(script, info)
@@ -203,6 +213,8 @@ def _enrich_from_naver_if_needed(
     if not extra:
         return info
 
+    # Claude CLI는 프롬프트가 너무 길면 error_during_execution — Naver 보강은 500자로 제한
+    extra = extra[:500]
     logger.info("Naver 검색 보강 적용 (%d chars): %s", len(extra), extra[:80])
     # summary 뒤에 별도 구분자로 덧붙여 프롬프트 빌더가 자연스럽게 포함시킴
     combined_summary = info.summary

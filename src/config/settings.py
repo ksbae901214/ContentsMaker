@@ -3,6 +3,15 @@ from pathlib import Path
 # Project root
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 
+# .env / .env.local 자동 로딩 (Python CLI에서도 Next.js와 동일한 env vars 사용)
+# Next.js와 동일 우선순위: .env → .env.local (.env.local이 .env를 덮어씀)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(PROJECT_ROOT / ".env", override=False)
+    load_dotenv(PROJECT_ROOT / ".env.local", override=True)
+except ImportError:
+    pass
+
 # Data directories
 DATA_DIR = PROJECT_ROOT / "data"
 DATA_RAW_DIR = DATA_DIR / "raw"
@@ -53,6 +62,12 @@ FREEPIK_VIDEO_URL = "https://www.freepik.com/pikaso/ai-video-generator"
 FREEPIK_IMAGE_URL = "https://www.freepik.com/pikaso/ai-image-generator"
 FREEPIK_HEADLESS = False  # headed by default; set true after stable
 
+# gemini.google.com browser automation (Phase 2A: Imagen 4 / Phase 2B: Veo 3)
+# Sessions persist via Chrome profile — run `python3 -m src.main gemini_login` once.
+GEMINI_PROFILE_DIR = PROJECT_ROOT / ".cache" / "gemini_profile"
+GEMINI_WEB_URL = "https://gemini.google.com/app"
+GEMINI_HEADLESS = False  # headed during selector tuning; flip after stable
+
 # Premium+ unlimited video models — tried in order, falling back on failure.
 # All three are "unlimited" on Premium+ per freepik.com/가격 (2026-04-08).
 FREEPIK_VIDEO_MODEL_PRIORITY = [
@@ -69,9 +84,10 @@ FREEPIK_IMAGE_MODEL_PRIORITY = [
     "Flux.2 Max",                # fallback
 ]
 
-# Default image generation backend. "freepik" uses browser automation (unlimited
-# on Premium+). "gpt" uses the OpenAI GPT Image API ($0.005/image).
-DEFAULT_IMAGE_PROVIDER = "freepik"
+# Default image generation backend. "freepik" uses browser automation (was unlimited
+# on Premium+ but subscription cancelled 2026-05-19). "gpt" uses the OpenAI GPT Image
+# API ($0.005/image). Phase 2A will add "gemini" (Imagen 4 web automation).
+DEFAULT_IMAGE_PROVIDER = "gpt"
 
 # Auto crawler settings (P2)
 CRAWL_DELAY_SECONDS = 5

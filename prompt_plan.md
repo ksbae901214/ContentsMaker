@@ -2,7 +2,76 @@
 
 > 블라인드 / NATV / 정치 / 셀럽 영상을 YouTube Shorts로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-05-26
+**마지막 업데이트**: 2026-05-28
+
+---
+
+## ✅ 완료: 024 유명인 쇼츠 — 유튜브 클립 소스 추가 (2026-05-28)
+
+> 상태: **구현 완료** (커밋: dcb20ea)
+> 기획 세션: 2026-05-28 | 구현 세션: 2026-05-28
+
+### 요구사항
+유명인 쇼츠에서, 정치 topic 모드처럼 **유튜브에서 해당 인물의 실제 영상을 씬별로 검색·다운로드·9:16 컷**하여 씬 배경 영상으로 쓰는 새 옵션을 추가한다. 기존 동작(Freepik 이미지→영상 / 이미지)은 그대로 유지하고 **옵트인**으로 붙인다.
+
+### 확정된 설계 결정 (사용자 합의)
+| 항목 | 결정 |
+|------|------|
+| 검색어 소스 | **새 `clip_query` LLM 필드** — celebrity 프롬프트가 씬별 영상 검색어 출력("손흥민 골 장면" 등), 미출력 시 `{name} {image_query}` → `{name}` 폴백 |
+| 다운로드 | **씬별 ytsearch1** — `youtube_news_searcher.build_scene_clips()` 그대로 재사용 (새 스크래핑 코드 없음) |
+| 9:16 처리 | **crop·letterbox 둘 다 구현** → 동일 씬으로 샘플 2종 생성 → 사용자가 보고 lock-in (미정) |
+| 기본 동작 | **새 옵션 옵트인** (`--video-source youtube`), 기본값은 현행 유지 |
+
+### 핵심 인사이트
+`src/scraper/youtube_news_searcher.py`의 검색·다운로드·컷 로직(`build_scene_clips`, `cut_scene_clip`, `search_and_download_news_clips`)이 **완전히 재사용 가능**. 새 다운로드 코드 0. 작업 본질 = "유명인 파이프라인에 클립 소스 분기 + 씬별 검색어 1필드 + UI 토글".
+
+### 구현 단계
+
+**Phase 1 — 데이터 모델 + 컷 모드 (TDD)**
+1. `Scene`에 `clip_query: str | None = None` 추가 (`src/analyzer/script_models.py`) — `to_dict`/`from_dict` 직렬화(값 있을 때만, camelCase `clipQuery` 호환), `image_query`와 동일 패턴
+2. `cut_scene_clip()`에 letterbox 모드 추가 (`src/scraper/youtube_news_searcher.py`): `crop_9x16: bool` → `crop_mode: Literal["crop","letterbox"]` (기본 `"crop"`, 하위호환). letterbox vf = `scale=1080:-2,pad=1080:1920:0:(1920-ih)/2:color=black`. `build_scene_clips()`에 `crop_mode` 전달
+3. 테스트: `clip_query` 라운드트립, `cut_scene_clip` letterbox vf 인자 생성(ffmpeg mock)
+
+**Phase 2 — 유명인 유튜브 클립 헬퍼 (TDD)**
+4. `_build_celebrity_clip_keywords(name, script)` (`src/main.py`): 씬별 검색어. 우선순위 `scene.clip_query` → `f"{name} {scene.image_query}"` → `f"{name}"`. `safe_search_keyword()`로 정리
+5. `_run_celebrity_youtube_clips(name, script, *, scene_timings=None, crop_mode="crop")`: scene_durations = timing 있으면 timing 기반 else `scene.duration`. `build_scene_clips()` → `data/videos/celebrity/{ts}_{name}/`. 결과 `[{scene_id, video_path}]` 매핑(None 스킵)
+6. 테스트: 검색어 빌더 폴백 체인, scene_id 매핑/None 처리(`build_scene_clips` mock)
+
+**Phase 3 — CLI 배선**
+7. `cmd_celebrity` 분기 (`src/main.py`): 새 인자 `--video-source {freepik,youtube}`(기본 freepik), `--clip-crop {crop,letterbox}`(기본 crop). `video-source=youtube`면 Step 5(TTS) 먼저 → scene_timings로 클립 컷 → render(정치_pro와 동일 순서, 싱크 정확). `metadata.source_label` 미설정 시 `"출처: YouTube"` 주입(하단 라벨 시스템 재사용)
+8. 테스트: argparse 파싱 + 분기 선택
+
+**Phase 4 — UI / API 배선**
+9. celebrity 탭 토글 (`app/page.tsx`): 영상 소스 `이미지 / Freepik 영상 / 유튜브 클립` + crop 옵션
+10. `app/api/generate/route.ts`: `celebrityVideoSource`/`celebrityClipCrop` → `--video-source`/`--clip-crop`
+11. `app/api/celebrity-rerender/route.ts`: 동일 옵션
+
+**Phase 5 — 샘플 검증 + lock-in**
+12. 같은 인물로 crop/letterbox 샘플 2편 생성 → 비교 → 확정안 lock-in (메모리 기록)
+13. 3줄 요약 + 해시태그 동반 제공 (고정 룰)
+
+### 영향 받는 파일
+- `src/analyzer/script_models.py` — `Scene.clip_query`
+- `src/scraper/youtube_news_searcher.py` — letterbox 컷 모드
+- `src/analyzer/celebrity_prompt.py` — `clip_query` 출력 지침
+- `src/main.py` — 헬퍼 2개 + cmd_celebrity 분기 + CLI 인자
+- `app/page.tsx`, `app/api/generate/route.ts`, `app/api/celebrity-rerender/route.ts`
+- `tests/test_celebrity_*.py` (신규/확장)
+
+### 리스크
+- **MEDIUM 저작권**: 유튜브 인물 영상=제3자 저작물. 정치 모드와 동일 위험이나 유명인 모드는 이미 "학습 목적 전용 + 업로드 UI 차단" — 가드 유지로 흡수, 문구에 "유튜브 클립=제3자 저작물" 추가
+- **LOW 중복 영상**: 유사 검색어 시 반복. v1 허용, 추후 video ID dedup 여지
+- **LOW 검색 정확도**: ytsearch1 오매칭 가능. `clip_query`에 인물명 강제 포함 + `duration<=300` 필터로 완화
+- **LOW 싱크**: 클립 길이≠씬 길이. TTS 우선 실행 + timing 기반 컷으로 완화
+
+### 복잡도: MEDIUM (신규 다운로드 코드 0, 분기+1필드+토글 중심. 백엔드 2-3h / UI·API 1-2h / 테스트 1-2h / 샘플 1h)
+
+### 참고 코드 위치 (구현 세션용)
+- 재사용 대상: `src/scraper/youtube_news_searcher.py:182` `build_scene_clips()`, `:123` `cut_scene_clip()` (현재 `crop_9x16` 파라미터)
+- 정치_pro 동일 패턴: `src/main.py:623-647` (TTS timing → 씬 클립 컷 → render scene_videos)
+- 유명인 현행 흐름: `src/main.py:705` `cmd_celebrity` (Step 4 `_run_celebrity_videos` 분기 지점 `:820-832`)
+- 렌더러 scene_videos: `src/video/renderer.py:59` `render_video(scene_videos=[{scene_id, video_path}])`
+- Scene 모델 image_query 직렬화 패턴: `src/analyzer/script_models.py:129,174,226`
 
 ---
 

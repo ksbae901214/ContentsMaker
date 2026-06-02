@@ -1,0 +1,19 @@
+{
+  "name": "유머형",
+  "subtitle_style": {
+    "font_family": "Noto Sans KR",
+    "font_size": 72,
+    "font_weight": "900",
+    "color": "#FFD700",
+    "shadow": "4px 4px 12px rgba(0,0,0,0.9)",
+    "position_y": 0.5,
+    "bg_color": null,
+    "bg_opacity": 0.0
+  },
+  "transition": {
+    "type": "zoom",
+    "duration": 0.4
+  },
+  "voice": "ko-KR-SunHiNeural",
+  "bgm_enabled": true
+}

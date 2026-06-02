@@ -1,0 +1,24 @@
+{
+  "image": {
+    "webtoon": {
+      "gem_id": "16uKqRjySdvzERPXGyqxYm2uEgnVhwrTM",
+      "gem_name": "Webtoonify",
+      "description": "나노바나나 / Imagen 4 웹툰 스타일 이미지",
+      "prompt_file": "image_webtoon.txt"
+    }
+  },
+  "video": {
+    "news": {
+      "gem_id": "1Hlv0NjfVDlxotDEWCJmwYaJqU3414v3B",
+      "gem_name": "Veo3-뉴스",
+      "description": "Veo 3 뉴스 앵커 스타일 (정치 숏츠용)",
+      "prompt_file": "video_news.txt"
+    },
+    "drama": {
+      "gem_id": "1CsQKuCLxFj58xyI978RtBnx4zGxBi8Lg",
+      "gem_name": "Veo3-드라마",
+      "description": "Veo 3 한국 드라마 감성",
+      "prompt_file": "video_drama.txt"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "_doc": [
+    "SC-003 발언자 식별 정확도 측정용 ground-truth 라벨 (T130).",
+    "운영자가 NATV 영상 10편을 직접 청취하면서 각 발언 turn을",
+    "(start_sec, end_sec, expected_politician_name) 으로 라벨링한다.",
+    "expected_politician_name 이 null 이면 '미식별 정상' (whitelist 외 인물).",
+    "SPEAKER_CONFIDENCE_MIN(0.7) 기준으로 판정.",
+    "정확도 = 정확히 식별된 turn 수 / 전체 ground-truth turn 수 ≥ 0.80 여야 함.",
+    "scripts/dem_shorts/measure_sc003.py 가 이 파일을 읽어 비교한다."
+  ],
+  "videos": [
+    {
+      "video_id": "EXAMPLE_VIDEO_ID_1",
+      "title": "예: 본회의 대정부질의 2026-04-15",
+      "turns": [
+        {
+          "start_sec": 12.5,
+          "end_sec": 48.0,
+          "expected_politician_name": "이재명"
+        },
+        {
+          "start_sec": 48.0,
+          "end_sec": 95.2,
+          "expected_politician_name": "조국"
+        },
+        {
+          "start_sec": 95.2,
+          "end_sec": 110.0,
+          "expected_politician_name": null
+        }
+      ]
+    },
+    {
+      "video_id": "EXAMPLE_VIDEO_ID_2",
+      "title": "예: 법사위 2026-04-12",
+      "turns": [
+        {
+          "start_sec": 5.0,
+          "end_sec": 38.0,
+          "expected_politician_name": "정청래"
+        }
+      ]
+    }
+  ]
+}

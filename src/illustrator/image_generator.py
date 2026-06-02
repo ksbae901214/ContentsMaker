@@ -1,0 +1,324 @@
+"""Scene image generation — two backends:
+
+1. GPT Image Mini API ($0.005/image) — default for non-Freepik users.
+2. Freepik browser automation (free on Premium+) — unlimited Nano Banana Pro
+   etc. via src/illustrator/freepik_image_gen.py.
+
+The `provider` parameter on `generate_scene_images()` picks between them.
+`DEFAULT_IMAGE_PROVIDER` in settings.py controls the fallback.
+"""
+from __future__ import annotations
+
+import asyncio
+import base64
+import logging
+import os
+from datetime import datetime
+from pathlib import Path
+
+from src.analyzer.script_models import ShortsScript
+from src.config.settings import DEFAULT_IMAGE_PROVIDER, PROJECT_ROOT
+from src.illustrator.prompt_builder import (
+    PromptBuildError,
+    build_image_prompts,
+    build_image_prompts_simple,
+)
+from src.illustrator.reference_manager import (
+    is_available as refs_available,
+    get_all_references,
+)
+
+logger = logging.getLogger(__name__)
+
+DATA_IMAGES_DIR = PROJECT_ROOT / "data" / "images"
+
+# GPT Image model config
+IMAGE_MODEL = "gpt-image-1"
+IMAGE_SIZE = "1024x1536"  # Vertical 2:3 (closest to 9:16)
+IMAGE_QUALITY = "low"  # $0.005/image
+
+
+class ImageGenerateError(Exception):
+    """Raised when image generation fails."""
+
+
+def generate_scene_images(
+    script: ShortsScript,
+    output_dir: Path | None = None,
+    use_simple_prompts: bool = False,
+    use_references: bool = True,
+    image_style: str = "webtoon",
+    provider: str | None = None,
+) -> list[dict]:
+    """Generate manga-style images for each scene.
+
+    Backends (selected via `provider`):
+      - "gpt"     → OpenAI GPT Image API ($0.005/image, reference images supported)
+      - "freepik" → Freepik browser automation ($0/image on Premium+, unlimited)
+
+    If provider is None, uses settings.DEFAULT_IMAGE_PROVIDER.
+
+    When reference images are available and use_references=True (GPT only),
+    uses images.edit() API to maintain consistent art style and characters.
+    Falls back to images.generate() when no references exist.
+    For non-webtoon styles, always uses images.generate().
+
+    Returns list of {scene_id, image_path, prompt} dicts.
+    """
+    chosen_provider = provider or DEFAULT_IMAGE_PROVIDER
+
+    # ─── Freepik browser automation branch ───
+    if chosen_provider == "freepik":
+        return _generate_via_freepik(
+            script=script,
+            output_dir=output_dir,
+            use_simple_prompts=use_simple_prompts,
+            image_style=image_style,
+        )
+
+    # ─── GPT Image API branch (default, legacy) ───
+    try:
+        from openai import OpenAI
+    except ImportError:
+        raise ImageGenerateError(
+            "openai 패키지가 필요합니다: pip install openai"
+        )
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise ImageGenerateError(
+            "OPENAI_API_KEY 환경변수가 설정되지 않았습니다.\n"
+            "export OPENAI_API_KEY='sk-...' 로 설정해주세요."
+        )
+
+    # Non-webtoon styles never use references
+    if image_style != "webtoon":
+        use_references = False
+
+    # Build prompts
+    try:
+        if use_simple_prompts:
+            prompts = build_image_prompts_simple(script, image_style=image_style)
+        else:
+            prompts = build_image_prompts(script, image_style=image_style)
+    except PromptBuildError as e:
+        logger.warning("Claude 프롬프트 생성 실패, 단순 모드로 전환: %s", e)
+        prompts = build_image_prompts_simple(script, image_style=image_style)
+
+    # Check reference availability
+    has_refs = use_references and refs_available()
+    if has_refs:
+        logger.info("레퍼런스 이미지 모드: images.edit() API 사용")
+    else:
+        logger.info("기본 모드: images.generate() API 사용")
+
+    target_dir = output_dir or DATA_IMAGES_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    client = OpenAI(api_key=api_key)
+    results = []
+
+    # Pre-load ALL reference images once (reused for every scene)
+    all_ref_paths = get_all_references() if has_refs else []
+    if has_refs:
+        logger.info("레퍼런스 %d장 전체 사용: %s", len(all_ref_paths), [p.name for p in all_ref_paths])
+
+    for i, prompt_data in enumerate(prompts):
+        scene_id = prompt_data["scene_id"]
+        prompt = prompt_data["prompt"]
+
+        logger.info(
+            "이미지 생성 %d/%d (씬 %d): %s...",
+            i + 1, len(prompts), scene_id, prompt[:60],
+        )
+
+        try:
+            if has_refs and all_ref_paths:
+                response = _generate_with_all_references(
+                    client, prompt, all_ref_paths,
+                )
+            else:
+                response = client.images.generate(
+                    model=IMAGE_MODEL,
+                    prompt=prompt,
+                    n=1,
+                    size=IMAGE_SIZE,
+                    quality=IMAGE_QUALITY,
+                )
+
+            # Save image
+            image_data = response.data[0]
+            filename = f"{timestamp}_scene_{scene_id:02d}.png"
+            image_path = target_dir / filename
+
+            if hasattr(image_data, "b64_json") and image_data.b64_json:
+                img_bytes = base64.b64decode(image_data.b64_json)
+                image_path.write_bytes(img_bytes)
+            elif hasattr(image_data, "url") and image_data.url:
+                import urllib.request
+                urllib.request.urlretrieve(image_data.url, str(image_path))
+            else:
+                logger.warning("씬 %d: 이미지 데이터 없음, 스킵", scene_id)
+                continue
+
+            results.append({
+                "scene_id": scene_id,
+                "image_path": str(image_path),
+                "prompt": prompt,
+            })
+            logger.info("  저장: %s (%.1f KB)", image_path.name, image_path.stat().st_size / 1024)
+
+        except Exception as e:
+            logger.warning("씬 %d 이미지 생성 실패: %s (스킵)", scene_id, e)
+            continue
+
+    if not results:
+        raise ImageGenerateError("모든 씬의 이미지 생성에 실패했습니다")
+
+    cost = len(results) * 0.005
+    logger.info("이미지 생성 완료: %d/%d장 ($%.3f)", len(results), len(prompts), cost)
+
+    return results
+
+
+def regenerate_single_image(
+    scene_id: int,
+    prompt: str,
+    output_dir: Path | None = None,
+    use_references: bool = True,
+    image_style: str = "webtoon",
+) -> dict:
+    """Regenerate a single scene image with the given prompt.
+
+    Returns {"scene_id": int, "image_path": str, "prompt": str}.
+    """
+    try:
+        from openai import OpenAI
+    except ImportError:
+        raise ImageGenerateError(
+            "openai 패키지가 필요합니다: pip install openai"
+        )
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise ImageGenerateError("OPENAI_API_KEY 환경변수가 설정되지 않았습니다.")
+
+    client = OpenAI(api_key=api_key)
+    target_dir = output_dir or DATA_IMAGES_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    has_refs = use_references and refs_available()
+    all_ref_paths = get_all_references() if has_refs else []
+
+    logger.info("단일 이미지 재생성 (씬 %d): %s...", scene_id, prompt[:60])
+
+    try:
+        if has_refs and all_ref_paths:
+            response = _generate_with_all_references(client, prompt, all_ref_paths)
+        else:
+            response = client.images.generate(
+                model=IMAGE_MODEL,
+                prompt=prompt,
+                n=1,
+                size=IMAGE_SIZE,
+                quality=IMAGE_QUALITY,
+            )
+
+        image_data = response.data[0]
+        filename = f"{timestamp}_scene_{scene_id:02d}.png"
+        image_path = target_dir / filename
+
+        if hasattr(image_data, "b64_json") and image_data.b64_json:
+            img_bytes = base64.b64decode(image_data.b64_json)
+            image_path.write_bytes(img_bytes)
+        elif hasattr(image_data, "url") and image_data.url:
+            import urllib.request
+            urllib.request.urlretrieve(image_data.url, str(image_path))
+        else:
+            raise ImageGenerateError(f"씬 {scene_id}: 이미지 데이터 없음")
+
+        logger.info("  저장: %s (%.1f KB)", image_path.name, image_path.stat().st_size / 1024)
+        return {
+            "scene_id": scene_id,
+            "image_path": str(image_path),
+            "prompt": prompt,
+        }
+
+    except ImageGenerateError:
+        raise
+    except Exception as e:
+        raise ImageGenerateError(f"씬 {scene_id} 이미지 재생성 실패: {e}")
+
+
+def _generate_with_all_references(client, prompt: str, ref_paths: list):
+    """Generate image using images.edit() with ALL reference images.
+
+    Always passes every reference image to enforce consistent art style.
+    The prompt (with REFERENCE_STYLE_PREFIX) tells the model to copy
+    the exact style from these references.
+    """
+    ref_files = []
+    try:
+        for ref_path in ref_paths:
+            ref_files.append(open(ref_path, "rb"))
+
+        return client.images.edit(
+            model=IMAGE_MODEL,
+            image=ref_files if len(ref_files) > 1 else ref_files[0],
+            prompt=prompt,
+            n=1,
+            size=IMAGE_SIZE,
+            quality=IMAGE_QUALITY,
+        )
+    finally:
+        for f in ref_files:
+            f.close()
+
+
+def _generate_via_freepik(
+    script: ShortsScript,
+    output_dir: Path | None,
+    use_simple_prompts: bool,
+    image_style: str,
+) -> list[dict]:
+    """Generate scene images via Freepik browser automation.
+
+    Uses FREEPIK_IMAGE_MODEL_PRIORITY (Nano Banana Pro → GPT Image 1.5 → Flux.2 Max)
+    with per-model fallback. All models are unlimited on Premium+.
+
+    Reference images are not used here — the browser generator doesn't support
+    images.edit()-style consistency. For reference-based consistency, use
+    provider='gpt' instead.
+    """
+    from src.illustrator.freepik_image_gen import FreepikImageGenerator
+
+    # Build prompts (same as GPT path — the prompt_builder output is provider-agnostic)
+    try:
+        if use_simple_prompts:
+            prompt_list = build_image_prompts_simple(script, image_style=image_style)
+        else:
+            prompt_list = build_image_prompts(script, image_style=image_style)
+    except PromptBuildError as e:
+        logger.warning("Claude 프롬프트 생성 실패, 단순 모드 전환: %s", e)
+        prompt_list = build_image_prompts_simple(script, image_style=image_style)
+
+    target_dir = output_dir or DATA_IMAGES_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.info(
+        "Freepik 브라우저로 이미지 %d장 생성 시작 (Premium+ 무제한)",
+        len(prompt_list),
+    )
+
+    gen = FreepikImageGenerator()
+    results = asyncio.run(
+        gen.generate_scene_images(
+            prompts=prompt_list,
+            output_dir=target_dir,
+        )
+    )
+    logger.info("Freepik 이미지 생성 완료: %d장 (변동비 $0)", len(results))
+    return results

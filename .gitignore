@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+
+# OAuth tokens (YouTube, TikTok)
+data/.youtube_token.json
+data/.youtube_credentials.json
+data/.tiktok_token.json
+data/.tiktok_credentials.json
+
+# Data (generated outputs)
+data/raw/*.json
+data/scripts/*.json
+data/audio/
+data/outputs/
+data/backgrounds/
+data/political_pro/
+data/tts_cache/
+data/natv_clips/
+data/videos/
+data/celebrity_portraits/
+data/projects/
+data/dem_shorts/
+data/tmp/
+data/cache/
+data/qw01_preview/
+data/qw03_preview/
+data/tts_samples/
+data/fixtures/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Node (Remotion - Phase 3)
+node_modules/
+.next/
+next-env.d.ts
+tsconfig.tsbuildinfo
+src/video/remotion/public/
+
+# Remotion runtime asset cache (copied from data/ before render)
+public/audio_*.mp3
+public/bgm_*.mp3
+public/bgm/
+public/sfx/
+
+# Claude Code local agents (machine-specific)
+.claude/agents/
+
+# Data (temporary/reference/generated)
+data/temp/
+data/references/
+data/images/
+data/bgm/
+
+# Legacy web directory
+web/
+
+# Browser automation profile (deevid.ai)
+.cache/

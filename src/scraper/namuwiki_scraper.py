@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 NAMUWIKI_BASE = "https://namu.wiki"
-DEFAULT_UA = "ContentsMaker/0.1 (https://github.com/ksbae901214/ContentsMaker)"
+DEFAULT_UA = "ContentsMaker/0.1"
 DEFAULT_TIMEOUT_S = 15.0
 DEFAULT_RATE_LIMIT_S = 2.0
 

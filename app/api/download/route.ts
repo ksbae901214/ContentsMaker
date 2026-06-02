@@ -17,10 +17,11 @@ export async function GET(req: NextRequest) {
   }
 
   const cwd = process.cwd();
-  const relFromCwd = absPath.startsWith(cwd) ? absPath.slice(cwd.length + 1) : "";
-  const isAllowed = ALLOWED_DIRS.some(
-    (dir) => relFromCwd.startsWith(dir + "/") || absPath.includes("/" + dir + "/")
-  );
+  const resolvedCwd = resolve(cwd);
+  const isAllowed = ALLOWED_DIRS.some((dir) => {
+    const allowedAbsDir = resolve(resolvedCwd, dir);
+    return absPath.startsWith(allowedAbsDir + "/") || absPath === allowedAbsDir;
+  });
 
   if (!isAllowed) {
     return NextResponse.json({ error: "허용되지 않는 경로" }, { status: 403 });

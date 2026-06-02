@@ -44,6 +44,10 @@ class Narration:
     # V2 — gemini-code 지침: 자막 색·강조 (Phase A에서는 메타데이터만, Phase B에서 렌더 적용)
     subtitle_color: str = "white"
     subtitle_emphasis: bool = False
+    # 정치쇼츠 포맷 (2026-05-29): 자막은 "speaker: text"로 표시, TTS는 tts_text(보도체)로 분리.
+    # 둘 다 비어 있으면 기존 동작(자막=음성). [[subtitle-one-beat-per-scene]]
+    speaker: str = ""
+    tts_text: str = ""
 
     def __post_init__(self) -> None:
         if not (self.text or "").strip():
@@ -70,6 +74,11 @@ class Narration:
             d["subtitle_color"] = self.subtitle_color
         if self.subtitle_emphasis:
             d["subtitle_emphasis"] = True
+        # 정치쇼츠 포맷: 비어있지 않을 때만 직렬화 (V1/V2 JSON 호환)
+        if self.speaker:
+            d["speaker"] = self.speaker
+        if self.tts_text:
+            d["tts_text"] = self.tts_text
         return d
 
     @classmethod
@@ -84,6 +93,8 @@ class Narration:
             subtitle_emphasis=bool(
                 data.get("subtitle_emphasis", data.get("subtitleEmphasis", False))
             ),
+            speaker=str(data.get("speaker", "")),
+            tts_text=str(data.get("tts_text", data.get("ttsText", ""))),
         )
 
 

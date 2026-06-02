@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "description": "매일 정치 브리핑 모니터링 채널 (사용자 지정 2026-05-20). 보수/진보/중립 혼합 — 한쪽 편향 방지.",
+  "channels": [
+    {
+      "channel_id": "UCGd1rNecfS_MND8PQsKOJhQ",
+      "name": "국민의힘TV",
+      "category": "conservative"
+    },
+    {
+      "channel_id": "UCL-WOj1FxKR8Hlzg5tvnWKg",
+      "name": "NATV 국회방송",
+      "category": "neutral"
+    },
+    {
+      "channel_id": "UCOXf52JKGrLkeAHYb4WcYaQ",
+      "name": "팩트비하인드",
+      "category": "neutral"
+    },
+    {
+      "channel_id": "UCSd6jlFPB6iVG3eCTH7XJZA",
+      "name": "시사포커스TV",
+      "category": "neutral"
+    },
+    {
+      "channel_id": "UCGbkN-3JpOct4KuEv59NF0Q",
+      "name": "엠키타카 MKTK",
+      "category": "neutral"
+    },
+    {
+      "channel_id": "UCAAvO0ehWox1bbym3rXKBZw",
+      "name": "김어준의 겸손은힘들다 뉴스공장",
+      "category": "progressive"
+    }
+  ]
+}

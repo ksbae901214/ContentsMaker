@@ -60,7 +60,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="BlindShorts"
         component={ShortsComposition}
-        durationInFrames={FPS * 90}
+        durationInFrames={FPS * 120}
         fps={FPS}
         width={1080}
         height={1920}

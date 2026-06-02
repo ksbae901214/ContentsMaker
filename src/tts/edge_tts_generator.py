@@ -10,7 +10,6 @@ import asyncio
 import json
 import logging
 import re
-import struct
 from datetime import datetime
 from pathlib import Path
 
@@ -160,6 +159,9 @@ def generate_voice_with_timing(
             logger.warning("그룹 %d TTS 빈 파일", gi)
             continue
 
+        # 양끝 silence trim — 씬 사이 누적 silence 제거로 정확한 씬-TTS 매칭 확보.
+        _trim_audio_silence(seg_path)
+
         group_dur_ms = _get_mp3_duration_ms(seg_path)
 
         if len(valid_scenes) == 1:
@@ -198,6 +200,9 @@ def generate_voice_with_timing(
     temp_files.append(outro_path)
     try:
         asyncio.run(_generate_async(OUTRO_TEXT, voice, rate, pitch, outro_path))
+        # outro도 양끝 silence trim
+        if outro_path.exists() and outro_path.stat().st_size > 0:
+            _trim_audio_silence(outro_path)
         outro_dur_ms = _get_mp3_duration_ms(outro_path) if outro_path.exists() else 0
     except Exception:
         outro_dur_ms = 0
@@ -244,40 +249,117 @@ def generate_voice_with_timing(
     return output_path, timings
 
 
-def _get_mp3_duration_ms(path: Path) -> int:
-    """Get MP3 duration in milliseconds from MPEG frame header.
+def _trim_audio_silence(
+    path: Path,
+    *,
+    threshold_db: int = -45,
+    keep_tail_ms: int = 200,
+) -> bool:
+    """ffmpeg silenceremove로 MP3 양끝 silence 제거 + 쉼표 수준 호흡 보존.
 
-    Correctly handles both MPEG1 and MPEG2/2.5 bitrate tables.
-    edge-tts outputs MPEG2 Layer3 at 24kHz/48kbps.
+    edge-tts는 각 호출마다 음성 앞뒤로 ~0.5초 silence를 자동 삽입한다.
+    씬별로 별도 합성 후 concat하면 silence가 누적되어 씬 사이가 부자연스럽게 길어진다.
+    이 함수는 양끝 silence를 제거 후 정확히 keep_tail_ms 만큼만 끝에 남겨,
+    씬 사이 gap이 일정한 자연 휴지로 통일된다.
+
+    keep_tail_ms 기준 (silencedetect 측정):
+      - 쉼표 ',' 추가 silence ≈ 0.19초 (200ms) — default
+      - 80ms 미만: 다음 씬이 박혀들어와 호흡감 사라짐
+      - 500ms 초과: 부자연스럽게 느림
+
+    Args:
+        path: 처리할 MP3 (in-place 수정).
+        threshold_db: silence로 간주할 dB 임계값 (절댓값 클수록 더 조용한 부분만 silence로 인식).
+        keep_tail_ms: 끝에 남길 silence (씬 사이 gap으로 작용).
+
+    Returns:
+        True if trim succeeded, False otherwise (원본 유지).
     """
-    # Bitrate tables: [index] → kbps
-    MPEG1_L3 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0]
-    MPEG2_L3 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0]
+    import subprocess
+
+    if not path.exists() or path.stat().st_size < 100:
+        return False
+
+    tmp_path = path.with_suffix(".trim.mp3")
+    # leading: 1 period 이상 detection, threshold_db로 시작 silence 제거
+    # trailing: areverse → 같은 방식으로 끝 silence 제거 → areverse 다시
+    af = (
+        f"silenceremove=start_periods=1:start_duration=0.05:start_threshold={threshold_db}dB:detection=peak,"
+        f"areverse,"
+        f"silenceremove=start_periods=1:start_duration=0.05:start_threshold={threshold_db}dB:detection=peak,"
+        f"areverse"
+    )
 
     try:
-        file_size = path.stat().st_size
-        if file_size < 100:
-            return 0
+        result = subprocess.run(
+            [
+                "ffmpeg", "-y", "-v", "error",
+                "-i", str(path),
+                "-af", af,
+                "-c:a", "libmp3lame", "-b:a", "128k",
+                str(tmp_path),
+            ],
+            capture_output=True, text=True, timeout=15,
+        )
+        if result.returncode != 0 or not tmp_path.exists() or tmp_path.stat().st_size < 100:
+            if tmp_path.exists():
+                tmp_path.unlink()
+            return False
 
-        with open(path, "rb") as f:
-            data = f.read(8192)
+        # keep_tail_ms 자연스러운 호흡 추가 (씬 사이가 너무 박혀들어오면 부자연)
+        if keep_tail_ms > 0:
+            padded = path.with_suffix(".padded.mp3")
+            pad_result = subprocess.run(
+                [
+                    "ffmpeg", "-y", "-v", "error",
+                    "-i", str(tmp_path),
+                    "-af", f"apad=pad_dur={keep_tail_ms / 1000.0}",
+                    "-c:a", "libmp3lame", "-b:a", "128k",
+                    str(padded),
+                ],
+                capture_output=True, text=True, timeout=15,
+            )
+            if pad_result.returncode == 0 and padded.exists() and padded.stat().st_size > 100:
+                tmp_path.unlink()
+                padded.replace(path)
+                return True
+            if padded.exists():
+                padded.unlink()
 
-        for i in range(len(data) - 4):
-            if data[i] == 0xFF and (data[i + 1] & 0xE0) == 0xE0:
-                header = struct.unpack(">I", data[i : i + 4])[0]
-                version_bits = (header >> 19) & 0x3  # 11=MPEG1, 10=MPEG2, 00=MPEG2.5
-                bitrate_idx = (header >> 12) & 0xF
+        tmp_path.replace(path)
+        return True
+    except Exception as e:
+        logger.warning("silence trim 실패 (%s): %s", path.name, e)
+        if tmp_path.exists():
+            tmp_path.unlink()
+        return False
 
-                if 0 < bitrate_idx < 15:
-                    if version_bits == 3:  # MPEG1
-                        bitrate_kbps = MPEG1_L3[bitrate_idx]
-                    else:  # MPEG2 or MPEG2.5
-                        bitrate_kbps = MPEG2_L3[bitrate_idx]
 
-                    if bitrate_kbps > 0:
-                        return int((file_size * 8 * 1000) / (bitrate_kbps * 1000))
+def _get_mp3_duration_ms(path: Path) -> int:
+    """Get MP3 duration in milliseconds using ffprobe.
 
-        return 0
+    Uses ffprobe for accurate measurement across all encoding types.
+    HyunsuMultilingualNeural outputs MPEG1 Layer3 which the old bitrate-estimation
+    approach returned ~50% of actual duration for.
+    """
+    import json
+    import subprocess
+
+    try:
+        result = subprocess.run(
+            [
+                "ffprobe", "-v", "quiet",
+                "-print_format", "json",
+                "-show_entries", "format=duration",
+                "-i", str(path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        info = json.loads(result.stdout)
+        duration_s = float(info["format"]["duration"])
+        return int(duration_s * 1000)
     except Exception:
         return 0
 

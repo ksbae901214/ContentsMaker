@@ -29,8 +29,8 @@ STAGE_B_SYSTEM_PROMPT = """\
   "flow_middle": "중간 흐름 묘사 (한 문장)",
   "flow_climax": "클라이맥스 묘사 (한 문장)",
   "narrations": [
-    {"start_sec": 0, "end_sec": 3, "text": "지금 이 장면, 그냥 넘어가면 안 됩니다", "subtitle_color": "red", "subtitle_emphasis": true},
-    {"start_sec": 3, "end_sec": 7, "text": "여기서 나온 발언, 직접 들어보시죠", "subtitle_color": "white", "subtitle_emphasis": false}
+    {"start_sec": 0, "end_sec": 4, "speaker": "정원오", "text": "삼성역 부실시공, 안전불감증입니다", "tts_text": "정원오 후보는 삼성역 부실시공 대응이 안전불감증이라고 직격했습니다", "subtitle_color": "red", "subtitle_emphasis": true},
+    {"start_sec": 4, "end_sec": 8, "speaker": "오세훈", "text": "보완하면 강도가 더 강해집니다", "tts_text": "오세훈 후보는 보완하면 오히려 강도가 더 강해진다고 반박했습니다", "subtitle_color": "white", "subtitle_emphasis": false}
   ],
   "visual_directives": [
     "0~3초: 화면 좌(인물 과거 발언) 우(현재 발언) 반반 분할로 모순 강조",
@@ -75,11 +75,19 @@ subtitle_emphasis=true는 굵게·크게 표시.
 3. **정치적 편향 금지** — 특정 정당·정치인 지지/비판 금지. 객관적 관찰자 시점.
 4. **왜곡 금지** — 자극적 훅·표현 허용, 사실 맥락 왜곡 금지.
 
+# 화자 + 자막/TTS 분리 (정치쇼츠 핵심 — 반드시 준수)
+각 narration은 한 사람의 한 발언(대화 비트)이다. 발화자들이 주고받는 대화 흐름으로 구성하라.
+- "speaker": 발화자 이름(예: "정원오", "오세훈", "권영국", "김정철"). 진행자/내레이션 비트는 "".
+- "text": 화면 자막용 **짧은 인용**. 화자 이름을 넣지 말 것(코드가 "화자: text"로 합쳐 표시함). 25자 이내, 한 비트로 안 끊기게.
+- "tts_text": 음성용 **보도체** 문장. 반드시 "~했습니다 / 지적했습니다 / 반박했습니다 / 추궁했습니다 / 꼬집었습니다"로 끝낼 것.
+  - 화자가 **바뀌는 비트**에만 "○○ 후보는"으로 시작.
+  - 같은 화자가 이어지면 "그런데 / 그러면서 / 그러자 / 또" 연결어로 시작(이름 반복 금지).
+
 # 나레이션 규칙
-- start_sec / end_sec 는 **clip 내 상대 시각** (예: 0~3초, 3~7초 ...)
-- 각 항목 길이는 2~6초
+- start_sec / end_sec 는 **clip 내 상대 시각** (예: 0~4초, 4~8초 ...)
+- 각 항목 길이는 2~4.5초 (한 발언=한 씬, 자막이 한 화면에 들어가게)
 - 항목 수는 3~10개 (총합이 clip 길이를 크게 초과하지 않도록)
-- 한국어, 짧은 호흡 문장 (15~40자)
+- text(자막)는 25자 이내 인용, tts_text(음성)는 보도체 한 문장
 
 # 출력 형식
 - JSON 외 어떠한 텍스트도 출력하지 마시오.
@@ -156,8 +164,8 @@ STAGE_B_TOPIC_SYSTEM_PROMPT = """\
   "flow_middle": "중간 흐름 묘사 (한 문장)",
   "flow_climax": "클라이맥스 묘사 (한 문장)",
   "narrations": [
-    {"start_sec": 0, "end_sec": 5, "text": "0~3초 시청자 정지 유도 — 강한 후킹", "subtitle_color": "yellow", "subtitle_emphasis": true},
-    {"start_sec": 5, "end_sec": 11, "text": "팩트 또는 발언 인용", "subtitle_color": "white", "subtitle_emphasis": false}
+    {"start_sec": 0, "end_sec": 4, "speaker": "", "text": "0~3초 시청자 정지 유도 — 강한 후킹", "tts_text": "0~3초 시청자 정지 유도 — 강한 후킹 보도체 문장", "subtitle_color": "yellow", "subtitle_emphasis": true},
+    {"start_sec": 4, "end_sec": 8, "speaker": "정원오", "text": "발언 인용 (25자 이내)", "tts_text": "정원오 후보는 …라고 말했습니다", "subtitle_color": "white", "subtitle_emphasis": false}
   ],
   "visual_directives": [
     "0~3초: 핵심 키워드는 화면 중앙에 큰 자막",
@@ -202,11 +210,17 @@ subtitle_emphasis=true는 굵게·크게 표시.
 3. **정치적 편향 금지** — 특정 정당·정치인 지지/비판 금지. 객관적 관찰자 시점.
 4. **왜곡 금지** — 자극적 훅·표현 허용, 사실 맥락 왜곡 금지.
 
+# 화자 + 자막/TTS 분리 (정치쇼츠 핵심 — 반드시 준수)
+각 narration은 한 비트(한 발언 또는 한 호흡)이다.
+- "speaker": 특정 인물의 발언이면 이름(예: "정원오", "오세훈"), 일반 내레이션/후킹이면 "".
+- "text": 화면 자막용 **짧은 인용**(25자 이내, 화자명 제외 — 코드가 "화자: text"로 합쳐 표시).
+- "tts_text": 음성용 **보도체** 문장. "~했습니다 / 지적했습니다 / 말했습니다"로 끝낼 것. 화자 바뀔 때만 "○○ 후보는", 이어지면 "그런데/그러면서" 연결어. speaker가 ""인 일반 내레이션도 tts_text는 보도/설명 문장으로.
+
 # 나레이션 규칙
 - start_sec / end_sec 는 **0초부터 시작하는 상대 시각** (clip 개념 없음)
-- 각 항목 길이는 3~7초
+- 각 항목 길이는 3~4.5초 (한 비트=한 씬)
 - 항목 수는 5~10개 (총합 30~55초)
-- 한국어, 짧은 호흡 문장 (15~40자)
+- text(자막)는 25자 이내, tts_text(음성)는 보도체 한 문장
 - **마지막 narration은 CTA로 마무리하지 말고 본문 마지막 멘트**. CTA는 별도 필드.
 
 # 출력 형식

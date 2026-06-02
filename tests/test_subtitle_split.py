@@ -61,7 +61,7 @@ class TestApplySubtitleSplit:
         """subtitle_color / subtitle_emphasis / hook / image_query 모두 자식에 전파."""
         scene = Scene(
             id=0, timestamp=0, duration=6, type="body",
-            text="아주 긴 텍스트가 여기에 들어가서 분할이 필요한 정도로 길게 작성된 자막",
+            text="아주 긴 텍스트가 여기에 들어가서 분할이 필요한 정도로 길게 작성된 자막입니다 충분히 길어야 합니다",
             voice_text="x",
             subtitle_color="red",
             subtitle_emphasis=True,
@@ -98,10 +98,10 @@ class TestApplySubtitleSplit:
         """여러 긴 씬이 분할되면 각자 다른 group_id."""
         scenes = [
             Scene(id=0, timestamp=0, duration=6, type="body",
-                  text="사업성을 높여서 공급을 늘리자는 건 같은데 재건축 재개발에 적대적이었던",
+                  text="사업성을 높여서 공급을 늘리자는 건 같은데 재건축 재개발에 적대적이었던 후보자들이 당선됐다",
                   voice_text="x"),
             Scene(id=1, timestamp=6, duration=6, type="body",
-                  text="이번 지방선거 후보자 4명 중 1명이 다주택자라는 충격적 결과가 발표",
+                  text="이번 지방선거 후보자 4명 중 1명이 다주택자라는 충격적 결과가 발표되어 큰 논란이 일고 있다",
                   voice_text="y"),
         ]
         script = _make_script(scenes)
@@ -166,7 +166,7 @@ class TestPureFunctions:
         assert _split_subtitle_segments("짧음") == ["짧음"]
 
     def test_split_subtitle_long_text(self):
-        text = "이번 지방선거 후보자 4명 중 1명이 다주택자라는 충격적 결과"
+        text = "이번 지방선거 후보자 4명 중 1명이 다주택자라는 충격적 결과가 발표되어 큰 논란이 일고 있다"
         segs = _split_subtitle_segments(text)
         assert len(segs) >= 2
 
@@ -178,4 +178,4 @@ class TestPureFunctions:
         assert "\n" in out
 
     def test_max_chars_constant(self):
-        assert _MAX_SUBTITLE_CHARS == 28
+        assert _MAX_SUBTITLE_CHARS == 42

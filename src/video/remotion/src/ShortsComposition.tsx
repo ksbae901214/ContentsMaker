@@ -2,6 +2,7 @@ import React from "react";
 import {
   AbsoluteFill,
   Img,
+  OffthreadVideo,
   Sequence,
   Audio,
   staticFile,
@@ -41,6 +42,10 @@ interface ShortsCompositionProps {
   // Feature 009 political_pro: 화면 하단에 출처 표시 ("출처: youtube.com/...").
   // 비어있으면 표시 안 함.
   sourceLabel?: string;
+  // 2026-06-01 사용자 피드백: 씬별 클립을 끊지 않고 단일 연속 영상을
+  // 콘텐츠 전체 구간에 깔고 그 위에 텍스트 자막만 씬별로 오버레이.
+  // 비어있으면 기존 동작(씬별 sceneVideos / 그라데이션).
+  backgroundVideoFile?: string;
 }
 
 export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
@@ -51,6 +56,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   bgmFile = "",
   introBgmFile = "",
   sourceLabel = "",
+  backgroundVideoFile = "",
 }) => {
   const emotion =
     (scriptData.metadata as any).emotionType ||
@@ -62,7 +68,8 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
     (scriptData.metadata as any).sourceType ||
     (scriptData.metadata as any).source_type;
   const isPoliticalPro = sourceType === "political_pro";
-  const colors = isPoliticalPro
+  const isCelebrity = sourceType === "celebrity";
+  const colors = isPoliticalPro || isCelebrity
     ? ["#000000", "#000000"]
     : scriptData.background.colors.length > 0
       ? scriptData.background.colors
@@ -86,10 +93,36 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
     ? Math.round((lastScene.timestamp + lastScene.duration) * FPS)
     : 0;
 
+  // 단일 연속 배경 영상이 설정되면 씬별 video는 무시하고 텍스트만 오버레이.
+  const useContinuousVideo = !!backgroundVideoFile;
+
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
       {/* Default gradient background (shows when no scene image) */}
       <Background colors={colors} />
+
+      {/* Continuous background video — single OffthreadVideo for entire content. */}
+      {useContinuousVideo && (
+        <Sequence from={0} durationInFrames={contentEndFrame}>
+          <AbsoluteFill style={{ background: "#000" }}>
+            <OffthreadVideo
+              src={staticFile(backgroundVideoFile)}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+            {/* Dark overlay for subtitle readability — same gradient as SceneWithVideo. */}
+            <AbsoluteFill
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.5) 100%)",
+              }}
+            />
+          </AbsoluteFill>
+        </Sequence>
+      )}
 
       {scriptData.scenes.map((scene) => {
         const startFrame = Math.round(scene.timestamp * FPS);
@@ -106,7 +139,10 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         const secondaryClipPath = (scene as any).secondaryClipPath || (scene as any).secondary_clip_path;
         const isSplit = visualLayout === "split" && !!videoFile;
 
-        const content = isSplit ? (
+        // 연속 배경 영상이 깔린 경우 씬별 영상/이미지는 건너뛰고 자막만 오버레이.
+        const content = useContinuousVideo ? (
+          <SceneText scene={scene} emotion={emotion} />
+        ) : isSplit ? (
           <SplitScreenScene
             videoFile={videoFile!}
             secondaryVideoFile={secondaryClipPath || undefined}
@@ -114,9 +150,9 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
             emotion={emotion}
           />
         ) : videoFile ? (
-          <SceneWithVideo videoFile={videoFile} scene={scene} emotion={emotion} />
+          <SceneWithVideo videoFile={videoFile} scene={scene} emotion={emotion} contained={!isPoliticalPro} />
         ) : imageFile ? (
-          <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} />
+          <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} contained={isCelebrity} />
         ) : (
           <SceneText scene={scene} emotion={emotion} />
         );
@@ -156,7 +192,15 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
       </Sequence>
 
       {audioFile && <Audio src={staticFile(audioFile)} />}
-      {bgmFile && <Audio src={staticFile(bgmFile)} volume={0.15} loop />}
+      {/* BGM 볼륨: celebrity 모드는 내레이션 위주라 BGM 존재감 강화 (0.15 → 0.28).
+          다른 모드는 대사·발언이 핵심이라 0.15 유지. */}
+      {bgmFile && (
+        <Audio
+          src={staticFile(bgmFile)}
+          volume={isCelebrity ? 0.28 : 0.15}
+          loop
+        />
+      )}
 
       {/* QW-07: hook 씬 동안만 인트로 빌드업 BGM 재생 */}
       {introBgmFile && (() => {
@@ -285,11 +329,18 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
   );
 };
 
+// Top offset: just below the 2-line TitleBar.
+// marginTop:180 + paddingTop:16 + 2×(75×1.3) + paddingBottom:16 = 407 → +8px gap = 415.
+const CELEBRITY_IMAGE_TOP = 415;
+// Bottom offset: symmetric safe zone (matches visual weight of top bar area).
+const CELEBRITY_IMAGE_BOTTOM = 330;
+
 const SceneWithImage: React.FC<{
   imageFile: string;
   scene: any;
   emotion: string;
-}> = ({ imageFile, scene, emotion }) => {
+  contained?: boolean;
+}> = ({ imageFile, scene, emotion, contained = false }) => {
   const frame = useCurrentFrame();
 
   const opacity = interpolate(frame, [0, 15], [0, 1], {
@@ -301,10 +352,23 @@ const SceneWithImage: React.FC<{
     extrapolateRight: "clamp",
   });
 
+  const topInset    = contained ? CELEBRITY_IMAGE_TOP    : 0;
+  const bottomInset = contained ? CELEBRITY_IMAGE_BOTTOM : 0;
+
   return (
     <AbsoluteFill>
-      {/* Manga illustration background */}
-      <AbsoluteFill style={{ opacity }}>
+      {/* Photo / illustration — celebrity mode insets top & bottom */}
+      <div
+        style={{
+          position: "absolute",
+          top: topInset,
+          left: 0,
+          right: 0,
+          bottom: bottomInset,
+          opacity,
+          overflow: "hidden",
+        }}
+      >
         <Img
           src={staticFile(imageFile)}
           style={{
@@ -315,13 +379,15 @@ const SceneWithImage: React.FC<{
           }}
         />
         {/* Dark overlay for text readability */}
-        <AbsoluteFill
+        <div
           style={{
+            position: "absolute",
+            inset: 0,
             background:
               "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.6) 100%)",
           }}
         />
-      </AbsoluteFill>
+      </div>
 
       {/* Text on top of image */}
       <SceneText scene={scene} emotion={emotion} />

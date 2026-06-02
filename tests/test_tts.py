@@ -21,16 +21,16 @@ class TestVoiceConfig:
     def test_funny_voice(self):
         config = get_voice_config("funny")
         assert config["voice"] == "ko-KR-SunHiNeural"
-        assert config["rate"] == "+20%"
+        assert config["rate"] == "+25%"
 
     def test_touching_voice(self):
         config = get_voice_config("touching")
         assert config["voice"] == "ko-KR-SunHiNeural"
-        assert config["rate"] == "+20%"
+        assert config["rate"] == "+10%"
 
     def test_angry_voice(self):
         config = get_voice_config("angry")
-        assert config["voice"] == "ko-KR-SunHiNeural"
+        assert config["voice"] == "ko-KR-InJoonNeural"
 
     def test_relatable_voice(self):
         config = get_voice_config("relatable")
@@ -59,11 +59,11 @@ class TestBGMConfig:
 
     def test_unknown_emotion_defaults(self):
         bgm = get_bgm_file("unknown")
-        assert bgm == BGM_FILES[DEFAULT_EMOTION]
+        assert bgm in BGM_FILES[DEFAULT_EMOTION]
 
     def test_each_emotion_has_unique_bgm(self):
-        files = {get_bgm_file(e) for e in BGM_FILES}
-        assert len(files) == 4
+        files = {get_bgm_file(e, seed=e) for e in BGM_FILES}
+        assert len(files) == len(BGM_FILES)
 
 
 class TestHighlightColors:

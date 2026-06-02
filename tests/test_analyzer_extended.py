@@ -71,8 +71,8 @@ class TestEnsureLineBreaks:
         assert result.scenes[0].voice_text == "원래 음성 텍스트는 그대로"
 
     def test_voice_text_per_segment_when_split(self):
-        """28자 초과 씬은 자식들로 분할되고 각 자식이 자기 voice_text로 합성됨 (그룹 TTS)."""
-        long_text = "회사에서 3년 동안 일했는데 월급이 200만원도 안 돼서 너무 화가 납니다"
+        """42자 초과 씬은 자식들로 분할되고 각 자식이 자기 voice_text로 합성됨 (그룹 TTS)."""
+        long_text = "회사에서 3년 동안 일했는데 월급이 200만원도 안 돼서 너무 화가 납니다 정말 억울합니다"
         script = ShortsScript(
             metadata=Metadata(title="t", emotion_type="angry", duration=30),
             scenes=(

@@ -71,6 +71,7 @@ def render_video(
     enable_sfx: bool = True,
     enable_transitions: bool = True,
     speed_multiplier: float = 1.0,
+    background_video: Path | None = None,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
@@ -91,6 +92,9 @@ def render_video(
                   is forced off. Default True preserves existing behavior.
         enable_transitions: User-level switch. When False, ALL scene transitions
                   are cleared and auto_transition is forced off. Default True.
+        background_video: 단일 연속 배경 영상 경로. 지정 시 콘텐츠 전체 구간에
+                  한 번만 마운트되는 OffthreadVideo로 깔리며, 씬별 자막은
+                  텍스트 오버레이로만 렌더됨 (씬별 클립 끊김 제거).
     """
     # User-disabled effects take priority over auto-assignment.
     if not enable_sfx:
@@ -153,6 +157,14 @@ def render_video(
                     "sceneId": img_data["scene_id"],
                     "imageFile": img_filename,
                 })
+
+    # Continuous background video (단일 연속 클립 — 씬별 컷 끊김 제거용).
+    background_video_filename = ""
+    if background_video and Path(background_video).exists():
+        background_video_filename = f"bgvid_{timestamp}.mp4"
+        shutil.copy2(background_video, public_dir / background_video_filename)
+        temp_files.append(public_dir / background_video_filename)
+        logger.info("연속 배경 영상 적용: %s", background_video.name)
 
     # Scene videos (AI video clips)
     scene_video_props = []
@@ -288,6 +300,7 @@ def render_video(
         "bgmFile": bgm_filename,
         "introBgmFile": intro_bgm_filename,
         "sourceLabel": source_label,
+        "backgroundVideoFile": background_video_filename,
     }
 
     props_path = target_dir / f"{timestamp}_props.json"

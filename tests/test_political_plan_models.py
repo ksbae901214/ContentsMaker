@@ -41,6 +41,35 @@ def test_narration_rejects_inverted_range():
         Narration(start_sec=5, end_sec=3, text="x")
 
 
+def test_narration_speaker_and_tts_round_trip():
+    """정치쇼츠 신포맷: speaker + tts_text 직렬화/역직렬화."""
+    n = Narration(
+        start_sec=0.0, end_sec=4.0, text="삼성역 부실시공, 안전불감증입니다",
+        speaker="정원오",
+        tts_text="정원오 후보는 삼성역 부실시공 대응이 안전불감증이라고 직격했습니다",
+    )
+    d = n.to_dict()
+    assert d["speaker"] == "정원오"
+    assert d["tts_text"].endswith("직격했습니다")
+    restored = Narration.from_dict(d)
+    assert restored == n
+
+
+def test_narration_speaker_tts_default_empty():
+    """누락 시 speaker/tts_text는 빈 문자열 (V1/V2 호환)."""
+    n = Narration.from_dict({"start_sec": 0, "end_sec": 3, "text": "x"})
+    assert n.speaker == ""
+    assert n.tts_text == ""
+
+
+def test_narration_to_dict_omits_empty_speaker_tts():
+    """기본값일 때 speaker/tts_text 키는 직렬화하지 않음 (V1 JSON 호환)."""
+    n = Narration(start_sec=0, end_sec=3, text="x")
+    d = n.to_dict()
+    assert "speaker" not in d
+    assert "tts_text" not in d
+
+
 # ─────────────────────────────── ShortsPlan ───────────────────────────────
 
 

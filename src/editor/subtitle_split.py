@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from src.analyzer.script_models import Scene, ShortsScript
 
-_MAX_SUBTITLE_CHARS = 28  # 한 자막 2줄 한계 (폰트 56px 기준 14자/줄 × 2)
+_MAX_SUBTITLE_CHARS = 42  # 한 자막 3줄 한계 (폰트 56px 기준 14자/줄 × 3)
 
 _PUNCTUATION = set(".,!?·…")
 # 한국 종결어미 단음절 — "...했다", "...지요", "...까", "...네" 같은 자연스러운 문장 끝
@@ -64,38 +64,55 @@ def _score_split_position(text: str, i: int, max_chars: int) -> float:
     return base + balance
 
 
-def _insert_linebreak(text: str, target_line_chars: int = 14) -> str:
-    """한 자막을 명시적 '\\n'으로 2줄 분할. CSS word-break:keep-all에 의존하지 않고
-    코드로 줄바꿈 위치를 통제해 orphan 줄(짧은 단어 외톨이) 방지.
-
-    target_line_chars(=14) 부근에서 _score_split_position 동일 점수화 적용.
-    좋은 경계 못 찾으면 원문 그대로 반환 (CSS 폴백).
-    """
-    if len(text) <= target_line_chars or "\n" in text:
-        return text
-
-    lo = max(1, int(target_line_chars * 0.5))
-    hi = min(len(text), target_line_chars * 2 - 1)
-
-    best_score = 0.0
-    best_pos = -1
+def _best_break(text: str, target: int) -> int:
+    """text 안에서 target 부근 최적 분할 위치(index) 반환. 못 찾으면 -1."""
+    lo = max(1, int(target * 0.5))
+    hi = min(len(text), target * 2 - 1)
+    best_score, best_pos = 0.0, -1
     for i in range(lo, hi + 1):
-        s = _score_split_position(text, i, target_line_chars * 2)
-        deviation = abs(i - target_line_chars) / target_line_chars
-        focus_bonus = 1.5 * max(0.0, 1.0 - deviation)
-        s = s + focus_bonus
+        s = _score_split_position(text, i, target * 2)
+        deviation = abs(i - target) / target
+        s += 1.5 * max(0.0, 1.0 - deviation)
         if s > best_score:
-            best_score = s
-            best_pos = i
+            best_score, best_pos = s, i
+    return best_pos
 
-    if best_pos < 0:
+
+def _insert_linebreak(text: str, target_line_chars: int = 14) -> str:
+    """한 자막에 최대 2개 '\\n' 삽입 → 최대 3줄 표시.
+
+    - ≤14자: 그대로
+    - 15~28자: 1번 줄바꿈(2줄)
+    - 29~42자: 2번 줄바꿈(3줄)
+    - 이미 '\\n' 포함: 그대로 반환
+    """
+    if "\n" in text:
+        return text
+    if len(text) <= target_line_chars:
         return text
 
-    left = text[:best_pos].rstrip()
-    right = text[best_pos:].lstrip()
-    if not left or not right:
+    # 첫 번째 줄바꿈
+    p1 = _best_break(text, target_line_chars)
+    if p1 < 0:
+        p1 = target_line_chars
+    line1 = text[:p1].rstrip()
+    rest  = text[p1:].lstrip()
+    if not rest:
         return text
-    return f"{left}\n{right}"
+
+    # 두 번째 줄이 target 이하면 2줄로 끝
+    if len(rest) <= target_line_chars:
+        return f"{line1}\n{rest}"
+
+    # 세 번째 줄 필요
+    p2 = _best_break(rest, target_line_chars)
+    if p2 < 0:
+        p2 = target_line_chars
+    line2 = rest[:p2].rstrip()
+    line3 = rest[p2:].lstrip()
+    if not line3:
+        return f"{line1}\n{line2}"
+    return f"{line1}\n{line2}\n{line3}"
 
 
 def _split_subtitle_segments(text: str, max_chars: int = _MAX_SUBTITLE_CHARS) -> list[str]:

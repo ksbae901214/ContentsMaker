@@ -287,6 +287,92 @@ def test_plan_to_script_preserves_v2_fields():
     assert "0~3초" in script.metadata.visual_directives[0]
 
 
+# ════════════════════════ 정치쇼츠 화자 콜론 자막 + 보도체 TTS ════════════════════════
+
+
+def test_plan_to_script_speaker_colon_subtitle_and_reported_tts():
+    """신포맷: 자막은 '화자: 발언', voice_text는 보도체로 분리, narration당 씬 1개."""
+    plan = ShortsPlan(
+        topic="GTX 철근 누락 공방", hook="GTX 철근 누락, 시장 후보 충돌",
+        clip_start_sec=0, clip_end_sec=40, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(
+            Narration(
+                start_sec=0, end_sec=4, text="삼성역 부실시공, 안전불감증입니다",
+                speaker="정원오", subtitle_color="red", subtitle_emphasis=True,
+                tts_text="정원오 후보는 삼성역 부실시공 대응이 안전불감증이라고 직격했습니다",
+            ),
+            Narration(
+                start_sec=4, end_sec=8, text="보완하면 강도가 더 강해집니다",
+                speaker="오세훈", subtitle_color="white",
+                tts_text="오세훈 후보는 보완하면 오히려 강도가 더 강해진다고 반박했습니다",
+            ),
+        ),
+        cta="당신 생각은? 댓글로",
+        angle="audience_resonance",
+    )
+    script = plan_to_script(
+        plan, video_title="원본", video_duration_sec=120.0,
+        youtube_url="https://youtu.be/gtx",
+    )
+    body = [s for s in script.scenes if s.type == "body"]
+    # narration당 씬 1개 (분할 없음)
+    assert len(body) == 2
+    # 자막: 화자 콜론, voice_text: 보도체 (분리)
+    assert body[0].text.replace("\n", " ").startswith("정원오: ")
+    assert "삼성역 부실시공" in body[0].text.replace("\n", " ")
+    assert body[0].voice_text == "정원오 후보는 삼성역 부실시공 대응이 안전불감증이라고 직격했습니다"
+    assert body[0].text != body[0].voice_text
+    assert body[1].text.replace("\n", " ").startswith("오세훈: ")
+    assert body[1].voice_text.endswith("반박했습니다")
+    # tts_script(AudioConfig)도 보도체 반영
+    assert "직격했습니다" in script.audio.tts_script
+
+
+def test_plan_to_script_legacy_narration_couples_text_and_voice():
+    """구포맷(speaker/tts_text 없음)은 기존 동작 — text==voice_text 유지(회귀 방지)."""
+    plan = ShortsPlan(
+        topic="t", hook="hook",
+        clip_start_sec=0, clip_end_sec=20, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="옛날 방식 자막"),),
+        cta="cta", angle="title_anchor",
+    )
+    script = plan_to_script(
+        plan, video_title="t", video_duration_sec=60.0,
+        youtube_url="https://youtu.be/x",
+    )
+    body = [s for s in script.scenes if s.type == "body"]
+    assert len(body) >= 1
+    for s in body:
+        assert s.text == s.voice_text  # 구포맷은 자막=음성
+
+
+def test_plan_to_script_speaker_beat_not_split_by_max_duration():
+    """신포맷 1비트는 5초 분할기가 화자 접두를 깨지 않아야 함."""
+    plan = ShortsPlan(
+        topic="t", hook="h",
+        clip_start_sec=0, clip_end_sec=40, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(
+            Narration(
+                start_sec=0, end_sec=8, text="아직도 삼성역 안 가보셨잖아요",
+                speaker="정원오",
+                tts_text="그러자 정원오 후보는 아직도 삼성역 현장에 안 가보셨다고 꼬집었습니다",
+            ),
+        ),
+        cta="cta", angle="title_anchor",
+    )
+    script = plan_to_script(
+        plan, video_title="t", video_duration_sec=120.0,
+        youtube_url="https://youtu.be/x",
+    )
+    body = [s for s in script.scenes if s.type == "body"]
+    assert len(body) == 1  # 8초여도 1비트=1씬 (분할 안 됨)
+    assert "삼성역 안 가보셨잖아요" in body[0].text.replace("\n", " ")
+    assert body[0].duration <= 5.0  # 클램프로 5초 분할기 회피
+
+
 def test_generate_three_plans_legacy_with_v2_fields():
     """Legacy(_call_claude mock) 경로에서 V2 필드 포함된 응답을 정상 파싱."""
     import json
@@ -379,12 +465,13 @@ def test_split_subtitle_preserves_particle_attachment():
 
 def test_split_subtitle_prefers_punctuation_boundary():
     """구두점 경계가 최우선 (균형 보너스보다 높은 점수)."""
-    # 구두점이 12자 위치, 공백 경계 14, 24자 위치 — 12자가 우선되어야 함
-    text = "안녕하세요. 오늘은 정치 뉴스 시간입니다 한 번 보시죠"
+    # 구두점이 18자 위치, 44자 문장 — 구두점 경계에서 분할돼야 함
+    text = "지금 상황을 정확히 말씀드립니다. 이번 선거 결과가 매우 중요한 의미를 갖습니다"
     segs = _split_subtitle_segments(text)
     assert len(segs) >= 2
-    # 첫 세그먼트는 구두점 경계 직전에서 끝남
-    assert segs[0].endswith("안녕하세요") or segs[0].endswith("안녕하세요.")
+    # 첫 세그먼트는 구두점 경계 직전 문장에서 끝남
+    flat_first = segs[0].replace("\n", " ").strip()
+    assert flat_first.endswith("말씀드립니다") or flat_first.endswith("말씀드립니다.")
 
 
 def test_split_subtitle_no_ellipsis_no_orphan():
@@ -405,7 +492,7 @@ def test_split_subtitle_no_ellipsis_no_orphan():
 
 def test_split_subtitle_balanced_split_preferred():
     """균형 분할 선호 — 단어 한가운데 자르지 않음."""
-    text = "안 그래도 정치권에서는 이게 진짜 큰 이슈가 되고 있다고요 다들"  # 33자
+    text = "안 그래도 정치권에서는 이게 진짜 큰 이슈가 되고 있다고요 다들 보시는 것처럼요"  # 43자+
     assert len(text) > _MAX_SUBTITLE_CHARS
     segs = _split_subtitle_segments(text)
     assert len(segs) >= 2
@@ -452,7 +539,7 @@ def test_split_subtitle_segments_apply_linebreak():
 
 def test_split_subtitle_korean_endings_boost():
     """종결어미('했어요', '입니다') 직후가 일반 공백보다 우선."""
-    text = "이번에 발표했어요 그래서 모두가 정말 깜짝 놀랐습니다 어떻게 보세요"  # 36자
+    text = "이번에 발표했어요 그래서 모두가 정말 깜짝 놀랐습니다 어떻게 보세요 정말이에요"  # 43자+
     assert len(text) > _MAX_SUBTITLE_CHARS
     segs = _split_subtitle_segments(text)
     assert len(segs) >= 2

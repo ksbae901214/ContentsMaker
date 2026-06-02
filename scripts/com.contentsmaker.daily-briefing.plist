@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  매일 아침 07:00 KST 정치 브리핑 자동 실행 (Feature 020).
+
+  설치 방법:
+    1. WorkingDirectory 의 경로를 본인 ContentsMaker 경로로 수정
+       (현재: /Users/kyusik/ContentsMaker)
+    2. EnvironmentVariables 의 키 값들을 실제 값으로 채움
+       - NAVER_CLIENT_ID / NAVER_CLIENT_SECRET (네이버 검색 API)
+       - GEMINI_API_KEY (Gemini 클러스터링)
+       - YOUTUBE_API_KEY (선택, 권장 — 없으면 OAuth 토큰 폴백)
+       - ANTHROPIC_API_KEY (Claude CLI 사용 시 필요)
+    3. 파일 복사:
+         cp scripts/com.contentsmaker.daily-briefing.plist ~/Library/LaunchAgents/
+    4. 활성화:
+         launchctl load ~/Library/LaunchAgents/com.contentsmaker.daily-briefing.plist
+    5. 즉시 1회 실행 (테스트):
+         launchctl start com.contentsmaker.daily-briefing
+    6. 비활성화 (필요 시):
+         launchctl unload ~/Library/LaunchAgents/com.contentsmaker.daily-briefing.plist
+    7. 로그 확인:
+         tail -f /Users/kyusik/ContentsMaker/data/daily_briefing/.cron.log
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.contentsmaker.daily-briefing</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/python3</string>
+        <string>-m</string>
+        <string>src.main</string>
+        <string>daily-briefing</string>
+        <string>--top</string>
+        <string>5</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/kyusik/ContentsMaker</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin</string>
+        <key>PYTHONPATH</key>
+        <string>/Users/kyusik/ContentsMaker</string>
+        <!-- 아래 값들을 실제 API 키로 채우세요 -->
+        <key>NAVER_CLIENT_ID</key>
+        <string>YOUR_NAVER_CLIENT_ID</string>
+        <key>NAVER_CLIENT_SECRET</key>
+        <string>YOUR_NAVER_CLIENT_SECRET</string>
+        <key>GEMINI_API_KEY</key>
+        <string>YOUR_GEMINI_API_KEY</string>
+        <!-- YOUTUBE_API_KEY 는 선택 — 없으면 OAuth 토큰 자동 폴백 -->
+        <key>YOUTUBE_API_KEY</key>
+        <string></string>
+    </dict>
+
+    <!-- 매일 07:00 KST 실행 -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- 실행 시점에 시스템이 슬립 중이면 깬 후 즉시 실행 -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- 로그 -->
+    <key>StandardOutPath</key>
+    <string>/Users/kyusik/ContentsMaker/data/daily_briefing/.cron.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/kyusik/ContentsMaker/data/daily_briefing/.cron.err.log</string>
+
+    <!-- 동시 실행 방지 -->
+    <key>AbandonProcessGroup</key>
+    <false/>
+</dict>
+</plist>

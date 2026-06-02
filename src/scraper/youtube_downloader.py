@@ -5,6 +5,7 @@ Uses yt-dlp (subprocess) for downloading and ffmpeg for clip/audio extraction.
 from __future__ import annotations
 
 import logging
+import os
 import re
 import subprocess
 import sys
@@ -344,14 +345,31 @@ def transcribe_video_or_fallback(
         if transcript:
             logger.info("VTT 자막 %d세그먼트 확보", len(transcript))
             return transcript
-        logger.warning("VTT 파싱 결과가 비어 Whisper STT 폴백을 시도합니다.")
+        logger.warning("VTT 파싱 결과가 비어 Gemini/Whisper 폴백을 시도합니다.")
 
-    logger.info("자막 없음 — Whisper STT 폴백 (%s)", video_path.name)
+    # Phase 1A: VTT 다음 단계로 Gemini 멀티모달 시도 (Whisper-large-v3 회피).
+    # GEMINI_API_KEY 미설정 또는 한도 초과 등 모든 실패는 Whisper 폴백으로 이어진다.
+    if os.environ.get("USE_GEMINI_TRANSCRIBE", "1") != "0":
+        try:
+            from src.scraper.gemini_youtube_transcriber import (
+                gemini_transcribe_video,
+                GeminiTranscribeError,
+            )
+            logger.info("자막 없음 — Gemini 멀티모달 transcript 시도 (%s)", video_path.name)
+            result = gemini_transcribe_video(video_path)
+            if result:
+                logger.info("Gemini transcript %d세그먼트 확보", len(result))
+                return result
+            logger.warning("Gemini 결과 비어 Whisper 폴백.")
+        except Exception as exc:  # noqa: BLE001  — 폴백을 위해 광범위 처리
+            logger.info("Gemini transcript 폴백: %s → Whisper 시도", exc)
+
+    logger.info("Whisper STT 시도 (%s)", video_path.name)
     try:
         result = _whisper_transcribe(video_path)
     except Exception as exc:
         raise TranscriptUnavailableError(
-            f"자막 없음 + Whisper STT 실패: {exc}. "
+            f"자막 없음 + Gemini + Whisper STT 모두 실패: {exc}. "
             "수동으로 대본을 입력하거나 자막이 있는 영상을 사용하세요."
         ) from exc
 

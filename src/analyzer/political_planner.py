@@ -975,6 +975,44 @@ def plan_to_script(
             ))
             nonlocal_cursor += per_seg
 
+    def _add_speaker_scene(narr) -> None:
+        """정치쇼츠 신포맷: 자막 '화자: 발언' + 보도체 voice_text로 분리, narration당 씬 1개.
+
+        2026-05-29 사용자 확정 포맷. [[subtitle-one-beat-per-scene]]
+        - 자막(text)은 "화자: 인용"으로 표시(_insert_linebreak로 줄바꿈만, 씬 분할 X).
+        - 음성(voice_text)은 narr.tts_text(보도체 ~했습니다). 비어 있으면 자막으로 폴백.
+        - duration을 MAX_SCENE_DURATION 미만으로 클램프 → split_scenes_to_max_duration이
+          화자 접두를 깨지 않게 한다.
+        """
+        quote = (narr.text or "").strip()
+        speaker = (narr.speaker or "").strip()
+        subtitle = f"{speaker}: {quote}" if speaker else quote
+        if len(subtitle) > _MAX_SUBTITLE_CHARS:
+            logger.warning(
+                "정치쇼츠 자막이 %d자로 길어 화면 넘침 가능 (≤%d 권장): %r",
+                len(subtitle), _MAX_SUBTITLE_CHARS, subtitle,
+            )
+        voice = (narr.tts_text or "").strip() or subtitle
+        cursor = scenes[-1].timestamp + scenes[-1].duration if scenes else 0.0
+        dur = min(
+            max(0.5, narr.end_sec - narr.start_sec),
+            MAX_SCENE_DURATION_SECONDS - 0.1,
+        )
+        scenes.append(Scene(
+            id=len(scenes),
+            timestamp=cursor,
+            duration=dur,
+            type="body",
+            text=_insert_linebreak(subtitle),
+            voice_text=voice,
+            emphasis=narr.subtitle_emphasis,
+            highlight_words=(),
+            subtitle_color=narr.subtitle_color,
+            subtitle_emphasis=narr.subtitle_emphasis,
+            subtitle_group_id=None,
+            subtitle_group_first=True,
+        ))
+
     # Scene 0 — Hook
     _add_split_scenes(
         text=plan.hook,
@@ -985,6 +1023,11 @@ def plan_to_script(
     )
 
     for narr in plan.narrations:
+        # 신포맷(speaker/tts_text 존재): 1비트=1씬 + 자막·음성 분리.
+        if (narr.speaker or "").strip() or (narr.tts_text or "").strip():
+            _add_speaker_scene(narr)
+            continue
+        # 구포맷: 기존 자동 분할(자막=음성) 유지 — V1/레거시 호환.
         narr_dur = max(0.5, narr.end_sec - narr.start_sec)
         _add_split_scenes(
             text=narr.text,

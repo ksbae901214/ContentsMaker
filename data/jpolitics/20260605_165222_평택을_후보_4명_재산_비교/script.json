@@ -1,0 +1,241 @@
+{
+  "metadata": {
+    "title": "평택을 선거구 4명 후보 재산 비교",
+    "source_type": "jpolitics_youtube",
+    "duration_sec": 30.0,
+    "created_at": "2026-06-05T16:53:28.047736",
+    "topic": "평택을 선거구 4명 후보 재산 비교"
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "timestamp": 0.0,
+      "duration": 3.2,
+      "type": "title",
+      "text": "평택을 후보 4명 재산 비교",
+      "voice_text": "평택을 선거구에 출마한 후보 네 명의 재산, 과연 얼마나 차이가 날까요?",
+      "visual_layout": "grid_2x2",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "headline_pin": "후보 4명 재산 비교",
+      "comparison_cards": [
+        {
+          "name": "후보1",
+          "party": "국민의힘",
+          "party_color": "#E61E2B",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/후보1_01.webp"
+        },
+        {
+          "name": "후보2",
+          "party": "더불어민주당",
+          "party_color": "#004EA2",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/후보2_01.jpg"
+        },
+        {
+          "name": "후보3",
+          "party": "조국혁신당",
+          "party_color": "#0073CF",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/후보3_01.jpg"
+        },
+        {
+          "name": "후보4",
+          "party": "무소속",
+          "party_color": "#888888",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/후보4_01.jpg"
+        }
+      ],
+      "clip_search_query": "평택을 후보 4명 재산 비교",
+      "clip_source_timestamp": [
+        0.0,
+        5.0
+      ]
+    },
+    {
+      "id": 2,
+      "timestamp": 3.2,
+      "duration": 2.32,
+      "type": "body",
+      "text": "신고 재산 기준 순위 공개",
+      "voice_text": "선관위에 신고된 재산을 기준으로 순위를 매겨봤습니다.",
+      "visual_layout": "normal",
+      "subtitle_color": "white",
+      "subtitle_emphasis": false,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "선관위 재산신고 후보",
+      "clip_source_timestamp": [
+        5.0,
+        10.0
+      ]
+    },
+    {
+      "id": 3,
+      "timestamp": 5.52,
+      "duration": 1.92,
+      "type": "body",
+      "text": "1위 후보 재산 규모는?",
+      "voice_text": "가장 많은 재산을 신고한 후보는 누구일까요?",
+      "visual_layout": "data_card",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "comparison_cards": [
+        {
+          "name": "후보1",
+          "party": "국민의힘",
+          "party_color": "#E61E2B",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/후보1_01.webp",
+          "data_label": "신고 재산",
+          "data_value": "00억 원"
+        }
+      ],
+      "clip_search_query": "평택을 후보 재산 1위",
+      "clip_source_timestamp": [
+        10.0,
+        18.0
+      ]
+    },
+    {
+      "id": 4,
+      "timestamp": 7.4399999999999995,
+      "duration": 2.64,
+      "type": "body",
+      "text": "2위~4위 후보 재산 비교",
+      "voice_text": "나머지 세 후보의 재산은 어떻게 될까요? 차이가 꽤 큽니다.",
+      "visual_layout": "grid_2x2",
+      "subtitle_color": "white",
+      "subtitle_emphasis": false,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "comparison_cards": [
+        {
+          "name": "후보2",
+          "party": "더불어민주당",
+          "party_color": "#004EA2",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/후보2_01.jpg"
+        },
+        {
+          "name": "후보3",
+          "party": "조국혁신당",
+          "party_color": "#0073CF",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/후보3_01.jpg"
+        },
+        {
+          "name": "후보4",
+          "party": "무소속",
+          "party_color": "#888888",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/후보4_01.jpg"
+        },
+        {
+          "name": "후보1",
+          "party": "국민의힘",
+          "party_color": "#E61E2B",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/후보1_01.webp"
+        }
+      ],
+      "clip_search_query": "평택을 후보 재산 비교 순위",
+      "clip_source_timestamp": [
+        18.0,
+        28.0
+      ]
+    },
+    {
+      "id": 5,
+      "timestamp": 10.08,
+      "duration": 3.12,
+      "type": "body",
+      "text": "재산 출처도 다르다",
+      "voice_text": "재산의 종류도 후보마다 다릅니다. 부동산, 금융자산, 그리고 부채까지.",
+      "visual_layout": "normal",
+      "subtitle_color": "blue",
+      "subtitle_emphasis": false,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "후보 재산 부동산 금융자산",
+      "clip_source_timestamp": [
+        28.0,
+        36.0
+      ]
+    },
+    {
+      "id": 6,
+      "timestamp": 13.2,
+      "duration": 1.84,
+      "type": "body",
+      "text": "가장 큰 차이점은?",
+      "voice_text": "가장 눈에 띄는 차이점은 바로 이것입니다.",
+      "visual_layout": "normal",
+      "subtitle_color": "red",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "평택을 후보 재산 차이점",
+      "clip_source_timestamp": [
+        36.0,
+        44.0
+      ]
+    },
+    {
+      "id": 7,
+      "timestamp": 15.04,
+      "duration": 2.56,
+      "type": "body",
+      "text": "유권자가 판단할 시간",
+      "voice_text": "이 정보를 바탕으로, 유권자 여러분이 직접 판단해 보세요.",
+      "visual_layout": "normal",
+      "subtitle_color": "white",
+      "subtitle_emphasis": false,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "유권자 선택 투표",
+      "clip_source_timestamp": [
+        44.0,
+        52.0
+      ]
+    },
+    {
+      "id": 8,
+      "timestamp": 17.599999999999998,
+      "duration": 3.2,
+      "type": "comment",
+      "text": "구독하고 더 많은 비교 영상 보기",
+      "voice_text": "구독과 좋아요 누르시면 더 많은 후보 비교 영상을 받아보실 수 있습니다.",
+      "visual_layout": "normal",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_source_timestamp": [
+        52.0,
+        60.0
+      ]
+    }
+  ],
+  "audio": {
+    "tts_script": "평택을 선거구에 출마한 후보 네 명의 재산, 과연 얼마나 차이가 날까요? 선관위에 신고된 재산을 기준으로 순위를 매겨봤습니다. 가장 많은 재산을 신고한 후보는 누구일까요? 나머지 세 후보의 재산은 어떻게 될까요? 차이가 꽤 큽니다. 재산의 종류도 후보마다 다릅니다. 부동산, 금융자산, 그리고 부채까지. 가장 눈에 띄는 차이점은 바로 이것입니다. 이 정보를 바탕으로, 유권자 여러분이 직접 판단해 보세요. 구독과 좋아요 누르시면 더 많은 후보 비교 영상을 받아보실 수 있습니다.",
+    "tts_voice": "ko-KR-InJoonNeural",
+    "tts_rate": "+22%",
+    "inter_scene_gap_ms": 300,
+    "sfx_enabled": false,
+    "bgm_enabled": false
+  },
+  "background": {
+    "type": "gradient",
+    "colors": [
+      "#1a1a2e",
+      "#16213e"
+    ]
+  },
+  "headline_pin": "후보 4명 재산 비교"
+}

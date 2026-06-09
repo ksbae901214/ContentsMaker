@@ -1,0 +1,214 @@
+{
+  "plans": [
+    {
+      "topic": "노동조합의 이익 배분 요구와 투자자의 역할 비교",
+      "hook": "세금도 떼기 전 영업 이익을 나눠 갖는다고? 투자자도 못 하는 일이다!",
+      "clip_start_sec": 164.9,
+      "clip_end_sec": 218.4,
+      "clip_reason": "영상 제목의 핵심 발언인 '투자자도 할 수 없는 일'이 직접 언급되며, 노동조합의 이익 배분 요구가 투자자의 역할과 어떻게 다른지 명확히 설명하는 구간.",
+      "flow_intro": "영업 이익 배분의 본질을 투자자 역할로 정의하며 시작",
+      "flow_middle": "정부의 기업 지원 방식을 열거한 뒤 세금 전 이익 배분의 문제점으로 전환",
+      "flow_climax": "'투자자도 할 수 없는 일'이라는 핵심 발언으로 논점 정리",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "영업 이익을 배분받는 건 누구의 몫일까요?"
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "투자자, 주주가 하는 겁니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 14.0,
+          "text": "정부도 세금 감면, 시설 지원, 외교적 노력으로 기업을 돕죠"
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 20.0,
+          "text": "그런데 국민 공동의 몫인 세금도 떼기 전에",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 20.0,
+          "end_sec": 26.0,
+          "text": "영업 이익을 일정 비율 나눠 갖는다?",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 26.0,
+          "end_sec": 32.0,
+          "text": "그건 투자자도 할 수 없는 일입니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 32.0,
+          "end_sec": 38.0,
+          "text": "투자자도 세금 떼고 난 순이익에서 배당받습니다",
+          "subtitle_color": "blue"
+        }
+      ],
+      "cta": "세금 떼기 전 이익을 나눠 갖는 것, 정당한 권리일까요 과한 요구일까요? 여러분 생각을 댓글로 남겨주세요",
+      "angle": "title_anchor",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 특정 이슈에 대한 논리적 분석과 주장 전개",
+      "visual_directives": [
+        "0~8초: 발화자 중심 클로즈업, '투자자' '주주' 키워드 자막 강조",
+        "14~20초: '세금도 떼기 전에' 발언 시 화면 하단에 큰 노란색 자막 오버레이",
+        "20~26초: '나눠 갖는다' 발언에서 0.5초 프리즈 후 붉은 강조 자막",
+        "26~32초: 핵심 발언 '투자자도 할 수 없는 일' — 화면 중앙 대형 빨간 자막, 발화자 표정 줌인",
+        "32~38초: 좌(투자자 배당 구조 인포그래픽) 우(발화자) 분할로 논리 정리"
+      ]
+    },
+    {
+      "topic": "노동삼권의 본질과 남용 경계",
+      "hook": "노동삼권은 약자 보호! 개인 이익 위해 집단 무력 쓰는 게 아니다!",
+      "clip_start_sec": 47.7,
+      "clip_end_sec": 81.9,
+      "clip_reason": "노동삼권의 본래 취지(사회적 약자 보호)와 함께 '연대와 책임'의 중요성을 강조하며, 개인의 이익만을 위한 집단적 무력 사용을 경계하는 발언이 시청자들에게 공감을 얻을 수 있는 구간.",
+      "flow_intro": "노동삼권이 보장되지만 적정한 선을 넘으면 안 된다는 경고로 시작",
+      "flow_middle": "노동삼권의 본래 취지가 사회적 약자 보호이며 연대와 책임의 원리가 작동한다고 설명",
+      "flow_climax": "개인 몇몇의 이익을 위해 집단적 무력을 쓰라고 준 권리가 아니라는 강력한 일침으로 마무리",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "노동삼권, 보장은 됩니다. 하지만 선을 넘으면?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "누군가에게 심각한 고통을 주는 방식, 이건 남용입니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 14.0,
+          "text": "노동삼권은 사회적 약자인 노동자를 보호하기 위한 것"
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 19.0,
+          "text": "여기엔 연대와 책임이라는 아주 중요한 원리가 있습니다",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 19.0,
+          "end_sec": 25.0,
+          "text": "개인 몇몇 사람의 이익만을 위해서?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 25.0,
+          "end_sec": 32.0,
+          "text": "집단적으로 관철해내는 무력을 준 것이 아닙니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "노동삼권, 약자 보호인가 이익 관철 수단인가? 여러분의 생각을 댓글로 남겨주세요",
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 특정 이슈에 대한 논리적 분석과 주장 전개",
+      "visual_directives": [
+        "0~4초: '적정한 선' 발언 시 빨간 경계선 그래픽 오버레이",
+        "4~8초: '심각한 고통' '남용' 키워드 화면 중앙 큰 빨간 자막 강조",
+        "8~14초: 발화자 클로즈업, 차분한 설명 톤 유지",
+        "14~19초: '연대와 책임' 키워드 파란색 박스 처리로 인용 강조",
+        "19~25초: 질문형 자막과 함께 발화자 표정에 서서히 줌 인",
+        "25~32초: '무력을 준 것이 아닙니다' 발언 직후 0.5초 프리즈, 핵심 문장 전체 화면 자막"
+      ]
+    },
+    {
+      "topic": "기업의 다양한 이해관계자들과 각자의 역할",
+      "hook": "기업엔 투자자, 노동자, 소비자 모두 중요! 각자의 선을 넘지 말아야 한다!",
+      "clip_start_sec": 96.9,
+      "clip_end_sec": 138.9,
+      "clip_reason": "기업을 둘러싼 다양한 이해관계자(투자자, 노동자, 채권자, 소비자 등)의 역할을 비교하며, 각 주체가 '선을 넘지 않아야 한다'는 점을 강조하는 구간.",
+      "flow_intro": "기업을 둘러싼 다양한 이해관계자들을 하나씩 나열하며 각자의 역할을 짚는다",
+      "flow_middle": "투자자, 노동자, 채권자, 소비자, 기업 생태계까지 모두가 보호받아야 한다는 점을 강조한다",
+      "flow_climax": "누군가가 일방적으로 선을 넘어서는 안 된다는 핵심 메시지로 마무리한다",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "기업엔 투자자, 노동자, 소비자 모두가 관여합니다"
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 9.0,
+          "text": "투자자는 위험을 부담했으니 이익을 나눌 권리가 있죠",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 9.0,
+          "end_sec": 14.0,
+          "text": "노동자에겐 정당한 대가가 보장돼야 합니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 19.0,
+          "text": "채권자, 소비자, 연관 기업 생태계도 마찬가지입니다"
+        },
+        {
+          "start_sec": 19.0,
+          "end_sec": 25.0,
+          "text": "그런데 여기서 핵심이 나옵니다"
+        },
+        {
+          "start_sec": 25.0,
+          "end_sec": 32.0,
+          "text": "누군가가 일방적으로 선을 넘어서는 안 된다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 32.0,
+          "end_sec": 38.0,
+          "text": "투자자도, 노동자도, 누구도 예외는 없습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 38.0,
+          "end_sec": 42.0,
+          "text": "여러분은 누가 선을 넘었다고 생각하시나요?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "투자자, 노동자, 소비자 중 누가 선을 넘었다고 보시나요? 여러분의 생각을 댓글로 남겨주세요",
+      "angle": "comparison",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 특정 이슈에 대한 논리적 분석과 주장 전개",
+      "visual_directives": [
+        "0~9초: 화면 좌측에 '투자자', 우측에 '노동자' 텍스트를 번갈아 띄우며 비교 구도 형성",
+        "9~19초: 채권자, 소비자, 생태계 키워드가 순차적으로 화면에 등장하는 인포그래픽 연출",
+        "25~32초: '선을 넘지 않아야' 발언 시 화면 중앙에 큰 빨간 자막으로 핵심 키워드 강조",
+        "32~38초: 발화자 클로즈업 + 배경 어둡게 처리하여 긴장감 조성"
+      ]
+    }
+  ],
+  "youtube_url": "https://www.youtube.com/watch?v=LoFKRev_p1M",
+  "video_path": "",
+  "video_duration_sec": 349.479,
+  "transcript_path": "",
+  "video_title": "\"투자자도 할 수 없는 일\" 삼성 노조 뼈 때리는 이 대통령",
+  "generated_at": "2026-05-21T16:02:30",
+  "video_channel": "엠키타카 MKTK"
+}

@@ -1,0 +1,132 @@
+{
+  "plans": [
+    {
+      "rank": 1,
+      "angle": "title_anchor",
+      "format_type": "A",
+      "layout_classification": "talking_head",
+      "topic": "주제1",
+      "hook": "후크1",
+      "clip_section": "00:10~00:25",
+      "reason": "이유",
+      "flow_intro": "도입",
+      "flow_middle": "중간",
+      "flow_climax": "클라이맥스",
+      "narrations": [
+        {
+          "scene_id": 0,
+          "text": "자막",
+          "voice_text": "음성",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false
+        },
+        {
+          "scene_id": 1,
+          "text": "자막",
+          "voice_text": "음성",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false
+        },
+        {
+          "scene_id": 2,
+          "text": "자막",
+          "voice_text": "음성",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false
+        }
+      ],
+      "cta": "구독해주세요",
+      "headline_pin": "조국 사퇴 충격"
+    },
+    {
+      "rank": 2,
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "layout_classification": "talking_head",
+      "topic": "주제2",
+      "hook": "후크2",
+      "clip_section": "00:10~00:25",
+      "reason": "이유",
+      "flow_intro": "도입",
+      "flow_middle": "중간",
+      "flow_climax": "클라이맥스",
+      "narrations": [
+        {
+          "scene_id": 0,
+          "text": "자막",
+          "voice_text": "음성",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false
+        },
+        {
+          "scene_id": 1,
+          "text": "자막",
+          "voice_text": "음성",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false
+        },
+        {
+          "scene_id": 2,
+          "text": "자막",
+          "voice_text": "음성",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false
+        }
+      ],
+      "cta": "구독해주세요",
+      "headline_pin": "조국 사퇴 충격"
+    },
+    {
+      "rank": 3,
+      "angle": "comparison",
+      "format_type": "A",
+      "layout_classification": "talking_head",
+      "topic": "주제3",
+      "hook": "후크3",
+      "clip_section": "00:10~00:25",
+      "reason": "이유",
+      "flow_intro": "도입",
+      "flow_middle": "중간",
+      "flow_climax": "클라이맥스",
+      "narrations": [
+        {
+          "scene_id": 0,
+          "text": "자막",
+          "voice_text": "음성",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false
+        },
+        {
+          "scene_id": 1,
+          "text": "자막",
+          "voice_text": "음성",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false
+        },
+        {
+          "scene_id": 2,
+          "text": "자막",
+          "voice_text": "음성",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false
+        }
+      ],
+      "cta": "구독해주세요",
+      "headline_pin": "조국 사퇴 충격"
+    }
+  ],
+  "video_title": "테스트 영상",
+  "video_duration_sec": 60.0,
+  "output_dir": "/Users/kyusik/ContentsMaker/data/jpolitics/20260605_113937_테스트_영상",
+  "created_at": "2026-06-05T11:39:37.502873",
+  "youtube_url": "https://www.youtube.com/watch?v=test"
+}

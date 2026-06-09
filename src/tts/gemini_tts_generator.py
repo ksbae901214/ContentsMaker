@@ -115,6 +115,7 @@ def _call_gemini_tts(
     api_key: str,
     style_prompt: str | None = None,
     temperature: float | None = None,
+    max_retries: int = 4,
 ) -> bytes:
     """Call Gemini TTS API and return raw PCM bytes.
 
@@ -129,7 +130,15 @@ def _call_gemini_tts(
         temperature: Optional sampling temperature in [0, 2]. Lower values
             produce more consistent delivery (e.g., 0.5 for newscaster tone).
             ``None`` lets the API pick its default.
+        max_retries: Retry budget for transient empty-content responses
+            (FinishReason.OTHER, content=None) and 500 INTERNAL errors. The
+            same prompt is occasionally rejected by Gemini's response filter
+            on long Korean political text + style_prompt combos, even though
+            it succeeds on retry. lock-in (Charon + style_prompt + temp 0.5)
+            is preserved — only retry behavior is added (2026-06-08).
     """
+    import time
+
     client = genai.Client(api_key=api_key)
 
     contents = f"{style_prompt} {text}" if style_prompt else text
@@ -147,12 +156,46 @@ def _call_gemini_tts(
     if temperature is not None:
         config_kwargs["temperature"] = temperature
 
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=contents,
-        config=types.GenerateContentConfig(**config_kwargs),
+    last_finish = None
+    last_exc: Exception | None = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=contents,
+                config=types.GenerateContentConfig(**config_kwargs),
+            )
+            cand = response.candidates[0]
+            if cand.content and cand.content.parts:
+                part = cand.content.parts[0]
+                if part.inline_data and part.inline_data.data:
+                    return part.inline_data.data
+            last_finish = cand.finish_reason
+            logger.warning(
+                "Gemini TTS 빈 응답 (attempt %d/%d, finish_reason=%s) — 재시도",
+                attempt, max_retries, last_finish,
+            )
+        except Exception as e:
+            # 500 INTERNAL or transient HTTPX issues — retry.
+            msg = str(e)
+            if "500" in msg or "INTERNAL" in msg or "UNAVAILABLE" in msg or "503" in msg:
+                last_exc = e
+                logger.warning(
+                    "Gemini TTS 일시 오류 (attempt %d/%d): %s — 재시도",
+                    attempt, max_retries, msg[:200],
+                )
+            else:
+                # 400/permanent errors — propagate immediately.
+                raise
+        # Exponential backoff: 1s, 2s, 4s, 8s
+        if attempt < max_retries:
+            time.sleep(2 ** (attempt - 1))
+
+    if last_exc is not None:
+        raise last_exc
+    raise RuntimeError(
+        f"Gemini TTS {max_retries}회 모두 빈 응답 (last finish_reason={last_finish})"
     )
-    return response.candidates[0].content.parts[0].inline_data.data
 
 
 def _safe_filename(title: str) -> str:

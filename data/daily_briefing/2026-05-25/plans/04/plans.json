@@ -1,0 +1,205 @@
+{
+  "plans": [
+    {
+      "topic": "강남 아파트 중국인 싹쓸이 보도, 이재명 대통령의 가짜 뉴스 지적",
+      "hook": "강남 아파트 중국인 싹쓸이? 이재명 대통령이 직접 밝힌 진실은?",
+      "clip_start_sec": 73.5,
+      "clip_end_sec": 108.0,
+      "clip_reason": "이재명 대통령이 '중국인 강남 아파트 944채 매수' 보도를 가짜 뉴스라며, 실제 중국인 매수 건수는 5명에 불과하다고 반박하는 핵심 구간.",
+      "flow_intro": "이재명 대통령이 SNS에서 직접 가짜 뉴스라고 지적하며 반박을 시작하는 장면",
+      "flow_middle": "구체적인 수치를 제시하며 중국인 매수가 5명에 불과했다는 팩트를 공개",
+      "flow_climax": "싹쓸이라는 표현이 허위이며 증오를 부추기는 나쁜 뉴스라고 강하게 비판",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "중국인이 강남 아파트 싹쓸이? 이재명 대통령이 직접 반박했습니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "SNS에 올린 글, 가짜 뉴스라고 단언합니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 14.0,
+          "text": "1월부터 4월까지 강남구 아파트 포함 집합건물 중국인 매수, 단 5명",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 19.0,
+          "text": "944채 싹쓸이라는 보도, 실제로는 5명뿐이었습니다"
+        },
+        {
+          "start_sec": 19.0,
+          "end_sec": 24.0,
+          "text": "어떻게 5명이 싹쓸이입니까, 명백한 허위 뉴스",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 24.0,
+          "end_sec": 30.0,
+          "text": "증오를 부추기는 나쁜 뉴스라고 강하게 비판했습니다",
+          "subtitle_color": "blue"
+        },
+        {
+          "start_sec": 30.0,
+          "end_sec": 34.0,
+          "text": "944채 vs 5명, 이 차이 어떻게 보십니까?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "944채 싹쓸이 vs 실제 5명, 이 보도 여러분은 어떻게 보십니까? 팩트라고 생각하면 좋아요, 과장이라고 생각하면 댓글로 의견 남겨주세요",
+      "angle": "title_anchor",
+      "format_type": "A",
+      "format_reason": "스튜디오 배경에서 진행자 질문과 패널 논평이 오가는 시사 토론 형식",
+      "visual_directives": [
+        "0~4초: 서울경제TV 보도 화면(944채 싹쓸이)과 이재명 대통령 SNS 글 화면 좌우 분할",
+        "8~14초: '5명' 숫자를 화면 중앙에 크게 강조 자막으로 표시",
+        "14~19초: '944채' vs '5명' 숫자 대비를 좌우 분할로 시각화",
+        "19~24초: '허위 뉴스' 발언 시 발화자 클로즈업 + 붉은색 강조 자막",
+        "24~30초: '증오를 부추기는' 표현에 0.3초 프리즈 효과"
+      ]
+    },
+    {
+      "topic": "가짜 뉴스가 정치 정책과 국민 불안에 미치는 악영향",
+      "hook": "근거 없는 가짜 뉴스가 법안으로? 대한민국 언론의 민낯!",
+      "clip_start_sec": 242.0,
+      "clip_end_sec": 274.0,
+      "clip_reason": "검증되지 않은 가짜 뉴스가 국회의원 법안 발의로 이어지고 국민 불안을 부추기는 현실을 지적하며, 언론의 책임감을 강조하는 구간.",
+      "flow_intro": "검증되지 않은 뉴스가 국회의원 법안 발의로 이어지는 충격적 현실을 제시",
+      "flow_middle": "가짜 뉴스가 언론에서 정치권으로 흘러가는 악순환 구조를 구체적으로 설명",
+      "flow_climax": "근거 없는 뉴스가 실제 정책에 반영되는 대한민국의 현주소를 직시",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "검증 안 된 뉴스가 국회의원 법안이 됩니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "국민의힘 김문회 의원, 중국인 부동산 매입 금지법 발의",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 13.0,
+          "text": "문제는 이 법의 출발점이 가짜 뉴스라는 겁니다",
+          "subtitle_color": "red"
+        },
+        {
+          "start_sec": 13.0,
+          "end_sec": 18.0,
+          "text": "근거 없는 뉴스를 언론이 내보내고"
+        },
+        {
+          "start_sec": 18.0,
+          "end_sec": 22.0,
+          "text": "국민 불안을 부추기고",
+          "subtitle_color": "yellow"
+        },
+        {
+          "start_sec": 22.0,
+          "end_sec": 26.0,
+          "text": "정치권이 받아서 정책에 반영합니다"
+        },
+        {
+          "start_sec": 26.0,
+          "end_sec": 30.0,
+          "text": "이게 지금 대한민국에서 반복되고 있습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "가짜 뉴스가 법이 되는 나라, 정상입니까? 여러분 생각을 댓글로 남겨주세요",
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "format_reason": "스튜디오 배경에서 진행자 질문과 패널 논평이 오가는 시사 토론 형식",
+      "visual_directives": [
+        "0~4초: '검증 안 된 뉴스 → 법안' 텍스트를 화면 중앙에 크게 강조",
+        "4~8초: 발화자 클로즈업 + 하단에 '김문회 의원 법안 발의' 자막",
+        "8~13초: '가짜 뉴스' 키워드 붉은색 강조, 발화자 표정 줌 인",
+        "13~26초: 언론→불안→정치권→정책 흐름을 화살표 그래픽으로 순차 표시",
+        "26~30초: '반복' 키워드에서 0.5초 프리즈 후 CTA 전환"
+      ]
+    },
+    {
+      "topic": "강남 아파트 외국인 매수, 실제 주체는 미국/캐나다 국적 한인",
+      "hook": "강남 아파트 싹쓸이 주체, 중국인 아닌 미국/캐나다 교포였다?",
+      "clip_start_sec": 181.1,
+      "clip_end_sec": 223.9,
+      "clip_reason": "언론이 중국인 매수를 보도했지만, 실제로는 미국과 캐나다 국적의 한인들이 강남 아파트를 매수했다는 사실을 통계와 함께 비교하며 설명하는 구간.",
+      "flow_intro": "중국인 매수설의 실체를 파헤치는 질문으로 시작",
+      "flow_middle": "미국·캐나다 교포가 실제 매수 주체라는 사실 공개",
+      "flow_climax": "조사 없이 중국인으로 보도한 언론의 문제점 지적",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 3.0,
+          "text": "강남 아파트 싹쓸이, 정말 중국인일까요?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 3.0,
+          "end_sec": 8.0,
+          "text": "미국과 캐나다 국적 매수자, 대부분 한인 교포였습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 13.0,
+          "text": "외국인 매수의 대다수가 미국·캐나다 거주 한인들"
+        },
+        {
+          "start_sec": 13.0,
+          "end_sec": 18.0,
+          "text": "그런데 언론은 중국인이라고 보도했습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 18.0,
+          "end_sec": 23.0,
+          "text": "조사 없이 쏟아낸 기사, 사실과 달랐습니다",
+          "subtitle_color": "yellow"
+        },
+        {
+          "start_sec": 23.0,
+          "end_sec": 28.0,
+          "text": "사실대로라면 미국인, 캐나다인이 사고 있다고 했어야죠"
+        }
+      ],
+      "cta": "중국인이라고 보도한 언론, 정정 보도해야 할까요? 여러분 생각을 댓글로 남겨주세요",
+      "angle": "comparison",
+      "format_type": "A",
+      "format_reason": "스튜디오 배경에서 진행자 질문과 패널 논평이 오가는 시사 토론 형식",
+      "visual_directives": [
+        "0~3초: '중국인 매수' 보도 헤드라인과 물음표 오버레이로 의문 제기",
+        "3~8초: 화면 좌(중국인 매수 보도) 우(미국·캐나다 교포 실제 통계) 분할 대조",
+        "13~18초: '조사 없이' '중국인' 키워드 붉은색 강조 자막",
+        "23~28초: 팩트체크 결과 형식으로 '실제 매수자: 미국·캐나다 한인 교포' 큰 자막"
+      ]
+    }
+  ],
+  "youtube_url": "https://www.youtube.com/watch?v=XVFckry8opA",
+  "video_path": "",
+  "video_duration_sec": 4719.28,
+  "transcript_path": "",
+  "video_title": "[12시에 만나요] 이광수가 꿈꾸는 모두가 함께 잘 사는 세상ㅣ우리가 지금 '기부'를 얘기하는 이유ㅣ안진걸X김진아X장윤주ㅣ2026년 5월 25일 월요일",
+  "generated_at": "2026-05-26T13:38:45",
+  "video_channel": "김어준의 겸손은힘들다 뉴스공장"
+}

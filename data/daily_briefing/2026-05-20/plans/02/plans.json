@@ -1,0 +1,219 @@
+{
+  "plans": [
+    {
+      "topic": "스타벅스 5.18 편매 논란에 대한 금융 치료 및 불매 운동 제안",
+      "hook": "스타벅스 5.18 편매 논란, '금융 치료'로 바로잡는다!",
+      "clip_start_sec": 159.9,
+      "clip_end_sec": 213.4,
+      "clip_reason": "스타벅스의 5.18 편매 논란에 대해 '금융 치료'가 필요하다고 주장하며, 구체적인 불매 운동과 '스타벅스 가지 말고 주식 사자'는 슬로건을 제시하는 핵심 발언 구간입니다.",
+      "flow_intro": "스타벅스 5.18 편매 논란을 지적하며 '금융 치료' 필요성을 제기",
+      "flow_middle": "불매 운동 선언과 함께 '스타벅스 가지 말고 주식 사자' 슬로건 제시",
+      "flow_climax": "말만 하지 말고 행동으로 옮겨야 변화가 온다며 불매 운동 촉구",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "스타벅스가 5.18을 편매했습니다. 금융 치료가 필요합니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "당연히 불매로 가야죠. 그래야 고쳐집니다"
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 13.0,
+          "text": "스타벅스 코리아 불매 운동을 강력하게 하겠습니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 13.0,
+          "end_sec": 18.0,
+          "text": "슬로건은 이겁니다. 스타벅스 가지 말고 주식 사자",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 18.0,
+          "end_sec": 23.0,
+          "text": "커피 한 잔값으로 코스닥 ETF 한 주 살 수 있어요"
+        },
+        {
+          "start_sec": 23.0,
+          "end_sec": 28.0,
+          "text": "어차피 쓰는 돈이라 생각하면 괜찮습니다"
+        },
+        {
+          "start_sec": 28.0,
+          "end_sec": 33.0,
+          "text": "매일 한 주씩 사세요. 스타벅스는 절대 안 갑니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 33.0,
+          "end_sec": 40.0,
+          "text": "말만 하고 행동 안 하니까 안 고쳐지는 겁니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 40.0,
+          "end_sec": 45.0,
+          "text": "이번에는 강력하게 행동으로 보여줍시다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "여러분은 이 상황에서 어떻게 하시겠습니까? 불매에 동참하신다면 좋아요, 다른 의견 있으시면 댓글로 남겨주세요",
+      "angle": "title_anchor",
+      "format_type": "A",
+      "format_reason": "스튜디오 배경의 인터뷰 형식, 진행자와 패널의 질의응답 및 논평",
+      "visual_directives": [
+        "0~4초: 스타벅스 로고와 5.18 키워드를 화면 중앙에 크게 배치",
+        "13~18초: '스타벅스 가지 말고 주식 사자' 슬로건을 큰 글씨로 강조",
+        "33~40초: 발화자 표정에 클로즈업, 단호한 어조 강조"
+      ]
+    },
+    {
+      "topic": "스타벅스 5.18 논란 반복, 금융 치료만이 해결책?",
+      "hook": "스타벅스 5.18 조롱 반복? '금융 치료'만이 해결책이다!",
+      "clip_start_sec": 61.8,
+      "clip_end_sec": 94.2,
+      "clip_reason": "5.18 민주화운동에 대한 스타벅스의 '조롱' 논란을 지적하고, 이러한 문제가 반복되는 이유가 '금융 치료'가 되지 않았기 때문이라는 주장이 시청자의 공감을 얻을 수 있는 구간입니다.",
+      "flow_intro": "5.18 민주화운동 조롱 논란이 반복되고 있다는 문제 제기로 시작",
+      "flow_middle": "왜 이런 일이 반복되는지에 대한 원인 분석 - '치료가 안 됐기 때문'",
+      "flow_climax": "'금융 치료'가 핵심 해결책이라는 주장과 함께 현 상황 비판",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "5.18 민주화운동을 조롱하는 일, 또 터졌습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "스타벅스에서 박종철 열사까지, 역사 조롱이 반복되고 있습니다"
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 12.0,
+          "text": "왜 이런 일이 계속 반복될까요?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 12.0,
+          "end_sec": 16.0,
+          "text": "치료가 안 됐기 때문입니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 16.0,
+          "end_sec": 21.0,
+          "text": "어떤 치료가 필요하냐, 바로 금융 치료입니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 21.0,
+          "end_sec": 26.0,
+          "text": "금융 치료가 안 되니까 같은 잘못을 계속 반복하고 있는 겁니다"
+        },
+        {
+          "start_sec": 26.0,
+          "end_sec": 32.0,
+          "text": "여러분은 이 문제, 어떻게 해결해야 한다고 보십니까?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "역사 조롱이 반복되는 이유, 정말 '금융 치료'가 답일까요? 여러분 생각을 댓글로 남겨주세요",
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "format_reason": "스튜디오 배경의 인터뷰 형식, 진행자와 패널의 질의응답 및 논평",
+      "visual_directives": [
+        "0~4초: 스타벅스 로고와 5.18 관련 이미지 대비 컷으로 논란 상기",
+        "8~12초: '왜 반복?' 질문 자막을 화면 중앙에 크게 배치",
+        "12~16초: '치료가 안 됐다' 발언 시 발화자 클로즈업 + 붉은 자막 강조",
+        "16~21초: '금융 치료' 키워드 노란색 큰 자막으로 화면 중앙 배치",
+        "21~26초: 진행자와 패널 투샷으로 대화 분위기 전달"
+      ]
+    },
+    {
+      "topic": "스타벅스 코리아의 막대한 시장 점유율과 매출 현황",
+      "hook": "한국 스타벅스, 미국 다음으로 매장 많다? 3조원 매출의 비밀!",
+      "clip_start_sec": 113.5,
+      "clip_end_sec": 141.9,
+      "clip_reason": "스타벅스 코리아가 전 세계적으로 미국 다음으로 많은 매장을 보유하고 있으며, 연간 3조 원 이상의 매출을 올린다는 사실을 언급하여 그 시장 지배력을 비교/대조하는 구간입니다.",
+      "flow_intro": "스타벅스 한국 매장 수 2,077개라는 충격적인 숫자로 시작하며 시청자의 관심을 잡는다",
+      "flow_middle": "미국, 중국 다음으로 전 세계 3위라는 비교 데이터와 국민 10만 명당 매장 수로 한국의 스타벅스 밀도를 강조한다",
+      "flow_climax": "연간 매출 3조 원이라는 수치로 스타벅스 코리아의 압도적 시장 지배력을 확인시킨다",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "스타벅스 한국 매장, 2,077개입니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 9.0,
+          "text": "미국, 중국 다음으로 전 세계에서 가장 많습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 9.0,
+          "end_sec": 14.0,
+          "text": "국민 10만 명당 매장 수도 미국 다음으로 많아요",
+          "subtitle_color": "yellow"
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 19.0,
+          "text": "그만큼 스타벅스 코리아, 한국에서 잘되고 있다는 얘기죠"
+        },
+        {
+          "start_sec": 19.0,
+          "end_sec": 24.0,
+          "text": "지난해 매출 기준 3조 원 넘게 일으키고 있습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 24.0,
+          "end_sec": 28.0,
+          "text": "커피 한 잔에 이 정도 매출, 어떻게 생각하시나요?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "커피값 5천 원 시대, 3조 원 매출의 스타벅스 코리아. 여러분은 이 가격이 합리적이라고 보시나요? 댓글로 의견 남겨주세요",
+      "angle": "comparison",
+      "format_type": "A",
+      "format_reason": "스튜디오 배경의 인터뷰 형식, 진행자와 패널의 질의응답 및 논평",
+      "visual_directives": [
+        "0~4초: '2,077개' 숫자를 화면 중앙에 크게 띄우고 페이드인",
+        "4~9초: 세계 지도 그래픽으로 미국-중국-한국 순위 비교 표시",
+        "9~14초: 인포그래픽으로 '국민 10만 명당 매장 수' 바 차트 삽입",
+        "19~24초: '3조 원' 숫자를 붉은색 강조 자막으로 화면 중앙에 크게 표시",
+        "전반적으로 진행자 클로즈업과 데이터 그래픽 교차 편집"
+      ]
+    }
+  ],
+  "youtube_url": "https://www.youtube.com/watch?v=tbKiJujQtgo",
+  "video_path": "",
+  "video_duration_sec": 5215.83,
+  "transcript_path": "",
+  "video_title": "[12시에 만나요] 삼성전자 노조, 총파업 돌입? 시장에 미칠 파장은?ㅣ국민가수X국민투자자 이은미 등장! | 김진아 아나운서 | 2026년 5월 20일 수요일",
+  "generated_at": "2026-05-21T15:57:17",
+  "video_channel": "김어준의 겸손은힘들다 뉴스공장"
+}

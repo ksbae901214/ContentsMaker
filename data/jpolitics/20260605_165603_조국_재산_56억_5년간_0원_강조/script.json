@@ -1,0 +1,171 @@
+{
+  "metadata": {
+    "title": "조국 재산 56억 5년간 0원 강조",
+    "source_type": "jpolitics_youtube",
+    "duration_sec": 30.0,
+    "created_at": "2026-06-05T16:57:07.946406",
+    "topic": "조국 재산 56억 5년간 0원 강조"
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "timestamp": 0.0,
+      "duration": 2.32,
+      "type": "title",
+      "text": "조국 전 장관 재산 56억",
+      "voice_text": "조국 전 법무부 장관의 재산이 무려 56억 원입니다.",
+      "visual_layout": "data_card",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "headline_pin": "5년간 재산 변동 0원",
+      "comparison_cards": [
+        {
+          "name": "조국",
+          "party": "조국혁신당",
+          "party_color": "#0073CF",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/조국_01.jpg",
+          "data_label": "총 재산",
+          "data_value": "56억 원"
+        }
+      ],
+      "clip_search_query": "조국 재산 공개 뉴스",
+      "clip_source_timestamp": [
+        0.0,
+        8.0
+      ]
+    },
+    {
+      "id": 2,
+      "timestamp": 2.32,
+      "duration": 3.36,
+      "type": "body",
+      "text": "5년간 변동액 0원",
+      "voice_text": "그런데 놀라운 건, 이 금액이 5년 동안 단 1원도 변하지 않았다는 겁니다.",
+      "visual_layout": "data_card",
+      "subtitle_color": "red",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "comparison_cards": [
+        {
+          "name": "조국",
+          "party": "조국혁신당",
+          "party_color": "#0073CF",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/조국_01.jpg",
+          "data_label": "5년 변동",
+          "data_value": "0원"
+        }
+      ],
+      "clip_search_query": "조국 재산 변동 없음",
+      "clip_source_timestamp": [
+        8.0,
+        18.0
+      ]
+    },
+    {
+      "id": 3,
+      "timestamp": 5.68,
+      "duration": 3.2,
+      "type": "body",
+      "text": "부동산 38억 금융자산 18억",
+      "voice_text": "재산 구성을 보면 부동산 38억, 금융자산 18억으로 신고되어 있습니다.",
+      "visual_layout": "data_card",
+      "subtitle_color": "white",
+      "subtitle_emphasis": false,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "comparison_cards": [
+        {
+          "name": "조국",
+          "party": "조국혁신당",
+          "party_color": "#0073CF",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/조국_01.jpg",
+          "data_label": "부동산/금융",
+          "data_value": "38억/18억"
+        }
+      ],
+      "clip_search_query": "조국 부동산 재산",
+      "clip_source_timestamp": [
+        18.0,
+        28.0
+      ]
+    },
+    {
+      "id": 4,
+      "timestamp": 8.879999999999999,
+      "duration": 3.36,
+      "type": "body",
+      "text": "이자 배당 수익은 어디로?",
+      "voice_text": "5년이면 이자나 배당 수익이 발생할 텐데, 이 돈은 대체 어디로 간 걸까요?",
+      "visual_layout": "normal",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "재산 신고 의혹 뉴스",
+      "clip_source_timestamp": [
+        28.0,
+        38.0
+      ]
+    },
+    {
+      "id": 5,
+      "timestamp": 12.239999999999998,
+      "duration": 2.64,
+      "type": "body",
+      "text": "재산 공개 제도의 맹점",
+      "voice_text": "전문가들은 현행 재산 공개 제도에 허점이 있다고 지적합니다.",
+      "visual_layout": "normal",
+      "subtitle_color": "white",
+      "subtitle_emphasis": false,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "정치인 재산 공개 제도 문제점",
+      "clip_source_timestamp": [
+        38.0,
+        48.0
+      ]
+    },
+    {
+      "id": 6,
+      "timestamp": 14.879999999999999,
+      "duration": 3.52,
+      "type": "comment",
+      "text": "여러분의 생각은?",
+      "voice_text": "5년간 재산 변동 제로, 여러분은 어떻게 생각하시나요? 댓글로 의견 남겨주세요.",
+      "visual_layout": "normal",
+      "subtitle_color": "blue",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_source_timestamp": [
+        48.0,
+        60.0
+      ]
+    }
+  ],
+  "audio": {
+    "tts_script": "조국 전 법무부 장관의 재산이 무려 56억 원입니다. 그런데 놀라운 건, 이 금액이 5년 동안 단 1원도 변하지 않았다는 겁니다. 재산 구성을 보면 부동산 38억, 금융자산 18억으로 신고되어 있습니다. 5년이면 이자나 배당 수익이 발생할 텐데, 이 돈은 대체 어디로 간 걸까요? 전문가들은 현행 재산 공개 제도에 허점이 있다고 지적합니다. 5년간 재산 변동 제로, 여러분은 어떻게 생각하시나요? 댓글로 의견 남겨주세요.",
+    "tts_voice": "ko-KR-InJoonNeural",
+    "tts_rate": "+22%",
+    "inter_scene_gap_ms": 300,
+    "sfx_enabled": false,
+    "bgm_enabled": false
+  },
+  "background": {
+    "type": "gradient",
+    "colors": [
+      "#1a1a2e",
+      "#16213e"
+    ]
+  },
+  "headline_pin": "5년간 재산 변동 0원"
+}

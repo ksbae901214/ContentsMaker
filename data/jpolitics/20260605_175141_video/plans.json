@@ -1,0 +1,296 @@
+{
+  "plans": [
+    {
+      "rank": 1,
+      "angle": "title_anchor",
+      "format_type": "A",
+      "layout_classification": "data_comparison",
+      "topic": "2026 지방선거 출구조사 대실패 - 서울시장 예측 완전히 빗나가",
+      "hook": "출구조사가 틀렸다? 서울시장 당선자가 뒤바뀐 충격의 밤",
+      "clip_section": "00:31~00:46",
+      "reason": "제목의 핵심인 '최대 승부처 서울'과 '출구조사 빗나감'을 중심으로, 민주당 정원호 후보가 5.4%p 앞선다던 예측이 완전히 뒤집힌 드라마틱한 반전을 부각. 오영훈 국민의힘 후보의 실제 당선이라는 데이터 비교가 시청자 충격을 극대화함.",
+      "flow_intro": "출구조사 발표 순간의 긴장감 → 서울시장 민주당 우세 예측 공개",
+      "flow_middle": "개표 결과 반전 → 국민의힘 오영훈 실제 당선 확정",
+      "flow_climax": "예측 vs 실제 데이터 비교 + 오영훈 당선 소감 클립",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "출구조사, 서울시장 민주당 5.4%p 앞서",
+          "voice_text": "방송 3사 출구조사 결과, 서울시장 선거에서 민주당 정원호 후보가 5.4%포인트 차이로 앞설 것으로 예측됐습니다.",
+          "visual_layout": "data_card",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "cards_metadata": [
+            {
+              "name": "정원호",
+              "party": "더불어민주당",
+              "data_label": "출구조사 예측",
+              "data_value": "+5.4%p 우세"
+            }
+          ],
+          "clip_search_query": "'최대 승부처' 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04. 출구조사 발표",
+          "clip_source_timestamp": [
+            25.5,
+            37.4
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "그런데 개표 결과는 정반대",
+          "voice_text": "하지만 실제 개표 결과는 완전히 달랐습니다. 최대 승부처 서울에서 예측이 빗나간 겁니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_search_query": "'최대 승부처' 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04. 예측 빗나감",
+          "clip_source_timestamp": [
+            37.4,
+            43.4
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "국민의힘 오영훈, 역전 당선",
+          "voice_text": "국민의힘 오영훈 후보가 역전에 성공하며 서울시장에 당선됐습니다.",
+          "visual_layout": "data_card",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "오영훈",
+              "party": "국민의힘",
+              "data_label": "최종 결과",
+              "data_value": "역전 당선"
+            }
+          ],
+          "clip_search_query": "'최대 승부처' 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04. 당선 확정",
+          "clip_source_timestamp": [
+            39.9,
+            46.2
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "\"그럴 리가 없는데...\"",
+          "voice_text": "오영훈 당선자는 '그럴 리가 없는데 싶으면서도 마음이 힘들어진 순간도 있었다'고 소감을 밝혔습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "clip_search_query": "'최대 승부처' 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04. 오영훈 인터뷰",
+          "clip_source_timestamp": [
+            43.4,
+            48.6
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "출구조사의 한계, 다시 드러나",
+          "voice_text": "경남지사 선거에서도 8%포인트 이상 차이 예측이 빗나가며, 출구조사의 한계가 다시 한번 드러났습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_search_query": "'최대 승부처' 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04. 경남지사",
+          "clip_source_timestamp": [
+            48.6,
+            51.2
+          ]
+        }
+      ],
+      "cta": "출구조사 왜 틀렸을까? 댓글로 의견 남겨주세요",
+      "headline_pin": "서울시장 출구조사 대반전"
+    },
+    {
+      "rank": 2,
+      "angle": "audience_resonance",
+      "format_type": "B",
+      "layout_classification": "data_comparison",
+      "topic": "출구조사 대역전: 서울시장 예측 5.4%p 격차가 완전히 뒤집혔다",
+      "hook": "출구조사 5.4%p 앞섰는데... 결과는 정반대?",
+      "clip_section": "00:31~00:46",
+      "reason": "시청자들이 가장 궁금해하는 '출구조사는 왜 틀렸나'에 대한 직접적 답변. 서울시장 선거의 극적 반전은 모든 유권자가 경험한 충격이므로 공감대 형성이 용이함.",
+      "flow_intro": "출구조사 결과 발표 직후 민주당 우세 예측 → 시청자 기대감 조성",
+      "flow_middle": "실제 개표 결과 정반대 → '그럴 리가' 당사자 반응으로 감정 연결",
+      "flow_climax": "경남까지 이어진 오차 → 출구조사 신뢰도 의문 제기",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "출구조사 5.4%p 앞섰는데",
+          "voice_text": "출구조사에서 민주당 정원호 후보가 5.4퍼센트 포인트 앞섰는데요",
+          "visual_layout": "data_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "정원호",
+              "party": "더불어민주당",
+              "data_label": "출구조사 예측",
+              "data_value": "+5.4%p"
+            }
+          ],
+          "clip_search_query": "'최대 승부처' 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04. 출구조사 결과",
+          "clip_source_timestamp": [
+            31.7,
+            37.4
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "결과는 완전히 반대",
+          "voice_text": "실제 개표 결과는 완전히 반대였습니다",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            37.4,
+            39.9
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "\"그럴 리가 없는데...\"",
+          "voice_text": "그럴 리가 없는데 싶으면서도 마음이 힘들어진 순간도 있었습니다",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            39.9,
+            46.2
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "경남도 8%p 예측 빗나가",
+          "voice_text": "경남지사 선거도 8퍼센트 포인트 이상 앞설 거란 예측이 빗나갔습니다",
+          "visual_layout": "data_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "김경수",
+              "party": "더불어민주당",
+              "data_label": "출구조사 예측",
+              "data_value": "+8%p 이상"
+            }
+          ],
+          "clip_search_query": "'최대 승부처' 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04. 경남지사",
+          "clip_source_timestamp": [
+            46.2,
+            51.2
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "출구조사, 믿을 수 있나?",
+          "voice_text": "과연 출구조사를 믿을 수 있을까요",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            9.6,
+            12.7
+          ]
+        }
+      ],
+      "cta": "출구조사 왜 틀렸을까? 구독하고 다음 영상에서 확인하세요",
+      "headline_pin": "출구조사 대역전극"
+    },
+    {
+      "rank": 3,
+      "angle": "comparison",
+      "format_type": "B",
+      "layout_classification": "data_comparison",
+      "topic": "출구조사 vs 실제 결과 - 서울시장 선거 예측 대역전",
+      "hook": "출구조사 5.4%p 앞섰는데... 결과는 정반대?",
+      "clip_section": "00:31~00:46",
+      "reason": "출구조사 예측과 실제 결과의 극명한 차이를 데이터로 비교하면 시청자의 호기심을 자극할 수 있음. 서울시장 선거에서 민주당 정원호 후보가 5.4%p 앞선다는 예측이 완전히 뒤집힌 사례는 출구조사 신뢰도에 대한 의문을 제기하기에 최적의 소재.",
+      "flow_intro": "출구조사 결과 발표 → 민주당 우세 예측 제시",
+      "flow_middle": "실제 개표 결과 반전 → 후보 반응 인터뷰",
+      "flow_climax": "경남지사 선거도 예측 빗나감 → 출구조사 신뢰도 의문",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "출구조사: 민주당 +5.4%p 우세",
+          "voice_text": "출구조사 결과, 민주당 정원호 후보가 5.4%포인트 앞설 거라 예측됐습니다.",
+          "visual_layout": "data_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "정원호",
+              "party": "더불어민주당",
+              "data_label": "출구조사 예측",
+              "data_value": "+5.4%p 우세"
+            }
+          ],
+          "clip_search_query": "'최대 승부처' 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04. 출구조사 결과",
+          "clip_source_timestamp": [
+            31.7,
+            37.4
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "실제 결과는 정반대",
+          "voice_text": "그런데 실제 개표 결과는 완전히 반대였습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            37.4,
+            39.9
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "\"그럴 리가 없는데...\"",
+          "voice_text": "그럴 리가 없는데 싶으면서도 마음이 힘들어진 순간도 있었습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            39.9,
+            46.2
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "경남도 예측 8%p 차이",
+          "voice_text": "경남지사 선거도 민주당 김경수 후보가 8%포인트 이상 앞설 거란 예측이 나왔습니다.",
+          "visual_layout": "data_card",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "cards_metadata": [
+            {
+              "name": "김경수",
+              "party": "더불어민주당",
+              "data_label": "출구조사 예측",
+              "data_value": "+8%p 이상"
+            }
+          ],
+          "clip_source_timestamp": [
+            46.2,
+            51.2
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "출구조사, 얼마나 믿을 수 있나",
+          "voice_text": "최대 승부처 서울부터 빗나간 출구조사, 과연 얼마나 신뢰할 수 있을까요?",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            28.7,
+            31.7
+          ]
+        }
+      ],
+      "cta": "출구조사 믿으세요? 댓글로 의견 남겨주세요!",
+      "headline_pin": "출구조사 대역전극"
+    }
+  ],
+  "video_title": "‘최대 승부처’ 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04.",
+  "video_duration_sec": 120.654,
+  "output_dir": "/Users/kyusik/ContentsMaker/data/jpolitics/20260605_175141_video",
+  "created_at": "2026-06-05T17:52:49.462638",
+  "youtube_url": "https://www.youtube.com/watch?v=tHtky7NY3sg"
+}

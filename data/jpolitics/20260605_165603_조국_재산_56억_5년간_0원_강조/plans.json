@@ -1,0 +1,404 @@
+{
+  "plans": [
+    {
+      "rank": 1,
+      "angle": "title_anchor",
+      "format_type": "A",
+      "layout_classification": "data_comparison",
+      "topic": "조국 재산 56억 5년간 0원 강조",
+      "hook": "조국 전 장관의 재산이 5년간 단 1원도 변하지 않았다?",
+      "clip_section": "00:00~00:60",
+      "reason": "제목 핵심 키워드인 '56억', '5년간', '0원'을 데이터 카드로 시각화하여 숫자의 임팩트를 극대화",
+      "flow_intro": "재산 56억원이라는 숫자와 5년간 변동 0원이라는 충격적 사실로 시청자 주목",
+      "flow_middle": "재산 내역 구성과 변동 없는 이유에 대한 의문 제기",
+      "flow_climax": "정치인 재산 공개 제도의 허점과 시청자 판단 유도",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "조국 전 장관 재산 56억",
+          "voice_text": "조국 전 법무부 장관의 재산이 무려 56억 원입니다.",
+          "visual_layout": "data_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "조국",
+              "party": "조국혁신당",
+              "data_label": "총 재산",
+              "data_value": "56억 원"
+            }
+          ],
+          "clip_search_query": "조국 재산 공개 뉴스",
+          "clip_source_timestamp": [
+            0.0,
+            8.0
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "5년간 변동액 0원",
+          "voice_text": "그런데 놀라운 건, 이 금액이 5년 동안 단 1원도 변하지 않았다는 겁니다.",
+          "visual_layout": "data_card",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "조국",
+              "party": "조국혁신당",
+              "data_label": "5년 변동",
+              "data_value": "0원"
+            }
+          ],
+          "clip_search_query": "조국 재산 변동 없음",
+          "clip_source_timestamp": [
+            8.0,
+            18.0
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "부동산 38억 금융자산 18억",
+          "voice_text": "재산 구성을 보면 부동산 38억, 금융자산 18억으로 신고되어 있습니다.",
+          "visual_layout": "data_card",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "cards_metadata": [
+            {
+              "name": "조국",
+              "party": "조국혁신당",
+              "data_label": "부동산/금융",
+              "data_value": "38억/18억"
+            }
+          ],
+          "clip_search_query": "조국 부동산 재산",
+          "clip_source_timestamp": [
+            18.0,
+            28.0
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "이자 배당 수익은 어디로?",
+          "voice_text": "5년이면 이자나 배당 수익이 발생할 텐데, 이 돈은 대체 어디로 간 걸까요?",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_search_query": "재산 신고 의혹 뉴스",
+          "clip_source_timestamp": [
+            28.0,
+            38.0
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "재산 공개 제도의 맹점",
+          "voice_text": "전문가들은 현행 재산 공개 제도에 허점이 있다고 지적합니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_search_query": "정치인 재산 공개 제도 문제점",
+          "clip_source_timestamp": [
+            38.0,
+            48.0
+          ]
+        },
+        {
+          "scene_id": 6,
+          "text": "여러분의 생각은?",
+          "voice_text": "5년간 재산 변동 제로, 여러분은 어떻게 생각하시나요? 댓글로 의견 남겨주세요.",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            48.0,
+            60.0
+          ]
+        }
+      ],
+      "cta": "이 영상이 유익했다면 구독과 좋아요 부탁드립니다",
+      "headline_pin": "5년간 재산 변동 0원"
+    },
+    {
+      "rank": 2,
+      "angle": "audience_resonance",
+      "format_type": "B",
+      "layout_classification": "data_comparison",
+      "topic": "조국 재산 56억, 5년간 변동 0원의 의미",
+      "hook": "5년 동안 1원도 안 변한 재산? 56억이 그대로?",
+      "clip_section": "00:00~00:60",
+      "reason": "고위 공직자의 재산 변동이 5년간 0원이라는 점은 일반 시청자들이 직관적으로 의문을 가질 수 있는 포인트. 내 월급은 오르락내리락하는데 56억이 꿈쩍도 안 한다고? 라는 공감대 형성 가능.",
+      "flow_intro": "5년간 재산 변동 0원이라는 충격적 팩트로 시작",
+      "flow_middle": "일반인의 재산 변동과 비교해 이상함을 부각",
+      "flow_climax": "이게 가능한 이유와 시청자가 판단해야 할 포인트 제시",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "조국 전 장관 재산 56억",
+          "voice_text": "조국 전 장관의 재산, 56억 원입니다.",
+          "visual_layout": "data_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "조국",
+              "party": "조국혁신당",
+              "data_label": "신고 재산",
+              "data_value": "56억 원"
+            }
+          ],
+          "clip_search_query": "조국 재산 56억 5년간 0원 강조 핵심발언",
+          "clip_source_timestamp": [
+            0.0,
+            8.0
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "5년간 변동액 0원",
+          "voice_text": "그런데 5년 동안 변동액이 0원입니다. 단 1원도요.",
+          "visual_layout": "data_card",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "조국",
+              "party": "조국혁신당",
+              "data_label": "5년간 변동",
+              "data_value": "0원"
+            }
+          ],
+          "clip_search_query": "조국 재산 5년 변동 0원",
+          "clip_source_timestamp": [
+            8.0,
+            16.0
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "여러분 재산은 어떠세요?",
+          "voice_text": "여러분 재산은 5년 동안 어떻게 변했나요? 월급 오르고, 집값 변하고, 이자 붙고.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            16.0,
+            24.0
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "56억이 5년간 그대로?",
+          "voice_text": "그런데 56억이 5년 동안 1원도 변동 없이 그대로라고요?",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_search_query": "조국 재산 신고 의혹",
+          "clip_source_timestamp": [
+            24.0,
+            32.0
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "이자만 해도 연 수천만원",
+          "voice_text": "56억을 예금만 해놔도 이자가 연 수천만 원입니다.",
+          "visual_layout": "data_card",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "cards_metadata": [
+            {
+              "name": "조국",
+              "party": "조국혁신당",
+              "data_label": "예상 연이자",
+              "data_value": "약 2억 원"
+            }
+          ],
+          "clip_source_timestamp": [
+            32.0,
+            40.0
+          ]
+        },
+        {
+          "scene_id": 6,
+          "text": "어떻게 0원이 가능할까",
+          "voice_text": "그런데 어떻게 변동 0원이 가능한 걸까요?",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_search_query": "조국 재산 변동 0원 어떻게",
+          "clip_source_timestamp": [
+            40.0,
+            48.0
+          ]
+        },
+        {
+          "scene_id": 7,
+          "text": "여러분의 판단은?",
+          "voice_text": "이게 정상인지, 뭔가 이상한 건지. 판단은 여러분의 몫입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            48.0,
+            56.0
+          ]
+        },
+        {
+          "scene_id": 8,
+          "text": "구독하고 더 많은 팩트 확인",
+          "voice_text": "구독과 좋아요 누르고 더 많은 정치 팩트 확인하세요.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            56.0,
+            60.0
+          ]
+        }
+      ],
+      "cta": "이 재산 신고, 정상일까요? 댓글로 의견 남겨주세요!",
+      "headline_pin": "56억이 5년간 0원?"
+    },
+    {
+      "rank": 3,
+      "angle": "comparison",
+      "format_type": "B",
+      "layout_classification": "data_comparison",
+      "topic": "조국 전 장관 재산 신고 논란 - 5년간 56억 동결의 진실",
+      "hook": "56억 재산이 5년간 단 1원도 안 변했다?",
+      "clip_section": "00:00~00:60",
+      "reason": "정치인 재산 신고의 투명성 논란은 시청자의 관심을 끄는 핵심 이슈이며, 숫자 기반 비교는 직관적 이해를 돕는다",
+      "flow_intro": "충격적인 재산 수치 제시로 시청자 주목 유도",
+      "flow_middle": "5년간 변동 없음의 의미와 의혹 제기",
+      "flow_climax": "재산 신고 제도의 허점과 정치적 함의 전달",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "조국 재산 56억",
+          "voice_text": "조국 전 법무부 장관의 재산이 56억 원입니다",
+          "visual_layout": "data_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "조국",
+              "party": "조국혁신당",
+              "data_label": "신고 재산",
+              "data_value": "56억 원"
+            }
+          ],
+          "clip_search_query": "조국 재산 56억 5년간 0원 강조 핵심발언",
+          "clip_source_timestamp": [
+            0.0,
+            8.0
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "5년간 변동 0원",
+          "voice_text": "그런데 이 금액이 5년 동안 단 1원도 변하지 않았습니다",
+          "visual_layout": "data_card",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "조국",
+              "party": "조국혁신당",
+              "data_label": "5년간 변동",
+              "data_value": "0원"
+            }
+          ],
+          "clip_search_query": "조국 재산 변동 없음 논란",
+          "clip_source_timestamp": [
+            8.0,
+            16.0
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "이자 수익도 없다?",
+          "voice_text": "56억이면 은행 이자만 연 1억이 넘는데 변동이 없다는 게 가능할까요",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_search_query": "재산 신고 이자 수익 의혹",
+          "clip_source_timestamp": [
+            16.0,
+            24.0
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "재산 신고의 맹점",
+          "voice_text": "현행 재산 신고 제도는 자진 신고 방식이라 검증이 어렵습니다",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_search_query": "국회의원 재산 신고 제도 문제점",
+          "clip_source_timestamp": [
+            24.0,
+            32.0
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "야당의 의혹 제기",
+          "voice_text": "야당에서는 재산 축소 신고 또는 은닉 가능성을 제기하고 있습니다",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "clip_search_query": "조국 재산 축소 신고 의혹 야당",
+          "clip_source_timestamp": [
+            32.0,
+            40.0
+          ]
+        },
+        {
+          "scene_id": 6,
+          "text": "여당의 반박",
+          "voice_text": "반면 여당 측은 적법하게 신고했으며 정치 공세라고 반박합니다",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "clip_search_query": "조국 재산 신고 적법 반박",
+          "clip_source_timestamp": [
+            40.0,
+            48.0
+          ]
+        },
+        {
+          "scene_id": 7,
+          "text": "진실은 어디에",
+          "voice_text": "56억 5년 동결, 여러분은 어떻게 생각하시나요",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_search_query": "조국 재산 논란 결론",
+          "clip_source_timestamp": [
+            48.0,
+            56.0
+          ]
+        },
+        {
+          "scene_id": 8,
+          "text": "댓글로 의견 남겨주세요",
+          "voice_text": "여러분의 생각을 댓글로 알려주세요",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            56.0,
+            60.0
+          ]
+        }
+      ],
+      "cta": "이 논란 어떻게 보시나요? 댓글로 의견 남겨주세요!",
+      "headline_pin": "56억 5년간 0원"
+    }
+  ],
+  "video_title": "조국 재산 56억 5년간 0원 강조",
+  "video_duration_sec": 60.0,
+  "output_dir": "/Users/kyusik/ContentsMaker/data/jpolitics/20260605_165603_조국_재산_56억_5년간_0원_강조",
+  "created_at": "2026-06-05T16:56:52.161857",
+  "youtube_url": ""
+}

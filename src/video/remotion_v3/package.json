@@ -1,0 +1,22 @@
+{
+  "name": "jpolitics-remotion-v3",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated Remotion package for 정치쇼츠 V3 (@김정치입니다 format). Do not share node_modules with src/video/remotion/.",
+  "scripts": {
+    "preview": "remotion preview src/index.ts",
+    "build": "remotion render src/index.ts JpoliticsShorts out/video.mp4",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.0.0"
+  }
+}

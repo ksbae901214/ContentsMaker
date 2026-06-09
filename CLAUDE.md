@@ -202,6 +202,7 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 010-jpolitics-v3-isolated: Added Python 3.11+ (백엔드), TypeScript 5.x + React 19 / Next.js 16 (프론트엔드), Remotion 4.x (영상 렌더링, 독립 패키지)
 - 014: Gemini 통합 Phase 1A–4 (초안, 미통합)
   - Phase 1A: `gemini_youtube_transcriber.py` — Gemini Files API로 transcript 추출 (Whisper 대체, 20~40초). 폴백 체인: VTT → Gemini → Whisper.
   - Phase 1B: `gemini_backend.py` — `ANALYZER_BACKEND=gemini` 으로 분석 백엔드를 Gemini 2.5 Flash로 교체. 기본값은 `claude` (14일 안정성 검증 후 전환 예정).
@@ -212,15 +213,12 @@ Do not enable the upload toggles or post these videos publicly without verifying
   - Phase 4: `political_fact_checker.py` — Gemini Grounding + Google Search로 정치 발언 팩트체크. 🟢/🟡/🔴 배지 + 출처 첨부 (100 grounded queries/일 무료).
   - 신규 Gemini selectors: `gemini_web_selectors.py` (이미지·영상 공용 selector 외부화).
 - 013: 정치 숏츠 V2 (Feature 011 Phase B) — Remotion 시각 연출 강화. Scene 모델에 `subtitle_color`/`subtitle_emphasis`/`visual_layout`/`secondary_clip_path` 추가. plan_to_script가 Narration의 자막 색을 Scene으로 매핑 + visual_directives의 "분할/split" 키워드 자동 검출 → 매칭 씬에 layout=split. SceneText.tsx에 V2 색·강조 적용 (yellow/red/blue/white + 1.4x 폰트). 신규 SplitScreenScene 컴포넌트(상·하 분할, 각 1080x960). Hook/CTA 씬은 자동 yellow+emphasis. e2e: 8씬 30초 영상에 7가지 색·강조·split 모두 적용 확인.
-- 012: 정치 숏츠 V2 (Feature 011 Phase A) — "잘나가는 정치 유튜버" 지침(MBC 라디오 시사 + 뉴스핌TV) 반영. ShortsPlan에 `format_type` (A=인터뷰/논평, B=현장 밀착) + `format_reason` + `visual_directives`(좌·우 분할 등 시각 연출 지시) 추가. Narration에 `subtitle_color` (white/red/yellow/blue) + `subtitle_emphasis` 추가. Stage A 프롬프트에 A/B 자동 분류 가이드 + 예시. Stage B 프롬프트에 자막 색 프리셋 + 시각 연출 지시 + "댓글 고래잡기" 강화 CTA. V1 plans.json 호환 유지(default fallback). 영상 렌더는 Phase B에서 적용 예정.
-- 011: Political Shorts Planner (Feature 009) — RTF 6요소 3 기획안 + Gemini TTS Charon (정치 모드)
   - 신규: `political_pro` 모드 (탭 + API + CLI `python3 -m src.main political-pro`)
   - 3 기획안 Claude 단일 호출, angle 3종(title_anchor / audience_resonance / comparison)
   - Gemini TTS Charon voice + Newscaster style (British RP, Rapid, Temp 0.5) — `style_prompt` + `temperature` 파라미터 추가
   - 원본 9:16 클립 + Remotion 렌더 (변동비 $0)
   - FR-020 자동 업로드 차단 (백엔드 강제 가드), FR-021 검수 필수 경고 배너
   - 33 신규 테스트 통과
-- 010: Cost guard — prevents accidental Premium+ credit usage
   - 영상: `MODEL_DATA_CY` 맵 41개 모델 + `_select_model()` + 폴백 체인 (Kling 2.5 → MiniMax → Wan 2.2)
   - 이미지: `FreepikImageGenerator` 신규 — 1 세션 N 이미지 + Nano Banana Pro 무제한 + `_generate_via_freepik()` 분기
   - UI: 만화 모드에 `imageProvider` 토글 (freepik/gpt)
@@ -243,5 +241,5 @@ Do not enable the upload toggles or post these videos publicly without verifying
   - 테스트: 7개 신규/수정 테스트 파일
 
 ## Active Technologies
-- Python 3.11+ (백엔드), TypeScript 5.x + React 19 / Next.js 16 (프론트엔드 + API 라우트), Remotion 4.x (영상 렌더링) + Claude Code CLI (분석), `google-genai` (Gemini TTS, 기존 import), `yt-dlp` + `openai-whisper` (영상/자막), `ffmpeg` (클립 cut), `playwright`(기존 다른 모드용, 본 기능에서는 미사용) (009-political-pro-planner)
-- 로컬 JSON/MP4 파일 (`data/political_pro/{timestamp}_{slug}/` — 영상·transcript·plans 보관, `data/scripts/` — 검수 가능한 ShortsScript, `data/outputs/` — 최종 MP4). 데이터베이스 없음. (009-political-pro-planner)
+- Python 3.11+ (백엔드), TypeScript 5.x + React 19 / Next.js 16 (프론트엔드), Remotion 4.x (영상 렌더링, 독립 패키지) (010-jpolitics-v3-isolated)
+- 로컬 JSON/MP4 파일 (`data/jpolitics/{ts}_{slug}/` — 영상·plans·script 보관, `data/politician_cards/{name}.json` — 인물 카드 캐시, `data/jpolitics_reference/` — 채널 샘플 키프레임). 데이터베이스 없음. (010-jpolitics-v3-isolated)

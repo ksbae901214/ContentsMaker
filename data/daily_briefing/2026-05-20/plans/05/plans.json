@@ -1,0 +1,186 @@
+{
+  "plans": [
+    {
+      "topic": "이스라엘의 가자지구 선박 나포 법적 근거 논란",
+      "hook": "가자지구가 이스라엘 영해입니까? 법적 근거가 뭐예요?",
+      "clip_start_sec": 61.3,
+      "clip_end_sec": 93.1,
+      "clip_reason": "진행자가 이스라엘의 선박 나포 행위에 대한 법적 근거와 가자지구의 영해 여부를 직접적으로 질문하며 영상 제목의 핵심을 다룸.",
+      "flow_intro": "진행자가 이스라엘의 선박 나포에 대한 법적 근거를 직접적으로 추궁하며 시작",
+      "flow_middle": "가자지구가 이스라엘 영해인지, 주권 침해가 있었는지 반복 질문하며 긴장 고조",
+      "flow_climax": "한두 척이 아닌 다수 선박이 관련되었다는 사실이 드러나며 문제의 규모가 부각",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "법적 근거가 뭐예요? 거기가 이스라엘 영해입니까?",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 9.0,
+          "text": "가자지구를 가는데 이스라엘 영해를 지나야 하나요?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 9.0,
+          "end_sec": 15.0,
+          "text": "이스라엘 군이 계속 모니터링하고 있었다고 합니다"
+        },
+        {
+          "start_sec": 15.0,
+          "end_sec": 22.0,
+          "text": "이스라엘 영해냐, 주권을 침해했냐 이 말입니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 22.0,
+          "end_sec": 28.0,
+          "text": "이 배들이 한두 척이 아니라면서요",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "이스라엘이 타국 선박을 나포할 법적 권한이 있다고 보십니까? 여러분의 생각을 댓글로 남겨주세요",
+      "angle": "title_anchor",
+      "format_type": "A",
+      "format_reason": "진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확하여 MBC 라디오 시사 스타일과 유사.",
+      "visual_directives": [
+        "0~4초: '법적 근거' '영해' 키워드를 화면 중앙에 큰 빨간 자막으로 강조",
+        "4~9초: 지도 그래픽 삽입 — 가자지구와 이스라엘 영해 경계 표시하여 지리적 맥락 제공",
+        "15~22초: 진행자 발언 시 클로즈업, '주권 침해' 텍스트 노란색 하이라이트",
+        "22~28초: '한두 척이 아니다' 발언 시 숫자 강조 효과, 화면 하단에 선박 아이콘 복수 배치"
+      ]
+    },
+    {
+      "topic": "이스라엘의 가자지구 통제, 국제법적 합법성 논란",
+      "hook": "불법이냐 합법이냐 판단해야죠! 이스라엘의 가자지구 통제, 과연 정당한가?",
+      "clip_start_sec": 146.9,
+      "clip_end_sec": 178.8,
+      "clip_reason": "진행자가 이스라엘의 선박 나포 행위의 법적 합법성 판단을 촉구하고, 이에 대해 담당자가 이스라엘의 군사적 통제 입장을 설명하는 부분이 시청자의 공감을 얻을 수 있음.",
+      "flow_intro": "진행자가 불법 여부 판단을 촉구하며 긴장감 조성",
+      "flow_middle": "담당자가 이스라엘의 군사적 통제 논리를 설명하는 과정에서 핵심 쟁점 부각",
+      "flow_climax": "진행자가 '이스라엘 영해가 아니죠?'라는 질문으로 논리적 모순을 정조준",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "불법이냐 합법이냐, 당연히 판단해야죠",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "이스라엘이 가자 지역에 군사 작전 중이고 군사적 통제를 가하고 있습니다"
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 13.0,
+          "text": "가자 지역 출입에 대해 이스라엘이 통제하고 있습니다"
+        },
+        {
+          "start_sec": 13.0,
+          "end_sec": 18.0,
+          "text": "선박이든 인원이든 출입을 통제한다는 게 이스라엘 입장입니다"
+        },
+        {
+          "start_sec": 18.0,
+          "end_sec": 23.0,
+          "text": "이스라엘 영해가 아니죠?",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 23.0,
+          "end_sec": 28.0,
+          "text": "영해는 아닙니다만 가자 지역 전체를 군사적으로 통제하고 있습니다",
+          "subtitle_color": "blue"
+        },
+        {
+          "start_sec": 28.0,
+          "end_sec": 32.0,
+          "text": "자기 영토가 아닌 곳을 통제한다는 논리, 여러분은 어떻게 보십니까",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "자기 영토가 아닌 곳을 통제하는 게 합법일 수 있을까요? 여러분의 판단을 댓글로 남겨주세요",
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "format_reason": "진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확하여 MBC 라디오 시사 스타일과 유사.",
+      "visual_directives": [
+        "0~4초: '불법이냐 합법이냐' 키워드를 화면 중앙에 큰 자막으로 강조",
+        "18~23초: 진행자 질문 '이스라엘 영해가 아니죠?' 발화 시 발화자 얼굴 클로즈업 + 빨간색 자막",
+        "23~28초: 담당자 답변 시 화면 하단에 '군사적 통제 ≠ 영토 주권' 텍스트 박스 삽입",
+        "전체 톤: 인터뷰 형식 유지, 질문-답변 교차 시 컷 전환으로 긴장감 유지"
+      ]
+    },
+    {
+      "topic": "이스라엘의 해상 봉쇄, 국제법적 합법성 찬반 논쟁",
+      "hook": "불법 vs 합법? 이스라엘 해상 봉쇄, 국제법적 논란의 양측 주장!",
+      "clip_start_sec": 205.1,
+      "clip_end_sec": 237.2,
+      "clip_reason": "대통령 안보 2차장이 이스라엘의 해상 봉쇄 조치에 대한 국제법적 논란을 설명하며, 항행 자유 원칙 위반 주장과 교전 상태 합법 주장이라는 양측의 입장을 명확히 비교 제시함.",
+      "flow_intro": "대통령 안보 2차장이 국제법 논란을 언급하며 긴장감 조성",
+      "flow_middle": "항행 자유 원칙 위반 vs 교전 상태 합법이라는 양측 주장을 직접 인용으로 대비",
+      "flow_climax": "검토 후 추가 보고하겠다는 답변으로 결론 없이 열린 결말",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "국제법적으로도 굉장히 논란이 되고 있는 이슈입니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 9.0,
+          "text": "일부에서는 이스라엘의 행위가 항행 자유 원칙을 위반한 불법이라고 주장합니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 9.0,
+          "end_sec": 14.0,
+          "text": "반면 이스라엘은 교전 상태에서 해상 봉쇄 조치는 합법이라고 반박하고 있습니다",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 18.0,
+          "text": "조금 더 검토를 해서 추가 보고 드리도록 하겠습니다"
+        },
+        {
+          "start_sec": 18.0,
+          "end_sec": 22.0,
+          "text": "불법인가, 합법인가? 국제법 전문가들도 의견이 갈립니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "항행 자유 원칙 위반이라면 불법, 교전 상태라면 합법. 여러분은 어느 쪽이 맞다고 보십니까? 댓글로 의견 남겨주세요",
+      "angle": "comparison",
+      "format_type": "A",
+      "format_reason": "진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확하여 MBC 라디오 시사 스타일과 유사.",
+      "visual_directives": [
+        "0~4초: 대통령 안보 2차장 발언 장면, 하단에 '국제법 논란' 키워드 강조 자막",
+        "4~9초: 화면 좌측에 '불법' 빨간 글씨, 우측에 '항행 자유 원칙 위반' 텍스트 배치",
+        "9~14초: 화면 좌(불법 주장)/우(합법 주장) 반반 분할로 양측 입장 대비 연출",
+        "14~18초: 발화자 클로즈업, '추가 검토' 부분에서 물음표 그래픽 오버레이",
+        "18~22초: 중앙에 '불법 vs 합법?' 큰 자막으로 시청자 판단 유도"
+      ]
+    }
+  ],
+  "youtube_url": "https://www.youtube.com/watch?v=yQxEra5tGFA",
+  "video_path": "",
+  "video_duration_sec": 541.279,
+  "transcript_path": "",
+  "video_title": "\"가자지구가 이스라엘 영해입니까?\" 우리 국민 잡아가자 찐으로 폭발한 대통령 살벌 지시",
+  "generated_at": "2026-05-21T16:04:15",
+  "video_channel": "엠키타카 MKTK"
+}

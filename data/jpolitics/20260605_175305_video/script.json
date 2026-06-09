@@ -1,0 +1,160 @@
+{
+  "metadata": {
+    "title": "출구조사 예측 실패와 실제 개표 결과의 괴리",
+    "source_type": "jpolitics_youtube",
+    "duration_sec": 30.0,
+    "created_at": "2026-06-05T17:54:07.607038",
+    "source_label": "출처: 공개 자료 기반 재구성",
+    "topic": "출구조사 예측 실패와 실제 개표 결과의 괴리"
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "timestamp": 0.0,
+      "duration": 2.96,
+      "type": "title",
+      "text": "출구조사, 서울부터 완전히 틀렸다",
+      "voice_text": "이번 선거 출구조사가 최대 승부처 서울에서부터 완전히 빗나갔습니다.",
+      "visual_layout": "data_card",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "headline_pin": "출구조사 서울서 역전",
+      "comparison_cards": [
+        {
+          "name": "서울시장 선거",
+          "party": "출구조사 예측",
+          "party_color": "#888888",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/서울시장 선거_01.jpg",
+          "data_label": "민주당 우세 예측",
+          "data_value": "+5.4%p"
+        }
+      ],
+      "clip_search_query": "'최대 승부처' 서울부터 빗나간 출구조사…당락 바뀌기도 [9시 뉴스] / KBS  2026.06.04. 출구조사 예측",
+      "clip_source_timestamp": [
+        28.7,
+        34.6
+      ]
+    },
+    {
+      "id": 2,
+      "timestamp": 2.96,
+      "duration": 3.92,
+      "type": "body",
+      "text": "예측: 민주당 5.4%p 앞서 → 실제: 역전패",
+      "voice_text": "민주당 정원호 후보가 5.4%포인트 앞설 것으로 예측됐지만, 실제 결과는 정반대였습니다.",
+      "visual_layout": "data_card",
+      "subtitle_color": "red",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "comparison_cards": [
+        {
+          "name": "서울시장",
+          "party": "개표 결과",
+          "party_color": "#888888",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/서울시장_01.jpg",
+          "data_label": "예측 vs 실제",
+          "data_value": "완전 역전"
+        }
+      ],
+      "clip_source_timestamp": [
+        34.6,
+        43.4
+      ]
+    },
+    {
+      "id": 3,
+      "timestamp": 6.88,
+      "duration": 4.08,
+      "type": "body",
+      "text": "경남도 8%p 예측 뒤집혀",
+      "voice_text": "경남지사 선거도 민주당 김경수 후보가 8%포인트 이상 앞설 거란 예측이 완전히 빗나갔습니다.",
+      "visual_layout": "data_card",
+      "subtitle_color": "white",
+      "subtitle_emphasis": false,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "comparison_cards": [
+        {
+          "name": "경남지사",
+          "party": "국민의힘 박완수",
+          "party_color": "#888888",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/경남지사_01.jpeg",
+          "data_label": "최종 득표차",
+          "data_value": "+2.5%p 승"
+        }
+      ],
+      "clip_source_timestamp": [
+        48.6,
+        57.8
+      ]
+    },
+    {
+      "id": 4,
+      "timestamp": 10.96,
+      "duration": 4.0,
+      "type": "body",
+      "text": "대구: 0.8%p 박빙 예측 → 실제 9%p 격차",
+      "voice_text": "대구시장 선거는 0.8%포인트 초박빙이 예측됐지만, 실제로는 9%포인트나 차이가 났습니다.",
+      "visual_layout": "data_card",
+      "subtitle_color": "red",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "comparison_cards": [
+        {
+          "name": "대구시장",
+          "party": "예측 오차",
+          "party_color": "#888888",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/대구시장_01.jpg",
+          "data_label": "예측 vs 실제 격차",
+          "data_value": "11배 차이"
+        }
+      ],
+      "clip_source_timestamp": [
+        63.3,
+        71.2
+      ]
+    },
+    {
+      "id": 5,
+      "timestamp": 14.96,
+      "duration": 3.12,
+      "type": "comment",
+      "text": "출구조사, 왜 이렇게 틀렸나",
+      "voice_text": "이번 출구조사는 왜 이렇게까지 빗나간 걸까요? 댓글로 의견 남겨주세요.",
+      "visual_layout": "normal",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_source_timestamp": [
+        71.2,
+        78.1
+      ]
+    }
+  ],
+  "audio": {
+    "tts_script": "이번 선거 출구조사가 최대 승부처 서울에서부터 완전히 빗나갔습니다. 민주당 정원호 후보가 5.4%포인트 앞설 것으로 예측됐지만, 실제 결과는 정반대였습니다. 경남지사 선거도 민주당 김경수 후보가 8%포인트 이상 앞설 거란 예측이 완전히 빗나갔습니다. 대구시장 선거는 0.8%포인트 초박빙이 예측됐지만, 실제로는 9%포인트나 차이가 났습니다. 이번 출구조사는 왜 이렇게까지 빗나간 걸까요? 댓글로 의견 남겨주세요.",
+    "tts_voice": "ko-KR-InJoonNeural",
+    "tts_rate": "+22%",
+    "inter_scene_gap_ms": 300,
+    "sfx_enabled": false,
+    "bgm_enabled": false
+  },
+  "background": {
+    "type": "gradient",
+    "colors": [
+      "#1a1a2e",
+      "#16213e"
+    ]
+  },
+  "headline_pin": "출구조사 서울서 역전"
+}

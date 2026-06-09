@@ -1,0 +1,34 @@
+{
+  "transcript": [
+    {
+      "start": 0.0,
+      "end": 60.0,
+      "text": "샘플"
+    }
+  ],
+  "key_moments": [
+    {
+      "start": 10.0,
+      "end": 25.0,
+      "summary": "핵심"
+    }
+  ],
+  "layout_classification": "talking_head",
+  "angles": [
+    {
+      "name": "title_anchor",
+      "topic": "주제1",
+      "hook": "후크1"
+    },
+    {
+      "name": "audience_resonance",
+      "topic": "주제2",
+      "hook": "후크2"
+    },
+    {
+      "name": "comparison",
+      "topic": "주제3",
+      "hook": "후크3"
+    }
+  ]
+}

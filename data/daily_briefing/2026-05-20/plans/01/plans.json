@@ -1,0 +1,216 @@
+{
+  "plans": [
+    {
+      "topic": "정용진 기업의 오너 중심 마케팅 전략 비판",
+      "hook": "고객 아닌 오너 마음만 신경 쓰는 재벌 기업 마케팅의 실체!",
+      "clip_start_sec": 37.0,
+      "clip_end_sec": 70.5,
+      "clip_reason": "재벌 기업의 마케팅이 고객보다 오너의 비위를 맞추는 데 집중한다는 핵심 논평으로, 정용진 관련 논란의 본질을 설명합니다.",
+      "flow_intro": "재벌 기업 마케팅의 숨겨진 목표가 무엇인지 취재 경험을 바탕으로 폭로하는 도입",
+      "flow_middle": "홍보와 마케팅의 진짜 목적이 고객이 아닌 오너의 비위 맞추기라는 핵심 논점 전개",
+      "flow_climax": "정용진 지시 여부와 관계없이 이런 마케팅이 나오는 구조적 문제 제기",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "재벌들 취재하면서 발견한 충격적인 사실",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 9.0,
+          "text": "홍보도 마케팅도 회사 제품 잘 파는 게 목표일 것 같죠?"
+        },
+        {
+          "start_sec": 9.0,
+          "end_sec": 14.0,
+          "text": "근데 이걸 제일 우선 목표로 삼고 있는 것 같지가 않더라고요",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 20.0,
+          "text": "마케팅할 때 제일 먼저 신경 쓰는 건 고객이 아니라 오너 마음에 들까",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 20.0,
+          "end_sec": 26.0,
+          "text": "그렇기 때문에 정용진이 지시했는지 안 했는지는 중요하지 않습니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 26.0,
+          "end_sec": 33.0,
+          "text": "이런 마케팅이 나온다는 것 자체가 구조의 문제입니다"
+        }
+      ],
+      "cta": "여러분이 다니는 회사도 고객보다 윗선 눈치 보는 마케팅 해본 적 있으신가요? 경험담 댓글로 남겨주세요",
+      "angle": "title_anchor",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확",
+      "visual_directives": [
+        "0~4초: 기자 발화 클로즈업, '충격적인 사실' 자막 강조",
+        "9~14초: '목표로 삼고 있는 것 같지 않다' 발언 시 화면 살짝 줌 인",
+        "14~20초: 핵심 발언 '고객이 아니라 오너 마음에 들까' — 화면 좌(고객 아이콘)/우(오너 아이콘) 대비 그래픽 삽입",
+        "20~26초: '지시했는지 안 했는지 중요하지 않다' 발언 직후 0.5초 프리즈"
+      ]
+    },
+    {
+      "topic": "별다방 카드 환불 정책의 불공정성 논란",
+      "hook": "별다방 카드 환불, 60% 사용해야? '쿠팡 시즌2' 논란!",
+      "clip_start_sec": 90.6,
+      "clip_end_sec": 124.8,
+      "clip_reason": "시청자 제보를 통해 별다방 카드 환불 정책의 불공정성을 지적하며, 많은 소비자가 공감할 만한 불만을 대변합니다.",
+      "flow_intro": "시청자 제보로 별다방 카드 환불 정책의 황당한 조건을 폭로하며 시작",
+      "flow_middle": "진행자와 패널이 60% 사용 조건의 부당함에 대해 격앙된 반응을 보이며 문제 제기",
+      "flow_climax": "불공정 약관이라는 결론과 함께 소비자원 제재 필요성을 촉구하며 마무리",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "별다방 카드 환불하러 갔더니 돌아온 대답"
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "남은 금액의 60%를 써야 환불이 된다고?",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 11.0,
+          "text": "쿠팡 시즌 2라는 말이 나올 정도입니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 11.0,
+          "end_sec": 15.0,
+          "text": "도대체 무슨 근거로 60%를 써야 환불이 되는 건지"
+        },
+        {
+          "start_sec": 15.0,
+          "end_sec": 19.0,
+          "text": "이건 상품권도 아니고 내 돈인데요",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 19.0,
+          "end_sec": 24.0,
+          "text": "소비자원에서 제재를 가해야 할 불공정 약관입니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 24.0,
+          "end_sec": 28.0,
+          "text": "그냥 수수료 떼고 돌려주면 되는 거 아닌가요"
+        },
+        {
+          "start_sec": 28.0,
+          "end_sec": 34.0,
+          "text": "여러분도 이런 경험 있으신가요? 댓글로 알려주세요",
+          "subtitle_color": "blue"
+        }
+      ],
+      "cta": "혹시 별다방에서 비슷한 경험 있으신가요? 여러분의 사연, 댓글로 알려주세요",
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확",
+      "visual_directives": [
+        "0~4초: 별다방 매장 이미지 또는 카드 이미지 배경으로 제보 내용 자막 강조",
+        "4~8초: '60%' 숫자를 화면 중앙에 크게 빨간색으로 표시, 충격 효과음 삽입",
+        "8~11초: '쿠팡 시즌2' 텍스트를 노란색 강조 자막으로 화면 하단에 배치",
+        "11~19초: 진행자 발언 구간 — 발화자 클로즈업, 격앙된 표정 포착",
+        "19~24초: '불공정 약관' 키워드 화면 중앙 크게, 소비자원 로고 이미지 삽입 가능",
+        "28~34초: CTA 구간 — 댓글 아이콘 애니메이션과 함께 질문 자막 강조"
+      ]
+    },
+    {
+      "topic": "정용진의 언어유희에 대한 비판과 호칭 변경 선언",
+      "hook": "정용진 '찌개는 찌개라 한다' 발언에 '정병진'으로 맞대응!",
+      "clip_start_sec": 137.6,
+      "clip_end_sec": 177.4,
+      "clip_reason": "정용진의 인스타그램 발언('나는 찌개를 찌개라 한다')에 대해 언어의 사회적 합의를 강조하며, 그를 '정병진'으로 부르겠다는 직접적인 맞대응을 보여줍니다.",
+      "flow_intro": "정용진의 인스타그램 '찌개를 찌개라 한다' 발언을 화면에 띄우며 시작",
+      "flow_middle": "언어는 사회적 합의라는 논리로 정용진의 주장을 정면 반박",
+      "flow_climax": "앞으로 '정병진'으로 부르겠다는 선언으로 맞대응 완성",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "정용진이 인스타에 이렇게 썼습니다"
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "나는 찌개를 찌개라 한다, 알아둬라 개이들아",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 13.0,
+          "text": "나는 사회적 규칙에 얽매이지 않는다는 말투죠"
+        },
+        {
+          "start_sec": 13.0,
+          "end_sec": 18.0,
+          "text": "그런데 언어라는 건 사회적 합의입니다",
+          "subtitle_color": "blue"
+        },
+        {
+          "start_sec": 18.0,
+          "end_sec": 23.0,
+          "text": "네 마음대로 부르는 걸 네가 인정한다면"
+        },
+        {
+          "start_sec": 23.0,
+          "end_sec": 28.0,
+          "text": "나도 너를 정용진이라고 안 부르겠다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 28.0,
+          "end_sec": 33.0,
+          "text": "앞으로 정병진이라고 부르겠습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 33.0,
+          "end_sec": 38.0,
+          "text": "제 마음입니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "내 마음대로 부르겠다는 논리, 여러분은 동의하십니까? 의견 댓글로 남겨주세요",
+      "angle": "comparison",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확",
+      "visual_directives": [
+        "0~4초: 정용진 인스타그램 게시물 캡처 화면 전체 표시",
+        "4~8초: '찌개를 찌개라 한다' 텍스트를 화면 중앙에 크게 강조",
+        "13~18초: 화면 좌(정용진 발언) 우(사전적 정의/사회적 합의) 분할로 대비",
+        "23~33초: '정병진' 선언 시 붉은색 큰 자막으로 화면 중앙 강조 + 발화자 클로즈업",
+        "33~38초: '제 마음입니다' 발언에 정용진 원 발언과 병치하여 아이러니 연출"
+      ]
+    }
+  ],
+  "youtube_url": "https://www.youtube.com/watch?v=uWdjHCao_q4",
+  "video_path": "",
+  "video_duration_sec": 10467.15,
+  "transcript_path": "",
+  "video_title": "김어준의 겸손은힘들다 뉴스공장 2026년 5월 20일 수요일 [이광수, 여론조사, 김영빈, 전태진, 조국, 퍼니포, 영화공장, 경남 지자체장 후보 5인, 충북 지자체장 후보 5인]",
+  "generated_at": "2026-05-21T15:55:23",
+  "video_channel": "김어준의 겸손은힘들다 뉴스공장"
+}

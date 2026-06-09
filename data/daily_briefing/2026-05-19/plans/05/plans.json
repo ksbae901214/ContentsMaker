@@ -1,0 +1,188 @@
+{
+  "plans": [
+    {
+      "topic": "관계의 위기와 이별의 아픔",
+      "hook": "우린 몇 주째 제대로 된 적 없어, 내가 뭘 잘못했는지 밤새 고민해",
+      "clip_start_sec": 292.6,
+      "clip_end_sec": 322.1,
+      "clip_reason": "관계의 문제점을 인식하고 자책하며 이별을 암시하는 핵심 감정이 잘 드러나는 구간.",
+      "flow_intro": "몇 주째 제대로 된 적 없다는 고백으로 관계의 위기를 직면하는 시작",
+      "flow_middle": "밤새 뭘 잘못했는지 고민하며 자책하는 내면의 갈등",
+      "flow_climax": "화가 난 건 알지만 내 잘못이 아니라며 이별을 암시하는 결정적 순간",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 5.0,
+          "text": "우린 몇 주째 제대로 된 적이 없어요",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 5.0,
+          "end_sec": 10.0,
+          "text": "밤새 잠 못 자며 고민했어요, 내가 뭘 잘못한 건지"
+        },
+        {
+          "start_sec": 10.0,
+          "end_sec": 16.0,
+          "text": "당신이 화난 거 알아요"
+        },
+        {
+          "start_sec": 16.0,
+          "end_sec": 22.0,
+          "text": "하지만 이건 내 잘못이 아니에요",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 22.0,
+          "end_sec": 27.0,
+          "text": "우린 그냥 사랑하기엔 맞지 않았던 거예요",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 27.0,
+          "end_sec": 30.0,
+          "text": "그래도 난 아직 당신을 사랑해요",
+          "subtitle_color": "blue"
+        }
+      ],
+      "cta": "관계가 안 맞는다는 걸 알면서도 사랑한다고 말하는 이 마음, 여러분은 이해되시나요? 비슷한 경험 있으시면 댓글로 나눠주세요",
+      "angle": "title_anchor",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 진행자와 다수 패널이 참여하는 시사 토론 형식으로 추정",
+      "visual_directives": [
+        "0~5초: '몇 주째' 키워드를 화면 중앙에 크게 배치, 발화자 얼굴 클로즈업",
+        "5~10초: 잠 못 이루는 밤의 분위기, 조명 어둡게 처리",
+        "16~22초: '내 잘못이 아니에요' 발언 시 화면 좌(자책하는 표정) 우(단호한 표정) 분할로 내면 갈등 표현",
+        "22~27초: '맞지 않았던 거예요' 결정적 발언 직후 0.5초 프리즈",
+        "27~30초: 마지막 고백 시 발화자 눈가에 줌 인"
+      ]
+    },
+    {
+      "topic": "풋풋한 연애 초기의 설렘과 긴장감",
+      "hook": "어색하게 서 있던 현관, '너무 빠르지 않게, 나와 함께 흔들려줘'",
+      "clip_start_sec": 45.6,
+      "clip_end_sec": 75.5,
+      "clip_reason": "새로운 관계의 시작에서 느껴지는 어색함과 설렘, 그리고 상대방의 배려가 잘 표현되어 시청자들이 공감할 수 있는 구간.",
+      "flow_intro": "어색하게 현관 앞에 서 있는 두 사람의 긴장감 있는 첫 만남",
+      "flow_middle": "잠시 기다린 후 웃음이 터지고, 상대방이 '너무 빠르지 않게'라며 배려하는 순간",
+      "flow_climax": "'나와 함께 흔들려줘'라는 말에 긴장이 녹아내리는 설렘의 정점",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "어색하게 현관 앞에 서 있던 그 순간"
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 9.0,
+          "text": "잠시 기다렸죠, 웃음이 터졌고 상대방도 미소 지었습니다"
+        },
+        {
+          "start_sec": 9.0,
+          "end_sec": 14.0,
+          "text": "그리고 이렇게 말했습니다"
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 20.0,
+          "text": "너무 빠르지 않게, 나와 함께 흔들려줘",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 20.0,
+          "end_sec": 25.0,
+          "text": "긴장되죠, 하지만 괜찮아요",
+          "subtitle_color": "blue"
+        },
+        {
+          "start_sec": 25.0,
+          "end_sec": 30.0,
+          "text": "연애 초기의 그 떨림, 기억나시나요?",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "연애 초기 그 떨리던 순간, 여러분은 어떤 기억이 있으신가요? 댓글로 나눠주세요",
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 진행자와 다수 패널이 참여하는 시사 토론 형식으로 추정",
+      "visual_directives": [
+        "0~4초: 현관 앞 어색한 분위기를 표현하는 정적인 컷",
+        "9~14초: '너무 빠르지 않게'라는 핵심 대사 직전 살짝 줌 인",
+        "14~20초: 핵심 문구 '너무 빠르지 않게, 나와 함께 흔들려줘'를 화면 중앙에 큰 자막으로 강조",
+        "25~30초: 시청자 공감 유도를 위해 따뜻한 톤의 클로즈업"
+      ]
+    },
+    {
+      "topic": "과거의 만남이 현재의 가족으로 이어진 변화",
+      "hook": "그 춤이 아기를 보며 말할 기회가 될 줄 누가 알았을까?",
+      "clip_start_sec": 176.0,
+      "clip_end_sec": 206.3,
+      "clip_reason": "과거의 우연한 만남(춤)이 현재의 소중한 가족(아기)으로 이어지는 극적인 변화를 보여주어 비교/대조가 명확한 구간.",
+      "flow_intro": "아기가 엄마를 닮았다는 감탄으로 시작하며 가족의 따뜻한 순간을 포착",
+      "flow_middle": "과거의 우연한 춤이 현재의 소중한 가족으로 이어졌다는 회상 전개",
+      "flow_climax": "아기를 바라보며 함께하자는 고백으로 감동적 마무리",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "발끝부터 햇살 같은 머리카락까지, 당신을 꼭 닮았어요"
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "누가 알았을까요",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 14.0,
+          "text": "그날의 춤이 이런 기회로 이어질 줄"
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 20.0,
+          "text": "내 아기를 바라보며 말할 수 있는 이 순간",
+          "subtitle_color": "blue"
+        },
+        {
+          "start_sec": 20.0,
+          "end_sec": 26.0,
+          "text": "나와 함께 해줘요, 내 곁에 서서",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 26.0,
+          "end_sec": 30.0,
+          "text": "우연이 만든 가족, 그 시작은 단 한 번의 춤이었습니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "우연한 만남이 인생을 바꾼 경험, 여러분도 있으신가요? 댓글로 여러분의 이야기를 들려주세요",
+      "angle": "comparison",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 진행자와 다수 패널이 참여하는 시사 토론 형식으로 추정",
+      "visual_directives": [
+        "0~4초: 아기와 부모의 클로즈업, 닮은 모습 강조",
+        "4~8초: '누가 알았을까요' 핵심 질문 화면 중앙에 큰 자막으로 강조",
+        "8~14초: 화면 좌(과거 춤추는 장면 회상 이미지)/우(현재 아기와 함께하는 모습) 반반 분할로 시간의 흐름 대비",
+        "20~26초: 고백 순간 발화자 표정에 줌 인, '나와 함께' 강조 자막 붉은색 처리",
+        "26~30초: 가족 전체 샷으로 마무리, 따뜻한 톤 유지"
+      ]
+    }
+  ],
+  "youtube_url": "https://www.youtube.com/watch?v=IGfjXzeJ9gk",
+  "video_path": "",
+  "video_duration_sec": 8663.08,
+  "transcript_path": "",
+  "video_title": "2026년 5월 19일(화) 다섯시 이재석입니다(곽수산X이봉우X김정환X조호제), 주기자 라이브(건희로드X김완X김묘성X김필성X신유진)",
+  "generated_at": "2026-05-20T18:50:36",
+  "video_channel": "김어준의 겸손은힘들다 뉴스공장"
+}

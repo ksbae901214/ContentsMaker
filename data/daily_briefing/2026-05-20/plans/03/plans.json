@@ -1,0 +1,153 @@
+{
+  "plans": [
+    {
+      "topic": "이스라엘의 가자지구 자원봉사 선박 나포 및 영해 침해 논란",
+      "hook": "이스라엘이 우리 자원봉사 선박 나포? 이게 영해 침해입니까?",
+      "clip_start_sec": 2.4,
+      "clip_end_sec": 13.7,
+      "clip_reason": "이스라엘이 가자지구 자원봉사 선박을 나포/폭침시키는 상황을 설명하며 '우리 내국인 포함'을 강조, 이스라엘의 영해 침해 여부를 직접적으로 질문하여 시청자 공감 유도.",
+      "flow_intro": "이스라엘의 가자지구 선박 나포 상황을 단도직입적으로 제시하며 시청자 관심 유도",
+      "flow_middle": "우리 내국인이 포함된 자원봉사 선박이라는 점을 강조하며 긴장감 고조",
+      "flow_climax": "거기가 이스라엘 영해냐는 직접적 질문으로 논리적 모순 부각",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 2.5,
+          "text": "지금 이스라엘이 가자 지구에 자원봉사 선박을 나포하고 있습니다"
+        },
+        {
+          "start_sec": 2.5,
+          "end_sec": 5.0,
+          "text": "우리 내국인이 포함된 선박들입니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 5.0,
+          "end_sec": 7.0,
+          "text": "나포하거나 폭침시키고 있다고 합니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 7.0,
+          "end_sec": 9.5,
+          "text": "거기가 이스라엘 영해입니까?",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 9.5,
+          "end_sec": 11.3,
+          "text": "이스라엘의 주권을 침해한 겁니까?",
+          "subtitle_color": "yellow"
+        }
+      ],
+      "cta": "자원봉사 선박 나포, 이게 정당한 조치라고 보십니까? 여러분 생각을 댓글로 남겨주세요",
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "format_reason": "진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확한 시사 토론 스타일",
+      "visual_directives": [
+        "0~2.5초: 발화자 클로즈업, 진지한 표정 강조",
+        "2.5~5초: '우리 내국인' 키워드 화면 중앙 큰 자막으로 강조",
+        "5~7초: '나포' '폭침' 단어에 붉은색 강조 자막, 긴장감 있는 컷 전환",
+        "7~9.5초: '거기가 이스라엘 영해입니까?' 질문 시 발화자 표정에 줌 인",
+        "9.5~11.3초: 질문 직후 0.5초 프리즈로 여운 강조"
+      ]
+    },
+    {
+      "topic": "이스라엘의 제삼국 선박 나포 및 감금에 대한 정당성 비판",
+      "hook": "교전국이라 제삼국 선박 나포? 이게 타당한 일입니까?",
+      "clip_start_sec": 23.2,
+      "clip_end_sec": 31.4,
+      "clip_reason": "이스라엘의 군사적 통제 주장에 대해 '교전 국길이 어떻게 하는 거냐'며 제삼국 선박 나포 및 감금의 타당성을 강하게 비판하여 영상 제목의 '빡친' 감정을 드러냄.",
+      "flow_intro": "교전 상태라는 변명에 즉각 반박하며 질문을 던지는 장면",
+      "flow_middle": "제삼국 선박 나포와 감금이라는 구체적 행위를 나열하며 문제점 부각",
+      "flow_climax": "'이게 타당한 일입니까?'라는 직접적 질문으로 정당성에 의문 제기",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 2.0,
+          "text": "교전 국가라고요? 그게 무슨 상관입니까",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 2.0,
+          "end_sec": 4.0,
+          "text": "우리가 관여할 바 아닌 제삼국 선박을"
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 6.0,
+          "text": "나포하고, 체포하고, 감금까지 했습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 6.0,
+          "end_sec": 8.0,
+          "text": "이게 타당한 일입니까?",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "제삼국 선박까지 나포하는 게 정당하다고 보십니까? 여러분 생각을 댓글로 알려주세요",
+      "angle": "title_anchor",
+      "format_type": "A",
+      "format_reason": "진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확한 시사 토론 스타일",
+      "visual_directives": [
+        "0~2초: '교전 국가' 키워드 화면 중앙 강조 자막, 발화자 클로즈업",
+        "4~6초: '나포-체포-감금' 세 단어 순차 등장하며 붉은색 강조",
+        "6~8초: '타당한 일입니까?' 발언 시 0.3초 프리즈 후 발화자 표정 줌 인"
+      ]
+    },
+    {
+      "topic": "이스라엘 네타냐후 총리에 대한 유럽 국가들의 체포영장 발부 상황",
+      "hook": "유럽 대부분 국가, 네타냐후 총리 체포영장 발부! 한국은?",
+      "clip_start_sec": 31.4,
+      "clip_end_sec": 42.4,
+      "clip_reason": "네타냐후 총리에 대한 체포영장 발부와 유럽 대부분 국가들의 체포 방침을 언급하며 이스라엘의 국제적 위상과 다른 국가들의 대응을 비교/대조함.",
+      "flow_intro": "네타냐후 총리에 대한 체포영장 발부 사실을 직접적으로 언급하며 시작",
+      "flow_middle": "유럽 대부분 국가들이 체포 방침을 발표했다는 국제적 흐름 강조",
+      "flow_climax": "한국의 입장은 어떠한지 시청자에게 질문을 던지며 마무리",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 3.0,
+          "text": "네타냐후 이스라엘 총리, 체포영장 발부됐습니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 3.0,
+          "end_sec": 7.0,
+          "text": "유럽 거의 대부분 국가들, 자국 입국 시 체포하겠다고 발표",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 7.0,
+          "end_sec": 11.0,
+          "text": "상당히 많은 나라들이 동참했습니다"
+        }
+      ],
+      "cta": "유럽은 체포하겠다는데, 한국은 어떻게 해야 할까요? 여러분 생각을 댓글로 남겨주세요",
+      "angle": "comparison",
+      "format_type": "A",
+      "format_reason": "진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확한 시사 토론 스타일",
+      "visual_directives": [
+        "0~3초: 네타냐후 총리 얼굴 클로즈업 + '체포영장 발부' 빨간색 큰 자막 중앙 배치",
+        "3~7초: 유럽 지도 그래픽 + 체포 동참 국가들 표시하는 시각 자료",
+        "7~11초: 발화자 클로즈업, '상당히 많던데' 발언 시 숫자 카운트 효과"
+      ]
+    }
+  ],
+  "youtube_url": "https://www.youtube.com/watch?v=xpuwva17QSk",
+  "video_path": "",
+  "video_duration_sec": 48.719,
+  "transcript_path": "",
+  "video_title": "이스라엘에 빡친 대통령",
+  "generated_at": "2026-05-21T16:00:38",
+  "video_channel": "엠키타카 MKTK"
+}

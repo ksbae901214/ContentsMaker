@@ -1,0 +1,216 @@
+{
+  "plans": [
+    {
+      "topic": "스타벅스 코리아의 기업 책임과 존립 문제",
+      "hook": "스타벅스 코리아는 망해야 마땅한 기업이 되거나 자격을 상실할 겁니다!",
+      "clip_start_sec": 49.0,
+      "clip_end_sec": 85.0,
+      "clip_reason": "기업의 의사결정 체계 전반에 걸친 문제점을 지적하며, 스타벅스 코리아의 존립 자격에 대한 강력한 비판을 담고 있어 영상의 핵심 논평 중 하나로 볼 수 있습니다.",
+      "flow_intro": "기업의 존립 이유에 대한 근본적 질문을 던지며 시작",
+      "flow_middle": "상층부부터 하층부까지 이어지는 의사결정 체계의 구조적 문제를 분석",
+      "flow_climax": "스타벅스 코리아의 존립 자격 상실이라는 강력한 결론으로 마무리",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "이런 일을 걸러내지 못한 기업, 존립할 이유가 있을까요?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 9.0,
+          "text": "자본주의 기업의 생리를 아는 눈으로 보면 이건 단순한 실수가 아닙니다"
+        },
+        {
+          "start_sec": 9.0,
+          "end_sec": 15.0,
+          "text": "상층부에서 하층부까지 모든 의사결정 체계에 방조하는 구조가 있다는 겁니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 15.0,
+          "end_sec": 20.0,
+          "text": "명시적이든 묵시적이든, 방치하거나 돕는 구조 없이는 불가능한 일",
+          "subtitle_color": "red"
+        },
+        {
+          "start_sec": 20.0,
+          "end_sec": 26.0,
+          "text": "만약 이번 사건이 실제로 그렇게 발생한 거라면"
+        },
+        {
+          "start_sec": 26.0,
+          "end_sec": 32.0,
+          "text": "스타벅스 코리아는 망해야 마땅한 기업이 되거나",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 32.0,
+          "end_sec": 36.0,
+          "text": "해당 비즈니스를 운영할 자격을 상실한 기업이 될 겁니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "기업이 이런 구조를 갖고 있다면 소비자로서 어떻게 해야 할까요? 여러분의 생각을 댓글로 남겨주세요",
+      "angle": "title_anchor",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확",
+      "visual_directives": [
+        "0~4초: 훅 자막을 화면 중앙에 크게 배치, 진행자 음성에 집중",
+        "9~20초: '상층부-하층부' 언급 시 기업 조직도 그래픽 또는 화면 상단(상층부)/하단(하층부) 분할 연출로 구조 시각화",
+        "15초 부근: '방조하는 구조' 키워드를 붉은색 강조 자막으로 화면 중앙 배치",
+        "26~36초: 결론부 '망해야 마땅한 기업' 발언 시 발화자 클로즈업 + 핵심 문구 화면 하단 고정"
+      ]
+    },
+    {
+      "topic": "스타벅스 사태 속 직원들의 고통과 소비자들의 책임 있는 행동 촉구",
+      "hook": "사고는 본사가 치고 욕은 직원이 먹는다? 스타벅스 직원들은 공포에 떨고 있습니다!",
+      "clip_start_sec": 94.2,
+      "clip_end_sec": 139.8,
+      "clip_reason": "스타벅스 사태로 인한 직원들의 고통을 언급하며, 소비자들이 본사와 경영진에게 책임을 물어야 한다는 메시지가 시청자들의 공감을 얻을 수 있습니다.",
+      "flow_intro": "스타벅스 직원들이 매일 출근이 공포라는 현실을 직접 전달하며 시작",
+      "flow_middle": "본사의 사고를 직원들이 감당하는 구조적 문제와 불매운동의 딜레마 제시",
+      "flow_climax": "직원에게 분노를 쏟지 말고 본사와 경영진에게 책임을 물어야 한다는 메시지로 마무리",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "스타벅스 직원들, 지금 매일 출근이 공포랍니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 8.0,
+          "text": "사고는 본사가 쳐놓고, 욕은 직원들이 먹고 있습니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 8.0,
+          "end_sec": 13.0,
+          "text": "스타벅스를 응징하고 싶은 마음, 엉뚱한 데로 향하고 있진 않습니까"
+        },
+        {
+          "start_sec": 13.0,
+          "end_sec": 18.0,
+          "text": "불매운동의 결과가 죄 없는 노동자들에게 돌아갈 수 있습니다"
+        },
+        {
+          "start_sec": 18.0,
+          "end_sec": 23.0,
+          "text": "적어도 매장 직원에게 분노를 쏟는 건 자제해 주십시오",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 23.0,
+          "end_sec": 28.0,
+          "text": "책임을 물어야 할 대상은 본사와 경영진입니다",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "직원에게 화풀이하신 적 있으신가요? 아니면 본사에 직접 항의하셨나요? 여러분의 경험 댓글로 남겨주세요",
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확",
+      "visual_directives": [
+        "0~4초: 스타벅스 매장 직원 모습과 '출근이 공포' 자막 클로즈업",
+        "4~8초: 화면 좌(본사 건물/경영진) 우(매장 직원) 분할로 책임 전가 구조 시각화",
+        "13~18초: 불매운동 현장과 직원들의 난처한 표정 대비 컷",
+        "23~28초: '본사와 경영진' 키워드 빨간색 큰 자막으로 화면 중앙 강조"
+      ]
+    },
+    {
+      "topic": "이스라엘-팔레스타인 분쟁에 대한 한국 외교관들의 인식 비판 및 역사적 비교",
+      "hook": "하마스 공격을 테러로만 본다고? 일제강점기 독립군과 뭐가 다른가!",
+      "clip_start_sec": 271.5,
+      "clip_end_sec": 321.2,
+      "clip_reason": "UN 사무총장의 발언을 인용하며 이스라엘-팔레스타인 분쟁의 역사적 맥락을 강조하고, 이를 일제강점기 독립운동에 비유하여 한국 외교관들의 편향된 시각을 비판하는 비교가 명확합니다.",
+      "flow_intro": "UN 사무총장의 공식 입장을 인용하며 하마스 공격의 역사적 맥락을 제시한다",
+      "flow_middle": "일제강점기 독립군과 팔레스타인 상황을 직접 비교하며 시청자의 관점 전환을 유도한다",
+      "flow_climax": "한국 외교관들이 '하마스가 먼저 공격했다'고 말하면 안 되는 이유를 날카롭게 지적한다",
+      "narrations": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 4.0,
+          "text": "UN 사무총장이 공식 발표한 내용입니다"
+        },
+        {
+          "start_sec": 4.0,
+          "end_sec": 9.0,
+          "text": "하마스 공격을 단일 사건으로만 보면 안 된다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 9.0,
+          "end_sec": 14.0,
+          "text": "57년간 축적된 모든 과정 속에서 파악해야 한다",
+          "subtitle_color": "blue"
+        },
+        {
+          "start_sec": 14.0,
+          "end_sec": 18.0,
+          "text": "이건 UN의 공식 입장입니다",
+          "subtitle_color": "blue"
+        },
+        {
+          "start_sec": 18.0,
+          "end_sec": 23.0,
+          "text": "일제강점기, 독립군이 반격했을 때 일제는 뭐라고 했을까요"
+        },
+        {
+          "start_sec": 23.0,
+          "end_sec": 27.0,
+          "text": "테러라고 했겠죠, 근데 우리 입장에서는?",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 27.0,
+          "end_sec": 31.0,
+          "text": "독립 전쟁 아닙니까",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 31.0,
+          "end_sec": 36.0,
+          "text": "팔레스타인 입장에서도 독립 전쟁을 한 겁니다",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true
+        },
+        {
+          "start_sec": 36.0,
+          "end_sec": 42.0,
+          "text": "근데 우리 관료들이 하마스가 먼저 공격했다고 말하면 안 되지",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true
+        }
+      ],
+      "cta": "일제가 독립군을 테러리스트라고 불렀던 것, 지금 우리가 팔레스타인을 보는 시선과 뭐가 다른가요? 여러분의 생각을 댓글로 남겨주세요",
+      "angle": "comparison",
+      "format_type": "A",
+      "format_reason": "MBC 라디오 시사 스타일 — 진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확",
+      "visual_directives": [
+        "0~14초: UN 사무총장 발언 인용 구간, 화면 하단에 '출처: UN 공식 발표' 자막 삽입",
+        "18~31초: 화면 좌(일제강점기 독립군 이미지/텍스트) 우(팔레스타인 상황) 반반 분할로 비교 강조",
+        "27초 '독립 전쟁': 화면 중앙에 큰 빨간 자막으로 강조, 0.3초 프리즈",
+        "36~42초: 발화자 클로즈업 + '하마스가 먼저 공격했다' 텍스트에 취소선 효과"
+      ]
+    }
+  ],
+  "youtube_url": "https://www.youtube.com/watch?v=5gakFTcSGtw",
+  "video_path": "",
+  "video_duration_sec": 9442.95,
+  "transcript_path": "",
+  "video_title": "김어준의 겸손은힘들다 뉴스공장 2026년 5월 25일 월요일 [여론조사, 이광재, 하정우, 겸손NSC, 퍼니포, 김진한, 정근식X안민석X김석준X김성근, 김재연]",
+  "generated_at": "2026-05-26T13:32:07",
+  "video_channel": "김어준의 겸손은힘들다 뉴스공장"
+}

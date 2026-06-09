@@ -1,0 +1,357 @@
+{
+  "plans": [
+    {
+      "rank": 1,
+      "angle": "title_anchor",
+      "format_type": "A",
+      "layout_classification": "vs_2way",
+      "topic": "양향자 vs 추미애 경기도지사 대결",
+      "hook": "경기도지사 빅매치! 양향자 vs 추미애, 누가 웃을까?",
+      "clip_section": "00:00~00:60",
+      "reason": "제목에서 직접 드러나는 양자 대결 구도를 활용, 두 후보의 대조적 이미지와 핵심 공약을 빠르게 비교하며 시청자 관심 유도",
+      "flow_intro": "경기도지사 선거 최대 빅매치 예고, 양향자와 추미애 두 거물의 맞대결 소개",
+      "flow_middle": "양향자의 산업통상 경력 vs 추미애의 법무장관 경력 대비, 각자의 핵심 공약과 차별점 제시",
+      "flow_climax": "유권자 선택의 핵심 포인트 제시, 승부처가 될 쟁점 강조",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "경기도지사 빅매치 성사!",
+          "voice_text": "드디어 경기도지사 선거 최대 빅매치가 성사됐습니다!",
+          "visual_layout": "vs_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "양향자",
+              "party": "국민의힘"
+            },
+            {
+              "name": "추미애",
+              "party": "더불어민주당"
+            }
+          ],
+          "clip_search_query": "양향자 vs 추미애 경기도지사 대결",
+          "clip_source_timestamp": [
+            0.0,
+            5.0
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "양향자, 산업통상 전문가 출신",
+          "voice_text": "국민의힘 양향자 후보는 산업통상자원부 차관과 국회의원을 지낸 경제 전문가입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "clip_search_query": "양향자 의원 연설 국민의힘",
+          "clip_source_timestamp": [
+            5.0,
+            15.0
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "추미애, 법무장관 출신 거물",
+          "voice_text": "더불어민주당 추미애 후보는 법무부 장관과 당 대표를 역임한 정치 거물입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": false,
+          "clip_search_query": "추미애 장관 연설 민주당",
+          "clip_source_timestamp": [
+            15.0,
+            25.0
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "양향자 공약: 반도체 클러스터 확대",
+          "voice_text": "양향자 후보는 경기도 반도체 클러스터 확대와 일자리 창출을 핵심 공약으로 내세웁니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": true,
+          "clip_search_query": "양향자 반도체 공약 경기도",
+          "clip_source_timestamp": [
+            25.0,
+            35.0
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "추미애 공약: 검찰개혁 완수",
+          "voice_text": "추미애 후보는 검찰개혁 완수와 민생 안정을 최우선 과제로 제시하고 있습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "clip_search_query": "추미애 검찰개혁 공약",
+          "clip_source_timestamp": [
+            35.0,
+            45.0
+          ]
+        },
+        {
+          "scene_id": 6,
+          "text": "승부처는 수원·성남 표심!",
+          "voice_text": "이번 대결의 승부처는 수원과 성남 등 경기 남부 표심이 될 전망입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_search_query": "경기도 수원 성남 선거 표심",
+          "clip_source_timestamp": [
+            45.0,
+            52.0
+          ]
+        },
+        {
+          "scene_id": 7,
+          "text": "당신의 선택은? 댓글로 알려주세요!",
+          "voice_text": "여러분의 선택은 누구인가요? 댓글로 알려주세요!",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            52.0,
+            60.0
+          ]
+        }
+      ],
+      "cta": "누가 경기도를 이끌까요? 구독하고 결과 확인하세요!",
+      "headline_pin": "경기도지사 빅매치 성사"
+    },
+    {
+      "rank": 2,
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "layout_classification": "vs_2way",
+      "topic": "양향자 vs 추미애 경기도지사 대결",
+      "hook": "경기도 1300만 표심, 누가 잡을까?",
+      "clip_section": "00:00~00:60",
+      "reason": "경기도는 대한민국 최대 광역단체로 유권자 관심이 가장 높은 지역. 양향자(국힘)와 추미애(민주)의 빅매치는 차기 대선 판도까지 영향을 미칠 수 있어 시청자 몰입도가 극대화됨.",
+      "flow_intro": "경기도지사 빅매치 구도 제시 + 두 후보 카드 대비",
+      "flow_middle": "각 후보의 핵심 공약과 강점/약점 비교",
+      "flow_climax": "유권자 선택 포인트 + 승부처 제시",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "경기도지사 빅매치, 양향자 vs 추미애",
+          "voice_text": "대한민국 최대 격전지 경기도. 양향자와 추미애, 두 거물의 대결이 시작됩니다.",
+          "visual_layout": "vs_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "양향자",
+              "party": "국민의힘"
+            },
+            {
+              "name": "추미애",
+              "party": "더불어민주당"
+            }
+          ],
+          "clip_search_query": "양향자 추미애 경기도지사 출마선언",
+          "clip_source_timestamp": [
+            0.0,
+            8.0
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "양향자, 반도체 전문가 출신 경제통",
+          "voice_text": "양향자 후보는 삼성전자 출신 반도체 전문가로, 경기도 첨단산업 육성을 내세웁니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "clip_search_query": "양향자 반도체 경기도 공약 연설",
+          "clip_source_timestamp": [
+            8.0,
+            18.0
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "추미애, 법무장관 출신 정치 베테랑",
+          "voice_text": "추미애 후보는 법무부 장관 경험의 정치 베테랑. 민생 안정과 검찰개혁 완수를 강조합니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": false,
+          "clip_search_query": "추미애 경기도지사 민생 공약",
+          "clip_source_timestamp": [
+            18.0,
+            28.0
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "1300만 경기도민의 선택 기준은?",
+          "voice_text": "유권자들이 주목하는 건 일자리, 교통, 그리고 부동산. 누가 더 설득력 있을까요?",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_search_query": "경기도 유권자 인터뷰 관심사",
+          "clip_source_timestamp": [
+            28.0,
+            38.0
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "수도권 표심이 대선 판도 가른다",
+          "voice_text": "경기도지사 선거 결과는 차기 대선의 바로미터. 이번 선택이 대한민국의 미래를 바꿉니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_search_query": "경기도지사 선거 대선 영향 분석",
+          "clip_source_timestamp": [
+            38.0,
+            48.0
+          ]
+        },
+        {
+          "scene_id": 6,
+          "text": "당신의 선택은? 댓글로 알려주세요",
+          "voice_text": "양향자와 추미애, 여러분은 누구를 지지하시나요? 댓글로 의견 남겨주세요.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            48.0,
+            60.0
+          ]
+        }
+      ],
+      "cta": "구독과 좋아요로 정치 뉴스 빠르게 받아보세요",
+      "headline_pin": "경기도 빅매치 누가 이길까"
+    },
+    {
+      "rank": 3,
+      "angle": "comparison",
+      "format_type": "A",
+      "layout_classification": "vs_2way",
+      "topic": "경기도지사 양자대결 구도 분석",
+      "hook": "경기도 1300만 유권자의 선택은?",
+      "clip_section": "00:00~00:10",
+      "reason": "양향자와 추미애라는 두 거물 여성 정치인의 맞대결은 2026 지방선거 최대 빅매치로, 경기도지사직의 상징성과 두 후보의 극명한 대조점이 시청자 관심을 끌 수 있음",
+      "flow_intro": "경기도지사 양자대결 구도 제시 및 두 후보 소개",
+      "flow_middle": "각 후보의 정치 경력과 강점 비교 분석",
+      "flow_climax": "승부의 핵심 변수와 관전 포인트 제시",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "양향자 vs 추미애\n경기도지사 빅매치",
+          "voice_text": "2026 지방선거 최대 격전지, 경기도지사 선거에서 양향자와 추미애가 맞붙습니다.",
+          "visual_layout": "vs_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "양향자",
+              "party": "국민의힘"
+            },
+            {
+              "name": "추미애",
+              "party": "더불어민주당"
+            }
+          ],
+          "clip_search_query": "양향자 추미애 경기도지사 출마선언",
+          "clip_source_timestamp": [
+            0.0,
+            8.0
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "삼성 30년 엔지니어 출신\n반도체 전문가 양향자",
+          "voice_text": "양향자 후보는 삼성전자에서 30년간 반도체 연구를 이끈 엔지니어 출신입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "clip_search_query": "양향자 삼성전자 반도체 경력",
+          "clip_source_timestamp": [
+            8.0,
+            16.0
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "법무장관·4선 의원\n정치 베테랑 추미애",
+          "voice_text": "추미애 후보는 법무부 장관과 4선 국회의원을 역임한 정치 베테랑입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": false,
+          "clip_search_query": "추미애 법무장관 국회의원 경력",
+          "clip_source_timestamp": [
+            16.0,
+            24.0
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "기술·산업 vs 정치·법률\n완전히 다른 DNA",
+          "voice_text": "기술과 산업 현장의 양향자, 정치와 법률의 추미애. 완전히 다른 DNA의 충돌입니다.",
+          "visual_layout": "vs_card",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "cards_metadata": [
+            {
+              "name": "양향자",
+              "party": "국민의힘"
+            },
+            {
+              "name": "추미애",
+              "party": "더불어민주당"
+            }
+          ],
+          "clip_search_query": "양향자 추미애 토론 대결",
+          "clip_source_timestamp": [
+            24.0,
+            32.0
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "경기도 1300만 민심\n누가 잡을 것인가",
+          "voice_text": "대한민국 최대 광역단체 경기도, 1300만 유권자의 마음을 누가 사로잡을까요?",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_search_query": "경기도 유권자 민심 여론조사",
+          "clip_source_timestamp": [
+            32.0,
+            40.0
+          ]
+        },
+        {
+          "scene_id": 6,
+          "text": "수도권 판세를 가를\n운명의 한 판",
+          "voice_text": "수도권 전체 판세를 좌우할 운명의 대결, 이 싸움의 승자는 누가 될까요?",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_search_query": "경기도지사 선거 수도권 판세",
+          "clip_source_timestamp": [
+            40.0,
+            48.0
+          ]
+        },
+        {
+          "scene_id": 7,
+          "text": "팔로우하고 선거 결과\n함께 지켜봐요",
+          "voice_text": "팔로우하고 경기도지사 선거 결과, 함께 지켜봐요!",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            48.0,
+            55.0
+          ]
+        }
+      ],
+      "cta": "팔로우하고 선거 소식 받아보세요",
+      "headline_pin": "경기도 빅매치 성사"
+    }
+  ],
+  "video_title": "양향자 vs 추미애 경기도지사 대결",
+  "video_duration_sec": 60.0,
+  "output_dir": "/Users/kyusik/ContentsMaker/data/jpolitics/20260605_164311_양향자_vs_추미애_경기도지사_대결",
+  "created_at": "2026-06-05T16:43:57.087957",
+  "youtube_url": ""
+}

@@ -2,7 +2,273 @@
 
 > 블라인드 / NATV / 정치 / 셀럽 영상을 YouTube Shorts로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-05-28
+**마지막 업데이트**: 2026-06-05
+
+---
+
+## ✅ 완료: 025 정치쇼츠 V3 — "@김정치입니다" 포맷 도입 (2026-06-05)
+
+> 상태: **E2E 4종 레이아웃 시각 검수 PASS** — Phase 1~7 + E2E (T041/T055/T063/T071) + T082 quickstart 검증 완료. 잔존: T074 V1/V2 byte-equality baseline (V1/V2 영상 새로 생성 필요, 옵션).
+> 기획 세션: 2026-06-05
+> 참고 채널: [@김정치입니다](https://www.youtube.com/@김정치입니다)
+> **아키텍처 모드: 완전 격리 (Total Isolation)** — 기존 파일 0 수정 원칙, 단 진입 버튼 1개 예외
+>
+> **검증 결과 (2026-06-05)**:
+> - jpolitics 테스트: 99 passed, 3 skipped (regression baseline 미생성, SKIP OK)
+> - V1/V2 회귀 테스트: **1254 passed, 1 skipped** (SC-003 297+ 한참 초과)
+> - V1/V2 Remotion tsc: 0 errors (회귀 0건)
+> - V3 Remotion tsc: 0 errors
+> - Next.js 빌드: 47/47 페이지 컴파일 성공 (`/jpolitics` + 3 API 라우트 포함)
+> - 격리 가드: 3/3 통과 (V1/V2 보호 파일 무수정 + read-only import만 + `app/page.tsx` 버튼만 추가)
+> - **E2E 4종 레이아웃 (T041/T055/T063/T071)**: 모두 30.06초 영상 시각 검수 PASS
+>   - talking_head: 조국 사퇴 영상 (노란 헤드라인 + 자막 + 출처 라벨 3요소)
+>   - vs_card: 양향자 vs 추미애 (좌 빨강 국힘 + 우 파랑 더민주 + 인물 사진)
+>   - grid_2x2: 평택을 후보 4명 (2×2 그리드 + 인물 사진 + 정당 컬러 테두리)
+>   - data_card: 조국 재산 56억 (인물 사진 720×720 + 거대 빨강 "56억 원" 144px)
+> - 락인 검증 (T041a): 오디오 트랙 1개 ✓ / 씬 경계 무음 검출 ✓ / clip_search_query 메타 ✓
+
+### 요구사항
+YouTube 채널 `@김정치입니다`의 영상 제작 방식을 분석하고, 그 포맷을 자동으로 재현하는 **"정치쇼츠 V3"** 탭을 신설한다. 기존 V1(`political`) / V2(`political_pro`)와 공존, 옵트인 탭.
+
+### 🔒 격리 원칙 (사용자 lock-in)
+- **모든 V3 코드는 독립 디렉토리에 격리** — `src/jpolitics/`, `src/video/remotion_v3/`, `app/jpolitics/`, `tests/jpolitics/`
+- **기존 파일 편집 0** — 유일한 예외: `app/page.tsx`에 V3 진입 버튼 1개 추가 (사용자 요청)
+- **기존 코드는 read-only import만** — `youtube_news_searcher`, `naver_image_search`, `_call_claude`, `gemini_backend` 등 재사용은 import만 (편집 X)
+- **회귀 0 보장** — 기존 V1/V2/celebrity/briefing 297+ 테스트 자동 무회귀
+
+### 채널 포맷 분석 결과 (샘플 3편 검증)
+
+| 샘플 | 주제 | 레이아웃 | 데이터 패턴 |
+|---|---|---|---|
+| **S1** 조국 사퇴 (nPOJYSXdICI) | 1인 연설/인터뷰 | Talking Head (원본 풀스크린) + 페북 글 인서트 | 상단 노란 헤드라인 / 하단 자막 박스 / 출처 라벨 |
+| **S2** 양향자 vs 추미애 (fBJH4SX02Ig) | 2인 대결/논평 | VS 카드 (좌·파랑 / 우·빨강 정당 컬러) → Talking Head | 정당 컬러 카드 + MBC 라디오 출처 |
+| **S3** 평택을 후보 4명 (_eGbiXgBI6E) | 다인 비교 | 2x2 그리드 (4명 사진) + 시간별 데이터 슬라이드 | 빨강 강조 데이터 (재산/세금/공약) |
+
+### 공통 시각 패턴 (7요소)
+1. **고정 헤드라인 (Hook Title)** — 영상 전체 노란 박스 + 검정 두꺼운 한글 폰트 2줄
+2. **하단 자막 박스** — 흰 라이트박스 + 실시간 캡션, 빨강 강조 가능
+3. ~~채널 워터마크~~ — **본 프로젝트는 제외 (사용자 lock-in)**
+4. **출처 라벨** — 하단 "출처 : XXX / YYYY.MM.DD" (외부 인용 시)
+5. **레이아웃 다양화** — Talking Head / VS 카드 / 2x2 그리드 / 데이터 슬라이드
+6. **정당 컬러 코드** — 민주(파랑) / 국힘(빨강) 정확 매칭
+7. **데이터 강조** — 큰 빨간 숫자 (재산/세금/연도 등 비교 수치)
+
+### 사용자 Lock-in 결정 (2026-06-05)
+| 항목 | 결정 |
+|------|------|
+| TTS 보이스 | **V1 락인 유지 — `ko-KR-InJoonNeural` +22%** (Charon 사용 안 함) |
+| 채널 워터마크 | **제외** (V3는 워터마크 없음, 출처 라벨만 유지) |
+| 레이아웃 범위 | **4종 모두 구현** — `normal` / `vs_card` / `grid_2x2` / `data_card` |
+| 효과음(SFX) | **영구 0** — 어떤 씬에도 효과음·BGM 삽입 금지 (FR-034, SC-011) |
+| 씬 전환 효과 | **하드 컷만** — 그라데이션·페이드·디졸브 미사용 (FR-035, SC-012) |
+| TTS 씬 간 gap | **300 ms 고정** — 그룹 경계에서만 0.3초 무음 (FR-036, SC-013) |
+| 영상 추출 흐름 | **Gemini Files API → Claude 검색 키워드 결정 → yt-dlp 다운로드** 3단계 분업 (FR-037, SC-014) |
+
+### V1/V2/V3 차별점
+
+| | V1 (political) | V2 (political_pro) | **V3 (jpolitics)** |
+|---|---|---|---|
+| 기획 | 1단 Claude 분석 | RTF 6요소 3안 비교 | RTF + **레이아웃 자동 분류** (TH/VS/GRID/DATA) |
+| 레이아웃 | 풀스크린 1종 | normal / split 2종 | **normal / vs_card / grid_2x2 / data_card 4종** |
+| 자막 | 3줄 (단일색) | 1줄 4색 + emphasis | 1줄 4색 + **고정 헤드라인 노란 박스** |
+| 데이터 시각화 | 없음 | 없음 | **인물 카드 + 빨강 강조 수치** |
+| TTS | InJoonNeural +22% | Gemini Charon Newscaster | **InJoonNeural +22% (V1 락인 유지)** |
+| 출처 라벨 | metadata만 | 하단 letterbox | 하단 letterbox **(워터마크 제외)** |
+| 이미지 소스 | 원본 클립 | 원본 클립 | **원본 클립 + Naver 인물 사진 + 정당 로고 자동 페치** |
+
+---
+
+### 구현 단계 (완전 격리 — 10 Phase)
+
+**Phase 1 — Spec 문서 + 샘플 보관 (read-only)**
+1. `specs/010-jpolitics-v3-format/{spec,plan,tasks,data-model,research,quickstart}.md` 작성
+2. `data/jpolitics_reference/` — 샘플 3편 키프레임 보관 (`/tmp/jpolitics_analysis/`에서 이동)
+3. lock-in 항목: TTS=InJoonNeural+22%, 워터마크 없음, 레이아웃 4종, 진입은 메인 페이지 버튼 1개
+
+**Phase 2 — `src/jpolitics/` 패키지 골격 + 독립 모델 (TDD)**
+4. `src/jpolitics/__init__.py`, `src/jpolitics/models/__init__.py`
+5. `src/jpolitics/models/script.py` — **독립 `JpoliticsScript` / `JpoliticsScene` frozen dataclass**
+   - 필드: `id`, `timestamp`, `duration`, `type`, `text`, `voice_text`, `visual_layout` (`normal`/`vs_card`/`grid_2x2`/`data_card`), `subtitle_color`, `subtitle_emphasis`, `headline_pin`, `comparison_cards`, `data_emphasis_color`, `clip_path`, `clip_query`
+   - Scene 상속 없음, 완전 독립 클래스
+6. `src/jpolitics/models/plan.py` — 독립 `JpoliticsPlan` / `JpoliticsThreePlansResult`
+7. 테스트: `tests/jpolitics/test_models.py` — 라운드트립, 카드 1~4개, 4종 layout 검증
+
+**Phase 3 — 인물 카드 페치 모듈 (독립)**
+8. `src/jpolitics/scraper/politician_card.py`:
+   - `from src.scraper.naver_image_search import search_image` (read-only import)
+   - `fetch_politician_card(name) -> dict` — Naver 검색 → 정면 사진 1장 → `data/politician_cards/{name}.json` 캐시
+   - `PARTY_COLORS` 상수 (민주 #004EA2 / 국힘 #E61E2B / 조국혁신당 #0073CF / 개혁신당 #FF7920 / 무소속 #888)
+   - `infer_party(name)` — Claude 1-shot 추론 (claude_analyzer._call_claude read-only import)
+9. 테스트: 캐시 히트/미스, 무소속 회색 폴백, Naver 미발견 폴백
+
+**Phase 4 — Planner (독립 Stage A/B)**
+10. `src/jpolitics/analyzer/prompts.py` — `build_stage_a_prompt()`, `build_stage_b_prompt()`
+    - Stage A: 영상 분석 + **레이아웃 분류** (`talking_head` / `vs_2way` / `comparison_grid` / `data_comparison`)
+    - Stage B: 씬별 `visual_layout` + `comparison_cards` (필요시) + 첫 씬 `headline_pin` (8~14자)
+11. `src/jpolitics/analyzer/planner.py`:
+    - `from src.analyzer.claude_analyzer import _call_claude` (read-only import)
+    - `from src.analyzer.gemini_backend import call_gemini` (read-only import)
+    - `generate_three_plans(youtube_url, transcript, ...) -> JpoliticsThreePlansResult`
+    - `plan_to_script(plan) -> JpoliticsScript` (카드 씬에 politician_card 페치 + 정당 컬러 주입)
+12. 테스트: 4종 레이아웃 분류, 카드 페치 mock, 헤드라인 ≤14자
+
+**Phase 5 — TTS wrapper (V1 락인 하드코딩)**
+13. `src/jpolitics/tts/voice.py`:
+    - `VOICE = "ko-KR-InJoonNeural"`, `RATE = "+22%"` 모듈 상수 락인
+    - `synthesize(script: JpoliticsScript) -> tuple[Path, list[SceneTiming]]` — edge-tts 직접 호출
+14. 테스트: 보이스 상수 변경 불가 검증, scene_timings 생성 검증
+
+**Phase 6 — `src/video/remotion_v3/` 독립 Remotion 패키지**
+15. 디렉토리 생성 + `package.json` (remotion 의존성만), `tsconfig.json`
+16. `src/index.ts` → `registerRoot(Root)`
+17. `Root.tsx` — V3 전용 composition 등록 (`<Composition id="JpoliticsShorts" ...>`)
+18. `JpoliticsComposition.tsx` — main composition (background + PinnedHeadline + scene routing + outro + audio)
+19. 컴포넌트 8종 (모두 신규):
+    - `components/PinnedHeadline.tsx` — 영상 전체 상단 노란 박스 + 검정 두꺼운 폰트 2줄
+    - `components/TalkingHeadScene.tsx` — 원본 클립 풀스크린
+    - `components/VsCardScene.tsx` — 좌·우 분할, 정당 컬러 배경
+    - `components/ComparisonGridScene.tsx` — 2x2 그리드 + 데이터 빨강 강조
+    - `components/DataCardScene.tsx` — 단일 인물 카드 + 큰 데이터
+    - `components/SubtitleBlock.tsx` — V2 자막 패턴 복제 (4색 + emphasis)
+    - `components/Background.tsx` — V2 패턴 복제 (그라데이션)
+    - `components/Outro.tsx` — V2 패턴 복제
+    - `components/LetterboxFrame.tsx` — 하단 출처 라벨 영역
+20. 테스트: `npx tsc --noEmit` 통과, preview 4종 스크린샷
+
+**Phase 7 — Python renderer wrapper (독립)**
+21. `src/jpolitics/video/renderer.py`:
+    - `render(script: JpoliticsScript, audio_path: Path, scene_timings, output_path)` — `npx remotion render` 호출 with `src/video/remotion_v3/`
+    - 자산 복사: 클립/오디오/인물 카드 → `src/video/remotion_v3/public/` (격리)
+22. 테스트: subprocess mock + 자산 복사 검증
+
+**Phase 8 — CLI entry (독립 모듈)**
+23. `src/jpolitics/main.py`:
+    - argparse: `python3 -m src.jpolitics.main <youtube_url>` / `--source-type topic --topic "..."`
+    - 흐름: transcript → planner → 사용자 선택 (CLI prompt) → tts → renderer
+24. 테스트: argparse 분기, e2e (transcript fixture)
+
+**Phase 9 — Next.js 독립 페이지 + API (`app/jpolitics/`)**
+25. `app/jpolitics/page.tsx` — V3 전용 페이지 (URL `/jpolitics`)
+26. `app/jpolitics/components/JpoliticsPlanPicker.tsx`, `JpoliticsScriptReviewer.tsx`
+27. `app/jpolitics/api/plans/route.ts` — V2 패턴 복제, jpolitics_main 호출
+28. `app/jpolitics/api/render/route.ts` — V2 패턴 복제
+29. **FR-020 업로드 차단 + FR-021 검수 필수 배너** (rose-amber)
+30. 테스트: API smoke + 3줄 요약 + 해시태그
+
+**Phase 10 — 진입 버튼 + E2E 검증 + lock-in (유일한 예외 수정)**
+31. ⚠️ **유일한 기존 파일 수정**: `app/page.tsx` 헤더 영역에 V3 진입 버튼 1개 추가
+    - 예: `<button onClick={() => router.push("/jpolitics")}>🟡 정치 V3</button>`
+    - 기존 8개 탭 union 타입·로직·폼 모두 무수정 — 헤더 버튼만 추가
+32. 4종 레이아웃(`normal`/`vs_card`/`grid_2x2`/`data_card`) 각각 샘플 영상 1편씩 생성
+33. 회귀 검증: 기존 297+ 테스트 무회귀 + 신규 50+ 통과 + Next.js 빌드 + `cd remotion_v3 && npx tsc --noEmit`
+34. 3줄 요약 + 해시태그 자동 첨부 검증
+
+---
+
+### 영향 받는 파일 (격리 모드)
+
+**🆕 신규 파일만** (편집 0):
+```
+src/jpolitics/                       (Python 패키지 신규 ~12 파일)
+  __init__.py, main.py
+  models/{__init__,script,plan}.py
+  scraper/{__init__,politician_card}.py
+  analyzer/{__init__,prompts,planner}.py
+  tts/{__init__,voice}.py
+  video/{__init__,renderer}.py
+
+src/video/remotion_v3/               (독립 Remotion 패키지 신규 ~12 파일)
+  package.json, tsconfig.json
+  src/index.ts, Root.tsx, JpoliticsComposition.tsx
+  src/components/{PinnedHeadline,TalkingHeadScene,VsCardScene,
+                  ComparisonGridScene,DataCardScene,SubtitleBlock,
+                  Background,Outro,LetterboxFrame}.tsx
+
+app/jpolitics/                       (Next.js 라우트 신규 ~5 파일)
+  page.tsx
+  components/{JpoliticsPlanPicker,JpoliticsScriptReviewer}.tsx
+  api/plans/route.ts
+  api/render/route.ts
+
+tests/jpolitics/                     (격리 테스트 신규 ~6 파일)
+  test_models.py, test_planner.py, test_politician_card.py,
+  test_tts_voice_lockin.py, test_renderer.py, test_e2e.py
+
+specs/010-jpolitics-v3-format/       (사양 문서 6 파일)
+
+data/jpolitics_reference/            (샘플 키프레임)
+data/politician_cards/               (인물 카드 캐시)
+data/jpolitics/                      (V3 영상 출력 격리 디렉토리)
+```
+
+**🔧 기존 파일 수정** (1개만):
+- `app/page.tsx` — **V3 진입 버튼 1개 추가** (헤더 영역, 기존 탭 로직 무수정)
+
+**📖 기존 파일 read-only import** (편집 0):
+- `src/scraper/youtube_news_searcher.py` — yt-dlp 검색·9:16 컷 재사용
+- `src/scraper/naver_image_search.py` — Naver 이미지 검색 재사용
+- `src/analyzer/claude_analyzer.py` — `_call_claude` 재사용
+- `src/analyzer/gemini_backend.py` — Stage A Gemini 호출 재사용
+
+---
+
+### 의존성 / 사전 조건
+- ✅ `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` (셀럽 모드용 이미 존재) — 인물 사진 검색에 재사용
+- ✅ `MS-Hannah-NotoSans-Bold` / `Noto Sans KR Black` — 노란 헤드라인용 (Remotion 이미 설치됨)
+- ✅ `data/jpolitics_reference/` — 샘플 키프레임 보관 (lock-in 확인용)
+- ❌ ~~채널 워터마크 PNG~~ — **사용자 lock-in: 제외**
+
+---
+
+### 리스크
+
+| 등급 | 항목 | 완화책 |
+|---|---|---|
+| 🔴 **HIGH** | **저작권** — 정치인 사진(Naver)·뉴스 클립 인용 = 제3자 저작물 | V2와 동일: 업로드 UI 차단(FR-020) + "검수 필수" 배너(FR-021), 보도·논평 목적 명시 |
+| 🟡 **MED** | **레이아웃 오분류** — LLM이 talking_head를 grid로 잘못 분류 시 부자연 | Stage A 프롬프트에 4종 명확 예시 + 사용자 수정 가능 UI (선택 드롭다운) |
+| 🟡 **MED** | **카드 데이터 환각** — Claude가 "127억" 같은 데이터를 LLM hallucination 출력 | data_card 씬은 transcript에 명시된 숫자만 인용 + 출처 라벨 강제 |
+| 🟢 **LOW** | **정당 매핑 누락** — 무소속/신생 정당 헥스 컬러 미정 | `infer_party` 폴백 시 회색(#888) + 경고 로그 |
+| 🟢 **LOW** | **Naver 사진 누락** — 인물명 검색 실패 | 그라데이션 폴백 + 콘솔 경고 |
+
+---
+
+### 비용·복잡도 (격리 모드)
+- **변동비**: $0 (Naver 무료 25,000건/일, Gemini 무료 250req/일, Edge TTS 무료, Claude 기존 한도)
+- **복잡도**: **HIGH (격리 모드 +5h)**
+  - Phase 1 Spec: 1-2h
+  - Phase 2-5 백엔드 독립 패키지: 8-10h
+  - Phase 6 Remotion V3 독립 패키지 (컴포넌트 8종 + 공통 복제): 6-8h
+  - Phase 7-9 Renderer + CLI + Next.js: 4-5h
+  - Phase 10 진입 버튼 + E2E: 2-3h
+  - TDD 테스트: 4-5h
+  - **합계: 25-33h** (vs. 통합 안 18-23h, 격리 모드 +7-10h 트레이드오프)
+- **신규 LOC**: ~2500 (Remotion 컴포넌트 복제분 ~1000 포함)
+- **격리 가치**: 기존 297+ 테스트 자동 무회귀 + V1/V2 락인 100% 보장
+
+---
+
+### 검증 기준 (DoD)
+- [ ] 4종 레이아웃(`normal`/`vs_card`/`grid_2x2`/`data_card`) 각각 샘플 영상 1편씩 생성 → 사용자 OK
+- [ ] 고정 헤드라인 + 출처 라벨 2요소 모든 씬 노출 확인 (워터마크 제외)
+- [ ] TTS = InJoonNeural +22% 하드코딩 검증 (변경 시도 시 테스트 실패)
+- [ ] 단위 테스트 신규 50+ 통과 / 회귀 테스트 297+ 유지 (격리로 자동 보장)
+- [ ] Next.js 빌드 success + V3 TypeScript `cd src/video/remotion_v3 && npx tsc --noEmit` 통과
+- [ ] 기존 V1/V2 Remotion 빌드도 무회귀 (`cd src/video/remotion && npx tsc --noEmit`)
+- [ ] 메인 페이지 V3 진입 버튼 동작 + `/jpolitics` 라우팅 확인
+- [ ] 기존 V1/V2/celebrity/briefing 탭 무회귀 (탭 union 타입 무수정)
+- [ ] 3줄 요약 + 해시태그 자동 첨부
+
+---
+
+### 참고 코드 위치 (read-only 참고용 — 편집 X)
+- V2 layout split 패턴 참고: `src/analyzer/script_models.py:135-142` (필드 구조만 참조하여 JpoliticsScene 독립 작성)
+- V2 SplitScreenScene 참고: `src/video/remotion/src/components/SplitScreenScene.tsx` (분할 화면 로직 참조)
+- 정치_pro Stage A/B 흐름 참고: `src/analyzer/political_planner.py` (병렬 패턴 모방, import는 `_call_claude`만)
+- TTS edge-tts 호출 패턴: `src/tts/edge_tts_synth.py` (구현 패턴 참조)
+- Naver 이미지 검색 import: `from src.scraper.naver_image_search import search_image`
+- Remotion 자산 복사 패턴: `src/video/renderer.py` (격리된 `remotion_v3/public/`로 동일 패턴 적용)
+- V2 API route 구조 참고: `app/api/political-pro/plans/route.ts` (구조만 참조하여 독립 작성)
+- V2 자막 분할 알고리즘: `src/editor/subtitle_split.py` (read-only import 가능, 자막 품질 동일 유지)
 
 ---
 
@@ -50,389 +316,14 @@
 12. 같은 인물로 crop/letterbox 샘플 2편 생성 → 비교 → 확정안 lock-in (메모리 기록)
 13. 3줄 요약 + 해시태그 동반 제공 (고정 룰)
 
-### 영향 받는 파일
-- `src/analyzer/script_models.py` — `Scene.clip_query`
-- `src/scraper/youtube_news_searcher.py` — letterbox 컷 모드
-- `src/analyzer/celebrity_prompt.py` — `clip_query` 출력 지침
-- `src/main.py` — 헬퍼 2개 + cmd_celebrity 분기 + CLI 인자
-- `app/page.tsx`, `app/api/generate/route.ts`, `app/api/celebrity-rerender/route.ts`
-- `tests/test_celebrity_*.py` (신규/확장)
-
-### 리스크
-- **MEDIUM 저작권**: 유튜브 인물 영상=제3자 저작물. 정치 모드와 동일 위험이나 유명인 모드는 이미 "학습 목적 전용 + 업로드 UI 차단" — 가드 유지로 흡수, 문구에 "유튜브 클립=제3자 저작물" 추가
-- **LOW 중복 영상**: 유사 검색어 시 반복. v1 허용, 추후 video ID dedup 여지
-- **LOW 검색 정확도**: ytsearch1 오매칭 가능. `clip_query`에 인물명 강제 포함 + `duration<=300` 필터로 완화
-- **LOW 싱크**: 클립 길이≠씬 길이. TTS 우선 실행 + timing 기반 컷으로 완화
-
-### 복잡도: MEDIUM (신규 다운로드 코드 0, 분기+1필드+토글 중심. 백엔드 2-3h / UI·API 1-2h / 테스트 1-2h / 샘플 1h)
-
-### 참고 코드 위치 (구현 세션용)
-- 재사용 대상: `src/scraper/youtube_news_searcher.py:182` `build_scene_clips()`, `:123` `cut_scene_clip()` (현재 `crop_9x16` 파라미터)
-- 정치_pro 동일 패턴: `src/main.py:623-647` (TTS timing → 씬 클립 컷 → render scene_videos)
-- 유명인 현행 흐름: `src/main.py:705` `cmd_celebrity` (Step 4 `_run_celebrity_videos` 분기 지점 `:820-832`)
-- 렌더러 scene_videos: `src/video/renderer.py:59` `render_video(scene_videos=[{scene_id, video_path}])`
-- Scene 모델 image_query 직렬화 패턴: `src/analyzer/script_models.py:129,174,226`
-
 ---
 
 ## ✅ 완료: 023 정치쇼츠 V2 — 주제 입력 모드 추가 (2026-05-26)
 
-### Bug fix (2026-05-26 17:30) — Safari 'Load failed' (60s timeout)
-- 원인: Stage B의 3회 Claude 호출이 순차 실행되어 총 ~60초 소요. Safari/WebKit fetch 기본 60초 timeout에 걸려 "Load failed" 에러.
-- 수정: `_generate_three_plans_topic_hybrid` Stage B를 `ThreadPoolExecutor(max_workers=3)`로 병렬 실행 → 약 20초로 단축.
-- UI: fetch catch 블록에서 timeout 감지 + 사용자 진단 안내 메시지 추가.
-- 테스트: `test_topic_stage_b_runs_in_parallel` (시작 시간 spread<200ms) + `test_topic_stage_b_preserves_candidate_order` (병렬 결과 순서 보존) 신규 추가.
-
-### 검증 결과
-- 단위 테스트 27/27 통과 (test_political_topic_plans 12개 + test_youtube_news_search 15개, bugfix 2개 추가)
-- TypeScript 컴파일 통과 (`tsc --noEmit`)
-- Next.js 프로덕션 빌드 성공 (`npm run build`)
-- Dev 서버 API endpoint 동작 확인 (`POST /api/political-pro/plans` topic validation)
-- 기존 정치_pro YouTube 모드 회귀 테스트 통과 (test_political_planner 84개)
-
-### 변경 파일
-- `src/analyzer/political_plan_models.py` — ShortsPlan에 `source_type` + `youtube_search_keywords` 추가
-- `src/analyzer/political_planner.py` — `generate_three_plans_from_topic()` + `_stage_a_topic_gemini` + `_stage_b_topic_claude` 추가; `plan_to_script()` topic 모드 분기
-- `src/analyzer/political_planner_stage_a_prompt.py` — `build_stage_a_topic_prompt()` 추가
-- `src/analyzer/political_planner_stage_b_prompt.py` — `build_stage_b_topic_prompt()` 추가 (youtube_search_keywords 출력 요구)
-- `src/scraper/youtube_news_searcher.py` — 신규 (yt-dlp 검색 + ffmpeg 9:16 크롭)
-- `src/main.py` — `political-pro` 서브커맨드 `--source-type/--topic/--tone/--details` 인자 추가
-- `app/api/political-pro/plans/route.ts` — sourceType 분기 + `handleTopicMode()`
-- `app/api/generate/route.ts` — political_pro 분기에 plan_source_type/youtube_search_keywords 전달 + Step 2 (씬 cut) 토픽 모드 분기 (build_scene_clips 호출)
-- `app/page.tsx` — political_pro 탭 토글 (📺 YouTube URL / ✏️ 주제 입력) + 주제 입력 폼 (주제·톤·상세) + politicalProMeta 인터페이스 확장
-- `tests/test_political_topic_plans.py` — 신규 10 테스트
-- `tests/test_youtube_news_search.py` — 신규 15 테스트
-
----
-
-## 🚧 진행 완료 기록: 023 정치쇼츠 V2 — 주제 입력 모드 추가 (2026-05-26)
-
-### 목표
-정치쇼츠 V2(political_pro)에 YouTube URL 외에 **주제 텍스트 입력** 모드 추가. 3 기획안 비교 → 선택 → ScriptReviewer 편집 → YouTube 자동 검색 클립으로 렌더.
-
-### 사용자 결정사항
-- 영상 소스: **YouTube 자동 검색** (yt-dlp `ytsearch1` + ffmpeg 9:16 크롭)
-- 기획 톤: **기존 정치_pro와 동일** (MBC 라디오 시사 + 뉴스핌TV 패턴, A/B 포맷 자동 분류, 자막 색 자동 지정)
-- 편집 흐름: **3 기획안 → 선택 → ScriptReviewer → 렌더**
-
-### Phase 1: Backend — 주제 기반 기획안 생성기
-- `src/analyzer/political_planner.py`에 `generate_three_plans_from_topic(topic, tone, details)` 추가 (기존 `generate_three_plans()` 보존)
-- Stage A: transcript 자리에 topic 텍스트 주입 → 3 angle 생성
-- Stage B: 기존 그대로 + `youtube_search_keywords: list[str]` 출력 추가 (씬별 검색어)
-- ShortsPlan에 `source_type: "youtube"|"topic"` + `youtube_search_keywords` 필드 추가
-
-### Phase 2: Backend — YouTube 뉴스 자동 검색·다운로드
-- `src/scraper/youtube_news_searcher.py` 신규
-- `yt-dlp` API로 키워드별 `ytsearch1` + `duration<=300` 필터링
-- ffmpeg `scale=-2:1920,crop=1080:1920` 9:16 크롭 (스타벅스 5·18 영상에서 검증)
-- 씬-클립 매핑 + 폴백: 검색 실패 시 그라데이션 배경
-
-### Phase 3: Backend — API 라우트
-- `app/api/political-pro/plans/route.ts`: `sourceType: "youtube"|"topic"` 분기
-- `app/api/generate/route.ts`: political_pro + sourceType=topic 분기
-- `src/main.py` political-pro 서브커맨드: `--source-type {youtube,topic}` 인자 추가
-
-### Phase 4: Frontend — UI 토글
-- `app/page.tsx` political_pro 탭 상단에 `📺 YouTube URL ↔ ✏️ 주제 입력` 토글
-- 주제 모드 입력란: 주제(필수), 톤(선택, 기본 "분노·격앙"), 상세(선택)
-- PoliticalPlanPicker → ScriptReviewer → 재렌더 흐름은 기존 그대로
-
-### Phase 5: 테스트 + E2E 검증
-- `tests/test_political_topic_plans.py` — 주제 → 3 plans 단위 테스트
-- `tests/test_youtube_news_search.py` — yt-dlp 검색 mock 테스트
-- E2E: "스타벅스 5·18 탱크데이" 주제 → 3 plans → B 선택 → 편집 → 60초 영상 출력
-
-### 위험
-- HIGH: YouTube 검색 결과 품질 — Stage B 프롬프트에서 키워드 구체화로 완화
-- MEDIUM: 검색 클립 부족 시 폴백 (그라데이션 배경)
-- LOW: 기존 정치_pro는 sourceType 분기로 100% 호환
-
-### 영향 받는 파일
-- `src/analyzer/political_planner.py` (확장)
-- `src/scraper/youtube_news_searcher.py` (신규)
-- `src/main.py` (인자 추가)
-- `app/api/political-pro/plans/route.ts` (분기)
-- `app/api/generate/route.ts` (분기)
-- `app/page.tsx` (UI 토글)
-- `tests/test_political_topic_plans.py`, `tests/test_youtube_news_search.py` (신규)
-
----
-
-## ✅ 완료: 022 Celebrity TTS 자연화 + BGM 다양화 (2026-05-25)
-
-### 변경 사항
-- `VOICE_CONFIG` 감정별 목소리 분리: funny=SunHiNeural+25%, touching=JiMinNeural+10%, angry=InJoonNeural+15%, relatable=SoonBokNeural+15%
-- `CELEBRITY_VOICE_CONFIG` 추가: SeoHyeonNeural +12% (전문 내레이터)
-- `_apply_voice_config()` celebrity source_type 분기 추가
-- `BGM_FILES["celebrity"]` 추가: celebrity_1/2/3.mp3 (inspirational/uplifting/epic)
-- `select_bgm_for_script()` celebrity source_type이면 celebrity 풀 사용
-- celebrity BGM 에너지 선택: 짧고 hook 없음→_1, 중간→_2, 길고 hook 多→_3
-
----
-
-## ✅ 완료: 021 Gemini 웹 자동화 폴백 + 브리핑 안정성 패치 (2026-05-21)
-
-**문제**: API Free Tier (gemini-2.5-flash 일 20건) 빠르게 소진. Pro 구독자도 API 한도는 별개.
-
-**완료 항목**:
-- `src/analyzer/gemini_web_chat.py` 신규 — gemini.google.com Playwright 자동화. 기존 `.cache/gemini_profile/` 재사용. JSON 자동 추출(`extract_json_block`).
-- `call_gemini` + `_stage_a_gemini` 에 자동 폴백 — API 모든 재시도 실패 + 일시적 오류 시 웹 자동화 호출. `GEMINI_WEB_FALLBACK=0` 으로 비활성화 가능.
-- Gemini API 지수 backoff 강화: 2초 고정 → (1/5/15/30s) + 일시적 오류 ×2. max_attempts 2→5.
-- 네이버 뉴스 페이지네이션 + 동적 키워드 검색 (영상 제목에서 한글 명사 추출 → 좁은 쿼리). **0건 → 1011건 도달**.
-- `plan_runner` retry queue — 1차 패스 실패 rank들 30초 대기 후 재시도.
-- 신규 테스트 9건 (`test_gemini_web_chat.py`), 전체 1143 통과.
-
-**검증**:
-- 직접 chat 호출 e2e — 54초 만에 JSON 응답 정확 수신
-  ```
-  {"clusters":[{"topic":"대선 후보 간 부동산 정책 공약 및 발언 공방","member_ids":["v1","v2"]}]}
-  ```
-- 단위 테스트로 폴백 트리거 + GEMINI_WEB_FALLBACK=0 비활성화 + 비일시적 오류 미폴백 모두 검증
-
-**운영**:
-- 평소: API (1~5초/호출, gemini-2.5-flash, 일 20건)
-- 한도 소진 또는 503: 자동 웹 폴백 (30~60초/호출, gemini-2.5-pro, 사실상 무제한)
-- launchd 자동 실행 시 `GEMINI_HEADLESS=1` 환경변수로 백그라운드 보장
-
----
-
-## ✅ 완료: 020 매일 정치 이슈 자동 브리핑 + 기획안 준비 (2026-05-20)
-
-**완료 항목**:
-- Phase 1 — `src/briefing/{models, channel_config, youtube_collector, naver_news_collector}.py`. YouTube Data API v3 (API Key 우선, OAuth 폴백) + 네이버 검색 API. KST 기준 어제 범위 자동 계산. 13 단위 테스트.
-- Phase 2 — `src/briefing/{issue_clusterer, scorer}.py` + `prompts/cluster.txt`. Gemini 2.5 Flash로 영상+기사 클러스터링. 점수: views + 10×comments + 1000×news. 폴백: 응답 실패 시 단일-멤버 클러스터. 10 단위 테스트.
-- Phase 3 — `src/briefing/plan_runner.py`. 상위 N개 이슈의 대표 영상 자막 → `generate_three_plans()` 호출 → `data/daily_briefing/YYYY-MM-DD/`에 저장. 자막 부재 시 `manual_required` 표시. 4 통합 테스트.
-- Phase 4 — `python3 -m src.main daily-briefing --top N` CLI + `app/api/daily-briefing/route.ts` (GET/POST) + `app/daily-briefing/page.tsx` 페이지 + 메인 page.tsx에 "🗞️ 오늘의 브리핑" 헤더 버튼.
-- Phase 5 — `scripts/com.contentsmaker.daily-briefing.plist` (07:00 KST launchd) + `scripts/README_daily_briefing.md` 설치 가이드.
-
-**검증 결과**:
-- 27 신규 briefing 테스트 통과, 전체 1134 테스트 통과
-- Next.js TypeScript 빌드 0 errors
-- CLI `daily-briefing --help` 정상 등록 확인
-
-**비용**: $0/일 (YouTube 60 units / 네이버 4 req / Gemini 1 호출 / Claude 15 호출 모두 무료 한도 내)
-
-**사용자가 추가로 할 일**:
-1. `data/briefing_channels.json`에 모니터링 채널 5~10개 등록 (균형 권장)
-2. `NAVER_CLIENT_ID/SECRET` + `GEMINI_API_KEY` 환경변수 확인 (이미 설정됨)
-3. (선택) launchd plist 편집 후 `~/Library/LaunchAgents/`로 복사하여 매일 자동 실행
-
----
-
-## ✅ 완료: 019 자막 분할/줄바꿈/그룹 TTS 전 영상 모드 확대 (2026-05-20)
-
-**목표**: 매일 아침 어제(KST) YouTube 정치 채널 + 네이버 정치 뉴스를 수집 → 이슈 클러스터링 + 점수화(조회수 + 10×댓글수 + 1000×기사수) → 상위 N개 이슈에 `generate_three_plans()` 자동 호출 → 웹 UI에서 사용자가 선택하면 기존 정치_pro 파이프라인으로 영상 제작.
-
-**제약**: 출력은 기획안 리스트까지만 (영상 자동 제작 X, 자동 업로드 X). 변동비 $0 유지.
-
-**5단계 계획**:
-- Phase 1 — `src/briefing/{models, channel_config, youtube_collector, naver_news_collector}.py` (KST 어제 범위, 모킹 테스트)
-- Phase 2 — `src/briefing/{issue_clusterer, scorer}.py` + Gemini 클러스터링 프롬프트
-- Phase 3 — `src/briefing/plan_runner.py` (대표 클립 자막 → generate_three_plans 재사용) + `data/daily_briefing/{date}/` 저장
-- Phase 4 — `python3 -m src.main daily-briefing` CLI + `/api/daily-briefing` + `/daily-briefing` 페이지 + page.tsx 탭
-- Phase 5 — `scripts/com.contentsmaker.daily-briefing.plist` launchd (07:00 KST 자동) + Gmail draft 알림
-
-**리스크**: 정치적 편향(HIGH — 채널 균형 권장), 이슈 클러스터링 정확도(MEDIUM — Gemini 응답 검증 + 폴백), YouTube quota(MEDIUM — 채널 20개에서 0.4% 사용)
-
-**예상 시간**: 16~24h (Phase 1: 4~6h / 2: 3~5h / 3: 2~3h / 4: 5~7h / 5: 2~3h)
-
----
-
-## ✅ 완료: 019 자막 분할/줄바꿈/그룹 TTS 전 영상 모드 확대 (2026-05-20)
-
-**목표**: 018에서 정치_pro에만 적용한 자막 분할 + 명시적 줄바꿈 + 그룹 단위 TTS 합성을 blind / topic / manual / url / celebrity / political 모든 모드에 동일하게 적용.
-
-**완료**:
-- 분할 알고리즘을 `src/editor/subtitle_split.py`로 추출 (`_split_subtitle_segments`, `_insert_linebreak`, `_score_split_position`, `apply_subtitle_split(script)`)
-- `political_planner.py`는 import로 마이그레이션 (회귀 없음, 20 테스트 통과)
-- `claude_analyzer._ensure_line_breaks` → `apply_subtitle_split` 호출로 교체 → blind / topic / manual / url / celebrity / political 모드 모두 자동 적용
-- 기존 단순 15자 greedy 분할의 V2 필드 누락 버그 함께 수정 (subtitle_color/emphasis/hook 등 보존)
-- 신규 테스트: `tests/test_subtitle_split.py` 14건 (분할/그룹/V2 필드 보존/idempotent), `test_analyzer_extended.py` 보강
-- e2e: blind 모드 합성 4씬 → 7씬 분할, group_id 2개 (이전 단순 분할에서 누락된 V2 필드도 보존), 영상 시각 확인 OK
-
-**효과**:
-- 모든 영상 모드에서 어색한 분할 위치·orphan 줄·씬 전환 자막 튐·TTS 텀 길이 일관 해소
-- 정치_pro만 받았던 자막 품질이 다른 모드에도 동일 적용
-
----
-
-## ✅ 완료: 018 정치 영상 자막 줄바꿈·애니메이션 업그레이드 (2026-05-20)
-
-**완료 항목**:
-- Phase 1 — `_score_split_position` + `_split_subtitle_segments` v2 (한국어 조사·종결어미·구두점 인식 + 균형 보너스). 25%(7자)부터 탐색 → 강한 구두점 경계도 포착.
-- Phase 2 — `_insert_linebreak` 신규. 분할 세그먼트 + 단일 짧은 씬(15자+) 모두 14자 근처 명시적 `\n` 삽입. CSS keep-all 의존 제거.
-- Phase 3 — `Scene.subtitle_group_id` / `subtitle_group_first` 필드 추가. `_add_split_scenes`가 분할 자식들에 동일 group_id 부여. `scene_split`도 V2 필드 전체 전파 (기존 누락 버그 부수 수정).
-- Phase 4 — `SceneText.tsx` 애니메이션: fade 15→9프레임 + easeOutQuad, slide 40→16px, hook 줌 0.88→1.08→1.0 (overshoot 20%) → 0.96→1.02→1.0 (overshoot 2%), emphasis 펀치줌 제거. `group_first=false` 씬은 fade·slide 둘 다 생략(opacity=1, animateY=0) → 분할 자식 끊김 제거. `extrapolateLeft: clamp` 명시.
-- Phase 5 — 단위 테스트 9건 신규(분할 6건 + 그룹 6건), 전체 1087 테스트 통과, 187개 기존 정치 스크립트 JSON 역호환, Remotion TSC 0 errors, e2e 영상 1편 렌더링 시각 검증 (data/outputs/20260520_142642_자막_업그레이드_e2e_검증.mp4).
-
-**검증 결과** (5개 프레임 시각 확인):
-- 명시적 `\n` 줄바꿈으로 모든 자막 2줄 깔끔 분할
-- "후보자 4명 / 중 1명이" 같이 명사+조사 어절 보존
-- group_first=false 자식 씬은 텍스트만 즉시 교체 (끊김 없음)
-- 락인 포맷 보존: yellow/white/red 색, 폰트 56px, 검정 배경, 출처 하단 표시
-- "…" 생략 0건, WebkitLineClamp:2 발동 없음
-
-**파일 변경**:
-- `src/analyzer/political_planner.py` (분할 알고리즘 v2 + 그룹 ID 전파)
-- `src/analyzer/script_models.py` (Scene subtitle_group_id/group_first 필드 + serialization)
-- `src/editor/scene_ops.py` (scene_split V2 필드 전파 부수 수정)
-- `src/video/remotion/src/components/SceneText.tsx` (Easing import + 톤다운 곡선 + group_first 분기)
-- `tests/test_political_planner.py` (분할 알고리즘 회귀 6건)
-- `tests/test_script_models.py` (group 필드 6건)
-
----
-
-## ✅ 완료: 017 Gem Labs 실제 등록 + 코드 연동 (2026-05-19)
-
-**목표**: 016에서 설계한 Gem 시스템을 Gemini Gem Labs(Opal)에 실제 등록하고 자동화 코드와 연결.
-
-**완료 항목**:
-- Gem Labs 3개 생성 완료 (Playwright 자동화)
-  - `Webtoonify` (이미지 웹툰) — ID: `16uKqRjySdvzERPXGyqxYm2uEgnVhwrTM`
-  - `Veo3-뉴스` (영상 뉴스) — ID: `1Hlv0NjfVDlxotDEWCJmwYaJqU3414v3B`
-  - `Veo3-드라마` (영상 드라마) — ID: `1CsQKuCLxFj58xyI978RtBnx4zGxBi8Lg`
-- `gems_config.json` — `gem_id` 필드 추가 (실제 Gem Labs ID)
-- `gem_navigator.py` — `/gems/view` 이름 탐색 → `gem-labs/{id}` 직접 URL + "Start" 클릭 방식으로 전면 개선. `navigate_to_gem(page, gem_cfg)` 반환값이 opal_frame으로 변경.
-- `gemini_web_selectors.py` — `GEM_LABS_SELECTORS` 추가 (gem_chat_input, gem_send_button, image_in_opal, video_in_opal)
-- `gemini_web_image_gen.py` — gem 모드: `_opal_frame` 저장, `_generate_one_gem_mode()` + `_capture_last_image_gem()` 추가, 이미지 도구 활성화 건너뜀
-- `gemini_web_video_gen.py` — gem 모드: `_opal_frame` 저장, opal frame 셀렉터로 chat/send/video_locator 분기
-- 1122 테스트 통과 (회귀 없음)
-
-**알려진 제약**:
-- Gem Labs(Opal)는 전통적 Gems와 다른 인터페이스 — opal._app iframe 내 Shadow DOM
-- Veo 3 Gem Labs 지원 여부: 라이브 테스트 필요 (news/drama Gem의 Steps 미확인)
-- 이미지 결과 selector(`img[src^='blob:']`)는 라이브 테스트로 최종 확정 필요
-
----
-
-## ✅ 완료: 016 Gemini Gems 프롬프트 프리셋 시스템
-
-**목표**: Nano Banana / Veo 3 생성 시 반복 프롬프트를 Gemini Gems로 저장, 씬 내용만 전송해 프롬프트 작성 부담 제거.
-
-**완료 항목 (2026-05-19)**:
-- `src/config/gem_prompts/image_webtoon.txt` — 웹툰 Gem 지침 템플릿
-- `src/config/gem_prompts/video_news.txt` — 뉴스 앵커 Gem 지침 템플릿
-- `src/config/gem_prompts/video_drama.txt` — 드라마 감성 Gem 지침 템플릿
-- `src/config/gems_config.json` — Gem 키↔이름 매핑 (webtoon / news / drama)
-- `src/illustrator/gem_navigator.py` — Gems 목록 탐색·클릭 자동화 (`navigate_to_gem`)
-- `GeminiWebImageGenerator(gem_key=...)` — Gem 모드 지원 (navigate + 단문 프롬프트)
-- `GeminiWebVideoGenerator(gem_key=...)` / `factory.create_generator(..., gem_key=...)` — 동일
-- `python3 -m src.main gems list` — 등록 Gem 목록 출력
-- `python3 -m src.main gems show-prompt <key> --kind <image|video>` — 지침 텍스트 출력
-- `celebrity --image-gem` / `political-pro --video-gem` CLI 플래그
-- 14개 신규 테스트 (1122 total passed)
-
-**다음 단계**:
-- gemini_login 후 Gems 목록 페이지 DOM selector 라이브 확인 → `gem_navigator.py` 반영
-- Veo 3 Gem에서 "동영상 만들기" 도구 지원 여부 실사용 검증
-
----
-
-## ✅ 완료: 015 Gemini AI Pro 통합 로드맵 (5 Phases)
-
-**상태 (2026-05-19 종합)**:
-- Phase 0, 1A, 1B, 2A, 2B 코드 + 테스트 + UI 통합 모두 완료
-- Phase 3 (다중 화자, NotebookLM) 모듈 완료, UI 통합은 사용자 요청 시 추가
-- Phase 4 (Deep Research) 모듈 완료, 정치_pro UI 통합은 사용자 요청 시 추가
-- E2E 검증: Imagen 4 이미지 1장 생성 OK (data/images/gemini_*.png 367KB, 456×817)
-- selector 라이브 탐색 완료 — `이미지 만들기` / `동영상 만들기` 한국어 UI 사용
-- Veo 3 다운로드 인증 이슈 해결 — 브라우저 컨텍스트 fetch + base64 변환 패치
-- 회귀 테스트: 1108 passed / 1 skipped / npm build OK
-
-## 진행 기록
-
-**확정일**: 2026-05-19 / **트리거**: 사용자 Gemini AI Pro 구독 시작 + Freepik 구독 해지
-
-### 배경 / 제약
-- ⚠️ **Freepik 이미 해지** → 현재 영상/이미지 기본 파이프라인 BREAKING
-- ✅ Google AI Studio API는 **무료 한도만 사용** (billing 미활성)
-- ✅ Gemini Pro 구독 = gemini.google.com 웹앱 Veo 3 / Imagen 4 활용 가능 → 브라우저 자동화로 통합
-- 🛡️ **안전성 우선**: 점진 마이그레이션, 토글, A/B, 14일 안정 후 default 전환
-- 🔒 **락인 포맷 보호**: 정치_pro 시각·자막·TTS 설정 불변 ([[political-pro-format-lockin]] 메모리)
-
-### Phase 0: 🚨 긴급 패치 (TODAY)
-**목표**: 깨진 파이프라인 즉시 복구 (Freepik 의존 제거)
-
-- [ ] `app/page.tsx` `videoProvider` 기본값: `freepik` → `deevid`
-- [ ] `app/page.tsx` `imageProvider`: Freepik 옵션 제거 또는 disabled 표시
-- [ ] `app/page.tsx` `visualMode` 기본값: 만화 모드는 일시적으로 권장 안 함, 영상 모드(video) 우선
-- [ ] `app/api/generate/route.ts`: `videoProvider` 기본값 `seedance` → `deevid` (env 키 없어도 동작)
-- [ ] 만화 모드 사용 시 "Phase 2A(Imagen 4) 통합 전까지 일시 비활성" 경고 배너
-- [ ] 정치_pro 영향 없음 ✅ (원본 클립 사용)
-
-**복잡도**: LOW (1~2h)
-
-### Phase 1: 분석 백본 Gemini 이주 (Week 1)
-**1A. YouTube 멀티모달 직접 분석**
-- 신규: `src/analyzer/gemini_youtube_analyzer.py`
-- Gemini Files API에 YouTube URL 업로드 → 자막+영상 동시 분석
-- 정치_pro: 90초 → 30초 단축
-- Whisper STT는 폴백으로만 유지
-
-**1B. Claude CLI → Gemini 2.5 Flash 백본**
-- 우선: `claude_analyzer.py`, `celebrity_analyzer.py`
-- 정치_pro Stage B는 마지막 (락인 보호)
-- 환경변수 `ANALYZER_BACKEND=gemini|claude` 토글
-- 14일 A/B 후 default 전환
-
-**복잡도**: MEDIUM (5~7h) | **변동비**: $0 (Flash 무료 한도 1500/일)
-
-### Phase 2: 웹앱 브라우저 자동화 (Week 2~3)
-**2A. Imagen 4 (gemini.google.com)**
-- 신규: `src/illustrator/gemini_web_image_gen.py`
-- 패턴: `freepik_image_gen.py` 그대로
-- CLI: `python3 -m src.main gemini_login`
-- factory.py: gemini → seedance_image (폴백)
-
-**2B. Veo 3 (gemini.google.com)**
-- 신규: `src/video_gen/gemini_web_video_gen.py`
-- 패턴: `deevid_gen.py` 그대로
-- 8초 720p + 네이티브 오디오
-- factory.py 우선순위: gemini → deevid → seedance
-
-**복잡도**: HIGH (10~14h) | **리스크 완화**: 기존 deevid 폴백 유지, 일별 한도 모니터링
-
-### Phase 3: 신규 기능 (Week 4)
-**3A. 다중 화자 (정치_pro)**
-- `--multi-voice` 플래그 (default OFF, 락인 보호)
-- format_type=C 대화형: Charon(앵커) + Kore(현장기자)
-
-**3B. NotebookLM 스타일** (별도 탭)
-- 사용자 PDF/URL 5건 → Gemini 종합 → 쇼츠
-
-**복잡도**: MEDIUM (6~8h)
-
-### Phase 4: Deep Research 팩트체크 (Week 5)
-**4A. 발언 grounding 검증** (정치_pro)
-- Gemini Grounding with Google Search
-- 검수 화면 🟢/🟡/🔴 배지
-
-**4B. 출처 자동 첨부**
-- YouTube description 자동 삽입
-- 영상 마지막 "출처" 화면
-
-**복잡도**: HIGH (10~15h)
-
-### 안전성 가드 (전 Phase 공통)
-1. 환경변수/UI 토글로 즉시 롤백 가능
-2. 기존 백엔드 14일 병행 → A/B 후 default 전환
-3. 정치_pro 락인 포맷 불변
-4. 무료 한도 80% 알림 + 자동 폴백
-5. Phase별 회귀 테스트 (시리즈 1~3탄 동일 입력 비교)
-
-### 진행 순서
-```
-DAY 0  Phase 0  긴급 패치       ← NOW
-WEEK 1 Phase 1  분석 백본
-WEEK 2 Phase 2A Imagen 4
-WEEK 3 Phase 2B Veo 3
-WEEK 4 Phase 3  신규 기능
-WEEK 5 Phase 4  팩트체크
-```
+(상세는 prompt_plan.md.bak3 참조)
 
 ---
 
 ## 이전 계획
 
-(이전 prompt_plan.md는 prompt_plan.md.bak에 보관)
-
+(이전 prompt_plan.md는 prompt_plan.md.bak3에 보관)

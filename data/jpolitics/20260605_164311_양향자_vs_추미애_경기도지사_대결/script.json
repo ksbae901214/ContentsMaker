@@ -1,0 +1,174 @@
+{
+  "metadata": {
+    "title": "양향자 vs 추미애 경기도지사 대결",
+    "source_type": "jpolitics_youtube",
+    "duration_sec": 30.0,
+    "created_at": "2026-06-05T16:47:35.770443",
+    "topic": "양향자 vs 추미애 경기도지사 대결"
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "timestamp": 0.0,
+      "duration": 2.24,
+      "type": "title",
+      "text": "경기도지사 빅매치 성사!",
+      "voice_text": "드디어 경기도지사 선거 최대 빅매치가 성사됐습니다!",
+      "visual_layout": "vs_card",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "headline_pin": "경기도지사 빅매치 성사",
+      "comparison_cards": [
+        {
+          "name": "양향자",
+          "party": "국민의힘",
+          "party_color": "#E61E2B",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/양향자_01.jpg"
+        },
+        {
+          "name": "추미애",
+          "party": "더불어민주당",
+          "party_color": "#004EA2",
+          "photo_path": "/Users/kyusik/ContentsMaker/data/politician_cards/photos/추미애_01.jpg"
+        }
+      ],
+      "clip_search_query": "양향자 vs 추미애 경기도지사 대결",
+      "clip_source_timestamp": [
+        0.0,
+        5.0
+      ]
+    },
+    {
+      "id": 2,
+      "timestamp": 2.24,
+      "duration": 3.52,
+      "type": "body",
+      "text": "양향자, 산업통상 전문가 출신",
+      "voice_text": "국민의힘 양향자 후보는 산업통상자원부 차관과 국회의원을 지낸 경제 전문가입니다.",
+      "visual_layout": "normal",
+      "subtitle_color": "blue",
+      "subtitle_emphasis": false,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "양향자 의원 연설 국민의힘",
+      "clip_source_timestamp": [
+        5.0,
+        15.0
+      ]
+    },
+    {
+      "id": 3,
+      "timestamp": 5.76,
+      "duration": 3.36,
+      "type": "body",
+      "text": "추미애, 법무장관 출신 거물",
+      "voice_text": "더불어민주당 추미애 후보는 법무부 장관과 당 대표를 역임한 정치 거물입니다.",
+      "visual_layout": "normal",
+      "subtitle_color": "red",
+      "subtitle_emphasis": false,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "추미애 장관 연설 민주당",
+      "clip_source_timestamp": [
+        15.0,
+        25.0
+      ]
+    },
+    {
+      "id": 4,
+      "timestamp": 9.12,
+      "duration": 3.7600000000000002,
+      "type": "body",
+      "text": "양향자 공약: 반도체 클러스터 확대",
+      "voice_text": "양향자 후보는 경기도 반도체 클러스터 확대와 일자리 창출을 핵심 공약으로 내세웁니다.",
+      "visual_layout": "normal",
+      "subtitle_color": "blue",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "양향자 반도체 공약 경기도",
+      "clip_source_timestamp": [
+        25.0,
+        35.0
+      ]
+    },
+    {
+      "id": 5,
+      "timestamp": 12.879999999999999,
+      "duration": 3.36,
+      "type": "body",
+      "text": "추미애 공약: 검찰개혁 완수",
+      "voice_text": "추미애 후보는 검찰개혁 완수와 민생 안정을 최우선 과제로 제시하고 있습니다.",
+      "visual_layout": "normal",
+      "subtitle_color": "red",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "추미애 검찰개혁 공약",
+      "clip_source_timestamp": [
+        35.0,
+        45.0
+      ]
+    },
+    {
+      "id": 6,
+      "timestamp": 16.24,
+      "duration": 3.12,
+      "type": "body",
+      "text": "승부처는 수원·성남 표심!",
+      "voice_text": "이번 대결의 승부처는 수원과 성남 등 경기 남부 표심이 될 전망입니다.",
+      "visual_layout": "normal",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_search_query": "경기도 수원 성남 선거 표심",
+      "clip_source_timestamp": [
+        45.0,
+        52.0
+      ]
+    },
+    {
+      "id": 7,
+      "timestamp": 19.36,
+      "duration": 2.08,
+      "type": "comment",
+      "text": "당신의 선택은? 댓글로 알려주세요!",
+      "voice_text": "여러분의 선택은 누구인가요? 댓글로 알려주세요!",
+      "visual_layout": "normal",
+      "subtitle_color": "yellow",
+      "subtitle_emphasis": true,
+      "data_emphasis_color": "red",
+      "transition_effect": "none",
+      "sfx_trigger": null,
+      "clip_source_timestamp": [
+        52.0,
+        60.0
+      ]
+    }
+  ],
+  "audio": {
+    "tts_script": "드디어 경기도지사 선거 최대 빅매치가 성사됐습니다! 국민의힘 양향자 후보는 산업통상자원부 차관과 국회의원을 지낸 경제 전문가입니다. 더불어민주당 추미애 후보는 법무부 장관과 당 대표를 역임한 정치 거물입니다. 양향자 후보는 경기도 반도체 클러스터 확대와 일자리 창출을 핵심 공약으로 내세웁니다. 추미애 후보는 검찰개혁 완수와 민생 안정을 최우선 과제로 제시하고 있습니다. 이번 대결의 승부처는 수원과 성남 등 경기 남부 표심이 될 전망입니다. 여러분의 선택은 누구인가요? 댓글로 알려주세요!",
+    "tts_voice": "ko-KR-InJoonNeural",
+    "tts_rate": "+22%",
+    "inter_scene_gap_ms": 300,
+    "sfx_enabled": false,
+    "bgm_enabled": false
+  },
+  "background": {
+    "type": "gradient",
+    "colors": [
+      "#1a1a2e",
+      "#16213e"
+    ]
+  },
+  "headline_pin": "경기도지사 빅매치 성사"
+}

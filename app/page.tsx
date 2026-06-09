@@ -545,6 +545,16 @@ export default function Home() {
         </div>
       )}
 
+      {/* 정치쇼츠 V3 — @김정치입니다 격리 모드 (유일한 예외 수정: 진입 버튼 1개) */}
+      <div className="mb-3">
+        <a
+          href="/jpolitics"
+          className="block w-full py-2.5 rounded-lg font-bold text-center text-sm bg-amber-600 hover:bg-amber-500 active:bg-amber-700 transition shadow-md"
+        >
+          🟡 정치 V3 (@김정치입니다 포맷) — 격리 모드로 새 페이지에서 열기
+        </a>
+      </div>
+
       <div className="flex gap-2 mb-6">
         {(["image","manual","url","topic","political","political_pro","natv_clip","celebrity"] as const).map(t=>(
           <button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2.5 rounded-lg font-medium transition text-xs ${tab===t?(t==="political_pro"?"bg-rose-600":"bg-blue-600"):"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>

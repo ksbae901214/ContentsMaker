@@ -1,0 +1,288 @@
+{
+  "plans": [
+    {
+      "rank": 1,
+      "angle": "title_anchor",
+      "format_type": "A",
+      "layout_classification": "talking_head",
+      "topic": "정치검찰 공작수사 규탄 성명",
+      "hook": "정치 검찰의 공작 수사라고 밖에 볼 수 없습니다",
+      "clip_section": "05:00~15:00",
+      "reason": "핵심 주장인 '정치 검찰 공작 수사' 발언이 담긴 구간으로, 영상의 핵심 메시지를 명확히 전달하며 시청자의 관심을 즉각 끌 수 있음",
+      "flow_intro": "무거운 마음으로 국민에게 호소하는 도입부",
+      "flow_middle": "정치 검찰 공작 수사, 표적 수사, 야당 탄압이라는 핵심 주장 전개",
+      "flow_climax": "끝까지 진실을 밝히겠다는 결의와 국민 지지 호소",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "정치 검찰의 공작 수사",
+          "voice_text": "최근 벌어지고 있는 일련의 사태들은 명백히 정치 검찰의 공작 수사라고 밖에 볼 수 없습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            5.0,
+            15.0
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "특정 세력 겨냥한 표적 수사",
+          "voice_text": "이는 특정 세력을 겨냥한 표적 수사이며, 야당 탄압의 전형적인 모습입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            15.0,
+            25.0
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "부당한 권력 남용 즉각 중단하라",
+          "voice_text": "윤석열 정부는 이러한 부당한 권력 남용을 즉각 중단하고, 민주주의의 기본 원칙을 존중해야 합니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            25.0,
+            35.0
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "국민 삶은 피폐, 정치는 정적 제거에만",
+          "voice_text": "국민의 삶은 피폐해지고 있는데, 정치는 오직 정적 제거에만 몰두하고 있습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            35.0,
+            45.0
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "끝까지 진실을 밝히겠다",
+          "voice_text": "저는 끝까지 진실을 밝히고, 국민과 함께 이 부당한 현실에 맞서 싸울 것입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            45.0,
+            55.0
+          ]
+        },
+        {
+          "scene_id": 6,
+          "text": "국민 여러분의 관심과 지지를",
+          "voice_text": "국민 여러분의 관심과 지지를 부탁드립니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            55.0,
+            60.0
+          ]
+        }
+      ],
+      "cta": "이 영상이 도움이 되셨다면 구독과 좋아요 부탁드립니다",
+      "headline_pin": "정치검찰 공작수사 규탄"
+    },
+    {
+      "rank": 2,
+      "angle": "audience_resonance",
+      "format_type": "A",
+      "layout_classification": "talking_head",
+      "topic": "정치검찰 공작수사 규탄 - 국민 삶 vs 정치 권력",
+      "hook": "국민 삶은 피폐해지는데 정치는 뭐하고 있나",
+      "clip_section": "35:00~45:00",
+      "reason": "시청자들이 가장 공감할 수 있는 '국민의 삶' 언급 구간을 중심으로, 정치권에 대한 피로감과 분노를 자극하는 audience_resonance 관점 기획",
+      "flow_intro": "무거운 분위기의 연설 시작으로 긴장감 조성",
+      "flow_middle": "정치검찰 공작수사 주장과 야당 탄압 논란 제기",
+      "flow_climax": "국민 삶 피폐 vs 정적 제거 몰두 대비로 감정 폭발",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "무거운 마음으로 말씀드립니다",
+          "voice_text": "존경하는 국민 여러분, 오늘 저는 이 자리에 서서 무거운 마음으로 말씀드립니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            0.0,
+            5.0
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "정치 검찰의 공작 수사",
+          "voice_text": "최근 벌어지고 있는 일련의 사태들은 명백히 정치 검찰의 공작 수사라고밖에 볼 수 없습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            5.0,
+            15.0
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "표적 수사, 야당 탄압의 전형",
+          "voice_text": "이는 특정 세력을 겨냥한 표적 수사이며, 야당 탄압의 전형적인 모습입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            15.0,
+            25.0
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "부당한 권력 남용 중단하라",
+          "voice_text": "윤석열 정부는 이러한 부당한 권력 남용을 즉각 중단하고, 민주주의의 기본 원칙을 존중해야 합니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            25.0,
+            35.0
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "국민 삶은 피폐해지는데 정치는 정적 제거에만",
+          "voice_text": "국민의 삶은 피폐해지고 있는데, 정치는 오직 정적 제거에만 몰두하고 있습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            35.0,
+            45.0
+          ]
+        },
+        {
+          "scene_id": 6,
+          "text": "끝까지 진실을 밝히겠습니다",
+          "voice_text": "저는 끝까지 진실을 밝히고, 국민과 함께 이 부당한 현실에 맞서 싸울 것입니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            45.0,
+            55.0
+          ]
+        },
+        {
+          "scene_id": 7,
+          "text": "국민 여러분의 관심과 지지를",
+          "voice_text": "국민 여러분의 관심과 지지를 부탁드립니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            55.0,
+            60.0
+          ]
+        }
+      ],
+      "cta": "이 상황 어떻게 생각하세요? 댓글로 의견 남겨주세요",
+      "headline_pin": "국민 삶은 뒷전인가"
+    },
+    {
+      "rank": 3,
+      "angle": "comparison",
+      "format_type": "B",
+      "layout_classification": "talking_head",
+      "topic": "정치검찰 공작수사 주장과 실제 수사 현황 비교",
+      "hook": "검찰 수사가 정말 '공작'일까? 팩트로 비교해봤습니다",
+      "clip_section": "05:00~25:00",
+      "reason": "정치검찰 공작수사 주장과 실제 수사 진행 상황을 비교해 시청자가 스스로 판단할 수 있는 정보 제공",
+      "flow_intro": "충격적 발언 직접 인용으로 시선 집중",
+      "flow_middle": "주장의 핵심 논거 3가지 순차 제시",
+      "flow_climax": "양측 입장 병렬 제시 후 판단은 시청자에게",
+      "narrations": [
+        {
+          "scene_id": 1,
+          "text": "\"정치검찰 공작수사\"",
+          "voice_text": "명백히 정치 검찰의 공작 수사라고밖에 볼 수 없습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            5.0,
+            10.0
+          ]
+        },
+        {
+          "scene_id": 2,
+          "text": "특정 세력 겨냥 표적수사 주장",
+          "voice_text": "이는 특정 세력을 겨냥한 표적 수사이며, 야당 탄압의 전형적인 모습이라고 주장했습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            15.0,
+            22.0
+          ]
+        },
+        {
+          "scene_id": 3,
+          "text": "정부에 수사 중단 요구",
+          "voice_text": "윤석열 정부는 이러한 부당한 권력 남용을 즉각 중단해야 한다고 촉구했습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "red",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            25.0,
+            32.0
+          ]
+        },
+        {
+          "scene_id": 4,
+          "text": "민생 vs 정쟁 구도 제시",
+          "voice_text": "국민의 삶은 피폐해지는데 정치는 정적 제거에만 몰두하고 있다고 비판했습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "blue",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            35.0,
+            43.0
+          ]
+        },
+        {
+          "scene_id": 5,
+          "text": "끝까지 싸우겠다 선언",
+          "voice_text": "저는 끝까지 진실을 밝히고 국민과 함께 맞서 싸우겠다고 밝혔습니다.",
+          "visual_layout": "normal",
+          "subtitle_color": "yellow",
+          "subtitle_emphasis": true,
+          "clip_source_timestamp": [
+            45.0,
+            53.0
+          ]
+        },
+        {
+          "scene_id": 6,
+          "text": "팩트체크는 댓글에서",
+          "voice_text": "이 발언이 사실인지, 댓글로 의견 남겨주세요.",
+          "visual_layout": "normal",
+          "subtitle_color": "white",
+          "subtitle_emphasis": false,
+          "clip_source_timestamp": [
+            55.0,
+            60.0
+          ]
+        }
+      ],
+      "cta": "구독과 좋아요로 정치 팩트체크 계속 받아보세요",
+      "headline_pin": "공작수사 주장 팩트는"
+    }
+  ],
+  "video_title": "https://www.youtube.com/watch?v=nPOJYSXdICI",
+  "video_duration_sec": 60.0,
+  "output_dir": "/Users/kyusik/ContentsMaker/data/jpolitics/20260605_165904_httpswwwyoutubecomwatchvnPOJYS",
+  "created_at": "2026-06-05T16:59:46.602495",
+  "youtube_url": "https://www.youtube.com/watch?v=nPOJYSXdICI"
+}

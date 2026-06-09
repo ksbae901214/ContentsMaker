@@ -80,3 +80,9 @@ web/
 
 # Browser automation profile (deevid.ai)
 .cache/
+
+# Backup files (이전 세션 산물)
+prompt_plan.md.bak*
+
+# Generated e2e video samples (jpolitics V3 e2e 산출물)
+public/vid_*.mp4

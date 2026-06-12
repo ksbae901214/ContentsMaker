@@ -120,7 +120,9 @@ export default function Home() {
   const [stats, setStats] = useState<Stats|null>(null);
   const [bgm, setBgm] = useState(true);
   const [transitions, setTransitions] = useState(true);
-  const [sfx, setSfx] = useState(true);
+  // SFX globally disabled (2026-06-12) — 초기값 false, UI 토글은 hidden.
+  // state는 FormData 호환을 위해 보존. 자세한 결정 배경은 prompt_plan.md 참조.
+  const [sfx, setSfx] = useState(false);
   const [ytUpload, setYtUpload] = useState(false);
   const [ttUpload, setTtUpload] = useState(false);
   const [urlInput, setUrlInput] = useState("");
@@ -545,13 +547,13 @@ export default function Home() {
         </div>
       )}
 
-      {/* 정치쇼츠 V3 — @김정치입니다 격리 모드 (유일한 예외 수정: 진입 버튼 1개) */}
+      {/* 정치쇼츠 V3 진입 버튼 (2026-06-11, Feature 027 Phase 4 완성) */}
       <div className="mb-3">
         <a
           href="/jpolitics"
           className="block w-full py-2.5 rounded-lg font-bold text-center text-sm bg-amber-600 hover:bg-amber-500 active:bg-amber-700 transition shadow-md"
         >
-          🟡 정치 V3 (@김정치입니다 포맷) — 격리 모드로 새 페이지에서 열기
+          🟡 정치 V3 (모먼트 직캠) — 격리 모드로 새 페이지에서 열기
         </a>
       </div>
 
@@ -586,12 +588,11 @@ export default function Home() {
       {visualMode==="video"&&<div className="mb-4">
         <label className="block text-sm font-medium text-gray-300 mb-2">영상 생성 제공업체</label>
         <div className="grid grid-cols-3 gap-2">
-          <button onClick={()=>setVideoProvider("gemini")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="gemini"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎬 Veo 3 (Gemini Pro)</button>
+          {/* Veo 3 (gemini) 숨김 (2026-06-11): Phase 2B 초안 — selector 미검증. 완성 후 재노출 */}
           <button onClick={()=>setVideoProvider("deevid")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="deevid"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🌐 deevid.ai (무료)</button>
           <button onClick={()=>setVideoProvider("seedance")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="seedance"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>⚡ Seedance API</button>
           <button disabled title="Freepik 구독 해지 (2026-05-19)" className="py-2 rounded-lg text-xs bg-gray-900 text-gray-600 cursor-not-allowed line-through">🎨 Freepik (해지)</button>
         </div>
-        {videoProvider==="gemini"&&<p className="mt-2 text-xs text-gray-500">⚡ 변동비 $0 (Pro 구독 한도, 8초 720p + 네이티브 오디오). 사전 <code className="text-yellow-400">gemini_login</code> 필요</p>}
         {videoProvider==="freepik"&&<p className="mt-2 text-xs text-red-400">⛔ Freepik 구독 해지됨</p>}
         {videoProvider==="deevid"&&<p className="mt-2 text-xs text-gray-500">⚠️ 사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main deevid_login</code> 실행 필요</p>}
       </div>}
@@ -638,7 +639,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
@@ -669,7 +670,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
@@ -694,7 +695,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
@@ -727,7 +728,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <div className="flex gap-2">
           <button onClick={()=>{if(topicText.trim().length<5)return;const fd=new FormData();fd.set("mode","topic");fd.set("bgm",bgm?"on":"off");fd.set("transitions",transitions?"on":"off");fd.set("sfx",sfx?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("topic",topicText.trim());fd.set("contentStyle",contentStyle);fd.set("tone",tone);fd.set("details",details);startAnalyze(fd)}}
@@ -770,7 +771,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <button
           onClick={()=>{
@@ -1189,7 +1190,7 @@ export default function Home() {
             <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
             <div className="flex gap-2">
               <button onClick={()=>{const fd=new FormData();fd.set("mode","political");fd.set("bgm",bgm?"on":"off");fd.set("transitions",transitions?"on":"off");fd.set("sfx",sfx?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("youtubeUrl",politicalUrl.trim());fd.set("clipStart",clipStart);fd.set("clipEnd",clipEnd);fd.set("politicalTone",politicalTone);fd.set("politicalDetails",politicalDetails);startAnalyze(fd)}}
@@ -1255,10 +1256,7 @@ export default function Home() {
             <input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/>
             <span className="text-sm text-gray-300">🎬 화면 전환 효과</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/>
-            <span className="text-sm text-gray-300">🔊 효과음</span>
-          </label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
           <div className="flex items-center gap-2 text-xs text-gray-500 pl-7">
             <span>📺 YouTube 업로드</span>
             <span className="text-gray-600">— 유명인 탭에서는 비활성화됨</span>

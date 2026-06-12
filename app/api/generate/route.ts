@@ -38,7 +38,10 @@ export async function POST(req: NextRequest) {
   const useBgm = (fd.get("bgm") as string) !== "off";
   // Default on: only explicit "off" disables scene transitions / SFX.
   const useTransitions = (fd.get("transitions") as string) !== "off";
-  const useSfx = (fd.get("sfx") as string) !== "off";
+  // SFX globally disabled (2026-06-12) — client toggle ignored, renderer enforces.
+  // 자세한 결정 배경은 prompt_plan.md 참조.
+  const useSfx = false;
+  void fd.get("sfx"); // suppress unused-field signal — toggle still accepted for backwards compat
   // Feature 009 — FR-020: political_pro mode (and Phase 2 with politicalProMeta)
   // MUST never auto-upload, even if the client misbehaves.
   const _isPoliticalPro = (fd.get("mode") as string) === "political_pro"

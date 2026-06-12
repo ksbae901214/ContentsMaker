@@ -96,9 +96,13 @@ def render_video(
                   한 번만 마운트되는 OffthreadVideo로 깔리며, 씬별 자막은
                   텍스트 오버레이로만 렌더됨 (씬별 클립 끊김 제거).
     """
+    # SFX globally disabled (2026-06-12) — UI 토글·CLI 인자와 무관하게 항상 OFF.
+    # 데이터 모델(`SfxConfig`, `Scene.sfx`)·자동 할당 모듈(`sfx_matcher.py`)·에셋
+    # (`data/sfx/`, `public/sfx/`)·테스트는 보존되어 있어 향후 재활성화 시 본 라인만
+    # 제거하면 됨. 자세한 결정 배경은 prompt_plan.md 참조.
+    enable_sfx = False
+    auto_sfx = False
     # User-disabled effects take priority over auto-assignment.
-    if not enable_sfx:
-        auto_sfx = False
     if not enable_transitions:
         auto_transition = False
 

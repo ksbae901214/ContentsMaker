@@ -218,26 +218,10 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         );
       })()}
 
-      {/* Per-scene sound effects */}
-      {scriptData.scenes.map((scene) => {
-        const sfxList = scene.sfx || [];
-        const sceneStart = Math.round(scene.timestamp * FPS);
-        return sfxList.map((sfx, idx) => {
-          const offsetFrames = Math.round((sfx.offset_ms || 0) / 1000 * FPS);
-          return (
-            <Sequence
-              key={`sfx-${scene.id}-${idx}`}
-              from={sceneStart + offsetFrames}
-              durationInFrames={Math.round(scene.duration * FPS)}
-            >
-              <Audio
-                src={staticFile(sfx.name + ".mp3")}
-                volume={sfx.volume ?? 0.2}
-              />
-            </Sequence>
-          );
-        });
-      })}
+      {/* Per-scene sound effects — globally disabled (2026-06-12).
+          renderer.py가 모든 씬의 sfx를 빈 튜플로 치환하지만 Remotion 측에도
+          이중 안전망으로 재생 블록을 제거. SfxConfig 타입·data/sfx/ 에셋은
+          재활성화를 위해 보존됨. */}
     </AbsoluteFill>
   );
 };

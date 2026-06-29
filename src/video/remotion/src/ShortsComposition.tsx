@@ -150,7 +150,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
             emotion={emotion}
           />
         ) : videoFile ? (
-          <SceneWithVideo videoFile={videoFile} scene={scene} emotion={emotion} contained={!isPoliticalPro} />
+          <SceneWithVideo videoFile={videoFile} scene={scene} emotion={emotion} contained={true} />
         ) : imageFile ? (
           <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} contained={isCelebrity} />
         ) : (

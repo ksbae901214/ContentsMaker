@@ -44,7 +44,9 @@ export const SceneWithVideo: React.FC<SceneWithVideoProps> = ({
           style={{
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            // contained(V2 프레임): 전체 프레임을 박스 안에 맞춤(얼굴 안 잘림).
+            // full-bleed: 화면을 꽉 채움(원본 9:16 클립용).
+            objectFit: contained ? "contain" : "cover",
           }}
         />
         {/* Dark overlay for text readability */}

@@ -610,6 +610,13 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
         return 6
     print(f"✅ 음성 합성 완료", file=sys.stderr)
 
+    # 실측 무음 정렬 (2026-06-30): Gemini TTS는 전체를 한 번에 합성해 (1) 발화 뒤
+    # 긴 무음이 붙고 (2) 글자수 비례 타이밍이 발화 속도·쉼·숫자에 따라 밀린다.
+    # 앞뒤 무음을 트림하고 씬 경계를 실제 무음 구간에 스냅해 자막-음성을 맞춘다.
+    from src.tts.silence_align import align_timings_to_silence
+    audio_path, timings = align_timings_to_silence(audio_path, timings, out_dir=out_dir)
+    print(f"✅ 무음 정렬 완료 (자막-음성 동기화)", file=sys.stderr)
+
     print(f"✂️ 씬 클립 분할 (9:16)...", file=sys.stderr)
     from src.dem_shorts.editor.segment_cutter import cut_segment
     main_timings = [t for t in timings if t["scene_id"] != -1]

@@ -6,9 +6,11 @@
 
 ---
 
-## 🆕 계획: 경제쇼츠 지원 (정치쇼츠 V2 파이프라인 확장) — 2026-07-02
+## ✅ 완료: 경제쇼츠 지원 (정치쇼츠 V2 파이프라인 확장) — 2026-07-02
 
 > 사용자 요청: "현재 정치쇼츠V2 에서는 정치 이야기를 주로 다루는데 경제쇼츠도 같이 다루고 싶어 기획해줘"
+> **상태 (2026-07-02)**: Phase 1~5 전체 구현 완료. 미확정 3항목 모두 권장안(토글/신규 3앵글/차분·분석적)으로 확정.
+> 검증: pytest 1399 passed / 0 failed (신규 76개 포함), Next.js build 성공(48/48 페이지), 정치 프롬프트 회귀 스냅샷(바이트 동일) 통과.
 
 ### 핵심 판단
 파이프라인(주제→3안→스크립트→TTS→뉴스클립→Remotion)은 정치·경제가 동일. 달라지는 건 **프롬프트 페르소나·앵글·가드레일·감정톤**뿐 → 새 병렬 모듈 대신 **`category: "political" | "economic"` 파라미터 관통**(기본 political → 기존 동작 무변경).
@@ -23,28 +25,28 @@
 | 감정/그라데이션 | 경제=`relatable`(청록·블루), 정치=기존 `angry`(레드) | 신규 emotion 추가(비권장) |
 | 가드레일 | 경제="특정 종목 매수/매도·투자 권유 금지, 수치엔 출처·기준시점 명시" | — |
 
-### 구현 단계
-- **Phase 1 프롬프트 분기 (핵심)**: `political_planner_stage_a_prompt.py`·`_stage_b_prompt.py`의 `build_*_topic_prompt(..., category="political")` 추가 — 페르소나/앵글/가드레일 스왑. 정치 기본값은 기존 문자열 그대로(회귀 방지).
-- **Phase 2 플래너·모델**: `generate_three_plans_from_topic(..., category=...)`; `ShortsPlan.category: str = "political"` 필드(frozen) + to_dict/from_dict 양방향 + 하위호환; `plan_to_script()`가 category로 emotion/gradient/기본 자막색 선택.
-- **Phase 3 API·CLI**: `/api/political-pro/plans`·`/api/generate` body에 category 관통; `src/main.py political-pro --category`; `scripts/render_political_pro_topic.py` category 반영.
-- **Phase 4 UI**: `app/page.tsx` political_pro 탭에 정치/경제 토글 + 도메인별 톤옵션·플레이스홀더, 탭 라벨 "정치·경제 숏츠".
-- **Phase 5 테스트**: 프롬프트 category 분기(정치 회귀 스냅샷), ShortsPlan round-trip, plan_to_script 감정선택; 경제 주제 e2e 1건(CPI 주제 재활용).
+### 구현 단계 (모두 완료)
+- [x] **Phase 1 프롬프트 분기 (핵심)**: `political_planner_stage_a_prompt.py`·`_stage_b_prompt.py`의 `build_*_topic_prompt(..., category="political")` 추가 — `STAGE_A_TOPIC_ECONOMIC_SYSTEM_PROMPT`/`STAGE_B_TOPIC_ECONOMIC_SYSTEM_PROMPT` 신설(페르소나/앵글/가드레일 스왑). category 미지정 호출은 기존 문자열과 바이트 단위로 동일함을 테스트로 고정(회귀 방지).
+- [x] **Phase 2 플래너·모델**: `generate_three_plans_from_topic(..., category=...)` → `_generate_three_plans_topic_hybrid`/`_stage_a_topic_gemini`/`_stage_b_topic_claude`까지 관통. `ShortsPlan.category: Category = "political"` frozen 필드(+ `Angle`에 `wallet_impact`/`cause_analysis`/`outlook_action` 3종 추가) + to_dict/from_dict 양방향 + 레거시 plans.json(category 키 없음) 하위호환. `plan_to_script()`가 `plan.category`로 emotion(`angry`↔`relatable`)/gradient(청록·블루) 선택.
+- [x] **Phase 3 API·CLI**: `/api/political-pro/plans`(topic 모드) body에 `category` 추가, 미지정 시 political 기본 + 톤 기본값도 도메인별 자동 선택. `/api/generate`는 `plansJson`에 이미 `category`가 실려 있어 **무변경**으로 자동 관통 확인. `src/main.py political-pro --category {political,economic}`. `scripts/render_political_pro_topic.py`는 plans.json에서 category를 그대로 읽어 **무변경**으로 동작 확인.
+- [x] **Phase 4 UI**: `app/page.tsx` political_pro 탭 topic 모드에 정치/경제 토글 + 도메인별 톤 옵션(경제: 차분·분석적/위기·경고/공감·연대)·주제 placeholder·투자권유 금지 안내 배너. 탭 라벨 "🏛️ 정치·경제", 추천 카드 "정치·경제 숏츠 자동 생성".
+- [x] **Phase 5 테스트**: `tests/test_political_planner_category_prompt.py` 신규(프롬프트 category 분기 + 정치 회귀 바이트 동일), `test_political_plan_models.py`에 category round-trip/화이트리스트/레거시 호환 6건, `test_political_planner.py`에 `plan_to_script` emotion 선택 2건, `test_political_topic_plans.py`에 category 관통 2건 + 기존 mock 2건 시그니처 보정. 전체 pytest 1399 passed / Next.js build 48/48 페이지 / remotion·remotion_v3 tsc 0 errors.
 
-### 영향 파일 (~8개)
-프롬프트 2, 플래너 1, 모델 1, API 2, main.py 1, page.tsx 1 (+테스트 2~3, 렌더 스크립트 1)
+### 영향 파일 (실제 8개 + 테스트 4개)
+`political_planner_stage_a_prompt.py`, `political_planner_stage_b_prompt.py`, `political_plan_models.py`, `political_planner.py`, `app/api/political-pro/plans/route.ts`, `src/main.py`, `app/page.tsx` (+ `tests/test_political_planner_category_prompt.py` 신규, `test_political_plan_models.py`/`test_political_planner.py`/`test_political_topic_plans.py` 확장)
 
-### 리스크
-- MEDIUM: `ShortsPlan` 필드 추가 시 기존 plans.json 역직렬화 하위호환(기본값 해결)
-- MEDIUM: 정치 프롬프트 회귀(기본값 분기로 바이트 동일 유지 + 스냅샷 테스트)
-- LOW-MEDIUM: 경제 콘텐츠 **투자권유 법적 가드레일** 필수
-- LOW: `relatable` 그라데이션/자막색 경제 톤 시각 확인
+### 리스크 (해소 상태)
+- ~~MEDIUM: `ShortsPlan` 필드 추가 시 기존 plans.json 역직렬화 하위호환~~ → `category` 키 없는 레거시 JSON도 `"political"` 기본값으로 정상 로드 (테스트로 고정)
+- ~~MEDIUM: 정치 프롬프트 회귀~~ → category 미지정 시 바이트 단위 동일 검증 통과
+- LOW-MEDIUM: 경제 콘텐츠 **투자권유 법적 가드레일** — 프롬프트에 강제했으나 게시 전 사람 검수는 여전히 필수 (UI 배너로 안내)
+- LOW: `relatable` 그라데이션/자막색 경제 톤 — 실제 렌더 샘플로 시각 확인은 다음 세션 과제
 
-### 복잡도: MEDIUM
+### 복잡도: MEDIUM (실측: 계획과 일치)
 
-### 미확정 (구현 착수 시 확정)
-1. UI: 토글(권장) vs 전용 탭
-2. 경제 앵글: 신규 3종(권장) vs 기존 재사용
-3. 경제 톤 기본값: 차분·분석적(권장) vs 분노·격앙
+### 확정된 결정 (미확정 3항목 모두 권장안 채택)
+1. UI: **토글** (political_pro 탭 topic 모드 내 도메인 토글)
+2. 경제 앵글: **신규 3종** (`wallet_impact`/`cause_analysis`/`outlook_action`)
+3. 경제 톤 기본값: **차분·분석적**
 
 ### 참고: 2026-07-02 경제 주제 e2e 선행 검증
 정치 파이프라인 topic 모드(tone=분노·격앙)로 "고유가지원금·6월 CPI 3.2%" 경제 쇼츠 1건 렌더 성공(55.9s, 12/12 뉴스클립). → 파이프라인 재사용 가능성 입증. 신규 파일: `scripts/render_political_pro_topic.py`(토픽 모드 CLI 렌더 재현). deno 2.9.1 설치(yt-dlp YouTube 추출 안정화).

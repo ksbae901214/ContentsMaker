@@ -199,6 +199,37 @@ def test_plan_to_script_basic_mapping(tmp_path):
     assert plan.cta in script.scenes[-1].text
 
 
+def test_plan_to_script_political_category_uses_angry_emotion():
+    """category 미지정(기본값 "political")은 기존 angry 감정선 그대로 (회귀 방지)."""
+    plan = ShortsPlan(
+        topic="t", hook="hook", clip_start_sec=0, clip_end_sec=30, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="첫 나레이션"),),
+        cta="cta", angle="title_anchor",
+    )
+    script = plan_to_script(
+        plan, video_title="t", video_duration_sec=120.0, youtube_url="https://youtu.be/x",
+    )
+    assert script.metadata.emotion_type == "angry"
+
+
+def test_plan_to_script_economic_category_uses_relatable_emotion():
+    """2026-07-02 경제쇼츠: category="economic"은 relatable(청록·블루) 감정선 선택."""
+    plan = ShortsPlan(
+        topic="6월 CPI 3.2% 상승", hook="장바구니 물가, 왜 이렇게 올랐나",
+        clip_start_sec=0, clip_end_sec=60, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="물가 상승"),),
+        cta="여러분 지갑엔 어떤 영향이 있나요?",
+        angle="wallet_impact", category="economic", source_type="topic",
+    )
+    script = plan_to_script(
+        plan, video_title="t", video_duration_sec=0.0, youtube_url="",
+    )
+    assert script.metadata.emotion_type == "relatable"
+    assert script.background.colors == ("#4169E1", "#1E90FF", "#87CEEB")
+
+
 def test_plan_to_script_enforces_max_scene_duration():
     """5초 초과 씬은 자동 분할 — FR-012."""
     plan = ShortsPlan(

@@ -457,7 +457,8 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
         out_dir = DATA_DIR / "political_pro" / f"{ts}_cli_topic"
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        print(f"🤔 3개 기획안 생성 중 (topic 모드, Hybrid: Gemini + Claude)...",
+        category = getattr(args, "category", "political")
+        print(f"🤔 3개 기획안 생성 중 (topic 모드, category={category}, Hybrid: Gemini + Claude)...",
               file=sys.stderr)
         try:
             result = generate_three_plans_from_topic(
@@ -465,6 +466,7 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
                 tone=getattr(args, "tone", "분노·격앙"),
                 details=getattr(args, "details", "") or "",
                 output_dir=out_dir,
+                category=category,
             )
         except PoliticalPlannerError as e:
             print(f"❌ topic 기획안 생성 실패: {e}", file=sys.stderr)
@@ -1440,6 +1442,10 @@ def build_parser() -> argparse.ArgumentParser:
     political_pro_parser.add_argument(
         "--details", type=str, default="",
         help="추가 상세 정보 (source-type=topic 일 때 사용)",
+    )
+    political_pro_parser.add_argument(
+        "--category", type=str, choices=["political", "economic"], default="political",
+        help="기획 도메인: political(기본) / economic(경제쇼츠, source-type=topic 전용)",
     )
     political_pro_parser.add_argument(
         "--plan-idx", type=int, choices=[0, 1, 2], default=None,

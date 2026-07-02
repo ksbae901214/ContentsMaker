@@ -157,6 +157,7 @@ def generate_three_plans_from_topic(
     tone: str = "분노·격앙",
     details: str = "",
     output_dir: Path | None = None,
+    category: str = "political",
 ) -> ThreePlansResult:
     """Generate 3 ShortsPlan candidates from a topic text (no YouTube URL).
 
@@ -164,10 +165,12 @@ def generate_three_plans_from_topic(
     YouTube 영상 클립은 추후 plan.youtube_search_keywords로 자동 검색하여 매칭.
 
     Args:
-        topic: 정치 이슈 핵심 주제 (필수).
+        topic: 이슈 핵심 주제 (필수).
         tone: 톤 (예: "분노·격앙", "차분·분석적", "유머·풍자"). 기본 "분노·격앙".
         details: 추가 상세 (선택).
         output_dir: plans.json 저장 디렉토리.
+        category: "political"(기본값) | "economic" — 2026-07-02 경제쇼츠 지원.
+            프롬프트 페르소나·앵글·가드레일만 분기, 파이프라인은 동일.
 
     Returns:
         ThreePlansResult — youtube_url / video_path 등은 빈 문자열, source_type="topic".
@@ -175,12 +178,15 @@ def generate_three_plans_from_topic(
     if not topic.strip():
         raise PoliticalPlannerError("topic은 비어 있을 수 없습니다")
 
-    logger.info("정치 기획안 3개 생성 시작 (topic 모드) — %s", topic[:60])
+    logger.info(
+        "기획안 3개 생성 시작 (topic 모드, category=%s) — %s", category, topic[:60]
+    )
 
     plans = _generate_three_plans_topic_hybrid(
         topic=topic,
         tone=tone,
         details=details,
+        category=category,
     )
 
     try:
@@ -218,6 +224,7 @@ def _generate_three_plans_topic_hybrid(
     topic: str,
     tone: str,
     details: str,
+    category: str = "political",
 ) -> tuple[ShortsPlan, ShortsPlan, ShortsPlan]:
     """topic 모드: Stage A (Gemini) → Stage B (Claude) × 3 (병렬).
 
@@ -230,7 +237,9 @@ def _generate_three_plans_topic_hybrid(
     from concurrent.futures import ThreadPoolExecutor
 
     logger.info("Stage A (topic): Gemini로 3 angle 후보 추출 중...")
-    candidates = _stage_a_topic_gemini(topic=topic, tone=tone, details=details)
+    candidates = _stage_a_topic_gemini(
+        topic=topic, tone=tone, details=details, category=category,
+    )
     logger.info("Stage A 완료: %d개 후보", len(candidates))
 
     def _run_stage_b(idx_candidate: tuple[int, dict]) -> tuple[int, dict, dict]:
@@ -239,6 +248,7 @@ def _generate_three_plans_topic_hybrid(
                      idx + 1, len(candidates), candidate.get("angle"))
         data = _stage_b_topic_claude(
             topic=topic, tone=tone, details=details, candidate=candidate,
+            category=category,
         )
         return idx, candidate, data
 
@@ -270,6 +280,8 @@ def _generate_three_plans_topic_hybrid(
             # Feature 023 핵심: source_type + youtube 검색 키워드
             "source_type": "topic",
             "youtube_search_keywords": details_data.get("youtube_search_keywords", []),
+            # 2026-07-02: 경제쇼츠 지원 — plan_to_script의 emotion/gradient 선택에 사용
+            "category": category,
         }
         try:
             plans.append(ShortsPlan.from_dict(merged))
@@ -608,6 +620,7 @@ def _stage_a_topic_gemini(
     topic: str,
     tone: str,
     details: str,
+    category: str = "political",
 ) -> list[dict]:
     """Stage A (topic 모드): Gemini API로 주제 텍스트 → 3 angle 후보.
 
@@ -628,7 +641,9 @@ def _stage_a_topic_gemini(
     except ImportError as e:
         raise PoliticalPlannerError(f"google-genai 패키지 미설치: {e}") from e
 
-    prompt = build_stage_a_topic_prompt(topic=topic, tone=tone, details=details)
+    prompt = build_stage_a_topic_prompt(
+        topic=topic, tone=tone, details=details, category=category,
+    )
 
     client = genai.Client(api_key=api_key)
     last_error: Exception | None = None
@@ -742,10 +757,12 @@ def _stage_b_topic_claude(
     tone: str,
     details: str,
     candidate: dict,
+    category: str = "political",
 ) -> dict:
     """Stage B (topic 모드): Claude로 단일 candidate의 narrations + 검색어 생성."""
     prompt = build_stage_b_topic_prompt(
         topic=topic, tone=tone, details=details, candidate=candidate,
+        category=category,
     )
     last_error: Exception | None = None
     for attempt in (1, 2):
@@ -930,7 +947,10 @@ def plan_to_script(
                 f"클램프 후 clip 범위가 유효하지 않음 (start={clip_start}, end={clip_end})"
             )
 
-    emotion = "angry"  # 정치 모드 기본 — 강한 톤
+    # 2026-07-02: category별 emotion/gradient 분기 — political(기존)은 angry 그대로 유지(회귀 방지),
+    # economic은 relatable(청록·블루, 차분한 톤)로 선택.
+    category = getattr(plan, "category", "political")
+    emotion = "relatable" if category == "economic" else "angry"
     vc = get_voice_config(emotion)
     gradient = get_gradient(emotion)
 

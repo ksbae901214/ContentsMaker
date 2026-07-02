@@ -53,6 +53,8 @@ export default function Home() {
   const [politicalProTopic, setPoliticalProTopic] = useState("");
   const [politicalProTone, setPoliticalProTone] = useState("분노·격앙");
   const [politicalProDetails, setPoliticalProDetails] = useState("");
+  // 2026-07-02: 경제쇼츠 지원 — 도메인 토글(topic 모드 전용). political(기본)은 기존 동작 무변경.
+  const [politicalProCategory, setPoliticalProCategory] = useState<"political"|"economic">("political");
   const [natvClipUrl, setNavtClipUrl] = useState("");
   const [natvUseTts, setNavtUseTts] = useState(false);
   const [natvTone, setNavtTone] = useState<"angry"|"funny"|"touching"|"relatable">("angry");
@@ -516,7 +518,7 @@ export default function Home() {
                 <span className="text-xs px-2 py-0.5 bg-rose-600 rounded-full font-semibold">✨ NEW V2</span>
                 <span className="text-xs text-rose-300">잘나가는 정치 유튜버 지침</span>
               </div>
-              <h2 className="text-xl font-bold mb-1">🏛️ 정치 숏츠 자동 생성</h2>
+              <h2 className="text-xl font-bold mb-1">🏛️ 정치·경제 숏츠 자동 생성</h2>
               <p className="text-sm text-gray-300 leading-relaxed">
                 YouTube 정치 영상 → <strong className="text-yellow-300">A/B 포맷 자동 분류</strong> + 3 기획안<br/>
                 <strong className="text-red-300">컬러 자막</strong> · <strong className="text-blue-300">대조 분할 화면</strong> · <strong className="text-amber-300">"댓글 고래잡기" CTA</strong> · Gemini Charon TTS
@@ -528,7 +530,7 @@ export default function Home() {
             onClick={() => setTab("political_pro")}
             className="w-full py-3 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 rounded-lg font-bold text-base transition shadow-md"
           >
-            ▶ 정치 숏츠 V2 시작하기
+            ▶ 정치·경제 숏츠 시작하기
           </button>
           <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
             <div className="text-center">
@@ -560,7 +562,7 @@ export default function Home() {
       <div className="flex gap-2 mb-6">
         {(["image","manual","url","topic","political","political_pro","natv_clip","celebrity"] as const).map(t=>(
           <button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2.5 rounded-lg font-medium transition text-xs ${tab===t?(t==="political_pro"?"bg-rose-600":"bg-blue-600"):"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
-            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":t==="political"?"🎙️ 정치 해설":t==="political_pro"?"🏛️ 정치 V2":t==="natv_clip"?"📺 NATV 클립":"👤 유명인"}
+            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":t==="political"?"🎙️ 정치 해설":t==="political_pro"?"🏛️ 정치·경제":t==="natv_clip"?"📺 NATV 클립":"👤 유명인"}
           </button>
         ))}
       </div>
@@ -826,12 +828,27 @@ export default function Home() {
 
             {politicalProSource === "topic" && (
               <>
+                {/* 2026-07-02: 경제쇼츠 지원 — 도메인 토글 */}
+                <div className="flex gap-2 bg-gray-800/50 p-1 rounded-lg">
+                  <button
+                    onClick={()=>{setPoliticalProCategory("political"); if (politicalProTone==="차분·분석적") setPoliticalProTone("분노·격앙");}}
+                    className={`flex-1 py-2 text-xs rounded-md transition ${politicalProCategory==="political" ? "bg-red-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                    🏛️ 정치
+                  </button>
+                  <button
+                    onClick={()=>{setPoliticalProCategory("economic"); if (politicalProTone==="분노·격앙") setPoliticalProTone("차분·분석적");}}
+                    className={`flex-1 py-2 text-xs rounded-md transition ${politicalProCategory==="economic" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                    💰 경제
+                  </button>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">주제 *</label>
                   <textarea
                     value={politicalProTopic}
                     onChange={e=>setPoliticalProTopic(e.target.value)}
-                    placeholder="예: 스타벅스 5·18 탱크데이 논란 — 5월 18일 광주민주화운동 기념일에 탱크 텀블러를 출시해 정치권·시민이 분노한 사건"
+                    placeholder={politicalProCategory==="economic"
+                      ? "예: 6월 소비자물가지수 3.2% 상승 — 통계청 발표, 외식·가공식품 위주 물가 상승이 서민 체감 물가에 미치는 영향"
+                      : "예: 스타벅스 5·18 탱크데이 논란 — 5월 18일 광주민주화운동 기념일에 탱크 텀블러를 출시해 정치권·시민이 분노한 사건"}
                     rows={3}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
                   />
@@ -843,10 +860,20 @@ export default function Home() {
                     value={politicalProTone}
                     onChange={e=>setPoliticalProTone(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-sm">
-                    <option value="분노·격앙">분노·격앙 (강한 비판)</option>
-                    <option value="차분·분석적">차분·분석적 (추적 검증형)</option>
-                    <option value="유머·풍자">유머·풍자</option>
-                    <option value="공감·연대">공감·연대</option>
+                    {politicalProCategory==="economic" ? (
+                      <>
+                        <option value="차분·분석적">차분·분석적 (원인·전망 해설)</option>
+                        <option value="위기·경고">위기·경고 (리스크 강조)</option>
+                        <option value="공감·연대">공감·연대 (생활 체감형)</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="분노·격앙">분노·격앙 (강한 비판)</option>
+                        <option value="차분·분석적">차분·분석적 (추적 검증형)</option>
+                        <option value="유머·풍자">유머·풍자</option>
+                        <option value="공감·연대">공감·연대</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div>
@@ -854,11 +881,18 @@ export default function Home() {
                   <textarea
                     value={politicalProDetails}
                     onChange={e=>setPoliticalProDetails(e.target.value)}
-                    placeholder="포함해야 할 인물/날짜/세부 사실. 예: 손정현 대표 해임, 이재명 대통령 분노, '책상에 탁' 박종철 사건 연관 등"
+                    placeholder={politicalProCategory==="economic"
+                      ? "포함해야 할 수치/기관/기준시점. 예: 통계청 6월 발표, 한국은행 기준금리 3.5%, 전세대출 금리 영향 등"
+                      : "포함해야 할 인물/날짜/세부 사실. 예: 손정현 대표 해임, 이재명 대통령 분노, '책상에 탁' 박종철 사건 연관 등"}
                     rows={2}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
                   />
                 </div>
+                {politicalProCategory==="economic" && (
+                  <div className="text-xs text-blue-300/80 bg-blue-900/20 border border-blue-800 rounded-lg p-3">
+                    💡 경제쇼츠는 특정 종목·자산의 매수/매도 권유 표현을 생성하지 않도록 가드레일이 적용됩니다. 수치는 출처·기준시점과 함께 검수하세요.
+                  </div>
+                )}
               </>
             )}
 
@@ -884,6 +918,7 @@ export default function Home() {
                         topic: politicalProTopic.trim(),
                         tone: politicalProTone,
                         details: politicalProDetails.trim(),
+                        category: politicalProCategory,
                       }
                     : { sourceType: "youtube", youtubeUrl: politicalProUrl.trim() };
                   const res = await fetch("/api/political-pro/plans", {

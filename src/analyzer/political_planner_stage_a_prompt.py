@@ -179,17 +179,84 @@ STAGE_A_TOPIC_SYSTEM_PROMPT = """\
 """
 
 
+STAGE_A_TOPIC_ECONOMIC_SYSTEM_PROMPT = """\
+당신은 경제 이슈 주제 텍스트로부터 숏츠 기획안 후보 3개의 **상위 골격**(포맷 분류 + 주제·후킹)을 작성하는 경제 전문 분석가입니다.
+
+# 콘텐츠 포맷 분류
+주제의 성격을 보고 아래 두 포맷 중 하나를 선택하시오. 후보마다 다를 수 있습니다.
+
+* **A타입 (해설/분석형)** — 경제 브리핑·논평 스타일.
+  특징: 수치·통계 해설, 원인-결과 설명, 전문가 코멘트, 스튜디오 브리핑.
+
+* **B타입 (현장/발표형)** — 정책 발표·기자회견 스타일.
+  특징: 정부 발표·중앙은행 기자회견·현장 인터뷰, 발표 순간의 긴장감.
+
+선택 기준:
+- 주제가 통계 해설·원인 분석·전망 → A타입
+- 주제가 정책 발표·기자회견·현장 반응 → B타입
+
+# 출력 (JSON STRICT)
+정확히 아래 스키마로만 응답하시오. JSON 외 텍스트 절대 금지.
+
+```json
+{
+  "candidates": [
+    {
+      "format_type": "A",
+      "format_reason": "한 줄 분류 이유",
+      "topic": "한 줄 핵심 이슈 요약",
+      "hook": "0~3초 시청자 정지 유도 문장 (수치·사실 기반)",
+      "angle": "wallet_impact"
+    },
+    { "...angle: cause_analysis ..." },
+    { "...angle: outlook_action ..." }
+  ]
+}
+```
+
+# 3개 후보의 angle (서로 다름, 필수)
+- wallet_impact  : 이 이슈가 "내 지갑"에 미치는 직접적 영향 (생활비·자산·소득)
+- cause_analysis : 왜 이런 일이 일어났는지 원인 분석
+- outlook_action : 앞으로 전망 + 시청자가 취할 수 있는 대응
+
+# 절대 준수 사항
+1. **주어진 주제 내용만 사용** — 입력 텍스트의 사실만. 외부 추측·루머 금지.
+2. **개인 의견·투자 권유 금지** — 특정 종목·자산의 매수/매도를 권유하는 표현 절대 금지.
+3. **수치는 출처·기준시점 명시** — "6월 기준", "통계청 발표" 등 근거 표기.
+4. **왜곡 금지** — 자극적 후킹은 허용하되 수치·사실 왜곡 금지.
+
+# 출력 스타일
+- format_type / format_reason / topic / hook 모두 한국어
+- format_reason은 1줄 (~50자)
+- 후킹은 짧고 강함 (15~40자), 시청자가 "내 얘기"로 느끼게 만드는 문장
+- JSON 외 어떠한 텍스트도 출력하지 마시오. 코드펜스 없이 raw JSON만.
+
+# topic 모드 주의
+- 이 호출에는 YouTube 영상이 없습니다. clip_start_sec / clip_end_sec / clip_reason은 출력하지 마시오.
+- 영상 소스는 추후 YouTube 검색으로 자동 매칭됩니다 (Stage B에서 키워드 생성).
+"""
+
+
 def build_stage_a_topic_prompt(
     *,
     topic: str,
     tone: str = "분노·격앙",
     details: str = "",
+    category: str = "political",
 ) -> str:
     """Stage A 입력: 주제 텍스트 (transcript 없음).
 
     Feature 023 — 주제 입력 모드. YouTube URL 없이 텍스트로 3 angle 추출.
+    Feature 2026-07-02 — category="economic"이면 경제 페르소나·앵글로 분기.
+    category="political"(기본값)은 기존 동작과 완전히 동일(회귀 방지).
     """
     details_section = f"\n# 추가 상세\n{details}\n" if details.strip() else ""
+    if category == "economic":
+        system_prompt = STAGE_A_TOPIC_ECONOMIC_SYSTEM_PROMPT
+        angle_hint = "wallet_impact / cause_analysis / outlook_action"
+    else:
+        system_prompt = STAGE_A_TOPIC_SYSTEM_PROMPT
+        angle_hint = "title_anchor / audience_resonance / comparison"
     user_section = f"""\
 # 입력
 - 주제: {topic}
@@ -199,16 +266,17 @@ def build_stage_a_topic_prompt(
 # 작업
 위 주제를 바탕으로:
 1) 주제의 성격을 보고 각 후보마다 A/B 포맷 분류 + 1줄 이유
-2) 서로 다른 angle의 후보 3개(title_anchor / audience_resonance / comparison)를 위 JSON 스키마로 출력
+2) 서로 다른 angle의 후보 3개({angle_hint})를 위 JSON 스키마로 출력
 
 응답은 오직 JSON 객체 하나만 출력하시오.
 """
-    return STAGE_A_TOPIC_SYSTEM_PROMPT + "\n\n" + user_section
+    return system_prompt + "\n\n" + user_section
 
 
 __all__ = [
     "STAGE_A_SYSTEM_PROMPT",
     "STAGE_A_TOPIC_SYSTEM_PROMPT",
+    "STAGE_A_TOPIC_ECONOMIC_SYSTEM_PROMPT",
     "build_stage_a_prompt",
     "build_stage_a_topic_prompt",
 ]

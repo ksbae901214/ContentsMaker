@@ -353,3 +353,60 @@ def test_shortsplan_v2_camel_case_round_trip():
     restored = ShortsPlan.from_dict(camel)
     assert restored.format_type == "B"
     assert restored.narrations[0].subtitle_color == "yellow"
+
+
+# ─────────────────────────── category (2026-07-02 경제쇼츠) ───────────────────────────
+
+
+def test_shortsplan_category_defaults_to_political():
+    p = _make_plan()
+    assert p.category == "political"
+    assert p.to_dict()["category"] == "political"
+
+
+def test_shortsplan_category_economic_round_trip():
+    p = ShortsPlan(
+        topic="6월 CPI 3.2% 상승", hook="장바구니 물가, 왜 이렇게 올랐나",
+        clip_start_sec=0, clip_end_sec=60, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="x"),),
+        cta="여러분 지갑엔 어떤 영향이 있나요?",
+        angle="wallet_impact", category="economic", source_type="topic",
+    )
+    d = p.to_dict()
+    assert d["category"] == "economic"
+    restored = ShortsPlan.from_dict(d)
+    assert restored == p
+
+
+def test_shortsplan_category_legacy_json_without_category_defaults_political():
+    """경제쇼츠 이전에 저장된 plans.json(category 키 없음)도 그대로 로드되어야 함."""
+    p = _make_plan()
+    d = p.to_dict()
+    del d["category"]
+    restored = ShortsPlan.from_dict(d)
+    assert restored.category == "political"
+
+
+def test_shortsplan_rejects_invalid_category():
+    with pytest.raises(PlanValidationError):
+        ShortsPlan(
+            topic="t", hook="h",
+            clip_start_sec=0, clip_end_sec=10, clip_reason="r",
+            flow_intro="i", flow_middle="m", flow_climax="c",
+            narrations=(Narration(start_sec=0, end_sec=3, text="x"),),
+            cta="cta", angle="title_anchor",
+            category="lifestyle",  # invalid
+        )
+
+
+def test_shortsplan_accepts_economic_angles():
+    for angle in ("wallet_impact", "cause_analysis", "outlook_action"):
+        p = ShortsPlan(
+            topic="t", hook="h",
+            clip_start_sec=0, clip_end_sec=10, clip_reason="r",
+            flow_intro="i", flow_middle="m", flow_climax="c",
+            narrations=(Narration(start_sec=0, end_sec=3, text="x"),),
+            cta="cta", angle=angle, category="economic",
+        )
+        assert p.angle == angle

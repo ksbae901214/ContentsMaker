@@ -166,6 +166,52 @@ def test_generate_three_plans_from_topic_empty_topic_rejected():
         generate_three_plans_from_topic(topic="")
 
 
+def test_generate_three_plans_from_topic_category_defaults_political(tmp_path):
+    """category 미지정 시 기존 동작과 동일 — 모든 plan.category == "political"."""
+    with patch(
+        "src.analyzer.political_planner._stage_a_topic_gemini",
+        return_value=_fake_stage_a_response(),
+    ), patch(
+        "src.analyzer.political_planner._stage_b_topic_claude",
+        return_value=_fake_stage_b_response(),
+    ):
+        result = generate_three_plans_from_topic(topic="테스트 주제", output_dir=tmp_path)
+
+    for plan in result.plans:
+        assert plan.category == "political"
+
+
+def test_generate_three_plans_from_topic_category_economic_propagates_to_plans(tmp_path):
+    """2026-07-02 경제쇼츠: category="economic"이 각 ShortsPlan까지 관통되어야 함."""
+    captured_categories = []
+
+    def stage_a_capture(*, topic, tone, details, category="political"):
+        captured_categories.append(("stage_a", category))
+        return _fake_stage_a_response()
+
+    def stage_b_capture(*, topic, tone, details, candidate, category="political"):
+        captured_categories.append(("stage_b", category))
+        return _fake_stage_b_response()
+
+    with patch(
+        "src.analyzer.political_planner._stage_a_topic_gemini",
+        side_effect=stage_a_capture,
+    ), patch(
+        "src.analyzer.political_planner._stage_b_topic_claude",
+        side_effect=stage_b_capture,
+    ):
+        result = generate_three_plans_from_topic(
+            topic="6월 CPI 3.2% 상승", tone="차분·분석적",
+            category="economic", output_dir=tmp_path,
+        )
+
+    for plan in result.plans:
+        assert plan.category == "economic"
+    assert all(cat == "economic" for _, cat in captured_categories)
+    assert any(stage == "stage_a" for stage, _ in captured_categories)
+    assert any(stage == "stage_b" for stage, _ in captured_categories)
+
+
 def test_generate_three_plans_from_topic_url_metadata_empty(tmp_path):
     """topic 모드 결과: youtube_url/video_path/transcript_path 모두 빈 문자열."""
     with patch(
@@ -221,7 +267,7 @@ def test_topic_stage_b_runs_in_parallel(tmp_path):
 
     call_times = []
 
-    def slow_stage_b(*, topic, tone, details, candidate):
+    def slow_stage_b(*, topic, tone, details, candidate, category="political"):
         call_times.append(time.time())
         time.sleep(0.5)  # 각 호출 0.5초
         return _fake_stage_b_response()
@@ -258,7 +304,7 @@ def test_topic_stage_b_preserves_candidate_order(tmp_path):
         "comparison": {**_fake_stage_b_response(), "flow_intro": "intro_comp"},
     }
 
-    def stage_b_by_angle(*, topic, tone, details, candidate):
+    def stage_b_by_angle(*, topic, tone, details, candidate, category="political"):
         return angle_responses[candidate["angle"]]
 
     with patch(

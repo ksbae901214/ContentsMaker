@@ -2,7 +2,124 @@
 
 > 블라인드 / NATV / 정치 / 셀럽 영상을 YouTube Shorts로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-06-12
+**마지막 업데이트**: 2026-07-02
+
+---
+
+## 🆕 계획: 경제쇼츠 지원 (정치쇼츠 V2 파이프라인 확장) — 2026-07-02
+
+> 사용자 요청: "현재 정치쇼츠V2 에서는 정치 이야기를 주로 다루는데 경제쇼츠도 같이 다루고 싶어 기획해줘"
+
+### 핵심 판단
+파이프라인(주제→3안→스크립트→TTS→뉴스클립→Remotion)은 정치·경제가 동일. 달라지는 건 **프롬프트 페르소나·앵글·가드레일·감정톤**뿐 → 새 병렬 모듈 대신 **`category: "political" | "economic"` 파라미터 관통**(기본 political → 기존 동작 무변경).
+
+### 설계 결정 (권장안)
+| 항목 | 권장 | 대안 |
+|---|---|---|
+| 분기 방식 | `category` 파라미터를 프롬프트·모델·API·UI에 관통 | 별도 `economy_planner` 모듈/탭 |
+| UI | 기존 political_pro 탭에 **도메인 토글(정치/경제)** | 경제쇼츠 전용 탭 |
+| 경제 앵글 3종 | `wallet_impact`(내 지갑) / `cause_analysis`(원인) / `outlook_action`(전망·대응) | 기존 3앵글 재활용 |
+| 경제 톤 기본값 | `차분·분석적` | `분노·격앙` 유지 |
+| 감정/그라데이션 | 경제=`relatable`(청록·블루), 정치=기존 `angry`(레드) | 신규 emotion 추가(비권장) |
+| 가드레일 | 경제="특정 종목 매수/매도·투자 권유 금지, 수치엔 출처·기준시점 명시" | — |
+
+### 구현 단계
+- **Phase 1 프롬프트 분기 (핵심)**: `political_planner_stage_a_prompt.py`·`_stage_b_prompt.py`의 `build_*_topic_prompt(..., category="political")` 추가 — 페르소나/앵글/가드레일 스왑. 정치 기본값은 기존 문자열 그대로(회귀 방지).
+- **Phase 2 플래너·모델**: `generate_three_plans_from_topic(..., category=...)`; `ShortsPlan.category: str = "political"` 필드(frozen) + to_dict/from_dict 양방향 + 하위호환; `plan_to_script()`가 category로 emotion/gradient/기본 자막색 선택.
+- **Phase 3 API·CLI**: `/api/political-pro/plans`·`/api/generate` body에 category 관통; `src/main.py political-pro --category`; `scripts/render_political_pro_topic.py` category 반영.
+- **Phase 4 UI**: `app/page.tsx` political_pro 탭에 정치/경제 토글 + 도메인별 톤옵션·플레이스홀더, 탭 라벨 "정치·경제 숏츠".
+- **Phase 5 테스트**: 프롬프트 category 분기(정치 회귀 스냅샷), ShortsPlan round-trip, plan_to_script 감정선택; 경제 주제 e2e 1건(CPI 주제 재활용).
+
+### 영향 파일 (~8개)
+프롬프트 2, 플래너 1, 모델 1, API 2, main.py 1, page.tsx 1 (+테스트 2~3, 렌더 스크립트 1)
+
+### 리스크
+- MEDIUM: `ShortsPlan` 필드 추가 시 기존 plans.json 역직렬화 하위호환(기본값 해결)
+- MEDIUM: 정치 프롬프트 회귀(기본값 분기로 바이트 동일 유지 + 스냅샷 테스트)
+- LOW-MEDIUM: 경제 콘텐츠 **투자권유 법적 가드레일** 필수
+- LOW: `relatable` 그라데이션/자막색 경제 톤 시각 확인
+
+### 복잡도: MEDIUM
+
+### 미확정 (구현 착수 시 확정)
+1. UI: 토글(권장) vs 전용 탭
+2. 경제 앵글: 신규 3종(권장) vs 기존 재사용
+3. 경제 톤 기본값: 차분·분석적(권장) vs 분노·격앙
+
+### 참고: 2026-07-02 경제 주제 e2e 선행 검증
+정치 파이프라인 topic 모드(tone=분노·격앙)로 "고유가지원금·6월 CPI 3.2%" 경제 쇼츠 1건 렌더 성공(55.9s, 12/12 뉴스클립). → 파이프라인 재사용 가능성 입증. 신규 파일: `scripts/render_political_pro_topic.py`(토픽 모드 CLI 렌더 재현). deno 2.9.1 설치(yt-dlp YouTube 추출 안정화).
+
+---
+
+## 🆕 진행 중: 정치쇼츠 V3 — 하이브리드 포맷 (원본 발언 50% + TTS 논평 50%)
+
+> 사용자 요청: "TTS가 말하는 부분보다 첨부할 영상에서 말하는 내용을 직접 넣는 게 호응이 좋은 것 같다. 영상에서 말하는 내용 반 / TTS로 논평 반 이렇게 앞으로 제작하면 좋겠다"
+> **확정 사항**: 자막 폰트는 Remotion `SceneText.tsx`(Noto Sans KR)와 통일 — Pillow도 NotoSansCJKkr 사용
+
+### 핵심 설계
+
+| 항목 | V2 (기존) | **V3 (하이브리드)** |
+|---|---|---|
+| TTS 비중 | ~85% | ~50% |
+| 원본 발언 | 마지막 1개 (선택) | 본문에 2~3개 교차 |
+| BGM | 전 구간 | 원본 비트 중에는 mute |
+| 자막 폰트 | TTS 씬 = Noto Sans KR, 원본 씬 = AppleSDGothic | **모두 Noto Sans KR로 통일** |
+| Plan JSON | Narration tuple | HybridBeat tuple (kind="tts"/"original") |
+
+### Phase A — 데이터 모델 (`src/analyzer/hybrid_plan_models.py`)
+
+`HybridBeat` frozen dataclass: kind ∈ {"tts","original"} + 공통 duration_sec + 분기별 필드.
+`HybridShortsPlan` frozen dataclass: hook(TTS) + beats(교차) + cta(TTS) + angle + source_*.
+
+**검증 룰**
+- `original` 합산 18~30초 / `tts` 합산 18~30초 (50% ±5초 허용)
+- 전체 ≤ 50초 (outro 4초 + 여유)
+- 첫·마지막 비트는 반드시 TTS
+- 원본 비트 사이에 TTS 비트 필수
+
+### Phase B — Plan 생성 프롬프트 (2-stage hybrid)
+
+- **Stage A — Gemini**: transcript → 인용가치 있는 원본 후보 4~6개 (`clip_start`, `clip_end`, `raw_text`, `quotability_score`)
+- **Stage B — Claude**: HybridShortsPlan 조립 (각 TTS 논평은 바로 직전/직후 원본 비트에 대한 평가)
+- 기존 3-plan 구조 유지 (title_anchor/audience_resonance/comparison)
+
+### Phase C — 렌더링 (`src/video/hybrid_renderer.py`)
+
+TTS 비트 = 기존 `render_video` 재사용. 원본 비트 = ffmpeg 컷(원본 음성 유지) + Pillow PNG 자막 overlay. ffmpeg concat 재인코딩으로 codec 통일. 오디오 `loudnorm=I=-16:TP=-1.5:LRA=11`로 레벨 정합. BGM은 -22dB, 원본 비트 중에는 mute.
+
+**자막 보정**: ASR transcript의 "어" / 잘림을 Gemini로 클린업 (2~3줄, ≤21자/줄).
+
+### Phase D — CLI · 웹 UI
+
+`political-pro <url> --hybrid` 플래그 추가. 미지정 시 V2 동작 보존. 웹 UI에 "📺 하이브리드 (원본 50%)" 토글.
+
+### Phase E — Lock-in + 테스트
+
+새 메모리 `feedback_hybrid_format_lockin.md` 추가. 단위 테스트 + E2E 1회.
+
+### 위험 등급
+
+| 위험 | 등급 | 완화책 |
+|---|---|---|
+| 원본 음질 편차 | HIGH | `loudnorm` + `afftdn` 노이즈 게이트 + SNR 필터링 |
+| Stage A가 좋은 후보 못 찾음 | HIGH | 후보 <2개면 V2로 자동 fallback (경고 표시) |
+| Charon↔원본 톤 단절 | MEDIUM | 비트 경계 50ms `acrossfade` |
+| Gemini 자막 보정 비용 | MEDIUM | `data/asr_cache/` 해시 캐시 |
+| 50/50 강제로 narrative 어색 | MEDIUM | ±5초 허용 |
+
+### 진행 순서 (이번 세션)
+
+1. **Phase A — Models** (1.5h) → 모델 + 검증 룰
+2. **Phase C — Renderer** (5h) → 원본/TTS 비트 분리 렌더 + Noto Sans KR Pillow 통일
+3. **1차 산출물** — 같은 OBS+장동혁 소스에 V3 적용한 첫 샘플 (Plan은 이번 세션 수동 작성, Phase B LLM 자동화는 다음 세션)
+
+### 다음 세션 (Phase B/D/E)
+
+- Stage A/B 프롬프트 작성 + 파싱 + 3-plan 생성
+- CLI `--hybrid` 플래그 + 웹 UI 토글
+- Lock-in 메모리 + 테스트 + 회귀 E2E
+
+---
 
 ---
 

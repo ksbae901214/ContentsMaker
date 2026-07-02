@@ -17,6 +17,11 @@ npm run build                            # Production build
 python3 -m pytest tests/ -v             # All tests
 python3 -m pytest tests/test_analyzer.py -v   # Single file
 python3 -m pytest tests/test_models.py::test_scene_from_dict -v  # Single test
+python3 -m pytest tests/dem_shorts/ -v        # Dem-Shorts subsystem tests
+python3 -m pytest tests/jpolitics/ -v         # 정치쇼츠 V3 subsystem tests
+
+# Frontend component tests (Vitest + jsdom)
+npm run test:ui                          # Runs app/components/__tests__/**
 
 # Lint
 ruff check .                             # Python lint
@@ -39,6 +44,16 @@ python3 -m src.main deevid_login                   # One-time deevid.ai browser 
 python3 -m src.main gemini_login                   # One-time Gemini web login (Imagen 4 / Veo 3)
 python3 -m src.main youtube-auth                   # One-time YouTube OAuth
 python3 -m src.main tiktok-auth                    # One-time TikTok OAuth
+python3 -m src.main political-pro <YouTube URL>    # 정치 숏츠: 3 기획안 비교 → 검수 → 영상 (Feature 009)
+python3 -m src.main daily-briefing                 # 어제(KST) 정치 이슈 수집 → 클러스터링 → 점수화 → 기획안
+python3 -m src.main cleanup                         # data/ 산출물 정리 (src/maintenance/cleanup.py)
+python3 -m src.main gems list                       # Gemini Gems 프리셋 목록
+python3 -m src.main gems show-prompt webtoon --kind image  # Gem 지침 텍스트 출력 (붙여넣기용)
+
+# Subsystem CLIs (own entry points, NOT under src.main)
+python3 -m src.jpolitics.main run <YouTube URL>    # 정치쇼츠 V3 모먼트 직캠 (detect/cut/render, Feature 027)
+python3 -m src.dem_shorts.cli db-init              # Dem-Shorts Studio: SQLite 마이그레이션 + seed
+python3 -m src.dem_shorts.cli poll-natv            # NATV 채널 폴링 → source_videos upsert (그 외 download/score/stt/diarize/gate ...)
 
 # Install
 pip install -r requirements.txt          # Python deps
@@ -62,8 +77,8 @@ Input (screenshot/URL/text/topic) → BlindPost or TopicInput JSON (data/raw/)
 
 ### Two Entry Points
 
-1. **Web UI** (`app/`): Next.js 16 app. Main generation endpoint is `POST /api/generate` which streams progress via SSE.
-2. **CLI** (`src/main.py`): Python CLI with subcommands (`image`, `manual`, `analyze`, `tts`, `render`, `pipeline`).
+1. **Web UI** (`app/`): Next.js 16 app. The general-pipeline generation endpoint is `POST /api/generate` (SSE progress). Major feature subsystems mount their own UI + API: `app/jpolitics/` (정치쇼츠 V3), `app/dem-shorts/` (Dem-Shorts Studio), `app/daily-briefing/` (Daily Briefing), plus `app/api/political-pro/`, `app/api/lawmaker/`, etc.
+2. **CLI** (`src/main.py`): main Python CLI — `image`, `manual`, `url`, `analyze`, `tts`, `render`, `pipeline`, `celebrity`, `political-pro`, `daily-briefing`, `cleanup`, `gems`, plus `*-login` / `*-auth`. Two subsystems have **separate** CLI entry points: `python3 -m src.jpolitics.main` and `python3 -m src.dem_shorts.cli`.
 
 ### Python Backend (`src/`)
 
@@ -77,6 +92,10 @@ Input (screenshot/URL/text/topic) → BlindPost or TopicInput JSON (data/raw/)
 | `video_gen/` | AI video generation | `seedance_gen.py` (API), `deevid_gen.py` (browser automation, Veo 3.1), `gemini_web_video_gen.py` (Phase 2B: Veo 3 via gemini.google.com web), `factory.py` (provider selection), `base.py` (abstract) |
 | `editor/` | Scene editing | `scene_ops.py` (split/merge/reorder/resize), `batch.py`, `project.py`, `translator.py`, `template.py` |
 | `upload/` | Platform upload | `youtube_uploader.py` (YouTube Data API v3 resumable upload), `tiktok_uploader.py`, `metadata_generator.py` (auto-generates title/description/tags/hashtags from `ShortsScript`) |
+| `jpolitics/` | 정치쇼츠 V3 (Feature 027) | Self-contained: `main.py` CLI (detect/cut/render/run), `analyzer/moment_detector.py`, `models/`, `video/` (clip_maker, captions, renderer), `api_bridge.py` for the web UI. "모먼트 직캠" — detect viral moments in a YouTube clip → cut → Remotion render |
+| `briefing/` | Daily Briefing | `naver_news_collector.py` + `youtube_collector.py` → `issue_clusterer.py` → `scorer.py` → `plan_runner.py`. Collects yesterday's (KST) political issues, clusters, scores, drafts plans. Frozen dataclasses in `models.py` |
+| `dem_shorts/` | Dem-Shorts Studio | Largest subsystem, **SQLite-backed** (`db/` + migrations). Pipeline: source collection → STT (`diarization.py`) → speaker ID → `scoring.py` (dem_score) → `ranking/` (Google Trends / Naver DataLab / Wikipedia / YouTube metrics) → `compliance/` gate (election guard + keyword/LLM guardrails) → `editor/` → `renderer.py`. Own CLI `cli.py`, frozen dataclasses in `models/` |
+| `maintenance/` | Housekeeping | `cleanup.py` — prunes `data/` artifacts (backs the `cleanup` CLI command) |
 | `config/settings.py` | Global paths & constants | `PROJECT_ROOT`, `DATA_*_DIR`, `CLAUDE_TIMEOUT_SECONDS=1800`, `MAX_SCENE_DURATION_SECONDS=5.0` |
 
 ### Remotion Video (`src/video/remotion/`)
@@ -119,6 +138,7 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 - **All Python data models are frozen dataclasses** (immutable). Create new instances instead of mutating.
 - **Python modules import from `src.*`** (e.g., `from src.config.settings import PROJECT_ROOT`). The project root is on `PYTHONPATH` via `pytest.ini`.
 - **Assets flow through `public/`** — renderer copies audio/images/BGM/SFX to `public/` before Remotion render, then cleans up temp files after.
+- **Per-scene SFX is globally OFF (soft-disabled 2026-06-12, commit `8c1bfef`)** — `renderer.py` forces `enable_sfx=False`/`auto_sfx=False`, `app/api/generate` & `rerender` pin `useSfx=false` and ignore the client toggle, and the SFX `<Audio>` block is removed from `ShortsComposition.tsx`. Assets/code are preserved for re-enable: `Scene.sfx` field, `SfxConfig`, `src/video/sfx_matcher.py`, `SfxPicker.tsx`, `data/sfx/`, `public/sfx/`. Do not "re-wire" SFX unless explicitly asked; see `prompt_plan.md` (029) for the rationale and re-enable steps.
 - **Shared prompt guards** — `src/illustrator/image_constants.py` (NO_TEXT_GUARD / PHOTO_STYLE_PREFIX / PHOTO_STYLE_FOOTER / ANATOMY_GUARD) and `src/video_gen/motion_prompt_builder.py` (`build_motion_prompt`) are the **single source of truth** for image/video prompt guards. Both the web UI (`app/api/generate/route.ts`) and any e2e scripts must import from these modules, not duplicate the guards locally.
 - **snake_case ↔ camelCase boundary** — Python uses snake_case, Remotion/TS uses camelCase. The `renderer.py` converts at the boundary.
 - **Per-scene TTS timing** — `generate_voice_with_timing()` returns `scene_timings` (start_ms/end_ms per scene) for precise audio-video sync. Scene ID `-1` is the outro.

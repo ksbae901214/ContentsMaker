@@ -18,7 +18,7 @@ export const RemotionRoot: React.FC = () => {
   return (
     <Composition
       id="MomentShorts"
-      component={MomentComposition}
+      component={MomentComposition as unknown as React.ComponentType<Record<string, unknown>>}
       durationInFrames={FPS * 60}
       fps={FPS}
       width={1080}

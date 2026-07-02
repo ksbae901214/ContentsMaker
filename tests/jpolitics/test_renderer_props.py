@@ -198,16 +198,16 @@ class TestRenderMomentShort:
 
         output = tmp_path / "output.mp4"
 
-        mock_result = MagicMock()
-        mock_result.returncode = 0
+        def fake_run(cmd, **kwargs):
+            output.write_bytes(b"0" * (1024 * 1024 * 5))
+            m = MagicMock()
+            m.returncode = 0
+            return m
 
         with (
             patch("src.jpolitics.video.renderer.shutil.which", return_value="/usr/bin/npx"),
-            patch("src.jpolitics.video.renderer.subprocess.run", return_value=mock_result),
-            patch.object(Path, "exists", return_value=True),
-            patch.object(Path, "stat") as mock_stat,
+            patch("src.jpolitics.video.renderer.subprocess.run", side_effect=fake_run),
         ):
-            mock_stat.return_value.st_size = 1024 * 1024 * 5
             result = render_moment_short(
                 clip, _make_captions(),
                 channel="YTN",
@@ -257,16 +257,16 @@ class TestRenderMomentShort:
 
         output = tmp_path / "output.mp4"
 
-        mock_result = MagicMock()
-        mock_result.returncode = 0
+        def fake_run(cmd, **kwargs):
+            output.write_bytes(b"0" * 1024)
+            m = MagicMock()
+            m.returncode = 0
+            return m
 
         with (
             patch("src.jpolitics.video.renderer.shutil.which", return_value="/usr/bin/npx"),
-            patch("src.jpolitics.video.renderer.subprocess.run", return_value=mock_result) as mock_run,
-            patch.object(Path, "exists", return_value=True),
-            patch.object(Path, "stat") as mock_stat,
+            patch("src.jpolitics.video.renderer.subprocess.run", side_effect=fake_run) as mock_run,
         ):
-            mock_stat.return_value.st_size = 1024
             render_moment_short(
                 clip, [],
                 channel="SBS",
@@ -298,6 +298,7 @@ class TestRenderMomentShort:
                 props_path = Path(cmd[props_idx])
                 if props_path.exists():
                     captured_props.append(_json.loads(props_path.read_text()))
+            output.write_bytes(b"0" * 1024)
             m = MagicMock()
             m.returncode = 0
             return m
@@ -305,10 +306,7 @@ class TestRenderMomentShort:
         with (
             patch("src.jpolitics.video.renderer.shutil.which", return_value="/usr/bin/npx"),
             patch("src.jpolitics.video.renderer.subprocess.run", side_effect=fake_run),
-            patch.object(Path, "exists", return_value=True),
-            patch.object(Path, "stat") as mock_stat,
         ):
-            mock_stat.return_value.st_size = 1024
             render_moment_short(
                 clip, [],
                 channel="국회방송",

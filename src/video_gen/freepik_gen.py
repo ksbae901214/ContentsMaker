@@ -228,8 +228,21 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
                     "모든 모델에서 영상 생성 실패: " + "; ".join(errors)
                 )
             except PWTimeout as exc:
+                from src.video_gen.browser_diagnostics import (
+                    diagnose_page_failure,
+                    format_diagnosis,
+                )
+
+                diag = await diagnose_page_failure(
+                    page, login_button=SELECTORS.get("login_button")
+                )
                 raise FreepikError(
-                    f"Freepik 페이지 작업 시간 초과: {exc}"
+                    format_diagnosis(
+                        provider="freepik",
+                        action=f"페이지 작업 시간 초과 ({exc})",
+                        diagnosis=diag,
+                        relogin_cmd="python3 -m src.main freepik_login",
+                    )
                 ) from exc
             finally:
                 await ctx.close()
@@ -298,7 +311,22 @@ class FreepikBrowserGenerator(VideoGeneratorBase):
             await page.click(trigger_sel, timeout=5000)
             await page.wait_for_timeout(1500)
         except Exception as exc:
-            raise FreepikError(f"모델 드롭다운 열기 실패: {exc}") from exc
+            from src.video_gen.browser_diagnostics import (
+                diagnose_page_failure,
+                format_diagnosis,
+            )
+
+            diag = await diagnose_page_failure(
+                page, login_button=SELECTORS.get("login_button")
+            )
+            raise FreepikError(
+                format_diagnosis(
+                    provider="freepik",
+                    action="모델 드롭다운 열기",
+                    diagnosis=diag,
+                    relogin_cmd="python3 -m src.main freepik_login",
+                )
+            ) from exc
 
         # 2. Click "All models" to open the full modal
         all_btn = await page.query_selector(SELECTORS["all_models_button"])

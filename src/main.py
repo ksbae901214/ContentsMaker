@@ -709,6 +709,43 @@ def cmd_daily_briefing(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_cleanup(args: argparse.Namespace) -> int:
+    """Handle the 'cleanup' subcommand — data/ 산출물 정리 (dry-run 기본).
+
+    temp/tmp 24시간, 중간산출물(images/videos/audio/natv_clips) keep_days 경과
+    파일만 대상. outputs/raw/scripts/tts_cache 등은 절대 건드리지 않음.
+    """
+    from src.config.settings import DATA_DIR
+    from src.maintenance.cleanup import execute_cleanup, scan_cleanup_targets
+
+    report = scan_cleanup_targets(DATA_DIR, keep_days=args.keep_days)
+    if not report.targets:
+        print("✅ 정리 대상 없음")
+        return 0
+
+    total_mb = report.total_bytes / (1024 * 1024)
+    print(f"🧹 정리 대상: {len(report.targets)}개 파일, {total_mb:.1f} MB")
+    for t in report.targets[:20]:
+        rel = t.path.relative_to(DATA_DIR)
+        print(f"   [{t.category}] data/{rel} ({t.age_days:.0f}일 경과)")
+    if len(report.targets) > 20:
+        print(f"   ... 외 {len(report.targets) - 20}개")
+
+    if not args.apply:
+        print("\nℹ️  dry-run 모드 — 실제 삭제하려면 --apply 를 추가하세요")
+        return 0
+
+    result = execute_cleanup(report)
+    freed_mb = result.freed_bytes / (1024 * 1024)
+    print(f"\n✅ {len(result.deleted)}개 삭제, {freed_mb:.1f} MB 확보")
+    if result.errors:
+        print(f"⚠️  {len(result.errors)}개 삭제 실패:", file=sys.stderr)
+        for err in result.errors:
+            print(f"   {err}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def cmd_celebrity(args: argparse.Namespace) -> int:
     """Handle the 'celebrity' subcommand — 유명인 이름 → 소개 쇼츠 (학습 목적 전용).
 
@@ -1469,6 +1506,20 @@ def build_parser() -> argparse.ArgumentParser:
         "tiktok-auth", help="TikTok API OAuth 인증 (최초 1회)"
     )
 
+    # cleanup subcommand (Feature 026) — data/ 산출물 정리
+    cleanup_parser = subparsers.add_parser(
+        "cleanup",
+        help="data/ 정리 — temp 24시간, 중간산출물 30일 경과 파일 삭제 (dry-run 기본)",
+    )
+    cleanup_parser.add_argument(
+        "--apply", action="store_true",
+        help="실제 삭제 실행 (미지정 시 dry-run으로 대상만 출력)",
+    )
+    cleanup_parser.add_argument(
+        "--keep-days", type=int, default=30, dest="keep_days",
+        help="중간산출물(images/videos/audio/natv_clips) 보관 일수 (default: 30)",
+    )
+
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")
 
     # deevid_login subcommand
@@ -1535,6 +1586,7 @@ def main() -> int:
         "celebrity": cmd_celebrity,
         "political-pro": cmd_political_pro,
         "daily-briefing": cmd_daily_briefing,
+        "cleanup": cmd_cleanup,
     }
 
     handler = commands.get(args.command)

@@ -86,3 +86,12 @@ prompt_plan.md.bak*
 
 # Generated e2e video samples (jpolitics V3 e2e 산출물)
 public/vid_*.mp4
+
+# Data (jpolitics V3 / political / daily-briefing pipeline outputs)
+data/jpolitics/
+data/jpolitics_reference/
+data/political/
+data/daily_briefing/
+
+# Claude Code scheduled-task session lock (runtime, machine-specific)
+.claude/scheduled_tasks.lock

@@ -32,6 +32,7 @@
   ],
   "exclude": [
     "node_modules",
-    "src/video/remotion"
+    "src/video/remotion",
+    "src/video/remotion_v3"
   ]
 }

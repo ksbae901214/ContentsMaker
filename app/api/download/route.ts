@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile, stat } from "fs/promises";
 import { basename, resolve, isAbsolute } from "path";
 
-const ALLOWED_DIRS = ["data/outputs", "data/images", "data/audio"];
+const ALLOWED_DIRS = ["data/outputs", "data/images", "data/audio", "data/jpolitics"];
 
 export async function GET(req: NextRequest) {
   const rawPath = req.nextUrl.searchParams.get("path");

@@ -227,13 +227,14 @@ Do not enable the upload toggles or post these videos publicly without verifying
   - **P1 제목 엔진**: `ShortsPlan.yt_title: str = ""` 신규 필드. Stage A 프롬프트에 "[악역]-[응징]-[주인공]" 15~30자 훅 제목 규칙. `plan_to_script()`: `yt_title or topic` 우선.
   - **P3 탈보도체**: "보도체 한 문장 (~했습니다 고정)" → "대립 서사체 (주장→반박→역공 아크, 다양한 문말 허용)". `STAGE_B_SYSTEM_PROMPT` / TOPIC / ECONOMIC 3종 갱신.
   - **P4 길이 단축**: 나레이션 4~7개 (22~35초), CTA 2초, 총 40초 캡.
-- 030 정치쇼츠 V3 하이브리드 포맷 — Phase D/E (2026-07-03):
-  - `src/analyzer/hybrid_plan_models.py` — `HybridBeat`/`HybridShortsPlan`/`ThreeHybridPlansResult` 완성 (이전 세션)
-  - `src/analyzer/hybrid_planner.py` — `generate_three_hybrid_plans()`: Gemini Stage A → Claude Stage B × 3 angles (이전 세션)
-  - `src/video/hybrid_renderer.py` — `render_hybrid_shorts()` 오케스트레이터 추가: per-beat Gemini Charon TTS 합성 + `build_tts_beat` / `build_original_beat` + concat. edge-tts 폴백.
+- 030 정치쇼츠 V3 하이브리드 포맷 — Phase D/E 완료 (2026-07-03):
+  - `src/analyzer/hybrid_plan_models.py` — `HybridBeat`/`HybridShortsPlan`/`ThreeHybridPlansResult` 완성
+  - `src/analyzer/hybrid_planner.py` — `generate_three_hybrid_plans()`: Gemini Stage A → Claude Stage B × 3 angles
+  - `src/video/hybrid_renderer.py` — `render_hybrid_shorts()`: per-beat Gemini Charon TTS + ffmpeg concat. edge-tts 폴백.
   - `src/main.py` — `political-pro --hybrid` 플래그: V3 하이브리드 파이프라인 분기 (미지정 시 V2 보존)
   - `tests/test_hybrid_plan_models.py` — 51 tests (HybridBeat·HybridShortsPlan 검증/직렬화 round-trip)
-  - 검증: pytest 1458 passed / 0 failed, Next.js build 48/48
+  - **웹 UI 토글 (2026-07-03)**: `app/api/political-pro/hybrid-plans/route.ts` (신규) + `app/components/HybridPlanPicker.tsx` (신규) + `app/page.tsx` (V2/V3 토글·HybridPlanPicker) + `app/api/generate/route.ts` (`hybridMode=on` → `render_hybrid_shorts()`)
+  - 검증: pytest 1458 passed / 0 failed, Next.js build 49/49
 - 010-jpolitics-v3-isolated: Added Python 3.11+ (백엔드), TypeScript 5.x + React 19 / Next.js 16 (프론트엔드), Remotion 4.x (영상 렌더링, 독립 패키지)
 - 014: Gemini 통합 Phase 1A–4 (초안, 미통합)
   - Phase 1A: `gemini_youtube_transcriber.py` — Gemini Files API로 transcript 추출 (Whisper 대체, 20~40초). 폴백 체인: VTT → Gemini → Whisper.

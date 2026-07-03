@@ -126,13 +126,17 @@
 
 TTS 비트 = Gemini Charon per-beat TTS 합성 + 배경 mute. 원본 비트 = ffmpeg 컷(원본 음성 유지) + Pillow PNG 자막 overlay. `render_hybrid_shorts()` 최상위 오케스트레이터 추가. ffmpeg concat 재인코딩으로 codec 통일. 오디오 `loudnorm=I=-16:TP=-1.5:LRA=11`로 레벨 정합.
 
-### Phase D — CLI · 웹 UI (CLI ✅, 웹 UI 보류)
+### Phase D — CLI · 웹 UI ✅
 
-`python3 -m src.main political-pro <url> --hybrid` 플래그 추가 완료. 미지정 시 V2 동작 보존. 웹 UI 토글은 실제 E2E 샘플 검증 후 다음 세션에.
+`python3 -m src.main political-pro <url> --hybrid` 플래그 완료. 웹 UI 토글 완료 (2026-07-03):
+- `app/api/political-pro/hybrid-plans/route.ts` (신규): YouTube 다운로드 + hybrid 기획안 3개 생성
+- `app/components/HybridPlanPicker.tsx` (신규): V3 기획안 표시 (비트 구성·TTS/원본 통계)
+- `app/page.tsx`: 🏛️V2일반/📺V3하이브리드 토글 (YouTube 모드 전용) + HybridPlanPicker 표시
+- `app/api/generate/route.ts`: `hybridMode=on` 분기 → `render_hybrid_shorts()` 호출 → SSE done
 
 ### Phase E — Lock-in + 테스트 ✅
 
-`tests/test_hybrid_plan_models.py`: 51 tests (HybridBeat·HybridShortsPlan·ThreeHybridPlansResult 검증/직렬화). pytest 1458 passed / 0 failed. Next.js build 48/48.
+`tests/test_hybrid_plan_models.py`: 51 tests (HybridBeat·HybridShortsPlan·ThreeHybridPlansResult 검증/직렬화). pytest 1458 passed / 0 failed. Next.js build 49/49.
 
 ### 위험 등급
 
@@ -144,10 +148,10 @@ TTS 비트 = Gemini Charon per-beat TTS 합성 + 배경 mute. 원본 비트 = ff
 | Gemini 자막 보정 비용 | MEDIUM | `data/asr_cache/` 해시 캐시 |
 | 50/50 강제로 narrative 어색 | MEDIUM | ±5초 허용 |
 
-### 다음 세션 (E2E 검증 + 웹 UI 토글)
+### 다음 세션 (E2E 검증)
 
-- `python3 -m src.main political-pro <실제 URL> --hybrid --plan-idx 0`으로 E2E 샘플 생성
-- 웹 UI에 "📺 하이브리드 (원본 50%)" 토글 추가
+- 웹 UI 토글 완료 (2026-07-03). 실제 URL로 E2E 샘플 생성 후 품질 확인:
+  `python3 -m src.main political-pro <실제 URL> --hybrid --plan-idx 0`
 
 ---
 

@@ -485,6 +485,9 @@ script=plan_to_script(
 # Resolve the saved path back from the most recent file matching slug
 from src.config.settings import DATA_SCRIPTS_DIR
 saved=sorted(DATA_SCRIPTS_DIR.glob("*_political_pro.json"), key=lambda p: p.stat().st_mtime)[-1]
+# P2: scene 0이 원본 클립(voice_text=="")이면 hook_clip_duration 노출
+_hook=script.scenes[0] if script.scenes else None
+hook_clip_dur=_hook.duration if (_hook and not _hook.voice_text) else 0.0
 print(json.dumps({
   "title": script.metadata.title,
   "emotion": script.metadata.emotion_type,
@@ -497,6 +500,7 @@ print(json.dumps({
   "youtube_url": ${JSON.stringify(ytUrl)},
   "plan_source_type": getattr(plan, "source_type", "youtube"),
   "youtube_search_keywords": list(getattr(plan, "youtube_search_keywords", ())),
+  "hook_clip_duration": hook_clip_dur,
 }))`)));
           send("progress", {message: `✅ 스크립트 변환 완료 (${a.scenes}씬, ${a.duration}초)`});
         } else {
@@ -684,6 +688,8 @@ print(json.dumps({"scenes":s["scenes"]}))`));
               // Feature 023: topic 모드 식별 + 씬별 검색 키워드 (Phase 2 재렌더 시 사용)
               planSourceType: a.plan_source_type || "youtube",
               youtubeSearchKeywords: a.youtube_search_keywords || [],
+              // P2 (030): 원본 발언 훅 클립 지속시간 (0이면 기존 TTS 훅)
+              hookClipDuration: a.hook_clip_duration || 0,
             };
           }
           send("done", {result: reviewPayload});
@@ -810,6 +816,8 @@ print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"th
             // Feature 023
             planSourceType?: string;
             youtubeSearchKeywords?: string[];
+            // P2 (030): 원본 훅 클립 지속시간 (0이면 기존 TTS 훅)
+            hookClipDuration?: number;
           };
           try {
             meta = JSON.parse(fd.get("politicalProMeta") as string);
@@ -920,19 +928,29 @@ from src.dem_shorts.editor.segment_cutter import cut_segment
 src_video=Path(${JSON.stringify(meta.videoPath)})
 clip_start=${meta.clipStartSec}
 clip_end=${meta.clipEndSec}
-clip_duration=max(0.1, clip_end - clip_start)
 out_dir=src_video.parent
 timings=[t for t in json.loads(r"""${timingsJsonPP}""") if t["scene_id"]!=-1]
+ts=int(time.time())
+clips=[]
+# P2: 원본 훅 클립 (scene 0, mute=False) — TTS 타이밍과 별도로 먼저 컷
+hook_dur=float(${meta.hookClipDuration || 0})
+if hook_dur > 0:
+  hook_out=out_dir/f"scene_{ts}_00.mp4"
+  hook_end=min(clip_start+hook_dur, clip_end)
+  cut_segment(input_path=src_video, output_path=hook_out, start_sec=clip_start, end_sec=hook_end, mute=False)
+  clips.append({"scene_id": 0, "video_path": str(hook_out)})
+  tts_clip_start=min(clip_start+hook_dur, clip_end)
+else:
+  tts_clip_start=clip_start
+tts_clip_duration=max(0.1, clip_end - tts_clip_start)
 if not timings:
-  print(json.dumps([]))
+  print(json.dumps(clips))
 else:
   tts_total_ms=max(t["end_ms"] for t in timings)
-  ts=int(time.time())
-  clips=[]
   for t in timings:
     sid=t["scene_id"]
-    ns=clip_start+(t["start_ms"]/tts_total_ms)*clip_duration
-    ne=clip_start+(t["end_ms"]/tts_total_ms)*clip_duration
+    ns=tts_clip_start+(t["start_ms"]/tts_total_ms)*tts_clip_duration
+    ne=tts_clip_start+(t["end_ms"]/tts_total_ms)*tts_clip_duration
     out=out_dir/f"scene_{ts}_{sid:02d}.mp4"
     # political_pro: TTS가 메인 음성이므로 영상 음성은 mute (중첩·에코 방지)
     cut_segment(input_path=src_video, output_path=out, start_sec=ns, end_sec=ne, mute=True)

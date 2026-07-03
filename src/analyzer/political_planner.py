@@ -1038,13 +1038,42 @@ def plan_to_script(
         ))
 
     # Scene 0 — Hook
-    _add_split_scenes(
-        text=plan.hook,
-        total_duration=min(3.0, MAX_SCENE_DURATION_SECONDS),
-        scene_type="title",
-        color="yellow",
-        emphasis=True,
+    # P2 (030): YouTube 모드 + narrations[0]에 실제 화자가 있으면
+    #   → TTS 낭독 제거, 원본 발언 클립을 0초에 배치 (voice_text=""), yt_title 자막 오버레이.
+    # 폴백: topic 모드 / speaker 없는 기획안은 기존 TTS 훅 유지.
+    _first_narr = plan.narrations[0] if plan.narrations else None
+    _hook_is_original_clip = (
+        not is_topic
+        and _first_narr is not None
+        and (_first_narr.speaker or "").strip() != ""
     )
+    _hook_clip_duration = 0.0
+    if _hook_is_original_clip:
+        # 원본 발언 클립 씬: TTS 없음, 제목(yt_title) 자막 노란색 오버레이
+        _hook_clip_duration = min(
+            MAX_SCENE_DURATION_SECONDS,
+            max(2.0, _first_narr.end_sec - _first_narr.start_sec),
+        )
+        scenes.append(Scene(
+            id=0,
+            timestamp=0.0,
+            duration=_hook_clip_duration,
+            type="title",
+            text=plan.yt_title or plan.hook,
+            voice_text="",  # TTS 없음 — 원본 음성 재생
+            emphasis=True,
+            highlight_words=(),
+            subtitle_color="yellow",
+            subtitle_emphasis=True,
+        ))
+    else:
+        _add_split_scenes(
+            text=plan.hook,
+            total_duration=min(3.0, MAX_SCENE_DURATION_SECONDS),
+            scene_type="title",
+            color="yellow",
+            emphasis=True,
+        )
 
     for narr in plan.narrations:
         # 신포맷(speaker/tts_text 존재): 1비트=1씬 + 자막·음성 분리.

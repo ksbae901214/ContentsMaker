@@ -577,3 +577,93 @@ def test_split_subtitle_korean_endings_boost():
     first = segs[0].rstrip()
     # 종결어미 또는 어절 경계로 자연 종료
     assert first.endswith("요") or first.endswith("다") or first.endswith("어요") or " " in first
+
+
+# ─── 030 개선안: P1(제목), P4(길이) ───
+
+def _make_plan_with_yt_title(yt_title: str = "이재명을 추궁한 특검") -> ShortsPlan:
+    return ShortsPlan(
+        topic="이재명 특검 발언",
+        hook="특검을 막은 이유가 있다",
+        yt_title=yt_title,
+        clip_start_sec=0.0,
+        clip_end_sec=30.0,
+        clip_reason="r",
+        flow_intro="i",
+        flow_middle="m",
+        flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="핵심 발언"),),
+        cta="의견 댓글",
+        angle="title_anchor",
+    )
+
+
+def test_plan_to_script_uses_yt_title_when_set(tmp_path):
+    """P1: yt_title이 설정되면 metadata.title로 사용된다."""
+    plan = _make_plan_with_yt_title("이재명을 추궁한 특검")
+    script = plan_to_script(
+        plan,
+        video_title="원본 영상",
+        video_duration_sec=120.0,
+        youtube_url="https://youtu.be/abc",
+        save=False,
+    )
+    assert script.metadata.title == "이재명을 추궁한 특검"
+
+
+def test_plan_to_script_falls_back_to_topic_when_yt_title_empty(tmp_path):
+    """P1: yt_title이 빈 문자열이면 topic으로 폴백 (기존 동작 보존)."""
+    plan = _make_plan_with_yt_title("")
+    script = plan_to_script(
+        plan,
+        video_title="원본 영상",
+        video_duration_sec=120.0,
+        youtube_url="https://youtu.be/abc",
+        save=False,
+    )
+    assert script.metadata.title == "이재명 특검 발언"
+
+
+def test_plan_to_script_total_duration_capped_at_40s():
+    """P4: 총 영상 길이는 40초를 넘지 않는다."""
+    plan = ShortsPlan(
+        topic="t", hook="h",
+        clip_start_sec=0, clip_end_sec=60, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=tuple(
+            Narration(start_sec=i * 4, end_sec=(i + 1) * 4, text=f"씬 {i + 1} 내용")
+            for i in range(10)
+        ),
+        cta="cta",
+        angle="title_anchor",
+    )
+    script = plan_to_script(
+        plan,
+        video_title="t",
+        video_duration_sec=120.0,
+        youtube_url="https://youtu.be/x",
+        save=False,
+    )
+    assert script.metadata.duration <= 40.0, f"duration={script.metadata.duration} > 40s"
+
+
+def test_plan_to_script_cta_scene_max_2s():
+    """P4: CTA 씬의 duration 합계는 2초 이하."""
+    plan = ShortsPlan(
+        topic="t", hook="h",
+        clip_start_sec=0, clip_end_sec=30, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="발언"),),
+        cta="이게 정상인가요?",
+        angle="title_anchor",
+    )
+    script = plan_to_script(
+        plan,
+        video_title="t",
+        video_duration_sec=120.0,
+        youtube_url="https://youtu.be/x",
+        save=False,
+    )
+    cta_scenes = [s for s in script.scenes if s.type == "comment"]
+    total_cta_dur = sum(s.duration for s in cta_scenes)
+    assert total_cta_dur <= 2.0, f"CTA 총 duration={total_cta_dur} > 2s"

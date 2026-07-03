@@ -146,6 +146,8 @@ class ShortsPlan:
     youtube_search_keywords: tuple[str, ...] = ()  # source_type=topic 일 때 씬별 검색어
     # 2026-07-02 — 경제쇼츠 지원: "political"(기존) | "economic"(신규)
     category: Category = "political"
+    # 2026-07-03 — 030 P1: "[악역]-[응징]-[주인공]" 훅 제목. 비어있으면 topic 폴백.
+    yt_title: str = ""
 
     def __post_init__(self) -> None:
         required_text_fields = {
@@ -224,6 +226,9 @@ class ShortsPlan:
             d["youtube_search_keywords"] = list(self.youtube_search_keywords)
         # 2026-07-02: category도 분기 키로 사용 — 항상 직렬화
         d["category"] = self.category
+        # 2026-07-03 — 030 P1: yt_title은 값이 있을 때만 직렬화 (V2 JSON 호환)
+        if self.yt_title:
+            d["yt_title"] = self.yt_title
         return d
 
     @classmethod
@@ -261,6 +266,8 @@ class ShortsPlan:
             category=str(  # type: ignore[arg-type]
                 data.get("category", "political")
             ),
+            # 2026-07-03 — 030 P1: yt_title 없으면 "" (기존 JSON 호환)
+            yt_title=str(data.get("yt_title", data.get("ytTitle", ""))),
         )
 
 

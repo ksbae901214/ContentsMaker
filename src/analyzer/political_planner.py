@@ -282,6 +282,8 @@ def _generate_three_plans_topic_hybrid(
             "youtube_search_keywords": details_data.get("youtube_search_keywords", []),
             # 2026-07-02: 경제쇼츠 지원 — plan_to_script의 emotion/gradient 선택에 사용
             "category": category,
+            # 030 P1: Stage A가 생성한 YouTube 훅 제목 (없으면 topic 폴백)
+            "yt_title": candidate.get("yt_title", ""),
         }
         try:
             plans.append(ShortsPlan.from_dict(merged))
@@ -381,6 +383,8 @@ def _generate_three_plans_hybrid(
             "format_reason": candidate.get("format_reason", ""),
             # V2 — Stage B에서 시각 연출 지시
             "visual_directives": details.get("visual_directives", []),
+            # 030 P1: Stage A가 생성한 YouTube 훅 제목 (없으면 topic 폴백)
+            "yt_title": candidate.get("yt_title", ""),
         }
         try:
             plans.append(ShortsPlan.from_dict(merged))
@@ -1060,7 +1064,7 @@ def plan_to_script(
     # CTA
     _add_split_scenes(
         text=plan.cta,
-        total_duration=3.0,
+        total_duration=2.0,  # P4: 30초 미만 목표 — CTA 단축
         scene_type="comment",
         color="yellow",
         emphasis=True,
@@ -1073,11 +1077,11 @@ def plan_to_script(
     # (수동 secondary_clip_path 지정)로 미룸. 자동 매핑 OFF.
     # scenes = _apply_visual_directives_to_scenes(scenes, plan.visual_directives)
 
-    total_duration = min(cursor, 60.0)
+    total_duration = min(cursor, 40.0)  # P4: 40초 캡 (기존 60초)
 
     script = ShortsScript(
         metadata=Metadata(
-            title=plan.topic,
+            title=plan.yt_title or plan.topic,
             emotion_type=emotion,
             duration=total_duration,
             source_url=youtube_url,

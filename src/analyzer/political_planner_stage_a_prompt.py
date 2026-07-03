@@ -43,6 +43,7 @@ STAGE_A_SYSTEM_PROMPT = """\
       "format_reason": "MBC 라디오 시사 스타일 — 진행자 질문에 답하는 인터뷰 구조, 논리 충돌이 명확",
       "topic": "한 줄 핵심 이슈 요약",
       "hook": "0~3초 시청자 정지 유도 문장 (자극적이되 팩트 기반)",
+      "yt_title": "실명 1~2개 포함 15~30자 YouTube 제목. '[악역]을 [응징동사]한 [주인공]' 3단 구조 또는 의문형·클리프행어. 예: '이재명을 추궁한 국민의힘' '왜 특검을 막았나?'",
       "clip_start_sec": 45.0,
       "clip_end_sec": 75.0,
       "clip_reason": "이 구간을 고른 이유 (transcript 인용 가능)",
@@ -72,9 +73,10 @@ STAGE_A_SYSTEM_PROMPT = """\
 - 각 후보의 구간이 서로 너무 겹치지 않게 (50% 이상 중복 회피)
 
 # 출력 스타일
-- format_type / format_reason / topic / hook / clip_reason 모두 한국어
+- format_type / format_reason / topic / hook / yt_title / clip_reason 모두 한국어
 - format_reason은 1줄 (~50자), 왜 A 또는 B인지 핵심만
 - 후킹은 짧고 강함 (15~40자), "끝까지 보게 만드는" 결정적 발언/행동 인용
+- yt_title: 실명 1~2개, 15~30자, "[악역]을 [응징동사]한 [주인공]" 구조 또는 의문형("왜 X했나?") / 클리프행어("...의 충격 결말")
 - JSON 외 어떠한 텍스트도 출력하지 마시오. 코드펜스 없이 raw JSON만.
 """
 
@@ -148,6 +150,7 @@ STAGE_A_TOPIC_SYSTEM_PROMPT = """\
       "format_reason": "한 줄 분류 이유",
       "topic": "한 줄 핵심 이슈 요약",
       "hook": "0~3초 시청자 정지 유도 문장 (자극적이되 팩트 기반)",
+      "yt_title": "실명 1~2개 포함 15~30자 YouTube 제목. '[악역]을 [응징동사]한 [주인공]' 구조 또는 의문형",
       "angle": "title_anchor"
     },
     { "...angle: audience_resonance ..." },
@@ -168,9 +171,10 @@ STAGE_A_TOPIC_SYSTEM_PROMPT = """\
 4. **왜곡 금지** — 자극적 후킹은 허용하되 사실 왜곡 금지.
 
 # 출력 스타일
-- format_type / format_reason / topic / hook 모두 한국어
+- format_type / format_reason / topic / hook / yt_title 모두 한국어
 - format_reason은 1줄 (~50자)
 - 후킹은 짧고 강함 (15~40자), 시청자가 끝까지 보게 만드는 문장
+- yt_title: 실명 1~2개, 15~30자, "[악역]을 [응징동사]한 [주인공]" 구조 또는 의문형·클리프행어
 - JSON 외 어떠한 텍스트도 출력하지 마시오. 코드펜스 없이 raw JSON만.
 
 # topic 모드 주의 (Feature 023)
@@ -206,6 +210,7 @@ STAGE_A_TOPIC_ECONOMIC_SYSTEM_PROMPT = """\
       "format_reason": "한 줄 분류 이유",
       "topic": "한 줄 핵심 이슈 요약",
       "hook": "0~3초 시청자 정지 유도 문장 (수치·사실 기반)",
+      "yt_title": "수치·실명 포함 15~30자 YouTube 제목. 예: '물가 3.2% 올랐다, 내 지갑은?' '금리 동결, 집값은 어떻게?'",
       "angle": "wallet_impact"
     },
     { "...angle: cause_analysis ..." },
@@ -226,9 +231,10 @@ STAGE_A_TOPIC_ECONOMIC_SYSTEM_PROMPT = """\
 4. **왜곡 금지** — 자극적 후킹은 허용하되 수치·사실 왜곡 금지.
 
 # 출력 스타일
-- format_type / format_reason / topic / hook 모두 한국어
+- format_type / format_reason / topic / hook / yt_title 모두 한국어
 - format_reason은 1줄 (~50자)
 - 후킹은 짧고 강함 (15~40자), 시청자가 "내 얘기"로 느끼게 만드는 문장
+- yt_title: 수치·실명 포함, 15~30자, 의문형("왜 이렇게?") 또는 숫자 임팩트형("3.2% 올랐다")
 - JSON 외 어떠한 텍스트도 출력하지 마시오. 코드펜스 없이 raw JSON만.
 
 # topic 모드 주의

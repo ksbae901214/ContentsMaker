@@ -410,3 +410,60 @@ def test_shortsplan_accepts_economic_angles():
             cta="cta", angle=angle, category="economic",
         )
         assert p.angle == angle
+
+
+# ─── P1: yt_title 필드 (Feature 030) ───
+
+def test_shortsplan_yt_title_defaults_to_empty():
+    """yt_title 미지정 시 빈 문자열 기본값 — 기존 JSON 호환."""
+    p = _make_plan()
+    assert p.yt_title == ""
+
+
+def test_shortsplan_yt_title_round_trip():
+    """yt_title 설정 시 to_dict/from_dict 왕복 보존."""
+    p = ShortsPlan(
+        topic="이재명 특검 거부 발언",
+        hook="특검을 막으려 한 이유가 있다",
+        yt_title="이재명이 특검을 거부한 진짜 이유",
+        clip_start_sec=10.0,
+        clip_end_sec=40.0,
+        clip_reason="r",
+        flow_intro="i",
+        flow_middle="m",
+        flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="핵심 발언"),),
+        cta="의견 댓글",
+        angle="title_anchor",
+    )
+    d = p.to_dict()
+    assert d["yt_title"] == "이재명이 특검을 거부한 진짜 이유"
+    restored = ShortsPlan.from_dict(d)
+    assert restored.yt_title == "이재명이 특검을 거부한 진짜 이유"
+    assert restored == p
+
+
+def test_shortsplan_yt_title_omitted_in_to_dict_when_empty():
+    """yt_title이 빈 문자열이면 to_dict에 키를 넣지 않음 — V2 JSON 호환."""
+    p = _make_plan()
+    d = p.to_dict()
+    assert "yt_title" not in d
+
+
+def test_shortsplan_legacy_dict_without_yt_title_loads_as_empty():
+    """기존 plans.json(yt_title 키 없음) → yt_title="" 로 로드."""
+    legacy_data = {
+        "topic": "이슈",
+        "hook": "훅",
+        "clip_start_sec": 0.0,
+        "clip_end_sec": 30.0,
+        "clip_reason": "r",
+        "flow_intro": "i",
+        "flow_middle": "m",
+        "flow_climax": "c",
+        "narrations": [{"start_sec": 0, "end_sec": 3, "text": "첫 씬"}],
+        "cta": "cta",
+        "angle": "title_anchor",
+    }
+    p = ShortsPlan.from_dict(legacy_data)
+    assert p.yt_title == ""

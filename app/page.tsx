@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { SceneEditor } from "./components/SceneEditor";
 import { ScriptReviewer } from "./components/ScriptReviewer";
 import PoliticalPlanPicker, { ShortsPlanDTO } from "./components/PoliticalPlanPicker";
+import HybridPlanPicker from "./components/HybridPlanPicker";
 
 type Status = "idle" | "processing" | "reviewing" | "done" | "error";
 interface SceneImage { scene_id: number; image_path: string; prompt: string; }
@@ -55,6 +56,13 @@ export default function Home() {
   const [politicalProDetails, setPoliticalProDetails] = useState("");
   // 2026-07-02: 경제쇼츠 지원 — 도메인 토글(topic 모드 전용). political(기본)은 기존 동작 무변경.
   const [politicalProCategory, setPoliticalProCategory] = useState<"political"|"economic">("political");
+  // Feature 030: V3 하이브리드 모드 (YouTube URL 전용) — 원본 발언 50% + TTS 논평 50%
+  const [isPoliticalProHybrid, setIsPoliticalProHybrid] = useState(false);
+  const [politicalProHybridPlans, setPoliticalProHybridPlans] = useState<any[] | null>(null);
+  const [politicalProHybridVideoPath, setPoliticalProHybridVideoPath] = useState("");
+  const [politicalProHybridVideoDuration, setPoliticalProHybridVideoDuration] = useState(0);
+  const [politicalProHybridTitle, setPoliticalProHybridTitle] = useState("");
+  const [politicalProHybridChannel, setPoliticalProHybridChannel] = useState("");
   const [natvClipUrl, setNavtClipUrl] = useState("");
   const [natvUseTts, setNavtUseTts] = useState(false);
   const [natvTone, setNavtTone] = useState<"angry"|"funny"|"touching"|"relatable">("angry");
@@ -814,16 +822,35 @@ export default function Home() {
             </div>
 
             {politicalProSource === "youtube" && (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">YouTube URL *</label>
-                <input
-                  value={politicalProUrl}
-                  onChange={e=>setPoliticalProUrl(e.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-                />
-                <p className="text-xs text-gray-500 mt-1">정치 영상 URL을 붙여넣으면 RTF 6요소(주제/Hook/구간/흐름/나레이션/CTA) 구조의 3개 기획안을 비교 제시합니다.</p>
-              </div>
+              <>
+                {/* Feature 030: V2 일반 / V3 하이브리드 모드 토글 */}
+                <div className="flex gap-2 bg-gray-800/50 p-1 rounded-lg">
+                  <button
+                    onClick={()=>{setIsPoliticalProHybrid(false); setPoliticalProHybridPlans(null);}}
+                    className={`flex-1 py-2 text-xs rounded-md transition ${!isPoliticalProHybrid ? "bg-rose-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                    🏛️ V2 일반 (TTS)
+                  </button>
+                  <button
+                    onClick={()=>{setIsPoliticalProHybrid(true); setPoliticalProPlans(null);}}
+                    className={`flex-1 py-2 text-xs rounded-md transition ${isPoliticalProHybrid ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                    📺 V3 하이브리드 (원본 50%)
+                  </button>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">YouTube URL *</label>
+                  <input
+                    value={politicalProUrl}
+                    onChange={e=>setPoliticalProUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {isPoliticalProHybrid
+                      ? "V3: 원본 발언 ~50% + TTS 논평 ~50% 교차 편집. Gemini Stage A + Claude Stage B × 3 angles."
+                      : "V2: RTF 6요소(주제/Hook/구간/흐름/나레이션/CTA) 구조의 3개 기획안을 비교 제시합니다."}
+                  </p>
+                </div>
+              </>
             )}
 
             {politicalProSource === "topic" && (
@@ -912,6 +939,9 @@ export default function Home() {
                 setPoliticalProLoading(true);
                 setPoliticalProError("");
                 try {
+                  // Feature 030: V3 하이브리드 모드는 별도 endpoint 사용
+                  const isHybrid = !isTopic && isPoliticalProHybrid;
+                  const endpoint = isHybrid ? "/api/political-pro/hybrid-plans" : "/api/political-pro/plans";
                   const body = isTopic
                     ? {
                         sourceType: "topic",
@@ -921,7 +951,7 @@ export default function Home() {
                         category: politicalProCategory,
                       }
                     : { sourceType: "youtube", youtubeUrl: politicalProUrl.trim() };
-                  const res = await fetch("/api/political-pro/plans", {
+                  const res = await fetch(endpoint, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(body),
@@ -929,6 +959,13 @@ export default function Home() {
                   const data = await res.json();
                   if (!res.ok) {
                     setPoliticalProError(`${data.error || "오류"}: ${data.detail || "알 수 없는 실패"}`);
+                  } else if (isHybrid) {
+                    // V3 하이브리드 결과 저장
+                    setPoliticalProHybridPlans(data.plans);
+                    setPoliticalProHybridVideoPath(data.video_path || "");
+                    setPoliticalProHybridVideoDuration(data.video_duration_sec || 0);
+                    setPoliticalProHybridTitle(data.video_title || politicalProUrl.trim().slice(0, 80));
+                    setPoliticalProHybridChannel(data.video_channel || "");
                   } else {
                     setPoliticalProPlans(data.plans);
                     setPoliticalProVideoPath(data.video_path || data.videoPath || "");
@@ -964,11 +1001,14 @@ export default function Home() {
                 : "bg-gray-700 text-gray-500 cursor-not-allowed"
               }`}>
               {politicalProLoading
-                ? (politicalProSource === "topic" ? "⏳ 주제 분석 + 3 기획안 생성 중 (~30초, 끊지 마세요)..." : "⏳ 3 기획안 생성 중 (~90초, 끊지 마세요)...")
-                : "🏛️ 3 기획안 생성"}
+                ? (isPoliticalProHybrid && politicalProSource === "youtube"
+                    ? "⏳ V3 하이브리드 기획안 생성 중 (~120초, 끊지 마세요)..."
+                    : politicalProSource === "topic" ? "⏳ 주제 분석 + 3 기획안 생성 중 (~30초, 끊지 마세요)..." : "⏳ 3 기획안 생성 중 (~90초, 끊지 마세요)...")
+                : (isPoliticalProHybrid && politicalProSource === "youtube" ? "📺 V3 하이브리드 기획안 3개 생성" : "🏛️ 3 기획안 생성")}
             </button>
           </>
         )}
+        {/* V2 일반 기획안 선택기 */}
         {politicalProPlans && (
           <>
             <div className="flex items-center justify-between mb-2">
@@ -1000,6 +1040,42 @@ export default function Home() {
                 fd.set("bgm", bgm?"on":"off");
                 fd.set("transitions", transitions?"on":"off");
                 fd.set("sfx", sfx?"on":"off");
+                fd.set("yt","off"); fd.set("tt","off"); // FR-020: 자동 업로드 차단
+                startAnalyze(fd);
+              }}
+            />
+          </>
+        )}
+        {/* V3 하이브리드 기획안 선택기 (Feature 030) */}
+        {politicalProHybridPlans && (
+          <>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-purple-300">📺 V3 하이브리드 기획안 — 1개를 선택하세요</h3>
+              <button
+                onClick={()=>{
+                  setPoliticalProHybridPlans(null);
+                  setPoliticalProHybridVideoPath("");
+                  setPoliticalProHybridVideoDuration(0);
+                  setPoliticalProHybridTitle("");
+                  setPoliticalProError("");
+                }}
+                className="text-gray-400 hover:text-white text-xs">
+                ← 다른 URL로 다시
+              </button>
+            </div>
+            <HybridPlanPicker
+              plans={politicalProHybridPlans}
+              onSelect={(idx)=>{
+                const fd = new FormData();
+                fd.set("mode","political_pro");
+                fd.set("hybridMode","on");
+                fd.set("selectedPlanIdx", String(idx));
+                fd.set("hybridPlansJson", JSON.stringify(politicalProHybridPlans));
+                fd.set("videoPath", politicalProHybridVideoPath);
+                fd.set("videoDurationSec", String(politicalProHybridVideoDuration));
+                fd.set("videoChannel", politicalProHybridChannel);
+                fd.set("videoTitle", politicalProHybridTitle);
+                fd.set("bgm", bgm?"on":"off");
                 fd.set("yt","off"); fd.set("tt","off"); // FR-020: 자동 업로드 차단
                 startAnalyze(fd);
               }}

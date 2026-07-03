@@ -387,13 +387,78 @@ print(json.dumps({"path":str(p),"url":pi.youtube_url}))`)));
           // this endpoint. Here we receive the selected plan index + cached
           // metadata and convert that plan into a ShortsScript.
           const planIdxRaw = fd.get("selectedPlanIdx") as string;
+          const sourceChannel = (fd.get("videoChannel") as string) || "";
+          const sourceTitle = (fd.get("videoTitle") as string) || "";
+
+          // ── Feature 030: V3 하이브리드 렌더 분기 ────────────────────────────────
+          const hybridMode = (fd.get("hybridMode") as string) === "on";
+          if (hybridMode) {
+            const hybridPlansJson = (fd.get("hybridPlansJson") as string) || "";
+            const videoPath = (fd.get("videoPath") as string) || "";
+            if (!hybridPlansJson || planIdxRaw === null || !videoPath) {
+              send("error", {message: "하이브리드 기획안 정보가 없습니다 (hybridPlansJson / selectedPlanIdx / videoPath 필수)"});
+              ctrl.close(); return;
+            }
+            rawPath = "";
+            send("progress", {message: `📺 V3 하이브리드 기획안 #${parseInt(planIdxRaw)+1} 선택 — 렌더 시작`});
+            let mp4Result: any;
+            try {
+              mp4Result = await withStage("V3 하이브리드 렌더 (ffmpeg + Gemini TTS)", 300, async () => JSON.parse(await py(`
+import sys,json,time
+sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.hybrid_plan_models import HybridShortsPlan
+from src.video.hybrid_renderer import render_hybrid_shorts
+from src.config.settings import DATA_DIR
+plans_raw = json.loads(r"""${hybridPlansJson}""")
+idx = int(${parseInt(planIdxRaw)})
+plan = HybridShortsPlan.from_dict(plans_raw[idx])
+video_src = Path(${JSON.stringify(videoPath)})
+out_dir = DATA_DIR / 'political_pro' / f'hybrid_{int(time.time())}'
+mp4 = render_hybrid_shorts(
+  plan=plan,
+  source_video=video_src,
+  output_dir=out_dir,
+  title=${JSON.stringify(sourceTitle)},
+)
+size_mb = round(mp4.stat().st_size / (1024*1024), 1)
+dur_sec = 0.0
+try:
+  import subprocess as _sp
+  probe = _sp.run(
+    ["ffprobe","-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1", str(mp4)],
+    capture_output=True, text=True
+  )
+  dur_sec = float(probe.stdout.strip())
+except Exception:
+  pass
+print(json.dumps({"path": str(mp4), "size_mb": size_mb, "duration": round(dur_sec, 1)}))
+`)));
+            } catch (e: any) {
+              send("error", {message: `V3 하이브리드 렌더 실패: ${(e?.message || String(e)).slice(0, 400)}`});
+              ctrl.close(); return;
+            }
+            send("progress", {message: `✅ V3 하이브리드 렌더 완료 (${mp4Result.size_mb}MB, ${mp4Result.duration}초)`});
+            send("done", {result: {
+              videoPath: mp4Result.path,
+              thumbnailPath: "",
+              title: sourceTitle || "V3 하이브리드 쇼츠",
+              emotion: "angry",
+              duration: mp4Result.duration || 0,
+              imageCount: 0,
+              videoCount: 0,
+              cost: 0,
+              sourceType: "political_pro",
+            }});
+            ctrl.close();
+            return;
+          }
+          // ── V2 기존 흐름 ────────────────────────────────────────────────────────
+
           const plansJson = fd.get("plansJson") as string;
           const ytUrl = (fd.get("youtubeUrl") as string) || "";
           const videoPath = (fd.get("videoPath") as string) || "";
           const videoDurationSec = parseFloat((fd.get("videoDurationSec") as string) || "0") || 0;
-          // Feature 009: 출처 표시용 채널/영상 제목 (Phase 1 plans API 응답에서 전달)
-          const sourceChannel = (fd.get("videoChannel") as string) || "";
-          const sourceTitle = (fd.get("videoTitle") as string) || "";
           if (!plansJson || planIdxRaw === null || planIdxRaw === undefined) {
             send("error", {message: "정치 기획안 정보가 없습니다 (plansJson / selectedPlanIdx 필수)"});
             ctrl.close(); return;

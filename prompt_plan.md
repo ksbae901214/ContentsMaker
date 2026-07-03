@@ -32,7 +32,7 @@
 |---|---|---|---|
 | **P0** | 업로드 리듬 복구: 일 1~3편, 20~21시 직후, 최소 2~3주 무공백 (운영, 코드 무관) | — | 없음 |
 | **P1** ✅ | 제목 엔진 교체: `yt_title` 신규 필드(Stage A → `ShortsPlan`). `plan_to_script`에서 `yt_title or topic` 우선. Stage A 프롬프트에 "[악역]-[응징]-[주인공]" / 15~30자 / 실명 규칙 명시. | `political_plan_models.py`, `political_planner_stage_a_prompt.py`, `political_planner.py:1080` | 하 |
-| **P2** | 훅 씬 개편: scene 0 타이틀 카드 낭독 제거 → 가장 대립적인 원본 발언 클립을 0초 배치 + 제목 자막 오버레이 | `political_planner.py` `plan_to_script`, `stage_b_prompt` | 중 |
+| **P2** ✅ | 훅 씬 개편: scene 0 타이틀 카드 낭독 제거 → narrations[0].speaker≠""이면 원본 클립 mute=False + yt_title 자막 오버레이. 폴백(speaker 없음/topic)은 기존 TTS 훅 유지. | `political_planner.py`, `stage_b_prompt`, `generate/route.ts` | 중 |
 | **P3** ✅ | 나레이션 탈보도체: "보도체 한 문장" → "대립 서사체 (주장→반박→역공 아크, 다양한 문말 허용)" — STAGE_B_SYSTEM_PROMPT, STAGE_B_TOPIC_SYSTEM_PROMPT, STAGE_B_TOPIC_ECONOMIC_SYSTEM_PROMPT 모두 갱신. | `political_planner_stage_b_prompt.py` | 하 |
 | **P4** ✅ | 길이·결말: 나레이션 수 4~7개(22~35초), CTA 2초, 총 40초 캡(기존 60초). 프롬프트 + `plan_to_script` 동시 적용. | `stage_b_prompt`, `political_planner.py` CTA/duration | 하 |
 | **P5** | 형식 전환: TTS 브리핑(political_pro)보다 **jpolitics V3 모먼트 직캠** 비중 확대 — 직캠형이 실측상 천장 100배 | 리소스 배분 (기존 파이프라인 존재) | 운영 |

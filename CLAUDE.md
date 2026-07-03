@@ -45,6 +45,7 @@ python3 -m src.main gemini_login                   # One-time Gemini web login (
 python3 -m src.main youtube-auth                   # One-time YouTube OAuth
 python3 -m src.main tiktok-auth                    # One-time TikTok OAuth
 python3 -m src.main political-pro <YouTube URL>    # 정치 숏츠: 3 기획안 비교 → 검수 → 영상 (Feature 009)
+python3 -m src.main political-pro <YouTube URL> --hybrid  # V3 하이브리드: 원본 발언 50% + TTS 논평 50% (Feature 030)
 python3 -m src.main daily-briefing                 # 어제(KST) 정치 이슈 수집 → 클러스터링 → 점수화 → 기획안
 python3 -m src.main cleanup                         # data/ 산출물 정리 (src/maintenance/cleanup.py)
 python3 -m src.main gems list                       # Gemini Gems 프리셋 목록
@@ -222,6 +223,17 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 030 조회수 개선 P1/P3/P4 (2026-07-03):
+  - **P1 제목 엔진**: `ShortsPlan.yt_title: str = ""` 신규 필드. Stage A 프롬프트에 "[악역]-[응징]-[주인공]" 15~30자 훅 제목 규칙. `plan_to_script()`: `yt_title or topic` 우선.
+  - **P3 탈보도체**: "보도체 한 문장 (~했습니다 고정)" → "대립 서사체 (주장→반박→역공 아크, 다양한 문말 허용)". `STAGE_B_SYSTEM_PROMPT` / TOPIC / ECONOMIC 3종 갱신.
+  - **P4 길이 단축**: 나레이션 4~7개 (22~35초), CTA 2초, 총 40초 캡.
+- 030 정치쇼츠 V3 하이브리드 포맷 — Phase D/E (2026-07-03):
+  - `src/analyzer/hybrid_plan_models.py` — `HybridBeat`/`HybridShortsPlan`/`ThreeHybridPlansResult` 완성 (이전 세션)
+  - `src/analyzer/hybrid_planner.py` — `generate_three_hybrid_plans()`: Gemini Stage A → Claude Stage B × 3 angles (이전 세션)
+  - `src/video/hybrid_renderer.py` — `render_hybrid_shorts()` 오케스트레이터 추가: per-beat Gemini Charon TTS 합성 + `build_tts_beat` / `build_original_beat` + concat. edge-tts 폴백.
+  - `src/main.py` — `political-pro --hybrid` 플래그: V3 하이브리드 파이프라인 분기 (미지정 시 V2 보존)
+  - `tests/test_hybrid_plan_models.py` — 51 tests (HybridBeat·HybridShortsPlan 검증/직렬화 round-trip)
+  - 검증: pytest 1458 passed / 0 failed, Next.js build 48/48
 - 010-jpolitics-v3-isolated: Added Python 3.11+ (백엔드), TypeScript 5.x + React 19 / Next.js 16 (프론트엔드), Remotion 4.x (영상 렌더링, 독립 패키지)
 - 014: Gemini 통합 Phase 1A–4 (초안, 미통합)
   - Phase 1A: `gemini_youtube_transcriber.py` — Gemini Files API로 transcript 추출 (Whisper 대체, 20~40초). 폴백 체인: VTT → Gemini → Whisper.

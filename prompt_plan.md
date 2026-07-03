@@ -90,7 +90,7 @@
 
 ---
 
-## 🆕 진행 중: 정치쇼츠 V3 — 하이브리드 포맷 (원본 발언 50% + TTS 논평 50%)
+## ✅ 진행 중→완료: 정치쇼츠 V3 — 하이브리드 포맷 (원본 발언 50% + TTS 논평 50%)
 
 > 사용자 요청: "TTS가 말하는 부분보다 첨부할 영상에서 말하는 내용을 직접 넣는 게 호응이 좋은 것 같다. 영상에서 말하는 내용 반 / TTS로 논평 반 이렇게 앞으로 제작하면 좋겠다"
 > **확정 사항**: 자막 폰트는 Remotion `SceneText.tsx`(Noto Sans KR)와 통일 — Pillow도 NotoSansCJKkr 사용
@@ -105,7 +105,7 @@
 | 자막 폰트 | TTS 씬 = Noto Sans KR, 원본 씬 = AppleSDGothic | **모두 Noto Sans KR로 통일** |
 | Plan JSON | Narration tuple | HybridBeat tuple (kind="tts"/"original") |
 
-### Phase A — 데이터 모델 (`src/analyzer/hybrid_plan_models.py`)
+### Phase A — 데이터 모델 ✅ (`src/analyzer/hybrid_plan_models.py`)
 
 `HybridBeat` frozen dataclass: kind ∈ {"tts","original"} + 공통 duration_sec + 분기별 필드.
 `HybridShortsPlan` frozen dataclass: hook(TTS) + beats(교차) + cta(TTS) + angle + source_*.
@@ -116,25 +116,23 @@
 - 첫·마지막 비트는 반드시 TTS
 - 원본 비트 사이에 TTS 비트 필수
 
-### Phase B — Plan 생성 프롬프트 (2-stage hybrid)
+### Phase B — Plan 생성 프롬프트 ✅ (2-stage hybrid)
 
-- **Stage A — Gemini**: transcript → 인용가치 있는 원본 후보 4~6개 (`clip_start`, `clip_end`, `raw_text`, `quotability_score`)
-- **Stage B — Claude**: HybridShortsPlan 조립 (각 TTS 논평은 바로 직전/직후 원본 비트에 대한 평가)
-- 기존 3-plan 구조 유지 (title_anchor/audience_resonance/comparison)
+- **Stage A — Gemini** (`hybrid_planner_stage_a_prompt.py`): transcript → 인용가치 있는 원본 후보 4~6개 (`clip_start`, `clip_end`, `raw_text`, `quotability_score`)
+- **Stage B — Claude** (`hybrid_planner_stage_b_prompt.py`): HybridShortsPlan 조립 (각 TTS 논평은 바로 직전/직후 원본 비트에 대한 평가)
+- 3-plan 오케스트레이터 (`hybrid_planner.py`): `generate_three_hybrid_plans()`
 
-### Phase C — 렌더링 (`src/video/hybrid_renderer.py`)
+### Phase C — 렌더링 ✅ (`src/video/hybrid_renderer.py`)
 
-TTS 비트 = 기존 `render_video` 재사용. 원본 비트 = ffmpeg 컷(원본 음성 유지) + Pillow PNG 자막 overlay. ffmpeg concat 재인코딩으로 codec 통일. 오디오 `loudnorm=I=-16:TP=-1.5:LRA=11`로 레벨 정합. BGM은 -22dB, 원본 비트 중에는 mute.
+TTS 비트 = Gemini Charon per-beat TTS 합성 + 배경 mute. 원본 비트 = ffmpeg 컷(원본 음성 유지) + Pillow PNG 자막 overlay. `render_hybrid_shorts()` 최상위 오케스트레이터 추가. ffmpeg concat 재인코딩으로 codec 통일. 오디오 `loudnorm=I=-16:TP=-1.5:LRA=11`로 레벨 정합.
 
-**자막 보정**: ASR transcript의 "어" / 잘림을 Gemini로 클린업 (2~3줄, ≤21자/줄).
+### Phase D — CLI · 웹 UI (CLI ✅, 웹 UI 보류)
 
-### Phase D — CLI · 웹 UI
+`python3 -m src.main political-pro <url> --hybrid` 플래그 추가 완료. 미지정 시 V2 동작 보존. 웹 UI 토글은 실제 E2E 샘플 검증 후 다음 세션에.
 
-`political-pro <url> --hybrid` 플래그 추가. 미지정 시 V2 동작 보존. 웹 UI에 "📺 하이브리드 (원본 50%)" 토글.
+### Phase E — Lock-in + 테스트 ✅
 
-### Phase E — Lock-in + 테스트
-
-새 메모리 `feedback_hybrid_format_lockin.md` 추가. 단위 테스트 + E2E 1회.
+`tests/test_hybrid_plan_models.py`: 51 tests (HybridBeat·HybridShortsPlan·ThreeHybridPlansResult 검증/직렬화). pytest 1458 passed / 0 failed. Next.js build 48/48.
 
 ### 위험 등급
 
@@ -146,17 +144,10 @@ TTS 비트 = 기존 `render_video` 재사용. 원본 비트 = ffmpeg 컷(원본 
 | Gemini 자막 보정 비용 | MEDIUM | `data/asr_cache/` 해시 캐시 |
 | 50/50 강제로 narrative 어색 | MEDIUM | ±5초 허용 |
 
-### 진행 순서 (이번 세션)
+### 다음 세션 (E2E 검증 + 웹 UI 토글)
 
-1. **Phase A — Models** (1.5h) → 모델 + 검증 룰
-2. **Phase C — Renderer** (5h) → 원본/TTS 비트 분리 렌더 + Noto Sans KR Pillow 통일
-3. **1차 산출물** — 같은 OBS+장동혁 소스에 V3 적용한 첫 샘플 (Plan은 이번 세션 수동 작성, Phase B LLM 자동화는 다음 세션)
-
-### 다음 세션 (Phase B/D/E)
-
-- Stage A/B 프롬프트 작성 + 파싱 + 3-plan 생성
-- CLI `--hybrid` 플래그 + 웹 UI 토글
-- Lock-in 메모리 + 테스트 + 회귀 E2E
+- `python3 -m src.main political-pro <실제 URL> --hybrid --plan-idx 0`으로 E2E 샘플 생성
+- 웹 UI에 "📺 하이브리드 (원본 50%)" 토글 추가
 
 ---
 

@@ -482,3 +482,137 @@ def concat_chunks(parts: list[Path], out: Path) -> None:
         str(out),
     ]
     _run(cmd)
+
+
+# ─────────────────────────── 최상위 오케스트레이터 ──────────────────────────────
+
+
+def render_hybrid_shorts(
+    *,
+    plan: "HybridShortsPlan",
+    source_video: Path,
+    output_dir: Path,
+    title: str = "",
+    outro_image: Path | None = None,
+    speed: float = 1.0,
+) -> Path:
+    """V3 하이브리드 쇼츠 풀 렌더 파이프라인.
+
+    1. 각 TTS 비트의 tts_text를 개별 Gemini Charon TTS로 합성 → mp3
+    2. 각 비트를 청크 MP4로 렌더
+       - TTS 비트: build_tts_beat (배경 mute + Charon 오디오)
+       - Original 비트: build_original_beat (소스 오디오 유지)
+    3. 구독 outro 생성 (이미지 있으면 build_outro_from_image, 없으면 build_subscribe_outro)
+    4. concat_chunks → 최종 MP4
+
+    반환: 최종 MP4 경로 (output_dir/hybrid_final.mp4).
+    """
+    import asyncio
+    import tempfile
+
+    from src.analyzer.hybrid_plan_models import HybridShortsPlan  # local import 방지 순환
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    all_beats = plan.all_beats()
+    chunks: list[Path] = []
+    tmp_dir = output_dir / "_hybrid_chunks"
+    tmp_dir.mkdir(exist_ok=True)
+
+    # 제목 배너 PNG (모든 비트에 영구 overlay)
+    banner_png: Path | None = None
+    banner_text = (title or plan.topic).strip()
+    if banner_text:
+        banner_png = tmp_dir / "title_banner.png"
+        render_title_banner_png(text=banner_text, out_path=banner_png)
+
+    # TTS 합성 (Gemini Charon per beat)
+    try:
+        from src.tts.gemini_tts_generator import GeminiTTSError, _synthesize_charon_mp3
+    except ImportError:
+        # 폴백: edge-tts (Gemini 없을 때)
+        _synthesize_charon_mp3 = None  # type: ignore[assignment]
+
+    for i, beat in enumerate(all_beats):
+        chunk_path = tmp_dir / f"beat_{i:03d}_{beat.kind}.mp4"
+
+        if beat.kind == "tts":
+            # ── TTS 비트 ────────────────────────────────────────────────────
+            tts_audio = tmp_dir / f"beat_{i:03d}_tts.mp3"
+            if _synthesize_charon_mp3 is not None:
+                try:
+                    _synthesize_charon_mp3(beat.tts_text, str(tts_audio))
+                except (GeminiTTSError, Exception):
+                    _synth_edge_tts(beat.tts_text, tts_audio)
+            else:
+                _synth_edge_tts(beat.tts_text, tts_audio)
+
+            sub_style = SubtitleStyle(
+                lines=(beat.subtitle,),
+                color_name=beat.subtitle_color,
+                emphasis=beat.subtitle_emphasis,
+            )
+            sub_png = tmp_dir / f"beat_{i:03d}_sub.png"
+            render_subtitle_png(style=sub_style, out_path=sub_png)
+
+            # tts 오디오 전체를 한 세그먼트로 사용
+            build_tts_beat(
+                beat=beat,
+                background_clip=source_video,
+                background_offset_sec=0.0,
+                tts_audio_full=tts_audio,
+                tts_start_sec=0.0,
+                tts_end_sec=beat.duration_sec,
+                subtitle_png=sub_png,
+                out=chunk_path,
+                title_banner_png=banner_png,
+                speed=speed,
+            )
+
+        else:
+            # ── Original 비트 ─────────────────────────────────────────────
+            src_clip = Path(beat.source_clip_path) if beat.source_clip_path else source_video
+            sub_style = SubtitleStyle(
+                lines=beat.quote_lines,
+                color_name="white",
+                bottom_label=beat.source_label or plan.source_channel,
+            )
+            sub_png = tmp_dir / f"beat_{i:03d}_sub.png"
+            render_subtitle_png(style=sub_style, out_path=sub_png)
+
+            build_original_beat(
+                beat=beat,
+                source_clip=src_clip,
+                subtitle_png=sub_png,
+                out=chunk_path,
+                title_banner_png=banner_png,
+            )
+
+        chunks.append(chunk_path)
+
+    # ── Outro ──────────────────────────────────────────────────────────────
+    outro_path = tmp_dir / "outro.mp4"
+    src_label = plan.source_channel or ""
+    if outro_image and outro_image.exists():
+        build_outro_from_image(image_path=outro_image, out=outro_path, source_label=src_label)
+    else:
+        build_subscribe_outro(out=outro_path, source_label=src_label)
+    chunks.append(outro_path)
+
+    # ── 최종 concat ────────────────────────────────────────────────────────
+    final = output_dir / "hybrid_final.mp4"
+    concat_chunks(chunks, final)
+    return final
+
+
+def _synth_edge_tts(text: str, out: Path) -> None:
+    """edge-tts를 사용해 한국어 TTS mp3 합성 (Gemini 폴백)."""
+    import asyncio
+
+    async def _do() -> None:
+        import edge_tts  # type: ignore[import-untyped]
+        c = edge_tts.Communicate(text, voice="ko-KR-SunHiNeural", rate="+20%")
+        await c.save(str(out))
+
+    asyncio.run(_do())

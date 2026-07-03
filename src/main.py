@@ -528,6 +528,94 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
         encoding="utf-8",
     )
 
+    use_v3_hybrid = getattr(args, "hybrid", False)
+
+    if use_v3_hybrid:
+        # ── V3 하이브리드 포맷 (Feature 030) ──────────────────────────────
+        from src.analyzer.hybrid_planner import (
+            HybridPlannerError,
+            generate_three_hybrid_plans,
+        )
+        from src.video.hybrid_renderer import render_hybrid_shorts
+
+        print("🤔 V3 하이브리드 기획안 3개 생성 중 (Gemini + Claude)...", file=sys.stderr)
+        try:
+            hybrid_result = generate_three_hybrid_plans(
+                youtube_url=url,
+                transcript=transcript,
+                video_title=yt_title,
+                video_duration_sec=duration_sec,
+                video_path=str(vp),
+                transcript_path=str(tp),
+                output_dir=out_dir,
+                video_channel=yt_channel,
+            )
+        except HybridPlannerError as e:
+            print(f"❌ V3 기획안 생성 실패: {e}", file=sys.stderr)
+            return 5
+
+        if args.plans_only:
+            print(_json.dumps(hybrid_result.to_dict(), ensure_ascii=False))
+            return 0
+
+        print("\n────────────────────────────────────────", file=sys.stderr)
+        for i, p in enumerate(hybrid_result.plans):
+            tts_b = sum(b.duration_sec for b in p.all_beats() if b.kind == "tts")
+            orig_b = sum(b.duration_sec for b in p.all_beats() if b.kind == "original")
+            print(
+                f"[Plan {i + 1}] angle={p.angle}\n"
+                f"  주제: {p.topic}\n"
+                f"  Hook: {p.hook.subtitle!r}\n"
+                f"  TTS {tts_b:.0f}s / 원본 {orig_b:.0f}s / 총 {tts_b + orig_b:.0f}s\n",
+                file=sys.stderr,
+            )
+        print("────────────────────────────────────────", file=sys.stderr)
+
+        if args.interactive:
+            try:
+                sel = int(input("어떤 V3 기획안으로 영상을 만들까요? (1/2/3): ").strip())
+            except (ValueError, EOFError):
+                print("❌ 잘못된 입력", file=sys.stderr)
+                return 2
+            plan_idx = sel - 1
+        elif args.plan_idx is not None:
+            plan_idx = args.plan_idx
+        else:
+            print("❌ --plan-idx 또는 --interactive 필요", file=sys.stderr)
+            return 2
+
+        if plan_idx not in (0, 1, 2):
+            print(f"❌ plan-idx 0/1/2 범위 외 ({plan_idx})", file=sys.stderr)
+            return 2
+
+        hybrid_plan = hybrid_result.plans[plan_idx]
+        print(f"✅ V3 Plan {plan_idx + 1} 선택됨 — {hybrid_plan.topic}", file=sys.stderr)
+
+        print("🎬 V3 하이브리드 렌더 중...", file=sys.stderr)
+        try:
+            mp4 = render_hybrid_shorts(
+                plan=hybrid_plan,
+                source_video=vp,
+                output_dir=out_dir,
+                title=yt_title,
+            )
+        except Exception as e:
+            print(f"❌ V3 렌더 실패: {e}", file=sys.stderr)
+            return 7
+
+        size_mb = mp4.stat().st_size / (1024 * 1024)
+        print(
+            f"\n📁 출력: {mp4} ({size_mb:.1f}MB, 하이브리드 V3)",
+            file=sys.stderr,
+        )
+        print(
+            "⚠️  주의: 출력은 자동 생성 결과입니다. 게시 전 반드시 사용자 검수가 필요합니다.",
+            file=sys.stderr,
+        )
+        print(str(mp4))
+        return 0
+
+    # ── V2 기존 파이프라인 ─────────────────────────────────────────────────
     print(f"🤔 3개 기획안 생성 중 (Hybrid: Gemini + Claude)...", file=sys.stderr)
     try:
         result = generate_three_plans(
@@ -1471,6 +1559,10 @@ def build_parser() -> argparse.ArgumentParser:
     political_pro_parser.add_argument(
         "--video-gem", type=str, metavar="KEY", default=None,
         help="영상 생성에 사용할 Gem 키 (e.g. news, drama).",
+    )
+    political_pro_parser.add_argument(
+        "--hybrid", action="store_true",
+        help="V3 하이브리드 포맷: 원본 발언(50%%) + TTS 논평(50%%) 교차 편집 (Feature 030)",
     )
 
     # crawl subcommand (P2 placeholder)

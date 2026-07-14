@@ -1,0 +1,40 @@
+{
+  "_comment": "정치쇼츠 V2.1 템플릿 (render_political_v2_1.py 전용). V2 대비 추가: yt_title/yt_title_alt/persons/hook/description/pinned_comment. hook 을 빼면 V2 방식(TTS 훅)으로 동작.",
+  "slug": "20260714_example_v2_1",
+  "title": "상단 배너 제목 (영상 내 고정 노출)",
+  "yt_title": "죽창 들자던 조국, 이젠 말끝으로 사상검증",
+  "yt_title_alt": "'무섭노' 한마디에 일베 몰이, 역풍 맞은 조국",
+  "persons": ["조국", "이준석"],
+  "pinned_comment": "여러분의 '무섭노'는 사투리인가요? 댓글로 남겨주세요 👇",
+  "source_channel": "채널A 김진의돌직구쇼",
+  "source_title": "'무섭노' 사투리에 때아닌 '일베' 논란",
+  "youtube_url": "https://www.youtube.com/watch?v=VSAn-JTZsFA",
+  "emotion_type": "angry",
+  "fallback_source": "chA",
+  "hook": {
+    "source": "joguk",
+    "start_sec": 42.0,
+    "duration": 3.0,
+    "text": "\"일베는 기계적으로 '노'\"\n조국의 감별법",
+    "hl": ["일베", "감별법"]
+  },
+  "sources": {
+    "joguk": { "query": "조국 일베 감별법 무섭노 발언 논란", "dur_max": 900, "verify_frac": 0.25 },
+    "leejs": { "query": "이준석 조국 일베 사상검증 무섭노", "dur_max": 900, "verify_frac": 0.4 },
+    "chA":   { "url": "https://www.youtube.com/watch?v=VSAn-JTZsFA", "dur_max": 900, "verify_frac": 0.35 }
+  },
+  "scenes": [
+    { "type": "body", "color": "white", "emph": false, "source": "joguk", "frac": 0.4,
+      "text": "거제 22살 아이돌\n'무섭노'에 사상검증",
+      "voice": "경남 거제 출신 스물두 살 아이돌. 고향 말로 무섭노라 했다가, 일베 말투냐는 사상검증이 시작됐습니다.",
+      "hl": ["거제", "사상검증"] },
+    { "type": "body", "color": "red", "emph": true, "source": "leejs", "frac": 0.4,
+      "text": "이준석 직격\n\"죽창 들자던 사람이 사상검증?\"",
+      "voice": "역풍이 터졌습니다. 이준석은, 죽창 들자던 사람이 이젠 말끝 하나로 사상을 검증하냐고 직격했습니다.",
+      "hl": ["이준석", "죽창"] },
+    { "type": "body", "color": "yellow", "emph": true, "source": "chA", "frac": 0.35,
+      "text": "당신의 '무섭노'는?\n댓글로 👇",
+      "voice": "당신의 무섭노는 사투리인가요? 댓글로 남겨주세요.",
+      "hl": ["무섭노"] }
+  ]
+}

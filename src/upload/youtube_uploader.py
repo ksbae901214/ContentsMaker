@@ -87,10 +87,26 @@ def upload_video(
     Returns the video URL.
     """
     from googleapiclient.discovery import build
+    from googleapiclient.errors import HttpError
     from googleapiclient.http import MediaFileUpload
+
+    from src.upload.retry import with_retry
+    from src.upload.upload_history import record_upload
 
     if not video_path.exists():
         raise UploadError(f"영상 파일을 찾을 수 없습니다: {video_path}")
+
+    def _is_transient(exc: BaseException) -> bool:
+        # 5xx와 네트워크 오류만 재시도 — 4xx(권한/쿼터)는 즉시 전파
+        if isinstance(exc, HttpError):
+            return exc.resp.status >= 500
+        return isinstance(exc, OSError)
+
+    def _record_safe(**kwargs) -> None:
+        try:
+            record_upload(platform="youtube", video_path=video_path, title=title, **kwargs)
+        except OSError as exc:
+            logger.warning("업로드 이력 기록 실패: %s", exc)
 
     creds = _get_credentials()
     youtube = build("youtube", "v3", credentials=creds)
@@ -124,14 +140,21 @@ def upload_video(
         media_body=media,
     )
 
-    response = None
-    while response is None:
-        status, response = request.next_chunk()
-        if status:
-            logger.info("업로드 진행: %d%%", int(status.progress() * 100))
+    try:
+        response = None
+        while response is None:
+            status, response = with_retry(
+                request.next_chunk, should_retry=_is_transient
+            )
+            if status:
+                logger.info("업로드 진행: %d%%", int(status.progress() * 100))
+    except Exception as exc:
+        _record_safe(status="failed", error=str(exc))
+        raise
 
     video_id = response["id"]
     video_url = f"https://youtube.com/shorts/{video_id}"
     logger.info("YouTube 업로드 완료: %s", video_url)
+    _record_safe(status="success", result=video_url)
 
     return video_url

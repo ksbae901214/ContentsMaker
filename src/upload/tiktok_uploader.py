@@ -11,6 +11,7 @@ import os
 import time
 from pathlib import Path
 
+import urllib.error
 import urllib.request
 import urllib.parse
 
@@ -177,8 +178,23 @@ def upload_video(
     User must open TikTok app to publish.
     Returns publish_id for status tracking.
     """
+    from src.upload.retry import with_retry
+    from src.upload.upload_history import record_upload
+
     if not video_path.exists():
         raise TikTokUploadError(f"영상 파일을 찾을 수 없습니다: {video_path}")
+
+    def _is_transient(exc: BaseException) -> bool:
+        # 5xx와 네트워크 오류만 재시도 — 4xx(인증/형식)는 즉시 전파
+        if isinstance(exc, urllib.error.HTTPError):
+            return exc.code >= 500
+        return isinstance(exc, (urllib.error.URLError, OSError))
+
+    def _record_safe(**kwargs) -> None:
+        try:
+            record_upload(platform="tiktok", video_path=video_path, title=title, **kwargs)
+        except OSError as exc:
+            logger.warning("업로드 이력 기록 실패: %s", exc)
 
     access_token = _get_access_token()
     file_size = video_path.stat().st_size
@@ -210,28 +226,41 @@ def upload_video(
     )
 
     logger.info("TikTok 업로드 초기화: %s", title)
-    resp = json.loads(urllib.request.urlopen(req).read())
+    try:
+        resp = json.loads(
+            with_retry(
+                lambda: urllib.request.urlopen(req).read(),
+                should_retry=_is_transient,
+            )
+        )
 
-    if resp.get("error", {}).get("code") != "ok":
-        raise TikTokUploadError(f"업로드 초기화 실패: {resp}")
+        if resp.get("error", {}).get("code") != "ok":
+            raise TikTokUploadError(f"업로드 초기화 실패: {resp}")
 
-    upload_url = resp["data"]["upload_url"]
-    publish_id = resp["data"]["publish_id"]
+        upload_url = resp["data"]["upload_url"]
+        publish_id = resp["data"]["publish_id"]
 
-    # Step 2: Upload video file
-    video_bytes = video_path.read_bytes()
-    upload_req = urllib.request.Request(
-        upload_url,
-        data=video_bytes,
-        headers={
-            "Content-Type": "video/mp4",
-            "Content-Range": f"bytes 0-{file_size - 1}/{file_size}",
-        },
-        method="PUT",
-    )
+        # Step 2: Upload video file
+        video_bytes = video_path.read_bytes()
+        upload_req = urllib.request.Request(
+            upload_url,
+            data=video_bytes,
+            headers={
+                "Content-Type": "video/mp4",
+                "Content-Range": f"bytes 0-{file_size - 1}/{file_size}",
+            },
+            method="PUT",
+        )
 
-    logger.info("TikTok 영상 업로드 중 (%.1f MB)...", file_size / (1024 * 1024))
-    urllib.request.urlopen(upload_req)
+        logger.info("TikTok 영상 업로드 중 (%.1f MB)...", file_size / (1024 * 1024))
+        with_retry(
+            lambda: urllib.request.urlopen(upload_req),
+            should_retry=_is_transient,
+        )
+    except Exception as exc:
+        _record_safe(status="failed", error=str(exc))
+        raise
 
     logger.info("TikTok Draft 업로드 완료 (publish_id: %s)", publish_id)
+    _record_safe(status="success", result=publish_id)
     return publish_id

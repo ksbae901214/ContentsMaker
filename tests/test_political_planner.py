@@ -199,6 +199,37 @@ def test_plan_to_script_basic_mapping(tmp_path):
     assert plan.cta in script.scenes[-1].text
 
 
+def test_plan_to_script_political_category_uses_angry_emotion():
+    """category 미지정(기본값 "political")은 기존 angry 감정선 그대로 (회귀 방지)."""
+    plan = ShortsPlan(
+        topic="t", hook="hook", clip_start_sec=0, clip_end_sec=30, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="첫 나레이션"),),
+        cta="cta", angle="title_anchor",
+    )
+    script = plan_to_script(
+        plan, video_title="t", video_duration_sec=120.0, youtube_url="https://youtu.be/x",
+    )
+    assert script.metadata.emotion_type == "angry"
+
+
+def test_plan_to_script_economic_category_uses_relatable_emotion():
+    """2026-07-02 경제쇼츠: category="economic"은 relatable(청록·블루) 감정선 선택."""
+    plan = ShortsPlan(
+        topic="6월 CPI 3.2% 상승", hook="장바구니 물가, 왜 이렇게 올랐나",
+        clip_start_sec=0, clip_end_sec=60, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="물가 상승"),),
+        cta="여러분 지갑엔 어떤 영향이 있나요?",
+        angle="wallet_impact", category="economic", source_type="topic",
+    )
+    script = plan_to_script(
+        plan, video_title="t", video_duration_sec=0.0, youtube_url="",
+    )
+    assert script.metadata.emotion_type == "relatable"
+    assert script.background.colors == ("#4169E1", "#1E90FF", "#87CEEB")
+
+
 def test_plan_to_script_enforces_max_scene_duration():
     """5초 초과 씬은 자동 분할 — FR-012."""
     plan = ShortsPlan(
@@ -546,3 +577,186 @@ def test_split_subtitle_korean_endings_boost():
     first = segs[0].rstrip()
     # 종결어미 또는 어절 경계로 자연 종료
     assert first.endswith("요") or first.endswith("다") or first.endswith("어요") or " " in first
+
+
+# ─── 030 개선안: P1(제목), P4(길이) ───
+
+def _make_plan_with_yt_title(yt_title: str = "이재명을 추궁한 특검") -> ShortsPlan:
+    return ShortsPlan(
+        topic="이재명 특검 발언",
+        hook="특검을 막은 이유가 있다",
+        yt_title=yt_title,
+        clip_start_sec=0.0,
+        clip_end_sec=30.0,
+        clip_reason="r",
+        flow_intro="i",
+        flow_middle="m",
+        flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="핵심 발언"),),
+        cta="의견 댓글",
+        angle="title_anchor",
+    )
+
+
+def test_plan_to_script_uses_yt_title_when_set(tmp_path):
+    """P1: yt_title이 설정되면 metadata.title로 사용된다."""
+    plan = _make_plan_with_yt_title("이재명을 추궁한 특검")
+    script = plan_to_script(
+        plan,
+        video_title="원본 영상",
+        video_duration_sec=120.0,
+        youtube_url="https://youtu.be/abc",
+        save=False,
+    )
+    assert script.metadata.title == "이재명을 추궁한 특검"
+
+
+def test_plan_to_script_falls_back_to_topic_when_yt_title_empty(tmp_path):
+    """P1: yt_title이 빈 문자열이면 topic으로 폴백 (기존 동작 보존)."""
+    plan = _make_plan_with_yt_title("")
+    script = plan_to_script(
+        plan,
+        video_title="원본 영상",
+        video_duration_sec=120.0,
+        youtube_url="https://youtu.be/abc",
+        save=False,
+    )
+    assert script.metadata.title == "이재명 특검 발언"
+
+
+def test_plan_to_script_total_duration_capped_at_40s():
+    """P4: 총 영상 길이는 40초를 넘지 않는다."""
+    plan = ShortsPlan(
+        topic="t", hook="h",
+        clip_start_sec=0, clip_end_sec=60, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=tuple(
+            Narration(start_sec=i * 4, end_sec=(i + 1) * 4, text=f"씬 {i + 1} 내용")
+            for i in range(10)
+        ),
+        cta="cta",
+        angle="title_anchor",
+    )
+    script = plan_to_script(
+        plan,
+        video_title="t",
+        video_duration_sec=120.0,
+        youtube_url="https://youtu.be/x",
+        save=False,
+    )
+    assert script.metadata.duration <= 40.0, f"duration={script.metadata.duration} > 40s"
+
+
+def test_plan_to_script_cta_scene_max_2s():
+    """P4: CTA 씬의 duration 합계는 2초 이하."""
+    plan = ShortsPlan(
+        topic="t", hook="h",
+        clip_start_sec=0, clip_end_sec=30, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(Narration(start_sec=0, end_sec=3, text="발언"),),
+        cta="이게 정상인가요?",
+        angle="title_anchor",
+    )
+    script = plan_to_script(
+        plan,
+        video_title="t",
+        video_duration_sec=120.0,
+        youtube_url="https://youtu.be/x",
+        save=False,
+    )
+    cta_scenes = [s for s in script.scenes if s.type == "comment"]
+    total_cta_dur = sum(s.duration for s in cta_scenes)
+    assert total_cta_dur <= 2.0, f"CTA 총 duration={total_cta_dur} > 2s"
+
+
+# ─────────────────────────────── P2 훅 씬 개편 (030) ────────────────────────────────
+
+
+def test_plan_to_script_p2_hook_original_clip_when_speaker_in_narration0():
+    """P2: narrations[0]에 speaker가 있으면 scene 0은 원본 클립 (voice_text="")."""
+    plan = ShortsPlan(
+        topic="대립 이슈", hook="이 발언 놓치지 마세요",
+        clip_start_sec=10, clip_end_sec=50, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(
+            Narration(
+                start_sec=0, end_sec=4, text="삼성역 부실시공, 안전불감증입니다",
+                speaker="정원오", subtitle_color="red", subtitle_emphasis=True,
+                tts_text="정원오 후보는 직격했습니다",
+            ),
+            Narration(
+                start_sec=4, end_sec=8, text="보완하면 강도가 강해집니다",
+                speaker="오세훈", subtitle_color="white",
+                tts_text="오세훈 후보는 반박했습니다",
+            ),
+        ),
+        cta="어떻게 보세요?",
+        angle="title_anchor",
+        yt_title="정원오가 오세훈을 추궁한 발언",
+    )
+    script = plan_to_script(
+        plan, video_title="t", video_duration_sec=120.0,
+        youtube_url="https://youtu.be/p2test", save=False,
+    )
+    scene0 = script.scenes[0]
+    # scene 0 = 원본 클립 (TTS 없음)
+    assert scene0.voice_text == "", "P2: scene 0의 voice_text는 빈 문자열이어야 함"
+    assert scene0.type == "title"
+    # yt_title이 자막에 사용됨
+    assert "정원오" in scene0.text or "오세훈" in scene0.text or scene0.text == plan.yt_title
+    # duration: narration[0] end-start 기반 (2~5초 범위)
+    assert 2.0 <= scene0.duration <= 5.0
+    # tts_script에는 scene 0 텍스트가 포함되지 않음 (voice_text="")
+    assert scene0.voice_text not in script.audio.tts_script.split(" ") or scene0.voice_text == ""
+
+
+def test_plan_to_script_p2_fallback_to_tts_hook_when_no_speaker_in_narration0():
+    """P2 폴백: narrations[0]에 speaker가 없으면 기존 TTS 훅 사용 (회귀 방지)."""
+    plan = ShortsPlan(
+        topic="주제", hook="이 발언 놓치지 마세요",
+        clip_start_sec=0, clip_end_sec=30, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(
+            Narration(
+                start_sec=0, end_sec=3, text="내레이션 텍스트",
+                speaker="",  # speaker 없음
+                tts_text="TTS 전용 텍스트",
+            ),
+        ),
+        cta="어떻게 보세요?",
+        angle="audience_resonance",
+    )
+    script = plan_to_script(
+        plan, video_title="t", video_duration_sec=60.0,
+        youtube_url="https://youtu.be/fallback", save=False,
+    )
+    scene0 = script.scenes[0]
+    # 기존 TTS 훅: voice_text가 hook 텍스트 (비어 있지 않음)
+    assert scene0.voice_text != "", "폴백: scene 0의 voice_text는 hook 텍스트여야 함"
+    assert "이 발언 놓치지 마세요" in scene0.voice_text or scene0.voice_text == plan.hook
+
+
+def test_plan_to_script_p2_topic_mode_always_uses_tts_hook():
+    """P2: topic 모드는 speaker 있어도 기존 TTS 훅 유지 (topic 모드 무변경)."""
+    plan = ShortsPlan(
+        topic="경제 이슈", hook="물가 폭등, 왜?",
+        clip_start_sec=0, clip_end_sec=60, clip_reason="r",
+        flow_intro="i", flow_middle="m", flow_climax="c",
+        narrations=(
+            Narration(
+                start_sec=0, end_sec=4, text="한국은행 발언",
+                speaker="이창용",  # speaker 있음
+                tts_text="이창용 총재는 말했습니다",
+            ),
+        ),
+        cta="댓글 남겨주세요",
+        angle="comparison",
+        source_type="topic",  # topic 모드
+    )
+    script = plan_to_script(
+        plan, video_title="t", video_duration_sec=60.0,
+        youtube_url="", save=False,
+    )
+    scene0 = script.scenes[0]
+    # topic 모드: TTS 훅 유지 (P2 비활성)
+    assert scene0.voice_text != "", "topic 모드: scene 0는 TTS 훅이어야 함"

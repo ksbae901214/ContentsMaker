@@ -1,139 +1,62 @@
-"""T019/T020 [US1]: Stage A (Gemini) + Stage B (Claude) 프롬프트.
+"""모먼트 검출 프롬프트 (Feature 027).
 
-Stage A: 영상 transcript + 레이아웃 4종 분류 + 3 angle 생성.
-Stage B: rank별 1개 plan 생성 (6요소 + headline_pin + clip_search_query).
-"""
-from __future__ import annotations
-
-import json
-from typing import Any
-
-STAGE_A_LAYOUT_EXAMPLES = """
-[레이아웃 4종 예시]
-- talking_head: 정치인 1인의 인터뷰/연설/논평 (예: 조국 사퇴 기자회견)
-- vs_2way: 두 정치인의 대결/대립 (예: 양향자 vs 추미애 경기도지사 대결)
-- comparison_grid: 3~4인 후보 비교 (예: 평택을 후보 4명 재산 비교)
-- data_comparison: 1인 + 수치 데이터 강조 (예: "조국 재산 56억 5년간 0원")
-""".strip()
-
-
-def build_stage_a_prompt(
-    *,
-    transcript: list[dict[str, Any]],
-    video_title: str,
-    video_duration_sec: float,
-) -> str:
-    """Stage A: Gemini가 영상 분석 + 레이아웃 분류 + 3 angle 생성."""
-    transcript_text = "\n".join(
-        f"[{t.get('start', 0):.1f}~{t.get('end', 0):.1f}] {t.get('text', '')}"
-        for t in transcript[:60]  # 너무 길면 자르기
-    )
-    return f"""당신은 정치 쇼츠 제작 분석가입니다.
-
-## 입력 영상
-제목: {video_title}
-길이: {video_duration_sec:.1f}초
-
-## Transcript
-{transcript_text}
-
-## 작업
-1. 영상 분석 후 핵심 시각 구조를 4종 중 하나로 분류:
-{STAGE_A_LAYOUT_EXAMPLES}
-
-2. 3개 서로 다른 angle 도출:
-- title_anchor: 영상 제목을 후크로 (가장 안전)
-- audience_resonance: 시청자 공감 포인트 강조
-- comparison: 다른 인물/사건과 비교
-
-3. 핵심 발언 timestamp 추출 (key_moments)
-
-## 출력 형식 (JSON only, no markdown)
-{{
-  "layout_classification": "talking_head" | "vs_2way" | "comparison_grid" | "data_comparison",
-  "transcript": [{{"start": float, "end": float, "text": str}}, ...],
-  "key_moments": [{{"start": float, "end": float, "summary": str}}, ...],
-  "angles": [
-    {{"name": "title_anchor", "topic": str, "hook": str, "reason": str}},
-    {{"name": "audience_resonance", "topic": str, "hook": str, "reason": str}},
-    {{"name": "comparison", "topic": str, "hook": str, "reason": str}}
-  ]
-}}
+벤치마크 실측 근거:
+- 조회수 상위 정치쇼츠의 소재 = 정보가 아닌 감정 모먼트 (웃음·충돌·언성)
+- 훅은 질문형 떡밥 ("왜 또 압수수색을 한 거예요?") — 답을 알려주지 않음
+- 클립 길이 34~58초가 스윗스팟
 """
 
+_COMMON_RULES = """\
+찾아야 할 모먼트 종류 (kind):
+- "laughter": 웃음이 터진 순간 (본인/좌중)
+- "clash": 여야·인물 간 충돌, 설전, 말싸움
+- "outburst": 언성, 호통, 일갈
+- "gaffe": 실언, 말실수, 어이없는 행동
+- "silence": 정적, 말문 막힘, 답변 회피
+- "other": 그 외 강한 감정 순간
 
-def build_stage_b_prompt(
-    *,
-    stage_a_result: dict[str, Any],
-    video_title: str,
-    video_duration_sec: float,
-    rank: int,
-    angle: str,
-) -> str:
-    """Stage B: rank별 1개 plan 생성 — 6요소 + clip_search_query + headline_pin."""
-    layout = stage_a_result.get("layout_classification", "talking_head")
-    transcript = stage_a_result.get("transcript", [])[:30]
-    transcript_text = "\n".join(
-        f"[{t.get('start', 0):.1f}~{t.get('end', 0):.1f}] {t.get('text', '')}"
-        for t in transcript
-    )
-    return f"""당신은 정치 쇼츠 기획자입니다. (Rank {rank} / Angle: {angle})
+규칙:
+1. 정보 요약이 아니라 "감정이 터진 순간"만 골라라. 평범한 발언은 제외.
+2. 각 모먼트는 5초 이상 60초 이하. 순간의 앞뒤 맥락이 이해되는 최소 구간으로.
+3. hook_question은 반드시 질문형 + 답을 숨긴 떡밥. (예: "청문회에서 왜 웃음이 터졌을까요?")
+   금지: 답이 다 들어간 문장 ("박범계가 웃음을 터뜨렸습니다" ❌)
+4. keywords는 훅 카드에서 색 강조할 단어 1~3개 (hook_question 안의 단어).
+5. summary는 무슨 일인지 한 줄 (검수자용 — 여기엔 답을 써도 됨).
+6. confidence는 "이 순간이 쇼츠로 만들었을 때 터질 가능성" 0~1.
+7. 없는 순간을 지어내지 마라. 확실한 것만.
 
-## 입력
-영상 제목: {video_title}
-영상 길이: {video_duration_sec:.1f}초
-레이아웃 분류: {layout}
+출력 형식 (JSON 배열만, 다른 텍스트 금지):
+[
+  {
+    "start_sec": 312.5,
+    "end_sec": 348.0,
+    "kind": "clash",
+    "speaker": "추미애",
+    "summary": "나경원 발언에 추미애가 '쇼츠 그만 찍어'라고 받아침",
+    "hook_question": "국회에서 왜 '쇼츠' 얘기가 나왔을까요?",
+    "keywords": ["쇼츠"],
+    "confidence": 0.9
+  }
+]
+"""
 
-## Transcript (Stage A 결과)
-{transcript_text}
+MOMENT_DETECT_VIDEO_PROMPT = f"""이 영상은 한국 정치 현장(국회·청문회·기자회견 등) 영상이다.
+영상 전체를 보고, YouTube Shorts로 만들면 조회수가 터질 "감정 모먼트"를 최대 8개 찾아라.
+음성뿐 아니라 표정, 웃음소리, 좌중 반응, 정적 같은 비언어 신호도 활용하라.
 
-## 작업
-선택된 angle "{angle}" 관점으로 60초 이내 쇼츠 기획안 1개 작성.
+{_COMMON_RULES}"""
 
-각 씬에 대해 다음을 출력:
-- text: 화면 자막 (1~80자)
-- voice_text: TTS 원문 (자막보다 자연스러운 문장, 1~200자)
-- visual_layout: "normal" / "vs_card" / "grid_2x2" / "data_card"
-- subtitle_color: "white" / "yellow" / "red" / "blue"
-- subtitle_emphasis: true (강조 폰트) / false
-- clip_search_query: yt-dlp ytsearch1 검색어 (FR-037, 예: "{video_title} 핵심발언")
-- clip_source_timestamp: 원본 영상에서 사용할 시간 구간 [start_sec, end_sec]
-- cards_metadata: vs_card/grid_2x2/data_card 시 인물 정보 [{{"name": str, "party": str, "data_label"?: str, "data_value"?: str}}] (없으면 null)
+def build_transcript_prompt(transcript: str) -> str:
+    """transcript 폴백 검출용 프롬프트 생성.
 
-## 카드 분류 규칙 (T048 [US2])
-- layout_classification == "vs_2way"이면 narrations[0].visual_layout = "vs_card" + cards_metadata에 정확히 2명 포함 (각자의 party 명시 필수).
-  예: [{{"name": "양향자", "party": "국민의힘"}}, {{"name": "추미애", "party": "더불어민주당"}}]
-- layout_classification == "comparison_grid"이면 narrations[0].visual_layout = "grid_2x2" + cards_metadata에 3~4명 포함.
-- layout_classification == "data_comparison"이면 narrations[0].visual_layout = "data_card" + cards_metadata에 정확히 1명 + data_label/data_value 필수.
-- layout_classification == "talking_head"이면 cards_metadata = null.
+    (.format()을 쓰지 않는 이유: _COMMON_RULES의 JSON 예시 중괄호와 충돌)
+    """
+    return f"""아래는 한국 정치 현장 영상의 타임스탬프 transcript다.
+YouTube Shorts로 만들면 조회수가 터질 "감정 모먼트"를 최대 8개 찾아라.
+(주의: 텍스트만으로 판단하므로 발언 내용의 충돌·일갈·실언 위주로. 웃음·정적은 텍스트에 단서가 있을 때만.)
 
-## 출력 형식 (JSON only, no markdown)
-{{
-  "rank": {rank},
-  "angle": "{angle}",
-  "format_type": "A" | "B" | "C",
-  "layout_classification": "{layout}",
-  "topic": str,
-  "hook": str,
-  "clip_section": str (예: "01:23~01:45"),
-  "reason": str,
-  "flow_intro": str,
-  "flow_middle": str,
-  "flow_climax": str,
-  "narrations": [
-    {{
-      "scene_id": int,
-      "text": str,
-      "voice_text": str,
-      "visual_layout": "normal",
-      "subtitle_color": "white",
-      "subtitle_emphasis": false,
-      "clip_search_query": str | null,
-      "clip_source_timestamp": [float, float] | null,
-      "cards_metadata": null
-    }}
-  ],
-  "cta": str,
-  "headline_pin": str (정확히 8~14자 한글)
-}}
+{_COMMON_RULES}
+
+--- TRANSCRIPT ---
+{transcript}
 """

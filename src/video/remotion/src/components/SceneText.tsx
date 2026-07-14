@@ -43,6 +43,9 @@ interface SceneData {
   subtitleColor?: string;
   subtitle_emphasis?: boolean;
   subtitleEmphasis?: boolean;
+  // V2.1 (2026-07-14): "bottom"이면 영상 레터박스 아래 배치 (hook 중앙 강제보다 우선).
+  subtitle_position?: string;
+  subtitlePosition?: string;
   // Phase 3 (2026-05-20): 자막 그룹 — 같은 원본 문장의 분할 자식 씬 식별.
   // group_first=false면 fade-in 생략 → 텍스트만 즉시 교체(끊김 제거).
   subtitle_group_id?: number | null;
@@ -170,8 +173,14 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
     strokeColor,
     dropShadow,
   );
-  // QW-01: hook 씬은 화면 중앙 강제 (positionY 0.5)
-  const positionY = isHook ? 0.5 : (style?.position_y ?? 0.652);
+  // QW-01: hook 씬은 화면 중앙 강제 (positionY 0.5).
+  // V2.1: subtitle_position="bottom"은 영상(16:9 레터박스, ~0.34-0.66) 아래 0.78
+  // — 훅 원본 육성 씬에서 자막이 인물을 가리지 않도록. 출처 라벨(~0.92) 위.
+  const subtitlePosition = (scene.subtitlePosition || scene.subtitle_position || "")
+    .toLowerCase().trim();
+  const positionY = subtitlePosition === "bottom"
+    ? 0.78
+    : isHook ? 0.5 : (style?.position_y ?? 0.652);
   const bgColor = style?.bg_color ?? null;
   const bgOpacity = style?.bg_opacity ?? 0;
 

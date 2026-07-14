@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { SceneEditor } from "./components/SceneEditor";
 import { ScriptReviewer } from "./components/ScriptReviewer";
 import PoliticalPlanPicker, { ShortsPlanDTO } from "./components/PoliticalPlanPicker";
+import HybridPlanPicker from "./components/HybridPlanPicker";
 
 type Status = "idle" | "processing" | "reviewing" | "done" | "error";
 interface SceneImage { scene_id: number; image_path: string; prompt: string; }
@@ -53,6 +54,15 @@ export default function Home() {
   const [politicalProTopic, setPoliticalProTopic] = useState("");
   const [politicalProTone, setPoliticalProTone] = useState("분노·격앙");
   const [politicalProDetails, setPoliticalProDetails] = useState("");
+  // 2026-07-02: 경제쇼츠 지원 — 도메인 토글(topic 모드 전용). political(기본)은 기존 동작 무변경.
+  const [politicalProCategory, setPoliticalProCategory] = useState<"political"|"economic">("political");
+  // Feature 030: V3 하이브리드 모드 (YouTube URL 전용) — 원본 발언 50% + TTS 논평 50%
+  const [isPoliticalProHybrid, setIsPoliticalProHybrid] = useState(false);
+  const [politicalProHybridPlans, setPoliticalProHybridPlans] = useState<any[] | null>(null);
+  const [politicalProHybridVideoPath, setPoliticalProHybridVideoPath] = useState("");
+  const [politicalProHybridVideoDuration, setPoliticalProHybridVideoDuration] = useState(0);
+  const [politicalProHybridTitle, setPoliticalProHybridTitle] = useState("");
+  const [politicalProHybridChannel, setPoliticalProHybridChannel] = useState("");
   const [natvClipUrl, setNavtClipUrl] = useState("");
   const [natvUseTts, setNavtUseTts] = useState(false);
   const [natvTone, setNavtTone] = useState<"angry"|"funny"|"touching"|"relatable">("angry");
@@ -120,7 +130,9 @@ export default function Home() {
   const [stats, setStats] = useState<Stats|null>(null);
   const [bgm, setBgm] = useState(true);
   const [transitions, setTransitions] = useState(true);
-  const [sfx, setSfx] = useState(true);
+  // SFX globally disabled (2026-06-12) — 초기값 false, UI 토글은 hidden.
+  // state는 FormData 호환을 위해 보존. 자세한 결정 배경은 prompt_plan.md 참조.
+  const [sfx, setSfx] = useState(false);
   const [ytUpload, setYtUpload] = useState(false);
   const [ttUpload, setTtUpload] = useState(false);
   const [urlInput, setUrlInput] = useState("");
@@ -514,7 +526,7 @@ export default function Home() {
                 <span className="text-xs px-2 py-0.5 bg-rose-600 rounded-full font-semibold">✨ NEW V2</span>
                 <span className="text-xs text-rose-300">잘나가는 정치 유튜버 지침</span>
               </div>
-              <h2 className="text-xl font-bold mb-1">🏛️ 정치 숏츠 자동 생성</h2>
+              <h2 className="text-xl font-bold mb-1">🏛️ 정치·경제 숏츠 자동 생성</h2>
               <p className="text-sm text-gray-300 leading-relaxed">
                 YouTube 정치 영상 → <strong className="text-yellow-300">A/B 포맷 자동 분류</strong> + 3 기획안<br/>
                 <strong className="text-red-300">컬러 자막</strong> · <strong className="text-blue-300">대조 분할 화면</strong> · <strong className="text-amber-300">"댓글 고래잡기" CTA</strong> · Gemini Charon TTS
@@ -526,7 +538,7 @@ export default function Home() {
             onClick={() => setTab("political_pro")}
             className="w-full py-3 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 rounded-lg font-bold text-base transition shadow-md"
           >
-            ▶ 정치 숏츠 V2 시작하기
+            ▶ 정치·경제 숏츠 시작하기
           </button>
           <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
             <div className="text-center">
@@ -545,20 +557,20 @@ export default function Home() {
         </div>
       )}
 
-      {/* 정치쇼츠 V3 — @김정치입니다 격리 모드 (유일한 예외 수정: 진입 버튼 1개) */}
+      {/* 정치쇼츠 V3 진입 버튼 (2026-06-11, Feature 027 Phase 4 완성) */}
       <div className="mb-3">
         <a
           href="/jpolitics"
           className="block w-full py-2.5 rounded-lg font-bold text-center text-sm bg-amber-600 hover:bg-amber-500 active:bg-amber-700 transition shadow-md"
         >
-          🟡 정치 V3 (@김정치입니다 포맷) — 격리 모드로 새 페이지에서 열기
+          🟡 정치 V3 (모먼트 직캠) — 격리 모드로 새 페이지에서 열기
         </a>
       </div>
 
       <div className="flex gap-2 mb-6">
         {(["image","manual","url","topic","political","political_pro","natv_clip","celebrity"] as const).map(t=>(
           <button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2.5 rounded-lg font-medium transition text-xs ${tab===t?(t==="political_pro"?"bg-rose-600":"bg-blue-600"):"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
-            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":t==="political"?"🎙️ 정치 해설":t==="political_pro"?"🏛️ 정치 V2":t==="natv_clip"?"📺 NATV 클립":"👤 유명인"}
+            {t==="image"?"📸 스크린샷":t==="manual"?"✏️ 직접 입력":t==="url"?"🔗 URL":t==="topic"?"💡 주제":t==="political"?"🎙️ 정치 해설":t==="political_pro"?"🏛️ 정치·경제":t==="natv_clip"?"📺 NATV 클립":"👤 유명인"}
           </button>
         ))}
       </div>
@@ -586,12 +598,11 @@ export default function Home() {
       {visualMode==="video"&&<div className="mb-4">
         <label className="block text-sm font-medium text-gray-300 mb-2">영상 생성 제공업체</label>
         <div className="grid grid-cols-3 gap-2">
-          <button onClick={()=>setVideoProvider("gemini")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="gemini"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🎬 Veo 3 (Gemini Pro)</button>
+          {/* Veo 3 (gemini) 숨김 (2026-06-11): Phase 2B 초안 — selector 미검증. 완성 후 재노출 */}
           <button onClick={()=>setVideoProvider("deevid")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="deevid"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>🌐 deevid.ai (무료)</button>
           <button onClick={()=>setVideoProvider("seedance")} className={`py-2 rounded-lg text-xs transition ${videoProvider==="seedance"?"bg-indigo-600 ring-2 ring-indigo-400":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>⚡ Seedance API</button>
           <button disabled title="Freepik 구독 해지 (2026-05-19)" className="py-2 rounded-lg text-xs bg-gray-900 text-gray-600 cursor-not-allowed line-through">🎨 Freepik (해지)</button>
         </div>
-        {videoProvider==="gemini"&&<p className="mt-2 text-xs text-gray-500">⚡ 변동비 $0 (Pro 구독 한도, 8초 720p + 네이티브 오디오). 사전 <code className="text-yellow-400">gemini_login</code> 필요</p>}
         {videoProvider==="freepik"&&<p className="mt-2 text-xs text-red-400">⛔ Freepik 구독 해지됨</p>}
         {videoProvider==="deevid"&&<p className="mt-2 text-xs text-gray-500">⚠️ 사전에 터미널에서 <code className="text-yellow-400">python3 -m src.main deevid_login</code> 실행 필요</p>}
       </div>}
@@ -638,7 +649,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
@@ -669,7 +680,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
@@ -694,7 +705,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ytUpload} onChange={e=>setYtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">📺 YouTube 업로드</span></label>
         <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={ttUpload} onChange={e=>setTtUpload(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 TikTok 업로드 (Draft)</span></label>
@@ -727,7 +738,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <div className="flex gap-2">
           <button onClick={()=>{if(topicText.trim().length<5)return;const fd=new FormData();fd.set("mode","topic");fd.set("bgm",bgm?"on":"off");fd.set("transitions",transitions?"on":"off");fd.set("sfx",sfx?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("visualMode",visualMode);fd.set("imageStyle",imageStyle);fd.set("videoProvider",videoProvider);fd.set("imageProvider",imageProvider);fd.set("topic",topicText.trim());fd.set("contentStyle",contentStyle);fd.set("tone",tone);fd.set("details",details);startAnalyze(fd)}}
@@ -770,7 +781,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
         <button
           onClick={()=>{
@@ -811,26 +822,60 @@ export default function Home() {
             </div>
 
             {politicalProSource === "youtube" && (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">YouTube URL *</label>
-                <input
-                  value={politicalProUrl}
-                  onChange={e=>setPoliticalProUrl(e.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-                />
-                <p className="text-xs text-gray-500 mt-1">정치 영상 URL을 붙여넣으면 RTF 6요소(주제/Hook/구간/흐름/나레이션/CTA) 구조의 3개 기획안을 비교 제시합니다.</p>
-              </div>
+              <>
+                {/* Feature 030: V2 일반 / V3 하이브리드 모드 토글 */}
+                <div className="flex gap-2 bg-gray-800/50 p-1 rounded-lg">
+                  <button
+                    onClick={()=>{setIsPoliticalProHybrid(false); setPoliticalProHybridPlans(null);}}
+                    className={`flex-1 py-2 text-xs rounded-md transition ${!isPoliticalProHybrid ? "bg-rose-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                    🏛️ V2 일반 (TTS)
+                  </button>
+                  <button
+                    onClick={()=>{setIsPoliticalProHybrid(true); setPoliticalProPlans(null);}}
+                    className={`flex-1 py-2 text-xs rounded-md transition ${isPoliticalProHybrid ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                    📺 V3 하이브리드 (원본 50%)
+                  </button>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">YouTube URL *</label>
+                  <input
+                    value={politicalProUrl}
+                    onChange={e=>setPoliticalProUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {isPoliticalProHybrid
+                      ? "V3: 원본 발언 ~50% + TTS 논평 ~50% 교차 편집. Gemini Stage A + Claude Stage B × 3 angles."
+                      : "V2: RTF 6요소(주제/Hook/구간/흐름/나레이션/CTA) 구조의 3개 기획안을 비교 제시합니다."}
+                  </p>
+                </div>
+              </>
             )}
 
             {politicalProSource === "topic" && (
               <>
+                {/* 2026-07-02: 경제쇼츠 지원 — 도메인 토글 */}
+                <div className="flex gap-2 bg-gray-800/50 p-1 rounded-lg">
+                  <button
+                    onClick={()=>{setPoliticalProCategory("political"); if (politicalProTone==="차분·분석적") setPoliticalProTone("분노·격앙");}}
+                    className={`flex-1 py-2 text-xs rounded-md transition ${politicalProCategory==="political" ? "bg-red-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                    🏛️ 정치
+                  </button>
+                  <button
+                    onClick={()=>{setPoliticalProCategory("economic"); if (politicalProTone==="분노·격앙") setPoliticalProTone("차분·분석적");}}
+                    className={`flex-1 py-2 text-xs rounded-md transition ${politicalProCategory==="economic" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}>
+                    💰 경제
+                  </button>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">주제 *</label>
                   <textarea
                     value={politicalProTopic}
                     onChange={e=>setPoliticalProTopic(e.target.value)}
-                    placeholder="예: 스타벅스 5·18 탱크데이 논란 — 5월 18일 광주민주화운동 기념일에 탱크 텀블러를 출시해 정치권·시민이 분노한 사건"
+                    placeholder={politicalProCategory==="economic"
+                      ? "예: 6월 소비자물가지수 3.2% 상승 — 통계청 발표, 외식·가공식품 위주 물가 상승이 서민 체감 물가에 미치는 영향"
+                      : "예: 스타벅스 5·18 탱크데이 논란 — 5월 18일 광주민주화운동 기념일에 탱크 텀블러를 출시해 정치권·시민이 분노한 사건"}
                     rows={3}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
                   />
@@ -842,10 +887,20 @@ export default function Home() {
                     value={politicalProTone}
                     onChange={e=>setPoliticalProTone(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-sm">
-                    <option value="분노·격앙">분노·격앙 (강한 비판)</option>
-                    <option value="차분·분석적">차분·분석적 (추적 검증형)</option>
-                    <option value="유머·풍자">유머·풍자</option>
-                    <option value="공감·연대">공감·연대</option>
+                    {politicalProCategory==="economic" ? (
+                      <>
+                        <option value="차분·분석적">차분·분석적 (원인·전망 해설)</option>
+                        <option value="위기·경고">위기·경고 (리스크 강조)</option>
+                        <option value="공감·연대">공감·연대 (생활 체감형)</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="분노·격앙">분노·격앙 (강한 비판)</option>
+                        <option value="차분·분석적">차분·분석적 (추적 검증형)</option>
+                        <option value="유머·풍자">유머·풍자</option>
+                        <option value="공감·연대">공감·연대</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div>
@@ -853,11 +908,18 @@ export default function Home() {
                   <textarea
                     value={politicalProDetails}
                     onChange={e=>setPoliticalProDetails(e.target.value)}
-                    placeholder="포함해야 할 인물/날짜/세부 사실. 예: 손정현 대표 해임, 이재명 대통령 분노, '책상에 탁' 박종철 사건 연관 등"
+                    placeholder={politicalProCategory==="economic"
+                      ? "포함해야 할 수치/기관/기준시점. 예: 통계청 6월 발표, 한국은행 기준금리 3.5%, 전세대출 금리 영향 등"
+                      : "포함해야 할 인물/날짜/세부 사실. 예: 손정현 대표 해임, 이재명 대통령 분노, '책상에 탁' 박종철 사건 연관 등"}
                     rows={2}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
                   />
                 </div>
+                {politicalProCategory==="economic" && (
+                  <div className="text-xs text-blue-300/80 bg-blue-900/20 border border-blue-800 rounded-lg p-3">
+                    💡 경제쇼츠는 특정 종목·자산의 매수/매도 권유 표현을 생성하지 않도록 가드레일이 적용됩니다. 수치는 출처·기준시점과 함께 검수하세요.
+                  </div>
+                )}
               </>
             )}
 
@@ -877,15 +939,19 @@ export default function Home() {
                 setPoliticalProLoading(true);
                 setPoliticalProError("");
                 try {
+                  // Feature 030: V3 하이브리드 모드는 별도 endpoint 사용
+                  const isHybrid = !isTopic && isPoliticalProHybrid;
+                  const endpoint = isHybrid ? "/api/political-pro/hybrid-plans" : "/api/political-pro/plans";
                   const body = isTopic
                     ? {
                         sourceType: "topic",
                         topic: politicalProTopic.trim(),
                         tone: politicalProTone,
                         details: politicalProDetails.trim(),
+                        category: politicalProCategory,
                       }
                     : { sourceType: "youtube", youtubeUrl: politicalProUrl.trim() };
-                  const res = await fetch("/api/political-pro/plans", {
+                  const res = await fetch(endpoint, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(body),
@@ -893,6 +959,13 @@ export default function Home() {
                   const data = await res.json();
                   if (!res.ok) {
                     setPoliticalProError(`${data.error || "오류"}: ${data.detail || "알 수 없는 실패"}`);
+                  } else if (isHybrid) {
+                    // V3 하이브리드 결과 저장
+                    setPoliticalProHybridPlans(data.plans);
+                    setPoliticalProHybridVideoPath(data.video_path || "");
+                    setPoliticalProHybridVideoDuration(data.video_duration_sec || 0);
+                    setPoliticalProHybridTitle(data.video_title || politicalProUrl.trim().slice(0, 80));
+                    setPoliticalProHybridChannel(data.video_channel || "");
                   } else {
                     setPoliticalProPlans(data.plans);
                     setPoliticalProVideoPath(data.video_path || data.videoPath || "");
@@ -928,11 +1001,14 @@ export default function Home() {
                 : "bg-gray-700 text-gray-500 cursor-not-allowed"
               }`}>
               {politicalProLoading
-                ? (politicalProSource === "topic" ? "⏳ 주제 분석 + 3 기획안 생성 중 (~30초, 끊지 마세요)..." : "⏳ 3 기획안 생성 중 (~90초, 끊지 마세요)...")
-                : "🏛️ 3 기획안 생성"}
+                ? (isPoliticalProHybrid && politicalProSource === "youtube"
+                    ? "⏳ V3 하이브리드 기획안 생성 중 (~120초, 끊지 마세요)..."
+                    : politicalProSource === "topic" ? "⏳ 주제 분석 + 3 기획안 생성 중 (~30초, 끊지 마세요)..." : "⏳ 3 기획안 생성 중 (~90초, 끊지 마세요)...")
+                : (isPoliticalProHybrid && politicalProSource === "youtube" ? "📺 V3 하이브리드 기획안 3개 생성" : "🏛️ 3 기획안 생성")}
             </button>
           </>
         )}
+        {/* V2 일반 기획안 선택기 */}
         {politicalProPlans && (
           <>
             <div className="flex items-center justify-between mb-2">
@@ -964,6 +1040,42 @@ export default function Home() {
                 fd.set("bgm", bgm?"on":"off");
                 fd.set("transitions", transitions?"on":"off");
                 fd.set("sfx", sfx?"on":"off");
+                fd.set("yt","off"); fd.set("tt","off"); // FR-020: 자동 업로드 차단
+                startAnalyze(fd);
+              }}
+            />
+          </>
+        )}
+        {/* V3 하이브리드 기획안 선택기 (Feature 030) */}
+        {politicalProHybridPlans && (
+          <>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-purple-300">📺 V3 하이브리드 기획안 — 1개를 선택하세요</h3>
+              <button
+                onClick={()=>{
+                  setPoliticalProHybridPlans(null);
+                  setPoliticalProHybridVideoPath("");
+                  setPoliticalProHybridVideoDuration(0);
+                  setPoliticalProHybridTitle("");
+                  setPoliticalProError("");
+                }}
+                className="text-gray-400 hover:text-white text-xs">
+                ← 다른 URL로 다시
+              </button>
+            </div>
+            <HybridPlanPicker
+              plans={politicalProHybridPlans}
+              onSelect={(idx)=>{
+                const fd = new FormData();
+                fd.set("mode","political_pro");
+                fd.set("hybridMode","on");
+                fd.set("selectedPlanIdx", String(idx));
+                fd.set("hybridPlansJson", JSON.stringify(politicalProHybridPlans));
+                fd.set("videoPath", politicalProHybridVideoPath);
+                fd.set("videoDurationSec", String(politicalProHybridVideoDuration));
+                fd.set("videoChannel", politicalProHybridChannel);
+                fd.set("videoTitle", politicalProHybridTitle);
+                fd.set("bgm", bgm?"on":"off");
                 fd.set("yt","off"); fd.set("tt","off"); // FR-020: 자동 업로드 차단
                 startAnalyze(fd);
               }}
@@ -1189,7 +1301,7 @@ export default function Home() {
             <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={bgm} onChange={e=>setBgm(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎵 배경음악 넣기</span></label>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🎬 화면 전환 효과</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/><span className="text-sm text-gray-300">🔊 효과음</span></label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
         </div>
             <div className="flex gap-2">
               <button onClick={()=>{const fd=new FormData();fd.set("mode","political");fd.set("bgm",bgm?"on":"off");fd.set("transitions",transitions?"on":"off");fd.set("sfx",sfx?"on":"off");fd.set("yt","off");fd.set("tt","off");fd.set("youtubeUrl",politicalUrl.trim());fd.set("clipStart",clipStart);fd.set("clipEnd",clipEnd);fd.set("politicalTone",politicalTone);fd.set("politicalDetails",politicalDetails);startAnalyze(fd)}}
@@ -1255,10 +1367,7 @@ export default function Home() {
             <input type="checkbox" checked={transitions} onChange={e=>setTransitions(e.target.checked)} className="w-5 h-5 rounded"/>
             <span className="text-sm text-gray-300">🎬 화면 전환 효과</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={sfx} onChange={e=>setSfx(e.target.checked)} className="w-5 h-5 rounded"/>
-            <span className="text-sm text-gray-300">🔊 효과음</span>
-          </label>
+          {/* SFX 토글 — globally disabled (2026-06-12), see prompt_plan.md */}
           <div className="flex items-center gap-2 text-xs text-gray-500 pl-7">
             <span>📺 YouTube 업로드</span>
             <span className="text-gray-600">— 유명인 탭에서는 비활성화됨</span>

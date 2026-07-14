@@ -140,6 +140,9 @@ class Scene:
     subtitle_emphasis: bool = False
     visual_layout: str = "normal"
     secondary_clip_path: str | None = None
+    # V2.1 (2026-07-14): 자막 세로 위치. ""(기본)=기존 동작(hook 중앙/일반 0.652),
+    # "bottom"=영상 레터박스 아래(0.78) — 훅 원본 육성 씬에서 영상 가림 방지.
+    subtitle_position: str = ""
     # Phase 3 (2026-05-20): 분할 자식 씬 연속성. 같은 원본 텍스트가 _split_subtitle_segments로
     # N개 자식 씬으로 나뉘면 모두 같은 group_id. group_first=True인 첫 자식만 fade-in 실행,
     # 나머지는 텍스트만 교체(끊김 없음). None = 그룹 없음(독립 씬, 항상 fade-in).
@@ -188,6 +191,8 @@ class Scene:
             d["visual_layout"] = self.visual_layout
         if self.secondary_clip_path:
             d["secondary_clip_path"] = self.secondary_clip_path
+        if self.subtitle_position:  # ""(기본)은 키 생략
+            d["subtitle_position"] = self.subtitle_position
         # Phase 3 — default가 아닐 때만 직렬화 (V1·V2 JSON 호환)
         if self.subtitle_group_id is not None:
             d["subtitle_group_id"] = self.subtitle_group_id
@@ -243,6 +248,9 @@ class Scene:
             ),
             secondary_clip_path=(
                 data.get("secondary_clip_path", data.get("secondaryClipPath")) or None
+            ),
+            subtitle_position=str(
+                data.get("subtitle_position", data.get("subtitlePosition", "")) or ""
             ),
             # Phase 3 — default fallback (없으면 None / True)
             subtitle_group_id=data.get("subtitle_group_id", data.get("subtitleGroupId")),

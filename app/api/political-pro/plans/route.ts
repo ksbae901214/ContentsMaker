@@ -44,7 +44,7 @@ function isValidYouTubeUrl(u: string): boolean {
  *
  * Body:
  *   - { sourceType: "youtube", youtubeUrl: string } — 기존 방식
- *   - { sourceType: "topic", topic: string, tone?: string, details?: string } — Feature 023
+ *   - { sourceType: "topic", topic: string, tone?: string, details?: string, category?: "political"|"economic" } — Feature 023 (category: 2026-07-02 경제쇼츠)
  *
  * sourceType 미지정 시 youtubeUrl 존재 여부로 자동 추론 (하위 호환).
  *
@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
     topic?: string;
     tone?: string;
     details?: string;
+    category?: string;
   };
   try {
     body = await req.json();
@@ -226,9 +227,11 @@ async function handleTopicMode(body: {
   topic?: string;
   tone?: string;
   details?: string;
+  category?: string;
 }): Promise<NextResponse> {
   const topic = (body.topic || "").trim();
-  const tone = (body.tone || "분노·격앙").trim();
+  const category = (body.category || "political").trim() === "economic" ? "economic" : "political";
+  const tone = (body.tone || (category === "economic" ? "차분·분석적" : "분노·격앙")).trim();
   const details = (body.details || "").trim();
 
   if (!topic) {
@@ -241,6 +244,7 @@ async function handleTopicMode(body: {
   const escTopic = JSON.stringify(topic);
   const escTone = JSON.stringify(tone);
   const escDetails = JSON.stringify(details);
+  const escCategory = JSON.stringify(category);
 
   try {
     const raw = await py(`
@@ -255,6 +259,7 @@ try:
         topic=${escTopic},
         tone=${escTone},
         details=${escDetails},
+        category=${escCategory},
     )
     print(json.dumps(result.to_dict(), ensure_ascii=False))
 except PoliticalPlannerError as e:

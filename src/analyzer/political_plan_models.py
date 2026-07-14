@@ -9,8 +9,19 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 
-_ALLOWED_ANGLES = ("title_anchor", "audience_resonance", "comparison")
-Angle = Literal["title_anchor", "audience_resonance", "comparison"]
+_ALLOWED_ANGLES = (
+    "title_anchor", "audience_resonance", "comparison",
+    # 2026-07-02 경제쇼츠 지원 — category="economic" 전용 angle
+    "wallet_impact", "cause_analysis", "outlook_action",
+)
+Angle = Literal[
+    "title_anchor", "audience_resonance", "comparison",
+    "wallet_impact", "cause_analysis", "outlook_action",
+]
+
+# 2026-07-02 — 정치쇼츠 V2 파이프라인의 도메인 분기 (프롬프트 페르소나/앵글/가드레일만 다름)
+_ALLOWED_CATEGORIES = ("political", "economic")
+Category = Literal["political", "economic"]
 
 # Feature 011 V2 — gemini-code 지침 반영
 _ALLOWED_FORMAT_TYPES = ("A", "B")  # A=인터뷰/논평/MBC라디오, B=현장/뉴스핌
@@ -133,6 +144,10 @@ class ShortsPlan:
     # Feature 023 — 주제 입력 모드 지원
     source_type: PlanSourceType = "youtube"  # "youtube"(기존) | "topic"(주제 입력)
     youtube_search_keywords: tuple[str, ...] = ()  # source_type=topic 일 때 씬별 검색어
+    # 2026-07-02 — 경제쇼츠 지원: "political"(기존) | "economic"(신규)
+    category: Category = "political"
+    # 2026-07-03 — 030 P1: "[악역]-[응징]-[주인공]" 훅 제목. 비어있으면 topic 폴백.
+    yt_title: str = ""
 
     def __post_init__(self) -> None:
         required_text_fields = {
@@ -178,6 +193,11 @@ class ShortsPlan:
             raise PlanValidationError(
                 f"format_type은 {_ALLOWED_FORMAT_TYPES} 중 하나 (현재 {self.format_type!r})"
             )
+        # 2026-07-02: category 화이트리스트
+        if self.category not in _ALLOWED_CATEGORIES:
+            raise PlanValidationError(
+                f"category는 {_ALLOWED_CATEGORIES} 중 하나 (현재 {self.category!r})"
+            )
 
     def to_dict(self) -> dict:
         d = {
@@ -204,6 +224,11 @@ class ShortsPlan:
         d["source_type"] = self.source_type
         if self.youtube_search_keywords:
             d["youtube_search_keywords"] = list(self.youtube_search_keywords)
+        # 2026-07-02: category도 분기 키로 사용 — 항상 직렬화
+        d["category"] = self.category
+        # 2026-07-03 — 030 P1: yt_title은 값이 있을 때만 직렬화 (V2 JSON 호환)
+        if self.yt_title:
+            d["yt_title"] = self.yt_title
         return d
 
     @classmethod
@@ -237,6 +262,12 @@ class ShortsPlan:
                     data.get("youtubeSearchKeywords", ()),
                 )
             ),
+            # 2026-07-02: category default fallback → 기존(경제쇼츠 이전) JSON 호환
+            category=str(  # type: ignore[arg-type]
+                data.get("category", "political")
+            ),
+            # 2026-07-03 — 030 P1: yt_title 없으면 "" (기존 JSON 호환)
+            yt_title=str(data.get("yt_title", data.get("ytTitle", ""))),
         )
 
 

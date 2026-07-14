@@ -38,7 +38,10 @@ export async function POST(req: NextRequest) {
   const useBgm = (fd.get("bgm") as string) !== "off";
   // Default on: only explicit "off" disables scene transitions / SFX.
   const useTransitions = (fd.get("transitions") as string) !== "off";
-  const useSfx = (fd.get("sfx") as string) !== "off";
+  // SFX globally disabled (2026-06-12) — client toggle ignored, renderer enforces.
+  // 자세한 결정 배경은 prompt_plan.md 참조.
+  const useSfx = false;
+  void fd.get("sfx"); // suppress unused-field signal — toggle still accepted for backwards compat
   // Feature 009 — FR-020: political_pro mode (and Phase 2 with politicalProMeta)
   // MUST never auto-upload, even if the client misbehaves.
   const _isPoliticalPro = (fd.get("mode") as string) === "political_pro"
@@ -384,13 +387,78 @@ print(json.dumps({"path":str(p),"url":pi.youtube_url}))`)));
           // this endpoint. Here we receive the selected plan index + cached
           // metadata and convert that plan into a ShortsScript.
           const planIdxRaw = fd.get("selectedPlanIdx") as string;
+          const sourceChannel = (fd.get("videoChannel") as string) || "";
+          const sourceTitle = (fd.get("videoTitle") as string) || "";
+
+          // ── Feature 030: V3 하이브리드 렌더 분기 ────────────────────────────────
+          const hybridMode = (fd.get("hybridMode") as string) === "on";
+          if (hybridMode) {
+            const hybridPlansJson = (fd.get("hybridPlansJson") as string) || "";
+            const videoPath = (fd.get("videoPath") as string) || "";
+            if (!hybridPlansJson || planIdxRaw === null || !videoPath) {
+              send("error", {message: "하이브리드 기획안 정보가 없습니다 (hybridPlansJson / selectedPlanIdx / videoPath 필수)"});
+              ctrl.close(); return;
+            }
+            rawPath = "";
+            send("progress", {message: `📺 V3 하이브리드 기획안 #${parseInt(planIdxRaw)+1} 선택 — 렌더 시작`});
+            let mp4Result: any;
+            try {
+              mp4Result = await withStage("V3 하이브리드 렌더 (ffmpeg + Gemini TTS)", 300, async () => JSON.parse(await py(`
+import sys,json,time
+sys.path.insert(0,'${ROOT}')
+from pathlib import Path
+from src.analyzer.hybrid_plan_models import HybridShortsPlan
+from src.video.hybrid_renderer import render_hybrid_shorts
+from src.config.settings import DATA_DIR
+plans_raw = json.loads(r"""${hybridPlansJson}""")
+idx = int(${parseInt(planIdxRaw)})
+plan = HybridShortsPlan.from_dict(plans_raw[idx])
+video_src = Path(${JSON.stringify(videoPath)})
+out_dir = DATA_DIR / 'political_pro' / f'hybrid_{int(time.time())}'
+mp4 = render_hybrid_shorts(
+  plan=plan,
+  source_video=video_src,
+  output_dir=out_dir,
+  title=${JSON.stringify(sourceTitle)},
+)
+size_mb = round(mp4.stat().st_size / (1024*1024), 1)
+dur_sec = 0.0
+try:
+  import subprocess as _sp
+  probe = _sp.run(
+    ["ffprobe","-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1", str(mp4)],
+    capture_output=True, text=True
+  )
+  dur_sec = float(probe.stdout.strip())
+except Exception:
+  pass
+print(json.dumps({"path": str(mp4), "size_mb": size_mb, "duration": round(dur_sec, 1)}))
+`)));
+            } catch (e: any) {
+              send("error", {message: `V3 하이브리드 렌더 실패: ${(e?.message || String(e)).slice(0, 400)}`});
+              ctrl.close(); return;
+            }
+            send("progress", {message: `✅ V3 하이브리드 렌더 완료 (${mp4Result.size_mb}MB, ${mp4Result.duration}초)`});
+            send("done", {result: {
+              videoPath: mp4Result.path,
+              thumbnailPath: "",
+              title: sourceTitle || "V3 하이브리드 쇼츠",
+              emotion: "angry",
+              duration: mp4Result.duration || 0,
+              imageCount: 0,
+              videoCount: 0,
+              cost: 0,
+              sourceType: "political_pro",
+            }});
+            ctrl.close();
+            return;
+          }
+          // ── V2 기존 흐름 ────────────────────────────────────────────────────────
+
           const plansJson = fd.get("plansJson") as string;
           const ytUrl = (fd.get("youtubeUrl") as string) || "";
           const videoPath = (fd.get("videoPath") as string) || "";
           const videoDurationSec = parseFloat((fd.get("videoDurationSec") as string) || "0") || 0;
-          // Feature 009: 출처 표시용 채널/영상 제목 (Phase 1 plans API 응답에서 전달)
-          const sourceChannel = (fd.get("videoChannel") as string) || "";
-          const sourceTitle = (fd.get("videoTitle") as string) || "";
           if (!plansJson || planIdxRaw === null || planIdxRaw === undefined) {
             send("error", {message: "정치 기획안 정보가 없습니다 (plansJson / selectedPlanIdx 필수)"});
             ctrl.close(); return;
@@ -417,6 +485,9 @@ script=plan_to_script(
 # Resolve the saved path back from the most recent file matching slug
 from src.config.settings import DATA_SCRIPTS_DIR
 saved=sorted(DATA_SCRIPTS_DIR.glob("*_political_pro.json"), key=lambda p: p.stat().st_mtime)[-1]
+# P2: scene 0이 원본 클립(voice_text=="")이면 hook_clip_duration 노출
+_hook=script.scenes[0] if script.scenes else None
+hook_clip_dur=_hook.duration if (_hook and not _hook.voice_text) else 0.0
 print(json.dumps({
   "title": script.metadata.title,
   "emotion": script.metadata.emotion_type,
@@ -429,6 +500,7 @@ print(json.dumps({
   "youtube_url": ${JSON.stringify(ytUrl)},
   "plan_source_type": getattr(plan, "source_type", "youtube"),
   "youtube_search_keywords": list(getattr(plan, "youtube_search_keywords", ())),
+  "hook_clip_duration": hook_clip_dur,
 }))`)));
           send("progress", {message: `✅ 스크립트 변환 완료 (${a.scenes}씬, ${a.duration}초)`});
         } else {
@@ -616,6 +688,8 @@ print(json.dumps({"scenes":s["scenes"]}))`));
               // Feature 023: topic 모드 식별 + 씬별 검색 키워드 (Phase 2 재렌더 시 사용)
               planSourceType: a.plan_source_type || "youtube",
               youtubeSearchKeywords: a.youtube_search_keywords || [],
+              // P2 (030): 원본 발언 훅 클립 지속시간 (0이면 기존 TTS 훅)
+              hookClipDuration: a.hook_clip_duration || 0,
             };
           }
           send("done", {result: reviewPayload});
@@ -742,6 +816,8 @@ print(json.dumps({"path":str(o),"size":round(o.stat().st_size/(1024*1024),1),"th
             // Feature 023
             planSourceType?: string;
             youtubeSearchKeywords?: string[];
+            // P2 (030): 원본 훅 클립 지속시간 (0이면 기존 TTS 훅)
+            hookClipDuration?: number;
           };
           try {
             meta = JSON.parse(fd.get("politicalProMeta") as string);
@@ -852,19 +928,29 @@ from src.dem_shorts.editor.segment_cutter import cut_segment
 src_video=Path(${JSON.stringify(meta.videoPath)})
 clip_start=${meta.clipStartSec}
 clip_end=${meta.clipEndSec}
-clip_duration=max(0.1, clip_end - clip_start)
 out_dir=src_video.parent
 timings=[t for t in json.loads(r"""${timingsJsonPP}""") if t["scene_id"]!=-1]
+ts=int(time.time())
+clips=[]
+# P2: 원본 훅 클립 (scene 0, mute=False) — TTS 타이밍과 별도로 먼저 컷
+hook_dur=float(${meta.hookClipDuration || 0})
+if hook_dur > 0:
+  hook_out=out_dir/f"scene_{ts}_00.mp4"
+  hook_end=min(clip_start+hook_dur, clip_end)
+  cut_segment(input_path=src_video, output_path=hook_out, start_sec=clip_start, end_sec=hook_end, mute=False)
+  clips.append({"scene_id": 0, "video_path": str(hook_out)})
+  tts_clip_start=min(clip_start+hook_dur, clip_end)
+else:
+  tts_clip_start=clip_start
+tts_clip_duration=max(0.1, clip_end - tts_clip_start)
 if not timings:
-  print(json.dumps([]))
+  print(json.dumps(clips))
 else:
   tts_total_ms=max(t["end_ms"] for t in timings)
-  ts=int(time.time())
-  clips=[]
   for t in timings:
     sid=t["scene_id"]
-    ns=clip_start+(t["start_ms"]/tts_total_ms)*clip_duration
-    ne=clip_start+(t["end_ms"]/tts_total_ms)*clip_duration
+    ns=tts_clip_start+(t["start_ms"]/tts_total_ms)*tts_clip_duration
+    ne=tts_clip_start+(t["end_ms"]/tts_total_ms)*tts_clip_duration
     out=out_dir/f"scene_{ts}_{sid:02d}.mp4"
     # political_pro: TTS가 메인 음성이므로 영상 음성은 mute (중첩·에코 방지)
     cut_segment(input_path=src_video, output_path=out, start_sec=ns, end_sec=ne, mute=True)

@@ -457,7 +457,8 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
         out_dir = DATA_DIR / "political_pro" / f"{ts}_cli_topic"
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        print(f"🤔 3개 기획안 생성 중 (topic 모드, Hybrid: Gemini + Claude)...",
+        category = getattr(args, "category", "political")
+        print(f"🤔 3개 기획안 생성 중 (topic 모드, category={category}, Hybrid: Gemini + Claude)...",
               file=sys.stderr)
         try:
             result = generate_three_plans_from_topic(
@@ -465,6 +466,7 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
                 tone=getattr(args, "tone", "분노·격앙"),
                 details=getattr(args, "details", "") or "",
                 output_dir=out_dir,
+                category=category,
             )
         except PoliticalPlannerError as e:
             print(f"❌ topic 기획안 생성 실패: {e}", file=sys.stderr)
@@ -526,6 +528,94 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
         encoding="utf-8",
     )
 
+    use_v3_hybrid = getattr(args, "hybrid", False)
+
+    if use_v3_hybrid:
+        # ── V3 하이브리드 포맷 (Feature 030) ──────────────────────────────
+        from src.analyzer.hybrid_planner import (
+            HybridPlannerError,
+            generate_three_hybrid_plans,
+        )
+        from src.video.hybrid_renderer import render_hybrid_shorts
+
+        print("🤔 V3 하이브리드 기획안 3개 생성 중 (Gemini + Claude)...", file=sys.stderr)
+        try:
+            hybrid_result = generate_three_hybrid_plans(
+                youtube_url=url,
+                transcript=transcript,
+                video_title=yt_title,
+                video_duration_sec=duration_sec,
+                video_path=str(vp),
+                transcript_path=str(tp),
+                output_dir=out_dir,
+                video_channel=yt_channel,
+            )
+        except HybridPlannerError as e:
+            print(f"❌ V3 기획안 생성 실패: {e}", file=sys.stderr)
+            return 5
+
+        if args.plans_only:
+            print(_json.dumps(hybrid_result.to_dict(), ensure_ascii=False))
+            return 0
+
+        print("\n────────────────────────────────────────", file=sys.stderr)
+        for i, p in enumerate(hybrid_result.plans):
+            tts_b = sum(b.duration_sec for b in p.all_beats() if b.kind == "tts")
+            orig_b = sum(b.duration_sec for b in p.all_beats() if b.kind == "original")
+            print(
+                f"[Plan {i + 1}] angle={p.angle}\n"
+                f"  주제: {p.topic}\n"
+                f"  Hook: {p.hook.subtitle!r}\n"
+                f"  TTS {tts_b:.0f}s / 원본 {orig_b:.0f}s / 총 {tts_b + orig_b:.0f}s\n",
+                file=sys.stderr,
+            )
+        print("────────────────────────────────────────", file=sys.stderr)
+
+        if args.interactive:
+            try:
+                sel = int(input("어떤 V3 기획안으로 영상을 만들까요? (1/2/3): ").strip())
+            except (ValueError, EOFError):
+                print("❌ 잘못된 입력", file=sys.stderr)
+                return 2
+            plan_idx = sel - 1
+        elif args.plan_idx is not None:
+            plan_idx = args.plan_idx
+        else:
+            print("❌ --plan-idx 또는 --interactive 필요", file=sys.stderr)
+            return 2
+
+        if plan_idx not in (0, 1, 2):
+            print(f"❌ plan-idx 0/1/2 범위 외 ({plan_idx})", file=sys.stderr)
+            return 2
+
+        hybrid_plan = hybrid_result.plans[plan_idx]
+        print(f"✅ V3 Plan {plan_idx + 1} 선택됨 — {hybrid_plan.topic}", file=sys.stderr)
+
+        print("🎬 V3 하이브리드 렌더 중...", file=sys.stderr)
+        try:
+            mp4 = render_hybrid_shorts(
+                plan=hybrid_plan,
+                source_video=vp,
+                output_dir=out_dir,
+                title=yt_title,
+            )
+        except Exception as e:
+            print(f"❌ V3 렌더 실패: {e}", file=sys.stderr)
+            return 7
+
+        size_mb = mp4.stat().st_size / (1024 * 1024)
+        print(
+            f"\n📁 출력: {mp4} ({size_mb:.1f}MB, 하이브리드 V3)",
+            file=sys.stderr,
+        )
+        print(
+            "⚠️  주의: 출력은 자동 생성 결과입니다. 게시 전 반드시 사용자 검수가 필요합니다.",
+            file=sys.stderr,
+        )
+        print(str(mp4))
+        return 0
+
+    # ── V2 기존 파이프라인 ─────────────────────────────────────────────────
     print(f"🤔 3개 기획안 생성 중 (Hybrid: Gemini + Claude)...", file=sys.stderr)
     try:
         result = generate_three_plans(
@@ -609,6 +699,13 @@ def cmd_political_pro(args: argparse.Namespace) -> int:
         print(f"❌ Gemini TTS 실패: {e}", file=sys.stderr)
         return 6
     print(f"✅ 음성 합성 완료", file=sys.stderr)
+
+    # 실측 무음 정렬 (2026-06-30): Gemini TTS는 전체를 한 번에 합성해 (1) 발화 뒤
+    # 긴 무음이 붙고 (2) 글자수 비례 타이밍이 발화 속도·쉼·숫자에 따라 밀린다.
+    # 앞뒤 무음을 트림하고 씬 경계를 실제 무음 구간에 스냅해 자막-음성을 맞춘다.
+    from src.tts.silence_align import align_timings_to_silence
+    audio_path, timings = align_timings_to_silence(audio_path, timings, out_dir=out_dir)
+    print(f"✅ 무음 정렬 완료 (자막-음성 동기화)", file=sys.stderr)
 
     print(f"✂️ 씬 클립 분할 (9:16)...", file=sys.stderr)
     from src.dem_shorts.editor.segment_cutter import cut_segment
@@ -699,6 +796,43 @@ def cmd_daily_briefing(args: argparse.Namespace) -> int:
         f"\n📁 결과: {BRIEFING_DATA_DIR / result.date}",
         file=sys.stderr,
     )
+    return 0
+
+
+def cmd_cleanup(args: argparse.Namespace) -> int:
+    """Handle the 'cleanup' subcommand — data/ 산출물 정리 (dry-run 기본).
+
+    temp/tmp 24시간, 중간산출물(images/videos/audio/natv_clips) keep_days 경과
+    파일만 대상. outputs/raw/scripts/tts_cache 등은 절대 건드리지 않음.
+    """
+    from src.config.settings import DATA_DIR
+    from src.maintenance.cleanup import execute_cleanup, scan_cleanup_targets
+
+    report = scan_cleanup_targets(DATA_DIR, keep_days=args.keep_days)
+    if not report.targets:
+        print("✅ 정리 대상 없음")
+        return 0
+
+    total_mb = report.total_bytes / (1024 * 1024)
+    print(f"🧹 정리 대상: {len(report.targets)}개 파일, {total_mb:.1f} MB")
+    for t in report.targets[:20]:
+        rel = t.path.relative_to(DATA_DIR)
+        print(f"   [{t.category}] data/{rel} ({t.age_days:.0f}일 경과)")
+    if len(report.targets) > 20:
+        print(f"   ... 외 {len(report.targets) - 20}개")
+
+    if not args.apply:
+        print("\nℹ️  dry-run 모드 — 실제 삭제하려면 --apply 를 추가하세요")
+        return 0
+
+    result = execute_cleanup(report)
+    freed_mb = result.freed_bytes / (1024 * 1024)
+    print(f"\n✅ {len(result.deleted)}개 삭제, {freed_mb:.1f} MB 확보")
+    if result.errors:
+        print(f"⚠️  {len(result.errors)}개 삭제 실패:", file=sys.stderr)
+        for err in result.errors:
+            print(f"   {err}", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -1398,6 +1532,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="추가 상세 정보 (source-type=topic 일 때 사용)",
     )
     political_pro_parser.add_argument(
+        "--category", type=str, choices=["political", "economic"], default="political",
+        help="기획 도메인: political(기본) / economic(경제쇼츠, source-type=topic 전용)",
+    )
+    political_pro_parser.add_argument(
         "--plan-idx", type=int, choices=[0, 1, 2], default=None,
         help="비인터랙티브 모드: 사용할 plan 인덱스 (0/1/2)",
     )
@@ -1421,6 +1559,10 @@ def build_parser() -> argparse.ArgumentParser:
     political_pro_parser.add_argument(
         "--video-gem", type=str, metavar="KEY", default=None,
         help="영상 생성에 사용할 Gem 키 (e.g. news, drama).",
+    )
+    political_pro_parser.add_argument(
+        "--hybrid", action="store_true",
+        help="V3 하이브리드 포맷: 원본 발언(50%%) + TTS 논평(50%%) 교차 편집 (Feature 030)",
     )
 
     # crawl subcommand (P2 placeholder)
@@ -1460,6 +1602,20 @@ def build_parser() -> argparse.ArgumentParser:
     # tiktok-auth subcommand
     subparsers.add_parser(
         "tiktok-auth", help="TikTok API OAuth 인증 (최초 1회)"
+    )
+
+    # cleanup subcommand (Feature 026) — data/ 산출물 정리
+    cleanup_parser = subparsers.add_parser(
+        "cleanup",
+        help="data/ 정리 — temp 24시간, 중간산출물 30일 경과 파일 삭제 (dry-run 기본)",
+    )
+    cleanup_parser.add_argument(
+        "--apply", action="store_true",
+        help="실제 삭제 실행 (미지정 시 dry-run으로 대상만 출력)",
+    )
+    cleanup_parser.add_argument(
+        "--keep-days", type=int, default=30, dest="keep_days",
+        help="중간산출물(images/videos/audio/natv_clips) 보관 일수 (default: 30)",
     )
 
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")
@@ -1528,6 +1684,7 @@ def main() -> int:
         "celebrity": cmd_celebrity,
         "political-pro": cmd_political_pro,
         "daily-briefing": cmd_daily_briefing,
+        "cleanup": cmd_cleanup,
     }
 
     handler = commands.get(args.command)

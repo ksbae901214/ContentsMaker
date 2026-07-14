@@ -138,8 +138,21 @@ class DeevidGenerator(VideoGeneratorBase):
                     video_url, output_path, prompt, duration, resolution
                 )
             except PWTimeout as exc:
+                from src.video_gen.browser_diagnostics import (
+                    diagnose_page_failure,
+                    format_diagnosis,
+                )
+
+                diag = await diagnose_page_failure(
+                    page, login_button=SELECTORS.get("login_button")
+                )
                 raise DeevidError(
-                    f"deevid.ai 페이지 작업 시간 초과: {exc}"
+                    format_diagnosis(
+                        provider="deevid",
+                        action=f"페이지 작업 시간 초과 ({exc})",
+                        diagnosis=diag,
+                        relogin_cmd="python3 -m src.main deevid_login",
+                    )
                 ) from exc
             finally:
                 await ctx.close()

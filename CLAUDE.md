@@ -17,6 +17,11 @@ npm run build                            # Production build
 python3 -m pytest tests/ -v             # All tests
 python3 -m pytest tests/test_analyzer.py -v   # Single file
 python3 -m pytest tests/test_models.py::test_scene_from_dict -v  # Single test
+python3 -m pytest tests/dem_shorts/ -v        # Dem-Shorts subsystem tests
+python3 -m pytest tests/jpolitics/ -v         # 정치쇼츠 V3 subsystem tests
+
+# Frontend component tests (Vitest + jsdom)
+npm run test:ui                          # Runs app/components/__tests__/**
 
 # Lint
 ruff check .                             # Python lint
@@ -39,6 +44,17 @@ python3 -m src.main deevid_login                   # One-time deevid.ai browser 
 python3 -m src.main gemini_login                   # One-time Gemini web login (Imagen 4 / Veo 3)
 python3 -m src.main youtube-auth                   # One-time YouTube OAuth
 python3 -m src.main tiktok-auth                    # One-time TikTok OAuth
+python3 -m src.main political-pro <YouTube URL>    # 정치 숏츠: 3 기획안 비교 → 검수 → 영상 (Feature 009)
+python3 -m src.main political-pro <YouTube URL> --hybrid  # V3 하이브리드: 원본 발언 50% + TTS 논평 50% (Feature 030)
+python3 -m src.main daily-briefing                 # 어제(KST) 정치 이슈 수집 → 클러스터링 → 점수화 → 기획안
+python3 -m src.main cleanup                         # data/ 산출물 정리 (src/maintenance/cleanup.py)
+python3 -m src.main gems list                       # Gemini Gems 프리셋 목록
+python3 -m src.main gems show-prompt webtoon --kind image  # Gem 지침 텍스트 출력 (붙여넣기용)
+
+# Subsystem CLIs (own entry points, NOT under src.main)
+python3 -m src.jpolitics.main run <YouTube URL>    # 정치쇼츠 V3 모먼트 직캠 (detect/cut/render, Feature 027)
+python3 -m src.dem_shorts.cli db-init              # Dem-Shorts Studio: SQLite 마이그레이션 + seed
+python3 -m src.dem_shorts.cli poll-natv            # NATV 채널 폴링 → source_videos upsert (그 외 download/score/stt/diarize/gate ...)
 
 # Install
 pip install -r requirements.txt          # Python deps
@@ -62,8 +78,8 @@ Input (screenshot/URL/text/topic) → BlindPost or TopicInput JSON (data/raw/)
 
 ### Two Entry Points
 
-1. **Web UI** (`app/`): Next.js 16 app. Main generation endpoint is `POST /api/generate` which streams progress via SSE.
-2. **CLI** (`src/main.py`): Python CLI with subcommands (`image`, `manual`, `analyze`, `tts`, `render`, `pipeline`).
+1. **Web UI** (`app/`): Next.js 16 app. The general-pipeline generation endpoint is `POST /api/generate` (SSE progress). Major feature subsystems mount their own UI + API: `app/jpolitics/` (정치쇼츠 V3), `app/dem-shorts/` (Dem-Shorts Studio), `app/daily-briefing/` (Daily Briefing), plus `app/api/political-pro/`, `app/api/lawmaker/`, etc.
+2. **CLI** (`src/main.py`): main Python CLI — `image`, `manual`, `url`, `analyze`, `tts`, `render`, `pipeline`, `celebrity`, `political-pro`, `daily-briefing`, `cleanup`, `gems`, plus `*-login` / `*-auth`. Two subsystems have **separate** CLI entry points: `python3 -m src.jpolitics.main` and `python3 -m src.dem_shorts.cli`.
 
 ### Python Backend (`src/`)
 
@@ -77,6 +93,10 @@ Input (screenshot/URL/text/topic) → BlindPost or TopicInput JSON (data/raw/)
 | `video_gen/` | AI video generation | `seedance_gen.py` (API), `deevid_gen.py` (browser automation, Veo 3.1), `gemini_web_video_gen.py` (Phase 2B: Veo 3 via gemini.google.com web), `factory.py` (provider selection), `base.py` (abstract) |
 | `editor/` | Scene editing | `scene_ops.py` (split/merge/reorder/resize), `batch.py`, `project.py`, `translator.py`, `template.py` |
 | `upload/` | Platform upload | `youtube_uploader.py` (YouTube Data API v3 resumable upload), `tiktok_uploader.py`, `metadata_generator.py` (auto-generates title/description/tags/hashtags from `ShortsScript`) |
+| `jpolitics/` | 정치쇼츠 V3 (Feature 027) | Self-contained: `main.py` CLI (detect/cut/render/run), `analyzer/moment_detector.py`, `models/`, `video/` (clip_maker, captions, renderer), `api_bridge.py` for the web UI. "모먼트 직캠" — detect viral moments in a YouTube clip → cut → Remotion render |
+| `briefing/` | Daily Briefing | `naver_news_collector.py` + `youtube_collector.py` → `issue_clusterer.py` → `scorer.py` → `plan_runner.py`. Collects yesterday's (KST) political issues, clusters, scores, drafts plans. Frozen dataclasses in `models.py` |
+| `dem_shorts/` | Dem-Shorts Studio | Largest subsystem, **SQLite-backed** (`db/` + migrations). Pipeline: source collection → STT (`diarization.py`) → speaker ID → `scoring.py` (dem_score) → `ranking/` (Google Trends / Naver DataLab / Wikipedia / YouTube metrics) → `compliance/` gate (election guard + keyword/LLM guardrails) → `editor/` → `renderer.py`. Own CLI `cli.py`, frozen dataclasses in `models/` |
+| `maintenance/` | Housekeeping | `cleanup.py` — prunes `data/` artifacts (backs the `cleanup` CLI command) |
 | `config/settings.py` | Global paths & constants | `PROJECT_ROOT`, `DATA_*_DIR`, `CLAUDE_TIMEOUT_SECONDS=1800`, `MAX_SCENE_DURATION_SECONDS=5.0` |
 
 ### Remotion Video (`src/video/remotion/`)
@@ -119,6 +139,7 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 - **All Python data models are frozen dataclasses** (immutable). Create new instances instead of mutating.
 - **Python modules import from `src.*`** (e.g., `from src.config.settings import PROJECT_ROOT`). The project root is on `PYTHONPATH` via `pytest.ini`.
 - **Assets flow through `public/`** — renderer copies audio/images/BGM/SFX to `public/` before Remotion render, then cleans up temp files after.
+- **Per-scene SFX is globally OFF (soft-disabled 2026-06-12, commit `8c1bfef`)** — `renderer.py` forces `enable_sfx=False`/`auto_sfx=False`, `app/api/generate` & `rerender` pin `useSfx=false` and ignore the client toggle, and the SFX `<Audio>` block is removed from `ShortsComposition.tsx`. Assets/code are preserved for re-enable: `Scene.sfx` field, `SfxConfig`, `src/video/sfx_matcher.py`, `SfxPicker.tsx`, `data/sfx/`, `public/sfx/`. Do not "re-wire" SFX unless explicitly asked; see `prompt_plan.md` (029) for the rationale and re-enable steps.
 - **Shared prompt guards** — `src/illustrator/image_constants.py` (NO_TEXT_GUARD / PHOTO_STYLE_PREFIX / PHOTO_STYLE_FOOTER / ANATOMY_GUARD) and `src/video_gen/motion_prompt_builder.py` (`build_motion_prompt`) are the **single source of truth** for image/video prompt guards. Both the web UI (`app/api/generate/route.ts`) and any e2e scripts must import from these modules, not duplicate the guards locally.
 - **snake_case ↔ camelCase boundary** — Python uses snake_case, Remotion/TS uses camelCase. The `renderer.py` converts at the boundary.
 - **Per-scene TTS timing** — `generate_voice_with_timing()` returns `scene_timings` (start_ms/end_ms per scene) for precise audio-video sync. Scene ID `-1` is the outro.
@@ -202,6 +223,18 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 030 조회수 개선 P1/P3/P4 (2026-07-03):
+  - **P1 제목 엔진**: `ShortsPlan.yt_title: str = ""` 신규 필드. Stage A 프롬프트에 "[악역]-[응징]-[주인공]" 15~30자 훅 제목 규칙. `plan_to_script()`: `yt_title or topic` 우선.
+  - **P3 탈보도체**: "보도체 한 문장 (~했습니다 고정)" → "대립 서사체 (주장→반박→역공 아크, 다양한 문말 허용)". `STAGE_B_SYSTEM_PROMPT` / TOPIC / ECONOMIC 3종 갱신.
+  - **P4 길이 단축**: 나레이션 4~7개 (22~35초), CTA 2초, 총 40초 캡.
+- 030 정치쇼츠 V3 하이브리드 포맷 — Phase D/E 완료 (2026-07-03):
+  - `src/analyzer/hybrid_plan_models.py` — `HybridBeat`/`HybridShortsPlan`/`ThreeHybridPlansResult` 완성
+  - `src/analyzer/hybrid_planner.py` — `generate_three_hybrid_plans()`: Gemini Stage A → Claude Stage B × 3 angles
+  - `src/video/hybrid_renderer.py` — `render_hybrid_shorts()`: per-beat Gemini Charon TTS + ffmpeg concat. edge-tts 폴백.
+  - `src/main.py` — `political-pro --hybrid` 플래그: V3 하이브리드 파이프라인 분기 (미지정 시 V2 보존)
+  - `tests/test_hybrid_plan_models.py` — 51 tests (HybridBeat·HybridShortsPlan 검증/직렬화 round-trip)
+  - **웹 UI 토글 (2026-07-03)**: `app/api/political-pro/hybrid-plans/route.ts` (신규) + `app/components/HybridPlanPicker.tsx` (신규) + `app/page.tsx` (V2/V3 토글·HybridPlanPicker) + `app/api/generate/route.ts` (`hybridMode=on` → `render_hybrid_shorts()`)
+  - 검증: pytest 1458 passed / 0 failed, Next.js build 49/49
 - 010-jpolitics-v3-isolated: Added Python 3.11+ (백엔드), TypeScript 5.x + React 19 / Next.js 16 (프론트엔드), Remotion 4.x (영상 렌더링, 독립 패키지)
 - 014: Gemini 통합 Phase 1A–4 (초안, 미통합)
   - Phase 1A: `gemini_youtube_transcriber.py` — Gemini Files API로 transcript 추출 (Whisper 대체, 20~40초). 폴백 체인: VTT → Gemini → Whisper.

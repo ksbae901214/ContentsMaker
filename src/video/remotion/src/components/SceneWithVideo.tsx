@@ -44,6 +44,9 @@ export const SceneWithVideo: React.FC<SceneWithVideoProps> = ({
           style={{
             width: "100%",
             height: "100%",
+            // 2026-06-29 사용자 피드백: contained 모드의 contain(레터박스)는 16:9
+            // 원본을 박스 안에 작게 띄워 가운데 너무 작게 보였음. cover로 전환해
+            // 박스(insets로 정의된 영역)를 꽉 채움 — 인물이 크게 잡히고 좌우만 크롭.
             objectFit: "cover",
           }}
         />

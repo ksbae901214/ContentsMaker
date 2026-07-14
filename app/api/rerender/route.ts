@@ -66,7 +66,9 @@ export async function POST(req: NextRequest) {
   // Default to ON when omitted (backward compatibility). Only false explicitly
   // disables; any truthy / absent value keeps the existing behavior.
   const safeTransitions = useTransitions === undefined ? true : Boolean(useTransitions);
-  const safeSfx = useSfx === undefined ? true : Boolean(useSfx);
+  // SFX globally disabled (2026-06-12) — client request ignored, renderer enforces.
+  void useSfx;
+  const safeSfx = false;
 
   const enc = new TextEncoder();
 

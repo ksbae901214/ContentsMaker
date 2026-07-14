@@ -2,6 +2,362 @@
 
 > 블라인드 / NATV / 정치 / 셀럽 영상을 YouTube Shorts로 자동 변환하는 파이프라인
 
+**마지막 업데이트**: 2026-07-14
+
+---
+
+## 🚧 신규: 정치쇼츠 V2 (수동 템플릿) 조회수 개선 (031) — 2026-07-14
+
+> 사용자 요청: "현재 정치쇼츠V2가 딱 좋은데 이걸 좀더 개선시켜서 더 조회수를 많이 얻게끔 할수 있는 방법이 있을까? 기획해줘"
+> **상태**: ✅ Phase 1~3 구현 + 실전 검증 2회 + **사용자 확정: 앞으로 정치쇼츠는 V2.1이 표준** (2026-07-14). V2는 무수정 보존(폴백).
+> 실전 검증: ① 이재명 부동산 편(훅=이재명 육성 6s "불로소득 공화국", `leejm_budongsan_v2_1.json`) ② 장윤기/보완수사권 편(훅=김민석 총리 육성 7s "폐지가 정부 기본 입장", `jang_police_power_v2_1.json`). 피드백 반영: 훅 문장 완결 필수(HOOK_MAX 5→10s), 훅 자막 하단 배치(`Scene.subtitle_position="bottom"` 신규 — script_models.py+SceneText.tsx).
+> 신규 파일: `scripts/render_political_v2_1.py`, `scripts/political_upload_package.py`, `scripts/analyze_channel_performance.py`, `scripts/political_v2_configs/_template_v2_1.json`, `tests/test_political_v2_1.py`(30), `tests/test_channel_performance.py`(19)
+> 검증: pytest 1510 passed / 0 failed (신규 49), ruff clean, 무음 패딩+타이밍 시프트 ffmpeg e2e 확인, V2 config 하위 호환 확인.
+> **핵심 판단**: 030의 코드 개선(P1~P4)은 자동 파이프라인(`political_planner.py` 경로)에만 적용됐고, 실제 제작에 쓰는 **수동 V2 템플릿(`scripts/render_political_v2.py`)에는 미반영**. 훅 씬이 여전히 TTS 낭독 + 전 클립 `mute=True`.
+> **구현 중 발견**: 자동 P2 경로(commit `9e9e347`)는 훅 클립을 mute=False로 컷하지만 **TTS `<Audio>`가 frame 0부터 재생되고 타이밍 시프트가 없어 훅 원본 음성과 TTS가 겹치는 잠재 버그** 존재. V2.1은 TTS mp3 앞에 훅 길이만큼 무음 패딩 + 타이밍 시프트로 Remotion 무수정 해결.
+
+### Phase 1 — 훅 씬 원본 발언 육성 (임팩트 최상, 난이도 중) — V2.1 신규 스크립트
+
+- **신규** `scripts/render_political_v2_1.py` (V2 기반, V2 파일 무변경): config `hook` 섹션(source/start_sec|frac/duration) 지정 시 scene 0 = 인물의 **실제 발언 오디오**(`cut_segment(mute=False)` + loudnorm) 0초 배치, `yt_title` 노란 자막 오버레이. TTS는 scene 1부터.
+- TTS mp3 앞 무음 패딩(adelay) + scene_timings 훅 길이 시프트. `use_intro_bgm=False`로 훅 육성 보호.
+- config 스키마 v2.1(`yt_title`/`hook`/`persons` 등) — `scripts/political_v2_configs/README.md`에 추가.
+
+### Phase 2 — 업로드 패키지 자동 생성 (난이도 하)
+
+- 렌더 완료 시 `upload_package.md` 생성: ① "[악역]-[응징]-[주인공]" 공식 제목 + A/B 대안 1개 ② 설명문 ③ #인물명 2~4개 해시태그 ④ 고정댓글 문안 ⑤ 권장 업로드 시각(평일 20~21시) ⑥ 썸네일 후보 프레임 3장.
+- FR-020 자동 업로드 차단 유지 — "복붙 준비물"만 생성.
+
+### Phase 3 — 성과 피드백 루프 CLI (난이도 중)
+
+- `scripts/analyze_channel_performance.py`: yt-dlp로 내 채널(UCYNNMfkMW_EZJBp514-DjaA) 쇼츠 전편 조회수·길이·제목 수집(공개 데이터, OAuth 불필요) → 제목 유형(hook형 vs 보도형)·길이 구간·훅 유형별 상관 리포트.
+- 030 검증 계획("2주 후 중앙값 비교")의 실행 도구.
+
+### 보류/운영 항목
+
+- Phase 4(펀치인 줌·씬 내 2컷, Remotion) — 이번 범위 제외, 추후 결정.
+- 운영 수칙(코드 무관): P0 업로드 리듬 복구(일 1~3편, 20~21시, 2~3주 무공백), 루프형 결말 문장 규칙. P5(직캠 전환)는 V2 포맷 유지 결정으로 제외.
+
+### 리스크
+
+- 중: 원본 발언 클립 오디오 품질(현장 잡음) → loudnorm + 클립 선정 시 음질 확인
+- 중: Gemini TTS 일 10회 쿼터 → 기존 캐시 폴백
+- 하: 리텐션 지표 API 미제공 → 조회수 프록시 + YouTube Studio 수동 확인
+
+### 검증 계획
+
+- Phase 1: 샘플 config 1편 e2e 렌더 → scene 0에서 원본 육성 재생·자막 오버레이 육안/청음 확인
+- Phase 2: 렌더 후 `upload_package.md` 필드 6종 생성 확인
+- Phase 3: 실제 채널 대상 실행 → 52편+ 수집·리포트 출력 확인
+- 적용 후 2주 P0 리듬 업로드 → 편당 조회수 중앙값(기존 ~1,300) 및 첫 48시간 조회수 비교
+
+---
+
+## 📊 신규: 조회수 부진 원인 분석 및 개선 계획 (030) — 2026-07-03
+
+> 사용자 요청: "생성한 영상들 조회수가 너무 떨어지는데 잘되는 쇼츠들을 분석하고 내 쇼츠와 차별점·개선안을 분석해줘"
+> **상태**: 분석 완료 (실측 기반). P1·P3·P4 구현 완료 (2026-07-03). P0(운영)·P2(훅 씬 개편)·P5(운영) 미착수.
+
+### 진단 (내 채널 실측: UCYNNMfkMW_EZJBp514-DjaA, 쇼츠 52편, 2026-07-03 yt-dlp)
+
+1. **업로드 공백 → 배포 붕괴 (가장 치명적)**: 6/18까지 일 1편 유지 시 편당 800~2,700회(최고 7,900회). **6/18→6/29 11일 공백** 직후 360→14→0→0→1회로 붕괴. 쇼츠 시드 테스트(Explore & Exploit)에서 채널이 탈락한 패턴.
+2. **제목이 훅이 아닌 주제 요약**: `src/analyzer/political_planner.py:1080` `title=plan.topic` — Stage A가 만든 hook은 제목에 미반영. 잘된 영상 제목은 질문·아이러니형("이름표만 바꾸면 살아날까?"), 망한 영상은 보도자료체("...특검팀 규모와 기간 설명").
+3. **나레이션 보도체 고정**: `political_planner_stage_b_prompt.py:90` "tts_text는 보도체 한 문장" → 전 씬 "~라고 밝혔습니다" 나열, 갈등 서사 없음.
+4. **훅 씬 = 제목 낭독**: scene 0(3초)이 타이틀 카드 낭독 — 첫 2초 스와이프 방어 실패.
+5. **길이 역행**: 잘된 영상 29~44초, 최근 망한 영상 41~56초 (30초 미만 리텐션 임계 ~65%, 30-60초 ~50%).
+
+### 벤치마크 실측 (2026-07-03, 상세는 세션 리서치 보고서)
+
+- 구독자 31만 정치일주(국회 질의 **직캠**) 쇼츠 최고 **500만 뷰**; 구독자 2.4천 민주픽도 30만 뷰 — 쇼츠는 채널 파워보다 클립 훅. TTS 브리핑형(NATV)은 정치 이슈여도 수만 뷰 천장.
+- 성공 제목 공식: **"[악역]을 [응징동사]한 [주인공]"** 3단 구조(참교육/사이다/제압/추궁), 실명 1~2개, 의문형·말줄임 클리프행어, 15~30자, #인물명 2~4개. "속보!/충격!"형은 천장 낮음.
+- 알고리즘(2025-26): 노출당 시청시간 중심, 첫 1~3초 스와이프율 결정적, 루프형 우대, 일 2~3편 일정 간격 + 평일 20~21시 직후 업로드 권장.
+- TTS 쇼츠 조건: 단일 고정 음성(브랜드화), 실클립/모션 배경(정적 슬라이드쇼는 실패 패턴), 자막 필수, 컷 리듬 빠르게.
+
+### 개선안 (우선순위 = 임팩트 × 난이도)
+
+| 순위 | 개선 | 코드 지점 | 난이도 |
+|---|---|---|---|
+| **P0** | 업로드 리듬 복구: 일 1~3편, 20~21시 직후, 최소 2~3주 무공백 (운영, 코드 무관) | — | 없음 |
+| **P1** ✅ | 제목 엔진 교체: `yt_title` 신규 필드(Stage A → `ShortsPlan`). `plan_to_script`에서 `yt_title or topic` 우선. Stage A 프롬프트에 "[악역]-[응징]-[주인공]" / 15~30자 / 실명 규칙 명시. | `political_plan_models.py`, `political_planner_stage_a_prompt.py`, `political_planner.py:1080` | 하 |
+| **P2** ✅ | 훅 씬 개편: scene 0 타이틀 카드 낭독 제거 → narrations[0].speaker≠""이면 원본 클립 mute=False + yt_title 자막 오버레이. 폴백(speaker 없음/topic)은 기존 TTS 훅 유지. | `political_planner.py`, `stage_b_prompt`, `generate/route.ts` | 중 |
+| **P3** ✅ | 나레이션 탈보도체: "보도체 한 문장" → "대립 서사체 (주장→반박→역공 아크, 다양한 문말 허용)" — STAGE_B_SYSTEM_PROMPT, STAGE_B_TOPIC_SYSTEM_PROMPT, STAGE_B_TOPIC_ECONOMIC_SYSTEM_PROMPT 모두 갱신. | `political_planner_stage_b_prompt.py` | 하 |
+| **P4** ✅ | 길이·결말: 나레이션 수 4~7개(22~35초), CTA 2초, 총 40초 캡(기존 60초). 프롬프트 + `plan_to_script` 동시 적용. | `stage_b_prompt`, `political_planner.py` CTA/duration | 하 |
+| **P5** | 형식 전환: TTS 브리핑(political_pro)보다 **jpolitics V3 모먼트 직캠** 비중 확대 — 직캠형이 실측상 천장 100배 | 리소스 배분 (기존 파이프라인 존재) | 운영 |
+
+### 검증 계획
+- P1~P4 적용 후 2주간 P0 리듬으로 업로드 → 편당 조회수 중앙값(기존 ~1,300) 및 첫 48시간 조회수 비교
+- 제목 A/B: 동일 이슈를 topic형 vs hook형 제목으로 비교 업로드
+
+---
+
+## ✅ 완료: 경제쇼츠 지원 (정치쇼츠 V2 파이프라인 확장) — 2026-07-02
+
+> 사용자 요청: "현재 정치쇼츠V2 에서는 정치 이야기를 주로 다루는데 경제쇼츠도 같이 다루고 싶어 기획해줘"
+> **상태 (2026-07-02)**: Phase 1~5 전체 구현 완료. 미확정 3항목 모두 권장안(토글/신규 3앵글/차분·분석적)으로 확정.
+> 검증: pytest 1399 passed / 0 failed (신규 76개 포함), Next.js build 성공(48/48 페이지), 정치 프롬프트 회귀 스냅샷(바이트 동일) 통과.
+
+### 핵심 판단
+파이프라인(주제→3안→스크립트→TTS→뉴스클립→Remotion)은 정치·경제가 동일. 달라지는 건 **프롬프트 페르소나·앵글·가드레일·감정톤**뿐 → 새 병렬 모듈 대신 **`category: "political" | "economic"` 파라미터 관통**(기본 political → 기존 동작 무변경).
+
+### 설계 결정 (권장안)
+| 항목 | 권장 | 대안 |
+|---|---|---|
+| 분기 방식 | `category` 파라미터를 프롬프트·모델·API·UI에 관통 | 별도 `economy_planner` 모듈/탭 |
+| UI | 기존 political_pro 탭에 **도메인 토글(정치/경제)** | 경제쇼츠 전용 탭 |
+| 경제 앵글 3종 | `wallet_impact`(내 지갑) / `cause_analysis`(원인) / `outlook_action`(전망·대응) | 기존 3앵글 재활용 |
+| 경제 톤 기본값 | `차분·분석적` | `분노·격앙` 유지 |
+| 감정/그라데이션 | 경제=`relatable`(청록·블루), 정치=기존 `angry`(레드) | 신규 emotion 추가(비권장) |
+| 가드레일 | 경제="특정 종목 매수/매도·투자 권유 금지, 수치엔 출처·기준시점 명시" | — |
+
+### 구현 단계 (모두 완료)
+- [x] **Phase 1 프롬프트 분기 (핵심)**: `political_planner_stage_a_prompt.py`·`_stage_b_prompt.py`의 `build_*_topic_prompt(..., category="political")` 추가 — `STAGE_A_TOPIC_ECONOMIC_SYSTEM_PROMPT`/`STAGE_B_TOPIC_ECONOMIC_SYSTEM_PROMPT` 신설(페르소나/앵글/가드레일 스왑). category 미지정 호출은 기존 문자열과 바이트 단위로 동일함을 테스트로 고정(회귀 방지).
+- [x] **Phase 2 플래너·모델**: `generate_three_plans_from_topic(..., category=...)` → `_generate_three_plans_topic_hybrid`/`_stage_a_topic_gemini`/`_stage_b_topic_claude`까지 관통. `ShortsPlan.category: Category = "political"` frozen 필드(+ `Angle`에 `wallet_impact`/`cause_analysis`/`outlook_action` 3종 추가) + to_dict/from_dict 양방향 + 레거시 plans.json(category 키 없음) 하위호환. `plan_to_script()`가 `plan.category`로 emotion(`angry`↔`relatable`)/gradient(청록·블루) 선택.
+- [x] **Phase 3 API·CLI**: `/api/political-pro/plans`(topic 모드) body에 `category` 추가, 미지정 시 political 기본 + 톤 기본값도 도메인별 자동 선택. `/api/generate`는 `plansJson`에 이미 `category`가 실려 있어 **무변경**으로 자동 관통 확인. `src/main.py political-pro --category {political,economic}`. `scripts/render_political_pro_topic.py`는 plans.json에서 category를 그대로 읽어 **무변경**으로 동작 확인.
+- [x] **Phase 4 UI**: `app/page.tsx` political_pro 탭 topic 모드에 정치/경제 토글 + 도메인별 톤 옵션(경제: 차분·분석적/위기·경고/공감·연대)·주제 placeholder·투자권유 금지 안내 배너. 탭 라벨 "🏛️ 정치·경제", 추천 카드 "정치·경제 숏츠 자동 생성".
+- [x] **Phase 5 테스트**: `tests/test_political_planner_category_prompt.py` 신규(프롬프트 category 분기 + 정치 회귀 바이트 동일), `test_political_plan_models.py`에 category round-trip/화이트리스트/레거시 호환 6건, `test_political_planner.py`에 `plan_to_script` emotion 선택 2건, `test_political_topic_plans.py`에 category 관통 2건 + 기존 mock 2건 시그니처 보정. 전체 pytest 1399 passed / Next.js build 48/48 페이지 / remotion·remotion_v3 tsc 0 errors.
+
+### 영향 파일 (실제 8개 + 테스트 4개)
+`political_planner_stage_a_prompt.py`, `political_planner_stage_b_prompt.py`, `political_plan_models.py`, `political_planner.py`, `app/api/political-pro/plans/route.ts`, `src/main.py`, `app/page.tsx` (+ `tests/test_political_planner_category_prompt.py` 신규, `test_political_plan_models.py`/`test_political_planner.py`/`test_political_topic_plans.py` 확장)
+
+### 리스크 (해소 상태)
+- ~~MEDIUM: `ShortsPlan` 필드 추가 시 기존 plans.json 역직렬화 하위호환~~ → `category` 키 없는 레거시 JSON도 `"political"` 기본값으로 정상 로드 (테스트로 고정)
+- ~~MEDIUM: 정치 프롬프트 회귀~~ → category 미지정 시 바이트 단위 동일 검증 통과
+- LOW-MEDIUM: 경제 콘텐츠 **투자권유 법적 가드레일** — 프롬프트에 강제했으나 게시 전 사람 검수는 여전히 필수 (UI 배너로 안내)
+- LOW: `relatable` 그라데이션/자막색 경제 톤 — 실제 렌더 샘플로 시각 확인은 다음 세션 과제
+
+### 복잡도: MEDIUM (실측: 계획과 일치)
+
+### 확정된 결정 (미확정 3항목 모두 권장안 채택)
+1. UI: **토글** (political_pro 탭 topic 모드 내 도메인 토글)
+2. 경제 앵글: **신규 3종** (`wallet_impact`/`cause_analysis`/`outlook_action`)
+3. 경제 톤 기본값: **차분·분석적**
+
+### 참고: 2026-07-02 경제 주제 e2e 선행 검증
+정치 파이프라인 topic 모드(tone=분노·격앙)로 "고유가지원금·6월 CPI 3.2%" 경제 쇼츠 1건 렌더 성공(55.9s, 12/12 뉴스클립). → 파이프라인 재사용 가능성 입증. 신규 파일: `scripts/render_political_pro_topic.py`(토픽 모드 CLI 렌더 재현). deno 2.9.1 설치(yt-dlp YouTube 추출 안정화).
+
+---
+
+## ✅ 진행 중→완료: 정치쇼츠 V3 — 하이브리드 포맷 (원본 발언 50% + TTS 논평 50%)
+
+> 사용자 요청: "TTS가 말하는 부분보다 첨부할 영상에서 말하는 내용을 직접 넣는 게 호응이 좋은 것 같다. 영상에서 말하는 내용 반 / TTS로 논평 반 이렇게 앞으로 제작하면 좋겠다"
+> **확정 사항**: 자막 폰트는 Remotion `SceneText.tsx`(Noto Sans KR)와 통일 — Pillow도 NotoSansCJKkr 사용
+
+### 핵심 설계
+
+| 항목 | V2 (기존) | **V3 (하이브리드)** |
+|---|---|---|
+| TTS 비중 | ~85% | ~50% |
+| 원본 발언 | 마지막 1개 (선택) | 본문에 2~3개 교차 |
+| BGM | 전 구간 | 원본 비트 중에는 mute |
+| 자막 폰트 | TTS 씬 = Noto Sans KR, 원본 씬 = AppleSDGothic | **모두 Noto Sans KR로 통일** |
+| Plan JSON | Narration tuple | HybridBeat tuple (kind="tts"/"original") |
+
+### Phase A — 데이터 모델 ✅ (`src/analyzer/hybrid_plan_models.py`)
+
+`HybridBeat` frozen dataclass: kind ∈ {"tts","original"} + 공통 duration_sec + 분기별 필드.
+`HybridShortsPlan` frozen dataclass: hook(TTS) + beats(교차) + cta(TTS) + angle + source_*.
+
+**검증 룰**
+- `original` 합산 18~30초 / `tts` 합산 18~30초 (50% ±5초 허용)
+- 전체 ≤ 50초 (outro 4초 + 여유)
+- 첫·마지막 비트는 반드시 TTS
+- 원본 비트 사이에 TTS 비트 필수
+
+### Phase B — Plan 생성 프롬프트 ✅ (2-stage hybrid)
+
+- **Stage A — Gemini** (`hybrid_planner_stage_a_prompt.py`): transcript → 인용가치 있는 원본 후보 4~6개 (`clip_start`, `clip_end`, `raw_text`, `quotability_score`)
+- **Stage B — Claude** (`hybrid_planner_stage_b_prompt.py`): HybridShortsPlan 조립 (각 TTS 논평은 바로 직전/직후 원본 비트에 대한 평가)
+- 3-plan 오케스트레이터 (`hybrid_planner.py`): `generate_three_hybrid_plans()`
+
+### Phase C — 렌더링 ✅ (`src/video/hybrid_renderer.py`)
+
+TTS 비트 = Gemini Charon per-beat TTS 합성 + 배경 mute. 원본 비트 = ffmpeg 컷(원본 음성 유지) + Pillow PNG 자막 overlay. `render_hybrid_shorts()` 최상위 오케스트레이터 추가. ffmpeg concat 재인코딩으로 codec 통일. 오디오 `loudnorm=I=-16:TP=-1.5:LRA=11`로 레벨 정합.
+
+### Phase D — CLI · 웹 UI ✅
+
+`python3 -m src.main political-pro <url> --hybrid` 플래그 완료. 웹 UI 토글 완료 (2026-07-03):
+- `app/api/political-pro/hybrid-plans/route.ts` (신규): YouTube 다운로드 + hybrid 기획안 3개 생성
+- `app/components/HybridPlanPicker.tsx` (신규): V3 기획안 표시 (비트 구성·TTS/원본 통계)
+- `app/page.tsx`: 🏛️V2일반/📺V3하이브리드 토글 (YouTube 모드 전용) + HybridPlanPicker 표시
+- `app/api/generate/route.ts`: `hybridMode=on` 분기 → `render_hybrid_shorts()` 호출 → SSE done
+
+### Phase E — Lock-in + 테스트 ✅
+
+`tests/test_hybrid_plan_models.py`: 51 tests (HybridBeat·HybridShortsPlan·ThreeHybridPlansResult 검증/직렬화). pytest 1458 passed / 0 failed. Next.js build 49/49.
+
+### 위험 등급
+
+| 위험 | 등급 | 완화책 |
+|---|---|---|
+| 원본 음질 편차 | HIGH | `loudnorm` + `afftdn` 노이즈 게이트 + SNR 필터링 |
+| Stage A가 좋은 후보 못 찾음 | HIGH | 후보 <2개면 V2로 자동 fallback (경고 표시) |
+| Charon↔원본 톤 단절 | MEDIUM | 비트 경계 50ms `acrossfade` |
+| Gemini 자막 보정 비용 | MEDIUM | `data/asr_cache/` 해시 캐시 |
+| 50/50 강제로 narrative 어색 | MEDIUM | ±5초 허용 |
+
+### 다음 세션 (E2E 검증)
+
+- 웹 UI 토글 완료 (2026-07-03). 실제 URL로 E2E 샘플 생성 후 품질 확인:
+  `python3 -m src.main political-pro <실제 URL> --hybrid --plan-idx 0`
+
+---
+
+---
+
+## ✅ 완료: 029 SFX(씬 전환 효과음) 소프트 비활성화 (2026-06-12)
+
+> 사용자 요청: "씬이 바뀔때마다 효과음 넣는 기능이 있는데 효과음을 아예 빼고 싶어"
+> 결정: 소프트 비활성화(코드·에셋·테스트 보존, 자동 할당·렌더만 OFF) — 향후 복구 가능
+> 정치 모드(jpolitics V3 / political_pro / 정치쇼츠 V2)는 이미 SFX OFF로 락인되어 있어 영향 없음
+
+### 변경 사항
+- **`src/video/renderer.py`** — `render_video()` 진입 직후 `enable_sfx = False; auto_sfx = False` 강제. CLI/API에서 어떤 값을 보내도 SFX는 들어가지 않음. `_strip_scene_effects(drop_sfx=True)`가 모든 씬의 `sfx`를 빈 튜플로 치환.
+- **`src/video/remotion/src/ShortsComposition.tsx`** — Per-scene SFX 재생 블록 제거(이중 안전망). `SfxConfig` TS 타입은 보존.
+- **`app/api/generate/route.ts`** — `useSfx = false` 고정, 클라이언트 토글 무시.
+- **`app/api/rerender/route.ts`** — `safeSfx = false` 고정.
+- **`app/page.tsx`** — `sfx` 초기값 `false`, "🔊 효과음" 체크박스 6곳 모두 숨김(주석 처리). state는 FormData 호환을 위해 보존.
+
+### 보존 항목 (재활성화 대비)
+- `SfxConfig` dataclass / `Scene.sfx` 필드 (`src/analyzer/script_models.py`)
+- `src/video/sfx_matcher.py` (자동 할당 모듈)
+- `app/components/SfxPicker.tsx` (수동 선택 UI)
+- `data/sfx/` (14개 합성 SFX) + `public/sfx/` (5개 QW-04 프로덕션 SFX + LICENSES.md)
+- `tests/test_sfx_matcher.py` (단위 테스트)
+- `scripts/generate_sfx.py`
+
+### 복구 방법
+1. `src/video/renderer.py`에서 `# SFX globally disabled` 주석 블록 3줄 제거
+2. `src/video/remotion/src/ShortsComposition.tsx`의 SFX 주석을 원래 `scriptData.scenes.map(...)` 블록으로 복원 (git log 참조)
+3. `app/api/generate/route.ts`와 `app/api/rerender/route.ts`의 `useSfx`/`safeSfx` 강제 라인 원복
+4. `app/page.tsx`의 `sfx` 초기값을 `true`로, 6개 체크박스 라벨 복원
+
+---
+
+## 🚧 진행 중: 028 AI 인플루언서 — `influencer` 모드 신설 (2026-06-12)
+
+> 기획 세션: 2026-06-12. 사용자 확정: "higgsfield를 사용하는 방식으로 진행" (fal.ai LoRA 스택 대신 Higgsfield 채택)
+> 근거: deep-research 2회 — ① 성공사례·플랫폼정책·수익화 (98개 주장 추출, 정책 6건 공식문서 3-0 확정) ② 프리미엄 캐릭터 일관성 기술 비교
+
+### 콘셉트 (확정)
+- **"힙업 루틴 전문 피트니스 + 오피스룩 직장인 일상" 듀얼 콘셉트**, 사실적 여성 AI 캐릭터, 성인 팔로워 타깃
+- **SFW 수위 고정** — Instagram 추천 제외(섀도밴)가 **계정 단위**로 작동함이 공식 확인됨(help.instagram.com/313829416281232). 비치는 옷 등 suggestive 판정 요소 금지를 코드 상수로 강제
+- 벤치마크: @fit_aitana (6개월 23.6만 팔로워, 월 평균 €3k·피크 €10k, 협찬 ~$1k/포스트 + Fanvue 구독). 전략 핵심 = 백스토리 있는 '인생 서사' 주간 대본화
+- 플랫폼: Instagram 주력(수동 업로드) + YouTube Shorts/TikTok 보조(기존 업로더 재사용, AI 라벨 의무 처리)
+
+### 기술 스택 (Higgsfield 단일 플랫폼)
+- **캐릭터 고정**: Soul ID 학습 (~$3/회, 15~20장) — LoRA 대체
+- **이미지 양산**: Soul 2.0 + Soul ID (패션/일상 프리셋 80+), 편집은 플랫폼 내 Nano Banana Pro
+- **영상 i2v**: 허브 내 Seedance 2.0(히어로 씬 — 멀티씬 캐릭터 일관성 1위) / Kling(대량 b-roll — 저단가)
+- **통합**: Higgsfield Cloud API (cloud.higgsfield.ai), 폴백 공식 MCP (higgsfield.ai/mcp)
+- 비용: 구독 Plus ~$34-49/월 (물량 증가 시 Ultra ~$84-129), Soul ID 학습 $3
+- OpenAI 미사용 (기존 방침 유지)
+
+### Phase
+- [ ] **Phase 0 — 셋업 + 캐릭터 캐스팅 (코드 최소)**: ① Higgsfield 구독 + Cloud API 키 발급(사용자 작업) + API 커버리지 확인(Soul ID 학습/Soul 2.0/영상이 API로 노출되는지 — 미노출 항목은 웹 UI 1회성 수동 + 생성만 API) ② 캐릭터 설정 문서(이름·백스토리·정체성 앵커 3종: 헤어/시그니처 패션/컬러 + SFW 수위 가이드라인) ③ 후보 시안 3~5종 생성 → 사용자 선택 → Soul ID 학습 → 일관성 실측 ④ 같은 캐릭터 컷으로 Seedance 2.0 vs Kling 영상 실측 비교
+- [ ] **Phase 1 — 이미지 파이프라인** (`src/influencer/`): `higgsfield_client.py`(Cloud API), `persona.py`(frozen dataclass, 수위 가드 상수), `content_planner.py`(주간 콘텐츠 캘린더 — Claude, 힙업 루틴 N + 오피스 일상 M + 서사 포스트), CLI `influencer` 서브커맨드
+- [ ] **Phase 2 — 영상 파이프라인**: i2v(Seedance 2.0/Kling) + 기존 Remotion 쇼츠 조립 재사용(정지컷 캐러셀 + 5초 모션 b-roll 혼합 포맷 — 운동 시연 양산은 AI 물리 한계로 회피)
+- [ ] **Phase 3 — 운영 도구**: 웹 UI 탭, YouTube/TikTok 업로더 연동 + AI 라벨 자동 처리, 자동 업로드 차단 가드(검수 필수, jpolitics 패턴 계승), 3줄 요약+해시태그 규칙 적용
+
+### 리스크
+- HIGH: Instagram 계정 단위 추천 제외(공식 확정) → 수위 상수 강제 + 게시 전 검수 게이트
+- HIGH: 계정 정지 — AI 라벨 명시에도 셀카 본인인증 단계 영구정지 사례(포럼) → 자연스러운 성장 패턴, 플랫폼별 계정 분리
+- MEDIUM: Higgsfield API 커버리지 불확실(Soul ID 학습이 API 미노출 가능성) → Phase 0에서 확인 후 통합 범위 확정
+- MEDIUM: 운동 동작 영상 물리 오류(Veo-3 스포츠 성공률 60%, arXiv 2512.14691) → Seedance 우선 + 승인 게이트
+- LOW: 크레딧 소진 → Ultra 전환 (Kling 무제한 옵션)
+
+---
+
+## 🚧 진행 중: 027 정치쇼츠 V3 재구축 — "모먼트 직캠" 포맷 (2026-06-11)
+
+> 기획 세션: 2026-06-11. 사용자 확정: "네" (결정사항 1~3 권고안 채택)
+> 근거: 벤치마크 실측 분석 — 겸손은힘들다 쇼츠(24만~280만뷰) 2편 프레임 분석, YTN 청문회 모먼트(26만뷰), 국회직캠(구독 207, 중앙값 1,200뷰)과 비교
+
+### 핵심 결정
+- **V2(political_pro) 무수정** — 안정 운영, lock-in 유지
+- **기존 V3(jpolitics, @김정치입니다 포맷) 전체 삭제** — 6,834줄 (src 2,209 + app 970 + tests 2,541 + remotion_v3 1,114)
+- **신규 V3 = 모먼트 직캠 포맷**: ①풀블리드(여백0) ②원본 음성(TTS 제거, --tts-bridge 옵션만) ③질문형 떡밥 훅 타이포 카드(첫 1~2초) ④감정 모먼트 검출(웃음·충돌·언성) ⑤실시간 발언 자막 ⑥질문형 제목+해시태그 설명란 분리
+- 격리 원칙 계승: V1/V2 파일 0 수정, read-only import만, page.tsx 버튼 1개
+- 데이터: data/jpolitics 산출물 보관 / data/jpolitics_reference 백업 후 삭제
+- 기존 V3 lock-in 메모리 7항목 폐기 (출처라벨 하단·효과음0·전환0은 신규에 계승)
+
+### 파이프라인
+YouTube URL → 다운로드+transcript(youtube_downloader 재사용) → Gemini 멀티모달 모먼트 검출 톱5 → 사용자 선택 → ffmpeg 컷+9:16 풀블리드 센터크롭(--crop-x 보정) → Remotion: 풀블리드+훅 타이포 카드+실시간 자막+출처 라벨 → 질문형 제목 3안+설명란 해시태그+고정댓글 질문 (업로드 수동)
+
+### Phase
+- [x] **Phase 0 (완료 2026-06-11)**: 기존 V3 삭제 (6,834줄 + reference 6.1MB, git 복구 가능), page.tsx 버튼 주석 처리(Phase 4에서 복원), lock-in 메모리 갱신. 회귀: 1283 passed + 빌드 성공
+- [x] **Phase 1 (완료 2026-06-11)**: 모먼트 검출 엔진 — `src/jpolitics/` 신규 (models/moment.py, analyzer/moment_detector.py + prompts.py, main.py CLI). 17 신규 테스트, 전체 1300 passed. **실 영상 E2E 검증**: YTN 청문회 영상에서 멀티모달이 웃음 모먼트(22~32s, conf 1.0) 정확 검출 + 질문형 훅 생성 확인. transcript 폴백 체인 동작 확인. Files API 간헐 FAILED 실측 → 2회 재시도 추가. 부수 수정: python-dotenv 미설치로 CLI에서 .env.local 미로딩이던 잠복 버그 해결(requirements.txt 추가)
+- [x] **Phase 2 (완료 2026-06-11)**: 클립 가공 — `src/jpolitics/video/clip_maker.py`(ffmpeg 재인코딩 9:16 크롭, ClipResult), `src/jpolitics/video/captions.py`(VTT→transcribe 폴백 체인, 구간 필터·상대화·중복제거). `src/jpolitics/models/clip.py`(CaptionCue+ClipResult frozen dataclass). `cut` CLI 서브커맨드. 27 신규 테스트, 63 jpolitics passed. Next.js 빌드 성공 (tsconfig.json exclude 추가).
+- [x] **Phase 3 (완료 2026-06-11)**: Remotion V3 신규 컴포지션 — `src/video/remotion_v3/`(MomentShorts composition, HookCard·LiveCaption·SourceLabel 컴포넌트). `src/jpolitics/video/renderer.py`(render_moment_short). `render`/`run` CLI 서브커맨드. 19 신규 테스트. 전체 63 jpolitics passed + 빌드 성공.
+- [x] **Phase 4 (완료 2026-06-11)**: 메타+웹 UI — `src/jpolitics/analyzer/meta_generator.py`(MetaResult: 제목 3안·해시태그·고정댓글, Claude 1-shot), `src/jpolitics/api_bridge.py`(detect/cut/render/meta JSON 어댑터), `app/jpolitics/page.tsx`(5단계 state machine: idle→detecting→moments→processing→done), API 라우트 3개(detect/render/meta SSE), `app/page.tsx` V3 버튼 주석 해제. 31 신규 테스트, 전체 94 jpolitics passed + Next.js 빌드 성공.
+- [ ] **Phase 5**: E2E — 실제 영상 1편 생성 + 전체 회귀
+
+### 리스크
+- HIGH: 모먼트 검출 품질 — Gemini 멀티모달로 해결, 무료 티어 10 req/day 병목. 폴백: transcript 기반 검출
+- MEDIUM: 센터 크롭 화자 잘림 → --crop-x 수동 보정, 얼굴 인식은 후속
+- MEDIUM: 원본 음성 저작권 — V2와 동일 수준, 출처 라벨 필수
+- LOW: 회귀 — 격리 구조
+
+---
+
+## 이전 계획
+
+
+## 🚧 진행 중: 026 운영 안정성 + 미완성 기능 정리 (2026-06-11)
+
+> 기획 세션: 2026-06-11 (/plan — 프로젝트 전체 분석 후 개선 로드맵)
+> 사용자 확정: "진행" (Phase 1부터, Phase 2B는 UI 토글 숨김 권고안 채택)
+>
+> **상태 (2026-06-11)**: Phase 1 완료 + Phase 2 항목 4(2B 숨김) 완료.
+> - cleanup CLI: `src/maintenance/cleanup.py` + `python3 -m src.main cleanup` (dry-run 기본, 실측 743파일/1.69GB 식별)
+> - 업로드 재시도: `src/upload/retry.py`(backoff) + `src/upload/upload_history.py`(이력 JSON) — YouTube/TikTok 연결
+> - 브라우저 진단: `src/video_gen/browser_diagnostics.py` — freepik/deevid 실패 시 세션만료/DOM변경/네트워크 구분 메시지
+> - Veo 3 토글: `app/page.tsx`에서 숨김 (코드 보존, 주석으로 복원 위치 표기)
+> - 검증: pytest 1382 passed/0 failed, 신규 파일 ruff clean, Next.js 빌드 성공
+> - 잔여: Phase 2 항목 5(팩트체크 통합)·6(NotebookLM), Phase 3(UI 편의), Phase 4(부채)
+
+### 현황 진단 (탐색 에이전트 2개 분석 결과)
+
+| 영역 | 상태 | 근거 |
+|------|------|------|
+| Phase 1A/1B/2A (Gemini transcript·분석·이미지) | ✅ 통합 완료 | youtube_downloader.py:352, route.ts:1054 |
+| Phase 2B (Veo 3 영상) | ⚠️ 골격만, selector 미검증 | gemini_web_video_gen.py:1-13 "초안" 명시 |
+| Phase 3A/3B/4 (멀티보이스·NotebookLM·팩트체크) | ⚠️ 코드만 존재, 호출처 0 | main.py/route.ts에서 미사용 |
+| 브라우저 자동화 안정성 | ⚠️ generic 에러, 세션 만료 자동복구 없음 | freepik_gen.py:298-301 |
+| 데이터 관리 | ❌ 정리 정책 없음, 6.8GB 누적 | data/political_pro 1.5GB 등 |
+| 웹 UI 운영성 | ⚠️ 재시도 버튼·히스토리 목록 없음 | page.tsx:271 에러 시 reset만 |
+| 업로드 | ⚠️ 즉시 업로드만, 재시도·예약·이력 없음 | youtube_uploader.py |
+| 기술 부채 | main.py 1735줄, bare pass×3, 테스트 공백(editor/upload) | political_planner.py:864-878 |
+
+### Phase 1: 운영 안정성 (이번 세션)
+1. **브라우저 자동화 공통 안전장치** — selector 미발견 시 원인 구분 로깅(DOM 변경/세션 만료/네트워크), 공통 헬퍼를 freepik/deevid/gemini generator에 적용. 세션 만료 감지 → 명확한 재로그인 안내.
+2. **데이터 정리 CLI** — `python3 -m src.main cleanup [--dry-run]`. temp 24시간, 중간산출물(images/videos/audio) N일 보관, 최종 outputs 보존. dry-run 기본.
+3. **업로드 재시도** — YouTube/TikTok 업로드 exponential backoff + 업로드 이력 JSON 기록.
+
+### Phase 2: 미완성 Gemini 기능 정리
+4. **Phase 2B (Veo 3)**: UI 토글 숨김 처리 (완성 보류 — gemini.google.com selector 유지보수 부담 HIGH 리스크). 코드는 보존, 추후 완성 결정 시 재노출.
+5. **Phase 4 (팩트체크) political_pro 통합**: 기획안 검수 단계에 🟢/🟡/🔴 배지 표시. 정치쇼츠 lock-in 포맷 불변(영상 출력 무변경, 검수 화면에만 추가).
+6. **Phase 3B (NotebookLM 스타일)**: 보류 (우선순위 낮음).
+
+### Phase 3: 웹 UI 운영 편의
+7. 실패 시 "같은 설정으로 재시도" 버튼 (reviewSnapshot 확장)
+8. 프로젝트 히스토리 페이지 (/projects)
+9. 진행률 개선 (고정 8단계 → 실제 단계 기반 + 경과 시간)
+
+### Phase 4: 기술 부채 (여유 시)
+10. main.py 명령별 모듈 분리, political_planner.py bare pass 로깅, editor/upload 테스트 보강
+
+### 리스크
+- HIGH: Phase 2B selector 유지보수 → 숨김으로 회피
+- MEDIUM: cleanup CLI 삭제 작업 → dry-run 기본 + outputs 제외
+- LOW: 모든 Phase에서 정치쇼츠 V1/V2/V3 lock-in 포맷 불변
+
+---
+
+## 이전 계획
+
+# ContentsMaker 개발 계획 및 진행 상태
+
+> 블라인드 / NATV / 정치 / 셀럽 영상을 YouTube Shorts로 자동 변환하는 파이프라인
+
 **마지막 업데이트**: 2026-06-05
 
 ---

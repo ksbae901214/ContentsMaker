@@ -2,7 +2,53 @@
 
 > 블라인드 / NATV / 정치 / 셀럽 영상을 YouTube Shorts로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-07-03
+**마지막 업데이트**: 2026-07-14
+
+---
+
+## 🚧 신규: 정치쇼츠 V2 (수동 템플릿) 조회수 개선 (031) — 2026-07-14
+
+> 사용자 요청: "현재 정치쇼츠V2가 딱 좋은데 이걸 좀더 개선시켜서 더 조회수를 많이 얻게끔 할수 있는 방법이 있을까? 기획해줘"
+> **상태**: ✅ Phase 1~3 구현 + 실전 검증 2회 + **사용자 확정: 앞으로 정치쇼츠는 V2.1이 표준** (2026-07-14). V2는 무수정 보존(폴백).
+> 실전 검증: ① 이재명 부동산 편(훅=이재명 육성 6s "불로소득 공화국", `leejm_budongsan_v2_1.json`) ② 장윤기/보완수사권 편(훅=김민석 총리 육성 7s "폐지가 정부 기본 입장", `jang_police_power_v2_1.json`). 피드백 반영: 훅 문장 완결 필수(HOOK_MAX 5→10s), 훅 자막 하단 배치(`Scene.subtitle_position="bottom"` 신규 — script_models.py+SceneText.tsx).
+> 신규 파일: `scripts/render_political_v2_1.py`, `scripts/political_upload_package.py`, `scripts/analyze_channel_performance.py`, `scripts/political_v2_configs/_template_v2_1.json`, `tests/test_political_v2_1.py`(30), `tests/test_channel_performance.py`(19)
+> 검증: pytest 1510 passed / 0 failed (신규 49), ruff clean, 무음 패딩+타이밍 시프트 ffmpeg e2e 확인, V2 config 하위 호환 확인.
+> **핵심 판단**: 030의 코드 개선(P1~P4)은 자동 파이프라인(`political_planner.py` 경로)에만 적용됐고, 실제 제작에 쓰는 **수동 V2 템플릿(`scripts/render_political_v2.py`)에는 미반영**. 훅 씬이 여전히 TTS 낭독 + 전 클립 `mute=True`.
+> **구현 중 발견**: 자동 P2 경로(commit `9e9e347`)는 훅 클립을 mute=False로 컷하지만 **TTS `<Audio>`가 frame 0부터 재생되고 타이밍 시프트가 없어 훅 원본 음성과 TTS가 겹치는 잠재 버그** 존재. V2.1은 TTS mp3 앞에 훅 길이만큼 무음 패딩 + 타이밍 시프트로 Remotion 무수정 해결.
+
+### Phase 1 — 훅 씬 원본 발언 육성 (임팩트 최상, 난이도 중) — V2.1 신규 스크립트
+
+- **신규** `scripts/render_political_v2_1.py` (V2 기반, V2 파일 무변경): config `hook` 섹션(source/start_sec|frac/duration) 지정 시 scene 0 = 인물의 **실제 발언 오디오**(`cut_segment(mute=False)` + loudnorm) 0초 배치, `yt_title` 노란 자막 오버레이. TTS는 scene 1부터.
+- TTS mp3 앞 무음 패딩(adelay) + scene_timings 훅 길이 시프트. `use_intro_bgm=False`로 훅 육성 보호.
+- config 스키마 v2.1(`yt_title`/`hook`/`persons` 등) — `scripts/political_v2_configs/README.md`에 추가.
+
+### Phase 2 — 업로드 패키지 자동 생성 (난이도 하)
+
+- 렌더 완료 시 `upload_package.md` 생성: ① "[악역]-[응징]-[주인공]" 공식 제목 + A/B 대안 1개 ② 설명문 ③ #인물명 2~4개 해시태그 ④ 고정댓글 문안 ⑤ 권장 업로드 시각(평일 20~21시) ⑥ 썸네일 후보 프레임 3장.
+- FR-020 자동 업로드 차단 유지 — "복붙 준비물"만 생성.
+
+### Phase 3 — 성과 피드백 루프 CLI (난이도 중)
+
+- `scripts/analyze_channel_performance.py`: yt-dlp로 내 채널(UCYNNMfkMW_EZJBp514-DjaA) 쇼츠 전편 조회수·길이·제목 수집(공개 데이터, OAuth 불필요) → 제목 유형(hook형 vs 보도형)·길이 구간·훅 유형별 상관 리포트.
+- 030 검증 계획("2주 후 중앙값 비교")의 실행 도구.
+
+### 보류/운영 항목
+
+- Phase 4(펀치인 줌·씬 내 2컷, Remotion) — 이번 범위 제외, 추후 결정.
+- 운영 수칙(코드 무관): P0 업로드 리듬 복구(일 1~3편, 20~21시, 2~3주 무공백), 루프형 결말 문장 규칙. P5(직캠 전환)는 V2 포맷 유지 결정으로 제외.
+
+### 리스크
+
+- 중: 원본 발언 클립 오디오 품질(현장 잡음) → loudnorm + 클립 선정 시 음질 확인
+- 중: Gemini TTS 일 10회 쿼터 → 기존 캐시 폴백
+- 하: 리텐션 지표 API 미제공 → 조회수 프록시 + YouTube Studio 수동 확인
+
+### 검증 계획
+
+- Phase 1: 샘플 config 1편 e2e 렌더 → scene 0에서 원본 육성 재생·자막 오버레이 육안/청음 확인
+- Phase 2: 렌더 후 `upload_package.md` 필드 6종 생성 확인
+- Phase 3: 실제 채널 대상 실행 → 52편+ 수집·리포트 출력 확인
+- 적용 후 2주 P0 리듬 업로드 → 편당 조회수 중앙값(기존 ~1,300) 및 첫 48시간 조회수 비교
 
 ---
 

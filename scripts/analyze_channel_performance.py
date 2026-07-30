@@ -15,9 +15,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import statistics
 import subprocess
 import sys
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 
@@ -33,18 +35,40 @@ REPORT_SUFFIXES = (
     "설명", "밝혔다", "밝혔습니다", "논의", "제시", "요구", "촉구",
     "발표", "가중", "수용", "예정", "전망",
 )
+# 034 확장: 보도체 어미(현재형 + 받침 ㅆ 과거형)·보도체 단어
+REPORT_PLAIN_ENDINGS = ("한다", "합니다", "습니다", "입니다", "이다", "된다", "됐다")
+REPORT_PAST_RE = re.compile(r"[았었였졌쳤렸꼈혔웠했]다$")
+REPORT_WORDS = ("논란", "현황", "총정리", "공방", "의혹")
+HASHTAG_RE = re.compile(r"#\S+")
+HASHTAG_SPAM_MIN = 4        # 034 실측: 제목 내 해시태그 4개+ = 스팸 패키징
+
+
+def hashtag_count(title: str) -> int:
+    return len(HASHTAG_RE.findall(title))
+
+
+def strip_hashtags(title: str) -> str:
+    return re.sub(r"\s{2,}", " ", HASHTAG_RE.sub("", title)).strip()
 
 
 # ── 순수 분석 로직 (테스트 대상) ────────────────────────────────────
 def classify_title(title: str) -> str:
-    """030 벤치마크 기준 제목 분류: hook형 / 보도형(report) / 중립."""
-    t = title.strip()
+    """030/034 벤치마크 기준 제목 분류: hook형 / 보도형(report) / 중립.
+
+    해시태그는 벗기고 판정 — 태그 속 단어로 오분류 방지 (034).
+    yt-dlp 제목은 NFD(자모 분해형)일 수 있어 NFC 정규화 후 매칭.
+    """
+    t = strip_hashtags(unicodedata.normalize("NFC", title).strip())
     if not t:
         return "neutral"
     if ("?" in t or t.endswith(("…", "...")) or any(q in t for q in ('"', "“", "'"))
             or any(m in t for m in HOOK_MARKERS)):
         return "hook"
-    if any(t.rstrip(".…").endswith(s) for s in REPORT_SUFFIXES):
+    tt = t.rstrip(".…")
+    if (any(tt.endswith(s) for s in REPORT_SUFFIXES)
+            or tt.endswith(REPORT_PLAIN_ENDINGS)
+            or REPORT_PAST_RE.search(tt)
+            or any(w in tt for w in REPORT_WORDS)):
         return "report"
     return "neutral"
 
@@ -71,9 +95,12 @@ def summarize(entries: list[dict]) -> dict:
     valid = [e for e in entries if e.get("view_count") is not None]
     by_type: dict[str, list[dict]] = {}
     by_bucket: dict[str, list[dict]] = {}
+    by_hash: dict[str, list[dict]] = {}
     for e in valid:
         by_type.setdefault(classify_title(e.get("title", "")), []).append(e)
         by_bucket.setdefault(duration_bucket(e.get("duration")), []).append(e)
+        spam = hashtag_count(e.get("title", "")) >= HASHTAG_SPAM_MIN
+        by_hash.setdefault("4+" if spam else "0-3", []).append(e)
     ranked = sorted(valid, key=lambda e: e["view_count"], reverse=True)
     return {
         "count": len(valid),
@@ -85,6 +112,10 @@ def summarize(entries: list[dict]) -> dict:
         "by_duration": {
             k: {"count": len(v), "median_views": _median_views(v)}
             for k, v in sorted(by_bucket.items())
+        },
+        "by_hashtag": {
+            k: {"count": len(v), "median_views": _median_views(v)}
+            for k, v in sorted(by_hash.items())
         },
         "top5": [_brief(e) for e in ranked[:5]],
         "bottom5": [_brief(e) for e in ranked[-5:]][::-1],
@@ -140,6 +171,11 @@ def build_report_md(channel: str, summary: dict, gaps: list[dict],
     lines += ["", "## 길이 구간별", "", "| 구간 | 편수 | 조회수 중앙값 |", "|---|---|---|"]
     for k, v in summary["by_duration"].items():
         lines.append(f"| {k} | {v['count']} | {v['median_views']:,} |")
+    if summary.get("by_hashtag"):
+        lines += ["", "## 제목 내 해시태그 수 (034 — 4개+ = 스팸 패키징)", "",
+                  "| 구간 | 편수 | 조회수 중앙값 |", "|---|---|---|"]
+        for k, v in summary["by_hashtag"].items():
+            lines.append(f"| {k} | {v['count']} | {v['median_views']:,} |")
     lines += ["", "## 상위 5편"]
     lines.extend(f"- {e['view_count']:,}회 — {e['title']}" for e in summary["top5"])
     lines += ["", "## 하위 5편"]

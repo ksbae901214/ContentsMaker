@@ -304,6 +304,7 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
             fontFamily: "Noto Sans KR, sans-serif",
             textShadow: "2px 2px 6px rgba(0,0,0,0.8)",
             lineHeight: 1.3,
+            wordBreak: "keep-all",
           }}
         >
           {title}

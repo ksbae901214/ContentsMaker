@@ -1,0 +1,38 @@
+{
+  "_comment": "정치쇼츠 V2.2 템플릿 (render_political_v2_2.py 전용). 원본 육성 릴레이 포맷 — 육성 클립 2~3개가 앞부분을 채우고(훅 포함, 인접 클립은 대립 배치), TTS 논평 1개가 마지막에서 팩트 정리+CTA로 마무리 (사용자 확정 표준 2026-07-23, 최대 2개). top-level hook 섹션 없음: 훅도 scenes[0]의 clip 씬. clip 씬의 start_sec/duration은 download 후 _verify/clip_NN.mp4 청음으로 문장 완결 확인 필수 (Gemini 전사 타임스탬프는 드리프트 있어 프레임+화자 자막으로 경계 확정). [034] 클립 선정 1순위 = 표정·리액션 절정(웃음/한숨/야유/침묵/눈물) 구간. yt_title은 보도체·해시태그 금지(validate 차단) — 감정훅/호기심형 12~20자, 해시태그는 설명란 3~4개만.",
+  "slug": "20260723_example_v2_2",
+  "title": "상단 배너 제목 (영상 내 고정 노출)",
+  "yt_title": "죽창 들자던 조국, 이젠 말끝으로 사상검증",
+  "yt_title_alt": "'무섭노' 한마디에 일베 몰이, 역풍 맞은 조국",
+  "persons": ["조국", "이준석"],
+  "pinned_comment": "여러분의 '무섭노'는 사투리인가요? 댓글로 남겨주세요 👇",
+  "source_channel": "채널A 김진의돌직구쇼",
+  "source_title": "'무섭노' 사투리에 때아닌 '일베' 논란",
+  "youtube_url": "https://www.youtube.com/watch?v=VSAn-JTZsFA",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "_tts_speed_comment": "TTS 논평 씬 배속 (육성 클립 제외). V2.1 표준값 1.1 유지.",
+  "fallback_source": "chA",
+  "sources": {
+    "joguk": { "query": "조국 일베 감별법 무섭노 발언 논란", "dur_max": 900, "verify_frac": 0.25 },
+    "leejs": { "query": "이준석 조국 일베 사상검증 무섭노", "dur_max": 900, "verify_frac": 0.4 },
+    "chA":   { "url": "https://www.youtube.com/watch?v=VSAn-JTZsFA", "dur_max": 900, "verify_frac": 0.35 }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "joguk", "start_sec": 42.0, "duration": 3.5,
+      "text": "\"일베는 기계적으로 '노'\"\n조국의 감별법",
+      "hl": ["일베", "감별법"] },
+    { "mode": "clip", "source": "leejs", "start_sec": 128.0, "duration": 6.0,
+      "speaker": "이준석",
+      "text": "\"죽창 들자던 사람이\n사상검증합니까?\"",
+      "hl": ["죽창", "사상검증"] },
+    { "mode": "clip", "source": "joguk", "start_sec": 305.0, "duration": 5.0,
+      "speaker": "조국",
+      "text": "\"그런 뜻이 아니라\"\n해명 발언",
+      "hl": ["해명"] },
+    { "mode": "tts", "source": "chA", "frac": 0.35, "color": "red", "emph": true,
+      "text": "말투 하나로 일베?\n사상검증 논란",
+      "voice": "고향 사투리 한마디가 일베 낙인이 됐습니다. 죽창가를 부르던 쪽에서 시작된 사상검증, 어디까지 갈까요. 여러분 생각은 어떤가요? 댓글로 남겨주세요.",
+      "hl": ["일베", "사상검증"] }
+  ]
+}

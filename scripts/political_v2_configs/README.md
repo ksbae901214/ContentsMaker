@@ -91,5 +91,61 @@ PYTHONPATH=. .venv311/bin/python scripts/render_political_v2_1.py \
 (제목 A/B·설명·해시태그·고정댓글·권장 업로드 시각·썸네일 후보 3장).
 
 예시: `_template_v2_1.json`
+
+---
+
+# 정치쇼츠 V2.2 확장 (render_political_v2_2.py) — 원본 육성 릴레이
+
+포맷 반전 (prompt_plan 033): **육성 클립 3~5개가 영상의 뼈대**, TTS 논평은
+기본 1개(최대 2개, 3개부터 경고). V2.1 스크립트/설정은 무변경.
+
+```bash
+PYTHONPATH=. .venv311/bin/python scripts/render_political_v2_2.py \
+    scripts/political_v2_configs/<name>.json download   # + clip 프리뷰 청음 확인
+PYTHONPATH=. .venv311/bin/python scripts/render_political_v2_2.py \
+    scripts/political_v2_configs/<name>.json render     # 렌더 + upload_package.md
+```
+
+## V2.1과 다른 점
+
+- top-level `hook` 섹션 **없음** — 훅도 `scenes[0]`의 clip 씬으로 통일 (scene 0은 clip 강제).
+- scene에 `mode: "clip" | "tts"` (기본 tts) 추가.
+- TTS는 tts 씬만 합성 후 씬별 세그먼트로 잘라 클립 길이만큼 무음을 사이사이
+  배치(타임라인 조립) — 육성↔TTS가 몇 번이든 교차 가능.
+- 렌더 시 클립 오디오 비중 출력 (권장 ≥ 65%, 미달 경고).
+
+## scenes[i] (mode별)
+
+### mode: "clip" (원본 육성 — 뼈대)
+- `source`: sources 키. `start_sec`(권장, 실측) 또는 `frac` + `duration`(1~10s).
+  **발언 문장이 끝맺음될 때까지 포함** (silencedetect로 문장 끝 휴지 확인).
+- `text`: 발언 요지 자막 (scene 0만 생략 시 yt_title 폴백). `hl`: 강조 단어.
+- `speaker`: 화자명 — 자막 첫 줄에 `[화자]` 라벨 (클립 릴레이 문맥 단절 방지).
+- `color`: 기본 `yellow`. `subtitle_position`: 기본 `"bottom"`(인물 가림 방지),
+  방송 번인 자막과 겹치면 `""`(중앙).
+- 동작: 원본 오디오(mute=False + loudnorm), TTS 없음.
+
+### mode: "tts" (논평 — 기본 1개)
+- V2.1 씬과 동일: `voice`(필수)/`frac` 또는 `start_sec`/`color`/`emph`/`text`/`hl`.
+- **마지막 씬 1개 권장 (사용자 확정 2026-07-23)**: 클립 릴레이가 앞을 채우고,
+  TTS는 맨 끝에서 팩트 정리 + CTA("여러분 생각은? 댓글로")로 마무리.
+
+## 편집 규칙 (권장)
+
+- 4~6씬, 총 45초 캡: `클립(훅) → 클립 → [클립] → TTS(정리+CTA, 마지막)`
+  — 표준 구성 (사용자 확정 2026-07-23). 인접 클립은 대립 배치.
+- **클립 선정 1순위 = 표정·리액션 절정** (웃음/한숨/야유/침묵/눈물, 034 벤치마크):
+  경쟁 채널 최상위 영상(93만~148만회)의 공통점은 '발언 내용'이 아니라
+  '반응 장면'. 발언이 완결되는 컷 중에서도 화자 또는 상대의 감정이
+  드러나는 구간을 고른다. TTS 팩트 정리(마지막 1씬)는 차별점으로 유지.
+- **제목(yt_title)은 보도체·해시태그 금지** — validate 단계에서 차단(034).
+  감정훅형('눈물까지 고인 장동혁') 또는 호기심형('아니 아직도 발급을 안 했어?')
+  12~20자. 해시태그는 설명란 3~4개만 (upload_package.md가 자동 이동).
+  실전 예시: `leejm_pyeonbeop_v2_2.json` (3클립 여야 릴레이 + TTS 정리),
+  `ohsh_yeoron_v2_2.json` (여야 대변인 맞대결 + TTS 정리).
+- 인접 클립은 대립 배치: A 주장 → B 반박 → A 재반박 (갈등 아크를 육성만으로).
+- download 후 `_verify/clip_NN.mp4` **청음 확인 필수** (문장 완결 여부).
+
+예시: `_template_v2_2.json`
 ```
 ```

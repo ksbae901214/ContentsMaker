@@ -1,5 +1,5 @@
 {
-  "_comment": "정치쇼츠 V2.1 템플릿 (render_political_v2_1.py 전용). V2 대비 추가: yt_title/yt_title_alt/persons/hook/description/pinned_comment. hook 을 빼면 V2 방식(TTS 훅)으로 동작.",
+  "_comment": "정치쇼츠 V2.1 템플릿 (render_political_v2_1.py 전용). V2 대비 추가: yt_title/yt_title_alt/persons/hook/description/pinned_comment. hook 을 빼면 V2 방식(TTS 훅)으로 동작. [034] yt_title은 보도체·해시태그 금지(validate 차단, 우회: yt_title_lint='off') — 감정훅/호기심형 12~20자, 해시태그는 설명란 3~4개만.",
   "slug": "20260714_example_v2_1",
   "title": "상단 배너 제목 (영상 내 고정 노출)",
   "yt_title": "죽창 들자던 조국, 이젠 말끝으로 사상검증",
@@ -10,6 +10,8 @@
   "source_title": "'무섭노' 사투리에 때아닌 '일베' 논란",
   "youtube_url": "https://www.youtube.com/watch?v=VSAn-JTZsFA",
   "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "_tts_speed_comment": "나레이션 씬 배속 (훅 원본 육성 제외). V2.1 기본값 1.1 (사용자 확정 2026-07-21). 생략 시에도 코드 기본값 1.1 적용. 더 빠르게/느리게 하려면 값만 조정.",
   "fallback_source": "chA",
   "hook": {
     "source": "joguk",

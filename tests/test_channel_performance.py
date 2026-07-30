@@ -94,3 +94,54 @@ class TestCompareSnapshots:
     def test_zero_delta_excluded(self):
         prev = [_entry("a", "t", 100)]
         assert compare_snapshots(prev, [_entry("a", "t", 100)]) == []
+
+
+# ── 034: 보도체 시그널 확장 + 해시태그 추적 ─────────────────────────
+class TestClassifyTitle034:
+    def test_report_verb_ending(self):
+        assert classify_title(
+            "윤석열 397억은 1심인데 434억 이재명은 재판조차 안 한다") == "report"
+
+    def test_report_word(self):
+        assert classify_title("신현송 한은총재 후보 국적상실 신고 논란") == "report"
+
+    def test_hashtags_stripped_before_classification(self):
+        # 해시태그를 벗기면 '~외쳤다' 보도체 — hook 오분류 방지
+        assert classify_title(
+            "선관위 해체 여야가 같이 외쳤다 #장동혁 #선관위 #선관위해체") == "report"
+
+    def test_question_still_hook_even_with_hashtags(self):
+        assert classify_title(
+            "부산에서 박근혜가 뒤집을 수 있을까?? #박근혜 #한동훈") == "hook"
+
+
+class TestHashtagCount:
+    def test_counts_hashtags(self):
+        from scripts.analyze_channel_performance import hashtag_count
+        assert hashtag_count("제목 #a #b #c") == 3
+
+    def test_zero_when_none(self):
+        from scripts.analyze_channel_performance import hashtag_count
+        assert hashtag_count("해시태그 없는 제목") == 0
+
+
+class TestSummarizeHashtagBucket:
+    def test_by_hashtag_bucket(self):
+        entries = [
+            _entry("a", "깔끔한 제목 #하나", 1000),
+            _entry("b", "스팸 제목 #a #b #c #d #e", 100),
+            _entry("c", "태그 없는 제목", 3000),
+        ]
+        s = summarize(entries)
+        assert s["by_hashtag"]["0-3"]["count"] == 2
+        assert s["by_hashtag"]["4+"]["count"] == 1
+        assert s["by_hashtag"]["4+"]["median_views"] == 100
+
+
+class TestNfcNormalization:
+    def test_nfd_title_classified_as_report(self):
+        # yt-dlp가 반환하는 제목은 NFD(자모 분해형)일 수 있음 — 034 실측 버그
+        import unicodedata
+        t = unicodedata.normalize(
+            "NFD", "윤석열 397억은 1심인데 재판조차 안 한다 #정점식")
+        assert classify_title(t) == "report"

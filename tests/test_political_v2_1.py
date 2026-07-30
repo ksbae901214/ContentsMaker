@@ -263,3 +263,109 @@ class TestBuildUploadPackageMd:
         monday = _next_weekday(datetime(2026, 1, 1), 0).replace(hour=20)
         md = build_upload_package_md(cfg, Path("out.mp4"), monday)
         assert "- B:" not in md
+
+
+# ── 034: 제목 패키징 강제화 ─────────────────────────────────────────
+class TestSanitizeYtTitle:
+    def test_trailing_hashtags_stripped(self):
+        from scripts.political_upload_package import sanitize_yt_title
+        clean, tags = sanitize_yt_title(
+            "조국의 40억 방배동 아파트는 안파나?? #조국 #방배동아파트 #토지공개념")
+        assert clean == "조국의 40억 방배동 아파트는 안파나??"
+        assert tags == ["#조국", "#방배동아파트", "#토지공개념"]
+
+    def test_no_hashtags_passthrough(self):
+        from scripts.political_upload_package import sanitize_yt_title
+        clean, tags = sanitize_yt_title("죽창 들자던 조국, 이젠 말끝으로 사상검증")
+        assert clean == "죽창 들자던 조국, 이젠 말끝으로 사상검증"
+        assert tags == []
+
+    def test_middle_hashtag_collapses_spaces(self):
+        from scripts.political_upload_package import sanitize_yt_title
+        clean, tags = sanitize_yt_title("장동혁 #국민의힘 직격 발언")
+        assert clean == "장동혁 직격 발언"
+        assert tags == ["#국민의힘"]
+
+
+class TestIsReportStyle:
+    def test_report_verb_ending_detected(self):
+        from scripts.political_upload_package import is_report_style
+        assert is_report_style("윤석열 397억은 1심인데 이재명은 재판조차 안 한다")
+
+    def test_report_word_detected(self):
+        from scripts.political_upload_package import is_report_style
+        assert is_report_style("신현송 한은총재 후보 국적상실 신고 논란")
+
+    def test_hook_title_not_report(self):
+        from scripts.political_upload_package import is_report_style
+        assert not is_report_style("죽창 들자던 조국, 이젠 말끝으로 사상검증")
+        assert not is_report_style("눈물까지 고인 장동혁")
+
+    def test_hashtags_ignored_for_detection(self):
+        from scripts.political_upload_package import is_report_style
+        # 해시태그 안의 단어(#선관위논란)는 보도체 판정에 쓰지 않음
+        assert not is_report_style("눈물까지 고인 장동혁 #선관위논란")
+
+
+class TestLintYtTitle034:
+    def test_hashtag_in_title_warned(self):
+        warnings = lint_yt_title("죽창 들자던 조국, 이젠 사상검증 #조국", ["조국"])
+        assert any("해시태그" in w for w in warnings)
+
+    def test_report_style_warned(self):
+        warnings = lint_yt_title("이재명 근저당 편법 매각 의혹 제기 논란", ["이재명"])
+        assert any("보도체" in w for w in warnings)
+
+
+class TestValidateConfigTitleGate:
+    def test_hashtag_title_blocked(self):
+        cfg = base_cfg(yt_title="죽창 들자던 조국, 이젠 사상검증 #조국 #이준석")
+        with pytest.raises(ValueError, match="해시태그"):
+            validate_config(cfg)
+
+    def test_report_title_blocked(self):
+        cfg = base_cfg(yt_title="윤석열 397억은 1심인데 이재명은 재판조차 안 한다")
+        with pytest.raises(ValueError, match="보도체"):
+            validate_config(cfg)
+
+    def test_lint_off_bypasses_gate(self):
+        cfg = base_cfg(yt_title="윤석열 397억은 1심인데 이재명은 재판조차 안 한다",
+                       yt_title_lint="off")
+        validate_config(cfg)
+
+    def test_no_yt_title_passes(self):
+        cfg = base_cfg()
+        del cfg["yt_title"]
+        validate_config(cfg)
+
+
+class TestUploadPackageMd034:
+    def test_title_hashtags_moved_to_hashtag_section(self):
+        cfg = base_cfg(yt_title="죽창 들자던 조국, 이젠 사상검증 #선관위",
+                       yt_title_lint="off")
+        monday = _next_weekday(datetime(2026, 1, 1), 0).replace(hour=20)
+        md = build_upload_package_md(cfg, Path("out.mp4"), monday)
+        assert "- A: 죽창 들자던 조국, 이젠 사상검증\n" in md   # 제목에서 태그 제거
+        assert "#선관위" in md                                   # 해시태그 섹션으로 이동
+
+    def test_checklist_section_present(self):
+        cfg = base_cfg()
+        monday = _next_weekday(datetime(2026, 1, 1), 0).replace(hour=20)
+        md = build_upload_package_md(cfg, Path("out.mp4"), monday)
+        assert "체크리스트" in md
+        assert "표정" in md            # 썸네일 = 인물 표정 절정 컷
+        assert "플랫폼 분리" in md      # 같은 주제 중복 업로드 금지
+
+    def test_missing_alt_title_shows_ab_guide(self):
+        cfg = base_cfg()
+        monday = _next_weekday(datetime(2026, 1, 1), 0).replace(hour=20)
+        md = build_upload_package_md(cfg, Path("out.mp4"), monday)
+        assert "감정훅형" in md and "호기심형" in md
+
+
+class TestNfcNormalization:
+    def test_nfd_report_title_detected(self):
+        import unicodedata
+        from scripts.political_upload_package import is_report_style
+        assert is_report_style(
+            unicodedata.normalize("NFD", "이재명 434억은 재판조차 안 한다"))

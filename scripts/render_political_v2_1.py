@@ -68,6 +68,9 @@ def validate_config(cfg: dict) -> None:
         if not (HOOK_MIN_SEC <= dur <= HOOK_MAX_SEC):
             raise ValueError(
                 f"hook.duration {dur}s 범위 밖 (허용 {HOOK_MIN_SEC}~{HOOK_MAX_SEC}s)")
+    # 034: 보도체·해시태그 제목은 렌더 전에 차단 (yt_title_lint: "off" 로 우회)
+    from scripts.political_upload_package import gate_yt_title
+    gate_yt_title(cfg)
 
 
 def scene_type(sc: dict) -> str:
@@ -161,6 +164,15 @@ def shift_timings(timings: list[dict], offset_ms: int) -> list[dict]:
     ]
 
 
+def scale_timings(timings: list[dict], speed: float) -> list[dict]:
+    """모든 씬 타이밍을 1/speed 로 압축 (TTS 가속과 동기). speed=1.2 → 1.2배 빠름."""
+    return [
+        {**t, "start_ms": int(round(t["start_ms"] / speed)),
+              "end_ms": int(round(t["end_ms"] / speed))}
+        for t in timings
+    ]
+
+
 def resolve_hook_cut(hook: dict, source_dur: float) -> tuple[float, float]:
     """훅 클립의 (start_sec, duration) 계산. 소스가 짧으면 클램프."""
     dur = min(float(hook.get("duration", 3.0)), HOOK_MAX_SEC)
@@ -183,6 +195,19 @@ def _pad_audio_front(audio: Path, pad_ms: int, out: Path) -> Path:
     )
     if r.returncode != 0 or not out.exists():
         raise RuntimeError(f"TTS 무음 패딩 실패: {r.stderr[:300]}")
+    return out
+
+
+def _speed_audio(audio: Path, speed: float, out: Path) -> Path:
+    """TTS mp3 를 speed 배로 가속 (atempo, 피치 유지). 훅 육성엔 미적용."""
+    r = subprocess.run(
+        ["ffmpeg", "-v", "error", "-y", "-i", str(audio),
+         "-filter:a", f"atempo={speed:.4f}",
+         "-codec:a", "libmp3lame", "-q:a", "2", str(out)],
+        capture_output=True, text=True,
+    )
+    if r.returncode != 0 or not out.exists():
+        raise RuntimeError(f"TTS 속도 조절 실패: {r.stderr[:300]}")
     return out
 
 
@@ -237,6 +262,9 @@ def build_script(cfg: dict, hook_dur: float = 0.0) -> ShortsScript:
             subtitle_color=sc.get("color", "white"),
             subtitle_emphasis=emph,
             hook=(sid == 0),
+            # 방송 번인 자막(로어서드)과 겹칠 때 "bottom" 으로 레터박스 아래 배치.
+            # 미지정("")이면 기존 동작(position_y 0.652) 유지.
+            subtitle_position=sc.get("subtitle_position", ""),
         ))
         parts.append(sc["voice"])
     return ShortsScript(
@@ -297,6 +325,13 @@ def cmd_render(cfg: dict) -> int:
     )
     from src.tts.silence_align import align_timings_to_silence
     audio_path, timings = align_timings_to_silence(audio_path, timings, out_dir=wd)
+
+    speed = float(cfg.get("tts_speed", 1.1))  # V2.1 기본값 1.1배 (사용자 확정)
+    if abs(speed - 1.0) > 1e-3:
+        sped = wd / f"{audio_path.stem}_x{speed:.2f}.mp3"
+        audio_path = _speed_audio(audio_path, speed, sped)
+        timings = scale_timings(timings, speed)
+        print(f"⏩ TTS {speed:.2f}x 가속 (atempo + 타이밍 스케일, 훅 제외)", flush=True)
 
     if hook_dur > 0:
         hook_ms = int(round(hook_dur * 1000))

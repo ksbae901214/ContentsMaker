@@ -1,0 +1,40 @@
+{
+  "_comment": "경제쇼츠 V2.2 템플릿 (036). 정치 템플릿과 파이프라인·길이 캡(38~42초)·릴레이 구조는 동일하고, 검사 기준표만 경제로 바뀐다(scripts/shorts_domain.py). [핵심] ①소재는 '결과가 난 사건' — 동결·급락·파산·리콜·철수. '전망/예상'만 있는 소재는 정치의 공방형과 같은 1,100대 천장. ②투자 권유 표현(매수·매도·추천주·존버·물타기·수익률 보장)은 렌더 전 차단(ValueError) — 유사투자자문 소지. 우회는 'domain_gate': 'off'지만 법적 리스크를 스스로 지는 것. ③수치엔 반드시 출처·기준시점. ④배경은 청록(relatable), 정치의 레드가 아님 — emotion_type/bg_colors 미지정 시 자동.",
+  "category": "economic",
+  "slug": "20260813_geumri_donggyeol_v2_2",
+  "title": "상단 배너 제목 (영상 내 고정 노출)",
+  "yt_title": "결국 동결된 금리, 웃은 건 영끌족",
+  "yt_title_alt": "3연속 인상 끝, 한국은행이 멈춘 날",
+  "_yt_title_comment": "결과어(동결·급락·반토막·파산·철수)가 드러나야 한다. 'A가 B를 직격' 공방형이거나 '전망·예상'만 있으면 upload_package.md에 경고. 제목 앵커는 실명이 아니라 **숫자 또는 기업·기관명** (persons에 기관명을 넣는다). 034 보도체 게이트는 카테고리 공통이라 '~했다/~웃었다' 같은 과거형 어미로 끝내면 렌더가 차단된다 — 명사로 닫을 것.",
+  "persons": ["한국은행", "이창용"],
+  "source_channel": "출처 채널명",
+  "source_title": "원본 영상 제목",
+  "youtube_url": "https://www.youtube.com/watch?v=XXXXXXXXXXX",
+  "tts_speed": 1.1,
+  "fallback_source": "news",
+  "cta": {
+    "_comment": "40% 지점 자동 삽입. 경제는 '내 지갑'으로 편이 갈린다 — 열린 질문 금지. 나레이션 4초(약 32자) 이내.",
+    "text": "이 결정, 내 지갑엔?\n① 이득  ② 손해",
+    "voice": "내 지갑엔 이득일까요 손해일까요? 1번, 2번 답글.",
+    "hl": ["내 지갑"],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "bok": { "query": "한국은행 기준금리 동결 발표 이창용 기자회견", "dur_max": 900, "verify_frac": 0.3 },
+    "news": { "query": "기준금리 동결 뉴스 리포트", "dur_max": 900, "verify_frac": 0.4 }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "bok", "start_sec": 0.0, "duration": 4.0,
+      "speaker": "이창용",
+      "text": "\"기준금리를\n현 수준에서 유지\"",
+      "hl": ["유지"] },
+    { "mode": "clip", "source": "news", "start_sec": 0.0, "duration": 5.0,
+      "text": "3연속 인상 끝\n8개월 만의 멈춤",
+      "hl": ["8개월 만"] },
+    { "mode": "tts", "source": "news", "frac": 0.5, "color": "yellow", "emph": true,
+      "_comment": "마지막 씬은 팩트 정리. 수치엔 출처·기준시점을 붙이고, 매수/매도 권유로 읽힐 문장은 금지(렌더 차단).",
+      "text": "대출 이자\n당분간 그대로",
+      "voice": "한국은행 발표 기준, 기준금리는 현 수준에서 유지됐습니다. 변동금리 대출자의 이자 부담은 당분간 지금 수준을 유지하게 됩니다.",
+      "hl": ["유지", "이자 부담"] }
+  ]
+}

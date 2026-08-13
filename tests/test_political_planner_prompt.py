@@ -155,3 +155,32 @@ def test_stage_b_prompt_requires_question_cta():
     # 질문 형태 가이드
     assert any(kw in p for kw in ["질문", "어떻게 생각", "공감", "도발"]), \
         "질문형 CTA 가이드 부재"
+
+
+# ── 035: 소재 프레임 = '결과가 난 사건' ─────────────────────────────
+class TestStageAOutcomeFrame:
+    """공방형('A가 B를 저격')은 실측 1,100대 천장 — 결과 서사로 유도."""
+
+    def _prompts(self):
+        from src.analyzer.political_planner_stage_a_prompt import (
+            STAGE_A_SYSTEM_PROMPT, STAGE_A_TOPIC_SYSTEM_PROMPT,
+        )
+        return {"video": STAGE_A_SYSTEM_PROMPT, "topic": STAGE_A_TOPIC_SYSTEM_PROMPT}
+
+    def test_outcome_frame_required(self):
+        for name, p in self._prompts().items():
+            assert "결과" in p, f"{name}: 결과 서사 지침 부재"
+
+    def test_clash_only_topics_discouraged(self):
+        for name, p in self._prompts().items():
+            assert any(kw in p for kw in ["공방", "저격", "직격"]), \
+                f"{name}: 공방형 회피 지침 부재"
+
+    def test_villain_punish_formula_removed(self):
+        """[악역]-[응징]-[주인공] 공식은 실측상 효과 없음 — 제거됨."""
+        for name, p in self._prompts().items():
+            assert "응징동사" not in p, f"{name}: 폐기된 응징 공식 잔존"
+
+    def test_length_cap_reflected(self):
+        from src.analyzer.political_planner_stage_a_prompt import STAGE_A_SYSTEM_PROMPT
+        assert "42" in STAGE_A_SYSTEM_PROMPT, "42초 캡 미반영"

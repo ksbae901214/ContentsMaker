@@ -13,10 +13,30 @@ import unicodedata
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from scripts.shorts_category import (
+    DEFAULT_CATEGORY, record_category, resolve_config_category,
+)
+
 TITLE_MIN, TITLE_MAX = 15, 30          # 030 벤치마크: 훅 제목 15~30자
+# 036: 카테고리 원장 — 업로드가 수동이라 유튜브 쪽엔 카테고리가 남지 않는다.
+# 여기서 기록해 두어야 다음 성과 리포트가 카테고리별로 쪼개진다.
+CATEGORY_LEDGER_PATH = Path("data/channel_analytics/category_ledger.json")
 MAX_HASHTAGS = 4                        # #인물명 2~4개 권장
 UPLOAD_HOUR = 20                        # 평일 20~21시 직후 업로드 권장
-DEFAULT_PINNED_COMMENT = "여러분 생각은 어떠신가요? 댓글로 남겨주세요 👇"
+# 035: 열린 질문은 실측 댓글율 0.24% — 편이 갈리는 선택지형으로 교체
+DEFAULT_PINNED_COMMENT = "둘 중 누가 더 문제라고 보세요? ① 여당  ② 야당 — 번호로 답글 👇"
+
+# 035 소재 프레임: '누가 누구를 저격'(공방형)은 실측상 1,100대 천장.
+# 터진 영상은 전부 결과가 난 사건 — '13시간 대역전극', '9년 침묵의 컴백'.
+_CLASH_WORDS = (
+    "직격", "저격", "공방", "정면충돌", "충돌", "맞불", "발끈", "일침", "일갈",
+    "돌직구", "질타", "성토", "반박", "역공", "설전",
+)
+_OUTCOME_WORDS = (
+    "결국", "끝내", "만에", "끝에", "무산", "철회", "사퇴", "취소", "번복",
+    "뒤집", "역전", "확정", "통과", "부결", "폐기", "좌초", "컴백", "복귀",
+    "실형", "선고", "기각", "인용", "합의", "타결", "구속", "해임", "경질",
+)
 
 # 034 채널 분석: 제목 내 해시태그·보도체가 조회수 병목 (경쟁 채널 실측 —
 # 12~20자 감정훅 + 해시태그 0~3개 vs 국회직캠 보도체 + 8~11개).
@@ -71,8 +91,56 @@ def gate_yt_title(cfg: dict) -> None:
             "(우회: \"yt_title_lint\": \"off\")")
 
 
-def lint_yt_title(title: str, persons: list[str] | None = None) -> list[str]:
-    """030 제목 공식([악역]-[응징]-[주인공], 15~30자, 실명 포함) 점검 경고."""
+def _domain(category: str):
+    """036: 카테고리별 규칙 팩 조회 (순환 import 회피용 지연 import)."""
+    from scripts.shorts_domain import rules_for
+    return rules_for(category)
+
+
+def domain_warnings(cfg: dict) -> list[str]:
+    """036 Phase 2 도메인 주의 경고 (사회 피의사실·연예 미확인 사생활 등)."""
+    from scripts.shorts_domain import domain_warnings as _warn
+    return _warn(cfg)
+
+
+def is_clash_frame(title: str, category: str = DEFAULT_CATEGORY) -> bool:
+    """'A가 B를 직격/저격' 공방형 프레임인지."""
+    clean, _ = sanitize_yt_title(title)
+    return any(w in clean for w in _domain(category).clash_words)
+
+
+def has_outcome_frame(title: str, category: str = DEFAULT_CATEGORY) -> bool:
+    """결과·전환이 드러나는 사건 프레임인지 (대역전극·컴백·철회·동결·무죄…)."""
+    clean, _ = sanitize_yt_title(title)
+    return any(w in clean for w in _domain(category).outcome_words)
+
+
+def lint_topic_frame(title: str, category: str = DEFAULT_CATEGORY) -> list[str]:
+    """035 소재 프레임 경고 — 결과 없는 공방형은 실측상 1,100대 천장.
+
+    036: 결과어·예시는 카테고리별 (경제 '동결', 사회 '무죄', 연예 '하차'…).
+    """
+    if is_clash_frame(title, category) and not has_outcome_frame(title, category):
+        return ["결과 없는 공방형 소재 — '결과가 난 사건'으로 프레임을 바꾸세요 "
+                f"(예: {_domain(category).outcome_example}). "
+                "실측상 공방형은 조회수 1,100대에서 멈춥니다 (035)"]
+    return []
+
+
+def resolve_pinned_comment(cfg: dict) -> str:
+    """고정댓글 — 명시값 > cta.voice(중반 CTA와 동일 질문) > 카테고리 기본 선택지형."""
+    from scripts.shorts_domain import rules_for_config
+    return (cfg.get("pinned_comment")
+            or (cfg.get("cta") or {}).get("voice")
+            or rules_for_config(cfg).default_pinned_comment)
+
+
+def lint_yt_title(title: str, persons: list[str] | None = None,
+                  category: str = DEFAULT_CATEGORY) -> list[str]:
+    """030 제목 공식(15~30자, 앵커 포함) + 035 소재 프레임 점검 경고.
+
+    036: 제목 앵커는 카테고리별 — 정치는 실명, 경제는 숫자·기관명.
+    """
     warnings = []
     n = len(title)
     if n < TITLE_MIN:
@@ -80,7 +148,8 @@ def lint_yt_title(title: str, persons: list[str] | None = None) -> list[str]:
     elif n > TITLE_MAX:
         warnings.append(f"제목 {n}자 — {TITLE_MAX}자 이하 권장 (모바일 잘림)")
     if persons and not any(p in title for p in persons):
-        warnings.append("제목에 실명(persons) 미포함 — 실명 1~2개 권장")
+        warnings.append(
+            f"제목에 {_domain(category).anchor_label} 미포함 — 1~2개 권장")
     if any(w in title for w in ("속보", "충격!")):
         warnings.append("'속보/충격!'형 제목은 실측상 천장이 낮음 — 서사형 권장")
     if TITLE_HASHTAG_RE.search(title):
@@ -88,6 +157,7 @@ def lint_yt_title(title: str, persons: list[str] | None = None) -> list[str]:
                         "(쇼츠 피드 제목 잘림·스팸 인상, 034)")
     if is_report_style(title):
         warnings.append("보도체 제목 — 감정훅/호기심형 권장 (034 벤치마크)")
+    warnings.extend(lint_topic_frame(title, category))
     return warnings
 
 
@@ -135,11 +205,14 @@ def build_upload_package_md(
     for t in extracted:
         if t not in hashtags and len(hashtags) < MAX_HASHTAGS:
             hashtags.append(t)
-    warnings = lint_yt_title(yt_title_raw, cfg.get("persons"))
+    category = resolve_config_category(cfg)
+    warnings = lint_yt_title(yt_title_raw, cfg.get("persons"), category)
+    warnings.extend(domain_warnings(cfg))
     lines = [
         f"# 업로드 패키지 — {cfg['slug']}",
         "",
         f"**영상**: `{video_path}`",
+        f"**카테고리**: `{category}` — 성과 원장에 기록됨 (036, 카테고리별 리포트용)",
         f"**권장 업로드 시각**: {suggested.strftime('%Y-%m-%d (%a) %H:%M')} "
         "— 평일 20~21시 직후, 일 1~3편 리듬 유지 (030 P0)",
         "",
@@ -166,21 +239,20 @@ def build_upload_package_md(
         "",
         "## 고정댓글",
         "```",
-        cfg.get("pinned_comment") or DEFAULT_PINNED_COMMENT,
+        resolve_pinned_comment(cfg),
         "```",
     ]
     if thumbnails:
         lines += ["", "## 썸네일 후보"]
         lines.extend(f"- `{t}`" for t in thumbnails)
+    rules = _domain(category)
+    lines += ["", f"## 업로드 전 체크리스트 ({rules.label}, 034/035/036)"]
+    lines.extend(f"- [ ] {item}" for item in rules.checklist)
     lines += [
         "",
-        "## 업로드 전 체크리스트 (034)",
-        "- [ ] 썸네일 = 인물 표정 절정 컷인가 (웃음/한숨/야유/침묵 — 후보 중 선택)",
-        "- [ ] 같은 주제 V2.1/V2.2 중복 업로드 금지 — 플랫폼 분리 (V2.2→유튜브, V2.1→틱톡)",
-        "- [ ] 제목에 해시태그 없음 · 해시태그는 설명란 3~4개만",
-        "",
         "---",
-        "⚠️ 정치 콘텐츠 — 검수 후 **수동 업로드** (FR-020/021 자동 업로드 차단 유지).",
+        f"⚠️ {rules.label} 콘텐츠 — 검수 후 **수동 업로드** "
+        "(FR-020/021 자동 업로드 차단 유지).",
         "",
     ]
     return "\n".join(lines)
@@ -220,8 +292,13 @@ def _probe_dur(path: Path) -> float:
         return 0.0
 
 
-def generate_upload_package(cfg: dict, video_path: Path, out_dir: Path) -> Path:
-    """upload_package.md + 썸네일 후보 생성 → md 경로 반환."""
+def generate_upload_package(cfg: dict, video_path: Path, out_dir: Path,
+                            ledger_path: Path | None = None) -> Path:
+    """upload_package.md + 썸네일 후보 생성 → md 경로 반환.
+
+    036: 제목·카테고리를 카테고리 원장에 함께 기록한다 (성과 리포트의 카테고리
+    슬라이스 근거). 원장 기록은 계측 보조라 실패해도 패키지 생성을 막지 않는다.
+    """
     thumbs = extract_thumbnail_candidates(video_path, out_dir / "thumb_candidates")
     md = build_upload_package_md(
         cfg, video_path, suggested=suggest_upload_time(datetime.now()),
@@ -229,4 +306,14 @@ def generate_upload_package(cfg: dict, video_path: Path, out_dir: Path) -> Path:
     )
     pkg = out_dir / "upload_package.md"
     pkg.write_text(md, encoding="utf-8")
+
+    try:
+        record_category(
+            ledger_path or CATEGORY_LEDGER_PATH,
+            cfg.get("yt_title") or cfg["title"],
+            resolve_config_category(cfg),
+            slug=cfg.get("slug", ""),
+        )
+    except OSError as e:
+        print(f"   ⚠️ 카테고리 원장 기록 실패 (계측만 영향): {e}")
     return pkg

@@ -223,6 +223,29 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 036 카테고리 확장 Phase 1~3 — 도메인 규칙 팩·가드레일·템플릿 (2026-08-13):
+  - `scripts/shorts_domain.py` (신규) — frozen `DomainRules` × 4 카테고리. 결과어/공방어·CTA 예시·고정댓글·제목 앵커·emotion/배경색·금지어·주의어·체크리스트를 한 표로. 정치 규칙은 `political_upload_package`의 기존 상수를 **그대로 참조**(두 곳이 갈라지면 035 게이트가 조용히 약해짐).
+  - **가드레일 2단** — 차단(`gate_domain_words`→ValueError): 경제 투자권유 13종(매수·매도·추천주·존버·물타기…, 유사투자자문 소지). 경고(`domain_warnings`): 사회 피의사실 / 연예 미확인 사생활 / 경제 전망 표현 / 연예 `source_channel` 누락. 둘 다 `"domain_gate": "off"` 우회.
+  - **관통** — `lint_topic_frame`·`is_clash_frame`·`has_outcome_frame`·`lint_yt_title`·`resolve_pinned_comment`·`build_upload_package_md`(체크리스트), `lint_cta(cta, category)`, 렌더러 `resolve_emotion_type`/`resolve_bg_colors`(config 명시값 우선).
+  - **템플릿 3종** — `_template_{economic,society,entertainment}_v2_2.json`. 카테고리별 배경: 경제 청록/relatable, 사회 남색/touching, 연예 보라/funny.
+  - **주의**: 034 보도체 게이트(`~했다` 과거형 어미 차단)는 카테고리 공통 — 경제·연예 제목도 과거형으로 끝내면 렌더가 막힌다. 명사로 닫을 것.
+  - 검증: pytest **1764 passed / 1 skipped**(신규 106), ruff 통과, **기존 정치 config 37개 전부 차단 0·경고 0·렌더 기본값 변화 0**. Phase 4(파일럿)는 운영 작업.
+- 036 카테고리 확장 Phase 0 — 정치 외 경제·사회·연예 계측 (2026-08-13):
+  - **결정**: 새 파이프라인 없이 **V2.2 표준에 `category` 축 관통**. 렌더러·38~42초 캡·릴레이 구조·CTA 삽입은 도메인 무관. 사용자 확정 — 단일 채널 혼합, 경제→사회→연예 순, 이번엔 Phase 0(계측)만.
+  - `scripts/shorts_category.py` (신규) — 카테고리 원장 `data/channel_analytics/category_ledger.json`(권위) + 제목 키워드 추론(폴백, 한/영). 제목 매칭은 NFC·해시태그 제거·공백 축약 + **접두 일치**(업로드 시 붙는 해시태그·꼬리말 흡수). 추론은 `classify_title`과 달리 **해시태그를 신호로 사용**(주제 메타데이터이므로).
+  - `political_upload_package.py` — `upload_package.md` 카테고리 표기 + 렌더 시 원장 자동 기록(`generate_upload_package(..., ledger_path=)`). 기록 실패는 경고만.
+  - `analyze_channel_performance.py` — `summarize(entries, ledger=)`에 `by_category`, 리포트 카테고리 표 + `category_mix_warnings()`(표본 3편 이상, 전체 중앙값 <70% 희석 / ≥130% 확대), `--ledger` 옵션.
+  - `render_political_v2_1/2.py` — `validate_config`에서 category 오타 fail-fast. **미지정 = `political`** 이라 기존 config 31개 무변경.
+  - **기준선(88편 백필)**: political 73편 1,174 / economic 11편 1,172 / society 2편 948 — 전부 전체 중앙값 100% 언저리 = 카테고리로는 아직 차이 없음. 미분류 2%.
+  - 검증: pytest **1713 passed / 1 skipped**(신규 55), 변경 파일 ruff 통과. Phase 1~4(도메인 규칙 팩·가드레일·템플릿·파일럿)는 미착수 — `prompt_plan.md` 036 참조.
+- 035 조회수/댓글 개선 — 길이 캡·중반 CTA·소재 프레임 (2026-08-05):
+  - **근거**: 채널 실측 88편 — 조회수 중앙값 1,169회에 900~1,400 구간이 47%(41편) 집중. 제목 유형(hook 1,151/neutral 1,200/report 1,121)·언어(한글 1,150/영어 1,151)·길이 구간 모두 차이 없음 → 병목은 클릭이 아니라 **완주율**. 최근 18편 좋아요 2.56%/댓글 0.24%(건강 기준의 절반 이하).
+  - `scripts/political_length.py` (신규) — 38~42초 캡. `validate` 단계는 글자 수 추정 경고(1.0배속 7.4자/초, 기존 config 31개 × 렌더 결과로 보정, 오차 ±15%), `render` 단계는 실측 타임라인으로 **하드 차단**(Remotion 렌더 전 fail-fast). 우회: config `"duration_gate": "off"`.
+  - `scripts/political_cta.py` (신규) — top-level `cta` 블록을 **40% 지점**(가장 가까운 씬 경계)에 tts 씬으로 자동 삽입. scene[0](훅) 앞·마지막 씬 뒤에는 삽입 금지. 편 가르는 선택지형(①/②·1번/2번·누구 잘못·어느 쪽·찬성/반대) 아니면 경고, CTA 나레이션 4초(약 32자) 상한, 일반 씬에 "댓글" 잔존 시 경고.
+  - `scripts/political_upload_package.py` — `is_clash_frame`/`has_outcome_frame`/`lint_topic_frame` 추가(공방형 제목 경고), `resolve_pinned_comment`(명시값 > `cta.voice` > 기본값), `DEFAULT_PINNED_COMMENT` 선택지형으로 교체, 체크리스트 035 3항목 추가.
+  - `src/analyzer/political_planner_stage_a_prompt.py` — 소재 프레임을 **'결과가 난 사건'**으로 전환. 폐기된 `[악역]-[응징동사]-[주인공]` 공식 제거, 클립 구간 25~40초 + 42초 캡 명시.
+  - `render_political_v2_1.py`/`_v2_2.py` — `load_config`에서 `apply_cta` → 검증 → `config_warnings` 출력, `cmd_render`에서 `enforce_length`.
+  - 템플릿·README 갱신. 검증: pytest **1655 passed / 1 skipped**, 변경 파일 ruff 통과. 기존 config 31개 중 23개가 캡 초과(과거 파일은 유지, 신규만 캡 적용).
 - 030 조회수 개선 P1/P3/P4 (2026-07-03):
   - **P1 제목 엔진**: `ShortsPlan.yt_title: str = ""` 신규 필드. Stage A 프롬프트에 "[악역]-[응징]-[주인공]" 15~30자 훅 제목 규칙. `plan_to_script()`: `yt_title or topic` 우선.
   - **P3 탈보도체**: "보도체 한 문장 (~했습니다 고정)" → "대립 서사체 (주장→반박→역공 아크, 다양한 문말 허용)". `STAGE_B_SYSTEM_PROMPT` / TOPIC / ECONOMIC 3종 갱신.

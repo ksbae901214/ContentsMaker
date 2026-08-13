@@ -36,6 +36,7 @@ from scripts.render_political_v2_1 import (
     cmd_download as v21_cmd_download,
     scale_timings, scene_type, src_path, work_dir,
 )
+from scripts.shorts_domain import resolve_bg_colors, resolve_emotion_type
 from src.analyzer.script_models import (
     ShortsScript, Metadata, Scene, AudioConfig, BackgroundConfig,
 )
@@ -60,8 +61,11 @@ CLIP_RATIO_MIN = 0.65         # 클립 오디오 비중 권장 하한 (미달 �
 # ── 설정 로드 & 검증 ────────────────────────────────────────────────
 def load_config(path: Path) -> dict:
     import json
-    cfg = json.loads(path.read_text(encoding="utf-8"))
-    for w in validate_config(cfg):
+    from scripts.political_cta import apply_cta
+    from scripts.render_political_v2_1 import config_warnings
+    # 035: cta 블록이 있으면 40% 지점에 tts 씬으로 삽입한 뒤 검증한다
+    cfg = apply_cta(json.loads(path.read_text(encoding="utf-8")))
+    for w in [*validate_config(cfg), *config_warnings(cfg)]:
         print(f"⚠️ {w}", flush=True)
     return cfg
 
@@ -128,6 +132,11 @@ def validate_config(cfg: dict) -> list[str]:
     # 034: 보도체·해시태그 제목은 렌더 전에 차단 (yt_title_lint: "off" 로 우회)
     from scripts.political_upload_package import gate_yt_title
     gate_yt_title(cfg)
+    # 036: category 오타 + 도메인 금지어(경제 투자권유)를 렌더 전에 차단
+    from scripts.shorts_category import resolve_config_category
+    from scripts.shorts_domain import gate_domain_words
+    resolve_config_category(cfg)
+    gate_domain_words(cfg)
 
     warnings = []
     if n_tts > MAX_TTS_SCENES_SOFT:
@@ -289,7 +298,7 @@ def build_script(cfg: dict, clip_durs: dict[int, float]) -> ShortsScript:
     return ShortsScript(
         metadata=Metadata(
             title=cfg["title"],
-            emotion_type=cfg.get("emotion_type", "angry"),
+            emotion_type=resolve_emotion_type(cfg),          # 036: 카테고리별 기본값
             duration=float(cfg.get("duration", 40.0)),
             source_url=cfg.get("youtube_url", ""),
             source_type="political_pro",
@@ -306,7 +315,7 @@ def build_script(cfg: dict, clip_durs: dict[int, float]) -> ShortsScript:
         ),
         background=BackgroundConfig(
             type="gradient",
-            colors=tuple(cfg.get("bg_colors", ("#7f1d1d", "#450a0a", "#000000"))),
+            colors=resolve_bg_colors(cfg),                   # 036: 카테고리별 기본값
         ),
     )
 
@@ -439,6 +448,9 @@ def cmd_render(cfg: dict) -> int:
     ]
     global_timings, placements = build_timeline(specs, timings)
     total_ms = max(t["end_ms"] for t in global_timings)
+    # 035 완주율 게이트 — 실측 길이로 하드 차단 (Remotion 렌더 전에 fail-fast)
+    from scripts.political_length import enforce_length
+    enforce_length(total_ms / 1000.0, cfg)
     assembled = wd / f"{audio_path.stem}_v22mix.mp3"
     audio_path = _assemble_audio(audio_path, placements, total_ms, assembled)
     ratio = clip_audio_ratio(global_timings, set(clip_cuts))

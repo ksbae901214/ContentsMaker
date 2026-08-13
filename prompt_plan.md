@@ -2,7 +2,132 @@
 
 > 블라인드 / NATV / 정치 / 셀럽 영상을 YouTube Shorts로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-07-30
+**마지막 업데이트**: 2026-08-13
+
+---
+
+## 🚧 신규: 카테고리 확장 — 정치 외 경제·사회·연예 (036) — 2026-08-13
+
+> 사용자 요청: "정치이슈 이외에 다른 경제 사회 연예 이슈도 다루려고 해 어떻게 업그레이드 하면 좋을지 기획해줘"
+> **상태**: Phase 0(계측) 구현 완료. Phase 1~4 미착수 (사용자가 "Phase 0만 먼저" 선택).
+
+### 핵심 판단
+새 파이프라인을 만들지 않는다. 렌더러·길이 캡(38~42초)·육성 릴레이 구조·CTA 삽입
+로직은 도메인과 무관하므로 **V2.2 제작 표준에 `category` 축 하나를 관통**시킨다.
+실제로 달라지는 건 4가지뿐: ①소재 프레임 어휘 ②CTA 선택지 축 ③제목 앵커
+④클립 소스 저작권 등급.
+
+035의 '결과가 난 사건' 프레임은 도메인이 바뀌어도 그대로 산다 — 어휘만 갈아끼운다
+(경제: 동결·급락·파산 / 사회: 무죄·구속·폐지 / 연예: 인정·하차·복귀).
+
+### 사용자 확정 결정 (2026-08-13)
+| 항목 | 확정 | 비고 |
+|---|---|---|
+| 채널 구조 | **단일 채널 혼합** | 권장안(2채널 분리)과 다름 — 혼합 희석 위험을 계측으로 감시 |
+| 도입 카테고리 | **경제 + 사회 + 연예 전부** | 우선순위는 경제 → 사회 → 연예 |
+| 이번 세션 범위 | **Phase 0만** | 계측 없이 확장하면 판정 불가 |
+
+### 기존 자산 / 격차
+- AI 플래너 라인(`political_pro` topic 모드)엔 `category: political|economic` 이
+  2026-07-02에 이미 관통돼 있다 (Stage A/B 프롬프트·`ShortsPlan.category`·API·UI).
+- **격차**: 매일 쓰는 라인은 그쪽이 아니라 수동 config + `render_political_v2_1/2.py`.
+  034/035 게이트가 전부 정치 어휘로 하드코딩돼 있다.
+
+| 위치 | 정치 하드코딩 | Phase |
+|---|---|---|
+| `political_upload_package.py` `_CLASH_WORDS`/`_OUTCOME_WORDS` | 사퇴·부결·경질 | 1 |
+| `political_upload_package.py` `DEFAULT_PINNED_COMMENT` | "① 여당 ② 야당" | 1 |
+| `political_upload_package.py` `lint_yt_title` | 제목에 `persons`(실명) 요구 — 경제는 숫자·기업명이 앵커 | 1 |
+| `political_cta.py` `SIDE_PICK_MARKERS` | ①/② 마커는 재사용 가능, 예시 문구만 도메인별 | 1 |
+| `political_length.py` | 없음 — 38~42초 캡은 도메인 무관 | **무변경** |
+| `render_political_v2_2.py` | 없음 (이름만 정치) | 기본값만 |
+
+### 도메인별 4축 (Phase 1 설계 근거)
+| | 결과어 | CTA 선택지 축 | 제목 앵커 | 소스/저작권 |
+|---|---|---|---|---|
+| 정치 | 사퇴·부결·철회·경질 | 여당/야당 | 실명 1~2 | 국회방송·기자회견 (공적 발언) |
+| 경제 | 동결·인상·급락·파산·리콜 | 살까/팔까, 정책 찬반 | 숫자+기업·기관명 | 뉴스·기관 발표·차트 (**최저 위험**) |
+| 사회 | 무죄·구속·판결·폐지·사과 | 처벌 과하다/약하다 | 사건명+결과 | 뉴스 화면 (2차 가해 리스크) |
+| 연예 | 인정·결별·하차·복귀·폭로 | 잘못이다/아니다 | 실명+반전 | 방송 클립 (**최고 위험**) |
+
+### 단계
+- [x] **Phase 0 계측 (완료 2026-08-13)** — 아래 참조
+- [x] **Phase 1 도메인 규칙 팩 (완료 2026-08-13)** — `scripts/shorts_domain.py` 신설
+- [x] **Phase 2 도메인 가드레일 (완료 2026-08-13)** — 차단 1종 + 경고 4종
+- [x] **Phase 3 템플릿·문서 (완료 2026-08-13)** — 카테고리별 템플릿 3종 + README.
+      **configs 서브폴더 분리는 하지 않음** — 기존 config 37개·문서·메모리가 전부
+      현재 경로를 참조해 이동 비용만 크고 얻는 게 없다 (Surgical Changes)
+- [ ] **Phase 4 파일럿·판정** — 카테고리당 6편 / 2주 → 아래 기준선 대비 판정.
+      **코드 작업이 아니라 운영 작업** (실제 영상 제작·업로드 후 리포트 비교)
+
+### Phase 0 구현 (완료)
+- **신규 `scripts/shorts_category.py`** — 카테고리 원장 + 제목 키워드 추론.
+  - 원장(권위): `data/channel_analytics/category_ledger.json`. 업로드가 수동이라
+    유튜브에 카테고리가 안 남는다 → 로컬 원장이 유일한 정답 소스.
+  - 추론(폴백): 과거 편 백필용 best-effort. 한/영 키워드, **해시태그를 신호로 사용**
+    (`classify_title` 의 문체 분류가 해시태그를 벗기는 것과 목적이 다름).
+  - 제목 매칭: NFC + 해시태그 제거 + 공백 축약 + **접두 일치** — 업로드 시 제목
+    뒤에 해시태그·꼬리말이 붙어도 원장 항목을 찾아낸다.
+- **`political_upload_package.py`** — `upload_package.md` 에 카테고리 표기 +
+  렌더 시 원장 자동 기록(`generate_upload_package(..., ledger_path=)`).
+  원장 기록 실패는 경고만 — 계측이 제작을 막지 않는다.
+- **`analyze_channel_performance.py`** — `summarize(entries, ledger=)` 에
+  `by_category` 추가, 리포트에 카테고리 표 + `category_mix_warnings()`
+  (표본 3편 이상, 전체 중앙값의 <70% = 희석 후보 / ≥130% = 확대 후보), `--ledger` 옵션.
+- **`render_political_v2_1/2.py`** — `validate_config` 에서 category 오타 fail-fast.
+
+### 기준선 (2026-08-05 스냅샷 88편, 추론 백필)
+| 카테고리 | 편수 | 중앙값 | 전체 대비 |
+|---|---|---|---|
+| political | 73 | 1,174 | 100% |
+| economic | 11 | 1,172 | 100% |
+| society | 2 | 948 | 81% |
+| unknown | 2 | 2,021 | — |
+
+카테고리로는 **아직 아무 차이가 없다** (전부 100% 언저리) — 035의 "병목은 클릭이
+아니라 완주율" 결론과 일치. 신규 카테고리는 이 1,17x 선을 넘어야 의미가 있다.
+미분류는 88편 중 2편(2%) — 영문 제목 키워드 추가로 39% → 2% 개선.
+
+### 리스크
+- **HIGH** 연예 방송 클립 저작권 — 3순위로 미룸. 도입 시 인용 범위 최소화 + 출처 명시 강제
+- **MEDIUM-HIGH** 사회 피의사실공표·2차 가해 — 판결 확정 사건 우선
+- **MEDIUM** 경제 투자권유(자본시장법) — Phase 2 어휘 게이트
+- **MEDIUM** 단일 채널 혼합 시 추천 신호 희석 — `category_mix_warnings` 로 감시
+- **MEDIUM** 제작 부하 — 카테고리는 **대체**이지 추가가 아니다. 총 편수 유지
+  (035 리포트가 이미 3일 업로드 공백을 경고 중)
+
+### Phase 1/2/3 구현 (완료 2026-08-13)
+- **신규 `scripts/shorts_domain.py`** — frozen `DomainRules` × 4 카테고리.
+  결과어/공방어·CTA 예시·고정댓글·제목 앵커·emotion/배경색·금지어·주의어·체크리스트를
+  한 표로 모았다. 정치 규칙은 `political_upload_package` 의 기존 상수(`_CLASH_WORDS`
+  등)를 **그대로 참조** — 두 곳이 갈라지면 035 게이트가 조용히 약해진다.
+- **가드레일 2단**:
+  - 차단(`gate_domain_words` → ValueError): 경제 투자 권유 13종(매수·매도·추천주·
+    급등각·존버·물타기·풀매수·몰빵·수익률 보장…). 유사투자자문 소지라 하드 게이트.
+  - 경고(`domain_warnings`): 사회 피의사실 7종 / 연예 미확인 사생활 7종 / 경제 전망
+    표현 / 연예 `source_channel` 누락. 사람 판단이 필요한 것들.
+  - 둘 다 `"domain_gate": "off"` 로 우회.
+- **관통**: `lint_topic_frame`·`is_clash_frame`·`has_outcome_frame`·`lint_yt_title`·
+  `resolve_pinned_comment`·`build_upload_package_md`(체크리스트) + `lint_cta(cta, category)`
+  + 렌더러 `resolve_emotion_type`/`resolve_bg_colors`.
+- **템플릿 3종** — `_template_{economic,society,entertainment}_v2_2.json`.
+  전부 validate + CTA 삽입 + 업로드 패키지 생성까지 dry-run 통과(경고 0건).
+
+### 검증 (2026-08-13, Phase 0~3 누적)
+- pytest **1764 passed / 1 skipped** (신규 106개: `test_shorts_category.py` 37,
+  `test_shorts_domain.py` 28, `test_domain_category_wiring.py` 23,
+  `test_upload_package_category.py` 7, `test_channel_performance.py` +11)
+- 변경 파일 12개 ruff 통과
+- **회귀 실증**: 기존 정치 config **37개 전부** 차단 0 / 경고 0 / 렌더 기본값 변화 0
+- 실제 88편 스냅샷 백필 dry-run, 가드레일 4종 발화 확인
+
+### 알게 된 것
+034 보도체 게이트(`~했다`류 과거형 어미 차단)는 카테고리 공통이라, 경제 템플릿의
+'영끌족은 웃었다' 같은 **서사형 제목도 차단된다**. 게이트를 약화시키는 대신 제목을
+명사로 닫도록 템플릿·README에 명시했다 (정치에서 검증된 게이트를 신규 카테고리
+편의를 위해 풀지 않는다).
+
+### 복잡도: Phase 0~3 = MEDIUM (실측 일치)
 
 ---
 

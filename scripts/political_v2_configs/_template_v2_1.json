@@ -1,11 +1,11 @@
 {
-  "_comment": "정치쇼츠 V2.1 템플릿 (render_political_v2_1.py 전용). V2 대비 추가: yt_title/yt_title_alt/persons/hook/description/pinned_comment. hook 을 빼면 V2 방식(TTS 훅)으로 동작. [034] yt_title은 보도체·해시태그 금지(validate 차단, 우회: yt_title_lint='off') — 감정훅/호기심형 12~20자, 해시태그는 설명란 3~4개만.",
+  "_comment": "정치쇼츠 V2.1 템플릿 (render_political_v2_1.py 전용). V2 대비 추가: yt_title/yt_title_alt/persons/hook/description/pinned_comment. hook 을 빼면 V2 방식(TTS 훅)으로 동작. [034] yt_title은 보도체·해시태그 금지(validate 차단, 우회: yt_title_lint='off') — 감정훅/호기심형 12~20자, 해시태그는 설명란 3~4개만. [035] ①길이 38~42초 캡(초과 시 렌더 차단, 우회: duration_gate='off') ②댓글 CTA는 마지막 씬이 아니라 top-level cta 블록 — 40% 지점에 자동 삽입되며 편 가르는 선택지형 질문 필수 ③소재는 '누가 누구를 저격'이 아니라 '결과가 난 사건'.",
   "slug": "20260714_example_v2_1",
   "title": "상단 배너 제목 (영상 내 고정 노출)",
-  "yt_title": "죽창 들자던 조국, 이젠 말끝으로 사상검증",
-  "yt_title_alt": "'무섭노' 한마디에 일베 몰이, 역풍 맞은 조국",
+  "yt_title": "'무섭노' 한마디에 사상검증, 결국 사과한 조국",
+  "yt_title_alt": "죽창 들자던 사람이, 9시간 만에 물러섰다",
+  "_yt_title_comment": "[035] 결과가 난 사건 프레임 — 번복/철회/사퇴/역전/컴백이 드러나야 함. 'A가 B를 직격/저격'만 있는 공방형은 실측상 조회수 1,100대 천장 (upload_package.md 경고).",
   "persons": ["조국", "이준석"],
-  "pinned_comment": "여러분의 '무섭노'는 사투리인가요? 댓글로 남겨주세요 👇",
   "source_channel": "채널A 김진의돌직구쇼",
   "source_title": "'무섭노' 사투리에 때아닌 '일베' 논란",
   "youtube_url": "https://www.youtube.com/watch?v=VSAn-JTZsFA",
@@ -13,6 +13,13 @@
   "tts_speed": 1.1,
   "_tts_speed_comment": "나레이션 씬 배속 (훅 원본 육성 제외). V2.1 기본값 1.1 (사용자 확정 2026-07-21). 생략 시에도 코드 기본값 1.1 적용. 더 빠르게/느리게 하려면 값만 조정.",
   "fallback_source": "chA",
+  "cta": {
+    "_comment": "[035] 댓글 CTA — 40% 지점에 tts 씬으로 자동 삽입된다(위치는 at_frac 으로 조정). 열린 질문('여러분 생각은?')은 실측 댓글율 0.24%라 금지 — ①/② 선택지형으로. voice 는 4초 이내(약 32자).",
+    "text": "이거 누구 잘못?\n① 조국  ② 이준석",
+    "voice": "누구 잘못일까요? 1번 조국, 2번 이준석. 번호로 답글.",
+    "hl": ["누구 잘못"],
+    "at_frac": 0.4
+  },
   "hook": {
     "source": "joguk",
     "start_sec": 42.0,
@@ -35,8 +42,9 @@
       "voice": "역풍이 터졌습니다. 이준석은, 죽창 들자던 사람이 이젠 말끝 하나로 사상을 검증하냐고 직격했습니다.",
       "hl": ["이준석", "죽창"] },
     { "type": "body", "color": "yellow", "emph": true, "source": "chA", "frac": 0.35,
-      "text": "당신의 '무섭노'는?\n댓글로 👇",
-      "voice": "당신의 무섭노는 사투리인가요? 댓글로 남겨주세요.",
-      "hl": ["무섭노"] }
+      "_comment": "[035] 마지막 씬은 팩트 정리로 닫는다 — 댓글 유도는 cta 블록으로 분리(중복 시 경고).",
+      "text": "9시간 만에\n글 내리고 사과",
+      "voice": "논란 아홉 시간 만에 글은 내려갔고, 사과문이 올라왔습니다. 말투로 사람을 가르는 시도는 그렇게 끝났습니다.",
+      "hl": ["9시간", "사과"] }
   ]
 }

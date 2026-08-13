@@ -29,6 +29,7 @@ import sys
 import time
 from pathlib import Path
 
+from scripts.shorts_domain import resolve_bg_colors, resolve_emotion_type
 from src.analyzer.script_models import (
     ShortsScript, Metadata, Scene, AudioConfig, BackgroundConfig,
 )
@@ -44,9 +45,30 @@ PY = sys.executable       # .venv311/bin/python 로 실행됨
 
 # ── 설정 로드 & 검증 ────────────────────────────────────────────────
 def load_config(path: Path) -> dict:
-    cfg = json.loads(path.read_text(encoding="utf-8"))
+    from scripts.political_cta import apply_cta
+    # 035: cta 블록이 있으면 40% 지점에 tts 씬으로 삽입한 뒤 검증한다
+    cfg = apply_cta(json.loads(path.read_text(encoding="utf-8")))
     validate_config(cfg)
+    for w in config_warnings(cfg):
+        print(f"⚠️ {w}", flush=True)
     return cfg
+
+
+def config_warnings(cfg: dict) -> list[str]:
+    """035 품질 경고 — 길이 캡·CTA 형식·말미 CTA 잔존 (하드 오류 아님).
+
+    V2.2(render_political_v2_2.py)도 이 함수를 재사용한다.
+    """
+    from scripts.political_cta import lint_cta, trailing_cta_warnings
+    from scripts.political_length import length_warnings
+    from scripts.shorts_category import resolve_config_category
+    from scripts.shorts_domain import domain_warnings
+    warnings = list(length_warnings(cfg))
+    if cfg.get("cta"):
+        warnings.extend(lint_cta(cfg["cta"], resolve_config_category(cfg)))
+    warnings.extend(trailing_cta_warnings(cfg))
+    warnings.extend(domain_warnings(cfg))     # 036: 도메인 주의어·출처 표기
+    return warnings
 
 
 def validate_config(cfg: dict) -> None:
@@ -71,6 +93,11 @@ def validate_config(cfg: dict) -> None:
     # 034: 보도체·해시태그 제목은 렌더 전에 차단 (yt_title_lint: "off" 로 우회)
     from scripts.political_upload_package import gate_yt_title
     gate_yt_title(cfg)
+    # 036: category 오타 + 도메인 금지어(경제 투자권유)를 렌더 전에 차단
+    from scripts.shorts_category import resolve_config_category
+    from scripts.shorts_domain import gate_domain_words
+    resolve_config_category(cfg)
+    gate_domain_words(cfg)
 
 
 def scene_type(sc: dict) -> str:
@@ -270,7 +297,7 @@ def build_script(cfg: dict, hook_dur: float = 0.0) -> ShortsScript:
     return ShortsScript(
         metadata=Metadata(
             title=cfg["title"],
-            emotion_type=cfg.get("emotion_type", "angry"),
+            emotion_type=resolve_emotion_type(cfg),          # 036: 카테고리별 기본값
             duration=float(cfg.get("duration", 40.0)),
             source_url=cfg.get("youtube_url", ""),
             source_type="political_pro",
@@ -287,7 +314,7 @@ def build_script(cfg: dict, hook_dur: float = 0.0) -> ShortsScript:
         ),
         background=BackgroundConfig(
             type="gradient",
-            colors=tuple(cfg.get("bg_colors", ("#7f1d1d", "#450a0a", "#000000"))),
+            colors=resolve_bg_colors(cfg),                   # 036: 카테고리별 기본값
         ),
     )
 
@@ -343,6 +370,9 @@ def cmd_render(cfg: dict) -> int:
     main = [t for t in timings if t["scene_id"] != -1]
     total_ms = max(t["end_ms"] for t in main)
     print(f"✅ 합성·정렬 완료: {total_ms/1000:.1f}s (훅 포함), {len(main)}씬", flush=True)
+    # 035 완주율 게이트 — 실측 길이로 하드 차단 (Remotion 렌더 전에 fail-fast)
+    from scripts.political_length import enforce_length
+    enforce_length(total_ms / 1000.0, cfg)
 
     print("✂️ 씬 클립 9:16 컷 (인물별 소스)...", flush=True)
     from src.dem_shorts.editor.segment_cutter import cut_segment

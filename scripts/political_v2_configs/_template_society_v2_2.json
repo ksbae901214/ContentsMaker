@@ -1,0 +1,39 @@
+{
+  "_comment": "사회쇼츠 V2.2 템플릿 (036). 파이프라인·길이 캡(38~42초)·릴레이 구조는 정치와 동일, 검사 기준표만 사회(scripts/shorts_domain.py). [핵심] ①소재는 '결과가 난 사건' — 무죄·구속·선고·폐지·공식사과. 사건 '발생'은 결과가 아니다. ②'피의자·용의자·구속영장·범인' 표현이 있으면 경고 — 판결 확정 전 단정은 피의사실공표·명예훼손 소지. **확정 판결 사건을 우선**한다. ③피해자·유족 신원이 드러나지 않게 할 것(2차 가해). ④배경은 남색(touching), 정치의 레드가 아님 — 미지정 시 자동.",
+  "category": "society",
+  "slug": "20260813_3nyeon_muljoe_v2_2",
+  "title": "상단 배너 제목 (영상 내 고정 노출)",
+  "yt_title": "3년 재판 끝 무죄, 법정의 표정",
+  "yt_title_alt": "결국 뒤집힌 1심, 그날 법정",
+  "_yt_title_comment": "결과어(무죄·구속·선고·폐지·사과)가 드러나야 한다. 공방형('A가 B를 저격')만 있으면 upload_package.md에 경고.",
+  "persons": ["OO 사건"],
+  "source_channel": "출처 채널명",
+  "source_title": "원본 영상 제목",
+  "youtube_url": "https://www.youtube.com/watch?v=XXXXXXXXXXX",
+  "tts_speed": 1.1,
+  "fallback_source": "news",
+  "cta": {
+    "_comment": "40% 지점 자동 삽입. 사회는 '처벌 수위'로 편이 갈린다. 나레이션 4초(약 32자) 이내.",
+    "text": "이 판결 어떻게 보세요?\n① 너무 약하다  ② 적당하다",
+    "voice": "너무 약한가요 적당한가요? 1번, 2번 답글.",
+    "hl": ["너무 약하다"],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "court": { "query": "OO 사건 선고 법원 현장", "dur_max": 900, "verify_frac": 0.3 },
+    "news": { "query": "OO 사건 판결 뉴스 리포트", "dur_max": 900, "verify_frac": 0.4 }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "court", "start_sec": 0.0, "duration": 4.0,
+      "text": "\"원심을 파기하고\n무죄를 선고한다\"",
+      "hl": ["무죄"] },
+    { "mode": "clip", "source": "news", "start_sec": 0.0, "duration": 5.0,
+      "text": "1심 유죄에서\n3년 만의 뒤집기",
+      "hl": ["3년 만"] },
+    { "mode": "tts", "source": "news", "frac": 0.5, "color": "yellow", "emph": true,
+      "_comment": "마지막 씬은 팩트 정리. 확정 판결만 단정하고, 수사 중 사건은 '혐의'로 쓴다. 피해자·유족 신원은 절대 노출 금지.",
+      "text": "확정까지\n남은 절차는",
+      "voice": "항소심 재판부는 원심을 파기하고 무죄를 선고했습니다. 검찰이 상고하면 최종 판단은 대법원으로 넘어갑니다.",
+      "hl": ["무죄", "대법원"] }
+  ]
+}

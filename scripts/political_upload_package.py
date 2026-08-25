@@ -24,7 +24,7 @@ CATEGORY_LEDGER_PATH = Path("data/channel_analytics/category_ledger.json")
 MAX_HASHTAGS = 4                        # #인물명 2~4개 권장
 UPLOAD_HOUR = 20                        # 평일 20~21시 직후 업로드 권장
 # 035: 열린 질문은 실측 댓글율 0.24% — 편이 갈리는 선택지형으로 교체
-DEFAULT_PINNED_COMMENT = "둘 중 누가 더 문제라고 보세요? ① 여당  ② 야당 — 번호로 답글 👇"
+DEFAULT_PINNED_COMMENT = "둘 중 누가 더 문제라고 보세요? ① 여당  ② 야당 — 댓글로 알려주세요 👇"
 
 # 035 소재 프레임: '누가 누구를 저격'(공방형)은 실측상 1,100대 천장.
 # 터진 영상은 전부 결과가 난 사건 — '13시간 대역전극', '9년 침묵의 컴백'.

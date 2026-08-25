@@ -1,0 +1,54 @@
+{
+  "_comment": "경제쇼츠 V2.1 — 금융위·금감원 세종 이전 검토와 금융노조 9월 4일 총파업 예고. 출처: 중앙일보 2026-08-19 '세종 가느니 이직 하겠다' (2,160댓글, 네이버 경제 1위). [주의] 이전은 **아직 미확정** — 모든 자막·나레이션에서 '논의/검토'로만 표기하고 확정처럼 쓰지 말 것. 035 결과 프레임은 '이전 확정'이 아니라 '총파업 예고'로 잡는다.",
+  "category": "economic",
+  "slug": "20260820_sejong_iseon_v2_1",
+  "title": "금융위·금감원 세종 이전",
+  "yt_title": "130km 세종행에 결국 총파업 예고",
+  "yt_title_alt": "\"세종 가느니 이직\" 결국 총파업 카드",
+  "_yt_title_comment": "결과어 '결국' + 숫자 앵커 '130km'. 이전 자체는 미확정이라 결과는 '총파업 예고'로 잡았다. 명사 종결(034 보도체 게이트 통과).",
+  "persons": ["금융감독원", "산업은행", "금융노조"],
+  "source_channel": "한국경제TV / 서울경제TV / OBS뉴스",
+  "source_title": "'지방 이전' 반발 수위 고조…금융노조 총파업 예고",
+  "youtube_url": "https://www.youtube.com/watch?v=V5hIX5SxmT8",
+  "emotion_type": "angry",
+  "_emotion_type_comment": "경제 기본값은 relatable(차분)이지만 이 소재는 노조 대 정부의 대립·규탄 구도라 angry. 배경은 bg_colors 미지정 → 경제 기본 청록 유지(emotion_type은 BGM만 바꾼다).",
+  "tts_speed": 1.1,
+  "fallback_source": "seoul_tv",
+  "cta": {
+    "text": "금융기관 세종행\n① 필요하다  ② 무리다",
+    "voice": "1번 필요하다, 2번 무리다. 댓글로 알려주세요.",
+    "hl": ["세종행"],
+    "at_frac": 0.4,
+    "frac": 0.62,
+    "_frac_comment": "명시하지 않으면 직전 씬의 frac 을 상속해 같은 화면 구간이 곧바로 반복된다 (1차 렌더에서 S1·S2 둘 다 obs 29.5s로 나옴)."
+  },
+  "hook": {
+    "_verified": "8/11 여의도 3사 공동집회 구호 현장음 39.02~44.01s (V2.2 다운로드분에서 silencedetect 실측). 화면: 피켓 든 노조원 2,500명 + 번인자막 '결사반대 결사반대 졸속이전 결사반대 투쟁!'",
+    "source": "hk_tv",
+    "start_sec": 39.0,
+    "duration": 5.0,
+    "text": "\"졸속이전\n결사반대!\"",
+    "hl": ["결사반대"]
+  },
+  "sources": {
+    "seoul_tv": { "url": "https://www.youtube.com/watch?v=3hUtMyZ3ztw", "dur_max": 900, "verify_frac": 0.35 },
+    "obs": { "url": "https://www.youtube.com/watch?v=k5Q0x-gLHuA", "dur_max": 900, "verify_frac": 0.4 },
+    "hk_tv": { "url": "https://www.youtube.com/watch?v=V5hIX5SxmT8", "dur_max": 900, "verify_frac": 0.5 }
+  },
+  "scenes": [
+    { "type": "body", "color": "white", "emph": false, "source": "obs", "frac": 0.25,
+      "text": "금융위·금감원\n서울에서 130km 밖으로",
+      "voice": "금융위원회와 금융감독원을 세종으로 옮기는 방안이 정부 안에서 논의되고 있습니다. 서울에서 백삼십 킬로미터. 산업은행과 기업은행, 수출입은행까지 후보에 올랐습니다.",
+      "hl": ["세종", "130km"] },
+    { "type": "body", "color": "red", "emph": true, "source": "seoul_tv", "frac": 0.25,
+      "_comment": "'세종 가느니 이직'은 중앙일보 익명 관계자 코멘트로 육성이 없다 — V2.1은 TTS 논평 포맷이라 인용으로 쓸 수 있지만, V2.2에서는 자막으로 쓰지 않았다.",
+      "text": "검사 대상 88%가 수도권\n\"세종 가느니 이직\"",
+      "voice": "중앙일보 19일 보도 기준 금감원 검사 대상의 88퍼센트는 수도권입니다. 금감원 관계자는 세종 갈 바엔 서울에서 이직하겠다고 했습니다.",
+      "hl": ["88%", "이직"] },
+    { "type": "body", "color": "yellow", "emph": true, "source": "hk_tv", "frac": 0.5,
+      "_comment": "[035] 마지막 씬 = 팩트 정리. 미확정 사안이므로 '확정된 건 없다'를 반드시 남긴다.",
+      "text": "9월 4일 총파업 예고\n대상·지역은 아직 미확정",
+      "voice": "국책은행 세 곳 노조는 이미 공동 집회를 열었고, 금융노조는 9월 4일 총파업을 예고했습니다. 이전 대상과 지역은 아직 확정되지 않았습니다.",
+      "hl": ["9월 4일", "미확정"] }
+  ]
+}

@@ -10,12 +10,14 @@
   "source_channel": "필수 — 방송사/채널명 (저작권 방어선, 미지정 시 경고)",
   "source_title": "원본 영상 제목",
   "youtube_url": "https://www.youtube.com/watch?v=XXXXXXXXXXX",
+  "emotion_type": "relatable",
+  "_emotion_type_comment": "[필수 판단] BGM은 emotion_type 하나로만 결정된다(배경색은 bg_colors, 자막색은 씬 color로 따로 지정 → emotion_type을 바꿔도 화면은 그대로, BGM만 바뀐다). 연예 카테고리 기본값은 'funny'(코믹 BGM)라 논란·사건 소재에 그대로 두면 뜬금없는 음악이 깔린다(2026-08-13 실측 실패: 친일 논란 편에 funny_2.mp3). 소재 톤으로 고를 것 — 사실전달·중립 검증=relatable / 대립·규탄=angry / 비극·서사=touching / 축하·가벼움=funny.",
   "tts_speed": 1.1,
   "fallback_source": "news",
   "cta": {
     "_comment": "40% 지점 자동 삽입. 연예는 '응원 vs 이르다'로 편이 갈린다. 나레이션 4초(약 32자) 이내.",
     "text": "이 복귀 어떻게 보세요?\n① 응원한다  ② 이르다",
-    "voice": "응원하시나요 이른가요? 1번, 2번 답글.",
+    "voice": "응원하시나요 이른가요? 댓글로 알려주세요.",
     "hl": ["응원한다"],
     "at_frac": 0.4
   },

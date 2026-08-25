@@ -1,0 +1,128 @@
+{
+  "_comment": "이진숙 '5·18 재조명' 국회 포럼 강행 (2026-08-13) — V2.1 TTS 브리핑형. 훅은 이진숙 본인 육성('특정 세력의 목표')으로, V2.2 훅(청중 난동)과 겹치지 않게 분리. [사용자 지시 2026-08-14] 댓글 CTA를 40% 자동삽입이 아니라 **맨 마지막 씬**에 둔다 → top-level cta 블록을 쓰지 않고 scenes 마지막에 직접 작성, pinned_comment 는 명시. render 시 trailing_cta_warnings 경고 1줄은 의도된 동작.",
+  "slug": "20260814_ljs_518_forum_v2_1",
+  "title": "국힘도 말렸는데, 결국 강행",
+  "yt_title": "국힘도 못 말린 이진숙, 결국 제명 위기",
+  "yt_title_alt": "당이 말렸는데 결국 열린 5·18 포럼",
+  "_yt_title_comment": "[035] 결과 프레임 — '결국'(결과어) 보유. [034] 보도체·해시태그 0 (gate_yt_title PASS 확인). V2.2와 다른 제목을 써 같은 주제 중복 노출을 줄인다.",
+  "persons": [
+    "이진숙",
+    "이영훈",
+    "한병도"
+  ],
+  "category": "political",
+  "source_channel": "SBS·채널A·MBC·KBS 뉴스",
+  "source_title": "이진숙 주최 '5·18 민주화운동의 재조명 국회 공개포럼' (2026-08-13)",
+  "youtube_url": "https://www.youtube.com/watch?v=8u_S6swP4oA",
+  "emotion_type": "angry",
+  "_emotion_type_comment": "BGM 스위치 — 규탄·대립 소재라 angry 명시 (카테고리 기본값 물려받지 않는다).",
+  "tts_speed": 1.1,
+  "fallback_source": "sbs",
+  "pinned_comment": "국민의힘 지도부는 취소를 권했지만 이진숙 의원은 포럼을 강행했고, 소속 의원은 아무도 참석하지 않았습니다. 민주당은 제명 촉구 결의안을, 조국혁신당은 윤리특위 제소를 예고했습니다. 전두환의 내란·내란목적살인죄는 1997년 대법원에서 유죄가 확정된 사안입니다. 이진숙 의원 제명, 어느 쪽인가요? ① 당장 제명 ② 과하다 — 번호로 답글 남겨주세요 👇",
+  "hook": {
+    "source": "mbc",
+    "start_sec": 28.3,
+    "duration": 7.4,
+    "_start_sec_comment": "실측 — 무음 26.00~28.33 직후 구호 시작, 무음 35.71~36.87 앞에서 종료. 프레임 확인: 민주당 규탄대회 붉은 피켓 물결 + 번인 자막 '5·18 왜곡·폄훼 이진숙은 사퇴하라'.",
+    "_choice_comment": "당초 이진숙 육성('특정 세력의 목표', sbs 113.9)을 훅으로 잡았으나 프레임 확인 결과 화면이 인물이 아니라 강당 원경이라 훅으로 약해 교체(README 훅 부적격: 배경 원경 화면).",
+    "text": "\"5·18 왜곡·폄훼\n이진숙은 사퇴하라\"",
+    "hl": [
+      "사퇴하라"
+    ]
+  },
+  "sources": {
+    "sbs": {
+      "url": "https://www.youtube.com/watch?v=8u_S6swP4oA",
+      "_comment": "SBS 리포트 159s — 이진숙 훅 육성 + 이영훈 '소요 사태'",
+      "dur_max": 900,
+      "verify_frac": 0.4
+    },
+    "chaos": {
+      "url": "https://www.youtube.com/watch?v=9Qo912IBf0k",
+      "_comment": "채널A 현장영상 441s — 물병·멱살, 경찰 출동 화면",
+      "dur_max": 900,
+      "verify_frac": 0.3
+    },
+    "kbs": {
+      "url": "https://www.youtube.com/watch?v=a5Lnolk__WQ",
+      "_comment": "KBS 9시뉴스 129s — 여야 반응(제명해야 / 당과 무관)",
+      "dur_max": 900,
+      "verify_frac": 0.5
+    },
+    "mbc": {
+      "url": "https://www.youtube.com/watch?v=nAmouViXRcQ",
+      "_comment": "MBC 뉴스데스크 172s — 규탄대회 '사퇴하라' 구호, 국힘 내부 반발",
+      "dur_max": 900,
+      "verify_frac": 0.35
+    }
+  },
+  "scenes": [
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "sbs",
+      "frac": 0.15,
+      "text": "국회도서관 대강당\n이진숙 주최 포럼",
+      "voice": "국회도서관에서 열린 이진숙 의원 주최 포럼. 공동 주최는 뉴라이트 이영훈 대표 단쳅니다. 당 지도부는 열지 말라고 했습니다.",
+      "hl": [
+        "국회도서관",
+        "뉴라이트"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "chaos",
+      "frac": 0.45,
+      "text": "\"열흘 간의 소요 사태\"\n자료집엔 전두환 책임 부정",
+      "voice": "이 대표는 광주를 소요 사태라 불렀고, 자료집엔 전두환 책임 부정 주장이 실렸습니다.",
+      "hl": [
+        "소요 사태",
+        "전두환"
+      ],
+      "_comment": "배경은 chaos(아수라장 현장) — 삭제한 물병·경찰 씬의 화면을 여기서 살린다."
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "kbs",
+      "frac": 0.55,
+      "text": "\"취소 요청했지만 거절\"\n국힘 의원 전원 불참",
+      "voice": "국민의힘은 취소를 요청했지만 거절당했다며 선을 그었고, 아무도 안 왔습니다.",
+      "hl": [
+        "거절",
+        "전원 불참"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "mbc",
+      "frac": 0.7,
+      "_comment": "팩트 정리 — 왜곡 발언을 인용했으므로 사법적으로 확정된 사실과 당의 전례를 여기서 박는다.",
+      "text": "민주 \"제명 결의안\"\n전두환 내란죄는 1997년 확정",
+      "voice": "민주당은 제명 결의안을, 조국혁신당은 윤리특위 제소를 예고했습니다. 전두환 내란죄는 1997년 확정, 국힘도 2020년 묘역에서 무릎 꿇고 사과했습니다.",
+      "hl": [
+        "제명",
+        "1997년"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "chaos",
+      "frac": 0.5,
+      "_comment": "[사용자 지시 2026-08-14] 댓글 CTA를 맨 마지막에 배치. top-level cta 블록(40% 자동삽입) 미사용.",
+      "text": "이진숙 제명, 어느 쪽?\n① 당장 제명  ② 과하다",
+      "voice": "1번 제명, 2번 과하다. 번호로 답글.",
+      "hl": [
+        "어느 쪽"
+      ]
+    }
+  ]
+}

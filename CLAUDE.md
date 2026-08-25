@@ -223,6 +223,45 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 037 제작 규격 고정 — **제목 100px · 클립은 말 끝맺음까지** (2026-08-25, 사용자 지시):
+  - **제목 폰트 크기 = 100px 고정** — `src/video/remotion/src/ShortsComposition.tsx` 의 `TitleBar`
+    (`fontSize: 100`, 서체는 기본 `Noto Sans KR` 유지). 75px 기본값은 쇼츠 피드에서 제목이 안 읽힌다.
+    **자막(`SceneText`)은 건드리지 않는다** — 자막을 키우면 방송 번인 자막과 겹치고, 한 줄 글자 수가
+    줄어 `WebkitLineClamp:3` 이 `…`로 자른다 (검은고딕 135px 을 자막에 시도했다가 전 씬이 3줄로
+    밀려 폐기).
+  - **`mode: "clip"` 씬은 문장 끝 단어가 다 발화된 뒤 끊는다** — 어미가 잘리면 시청자가 말이 끊긴
+    것으로 인지해 이탈한다. **눈대중·auto-caption 블록 타임스탬프 금지**(롤링 자막이라 문장 경계와
+    안 맞는다). `yt-dlp --write-auto-subs` 로 VTT 를 받아 `<00:00:12.345><c>단어</c>` 인라인
+    **단어 단위 타임스탬프**로 잡는다. `duration` = 마지막 단어 시작 + 발화 길이(= 다음 단어 시작).
+    다음 문장 첫 단어가 물리면 그 직전에서 끊는다.
+  - **끝맺음 때문에 42초 캡을 넘기면 `duration_gate` 를 끄지 말고 씬을 하나 뺀다** — 정보량이 가장
+    낮은 씬(속편이면 전편 복습 씬)이 1순위.
+  - **원본에 박힌 자막 카드도 눈으로 확인** — 방송 클립은 카드와 나레이션이 최대 6초 어긋난다.
+    발화가 맞아도 카드가 다른 문장이면 자막과 어긋나 보인다. 카드가 소재와 무관한 채널
+    (뉴스 낭독 + 무관한 스트리밍 화면)이나 서술이 단정적인 채널은 소스에서 뺀다.
+  - **버그 수정**: `renderer.py` 가 프롭을 camelCase 로 바꾸는데 `SceneText` 는 `font_size` 등
+    snake_case 만 읽어 **CLI 렌더 경로에서 `subtitle_style` 이 통째로 무시되고 있었다.** 양쪽 다
+    읽도록 수정 (웹 Player 경로는 변환을 안 타서 snake_case 로 도착).
+  - 반영: `shorts_domain.py` 공통 체크리스트 1항목, `political_v2_configs/README.md` 037 절,
+    `ShortsComposition.tsx`, `SceneText.tsx`. 검증: pytest 1773 passed / 1 skipped.
+- 운영 지침 — **CTA 나레이션은 "댓글로 알려주세요"로 닫는다** (2026-08-18, 사용자 지시):
+  - CTA는 영상에서 유일하게 시청자에게 **직접 말을 거는** 문장이다. 나머지가 전부 존댓말인데 CTA만 `"번호로 답글."` 같은 명사형·반말로 끊으면 부탁이 아니라 지시로 들린다.
+  - **실패 사례**: 장동혁 '올공데이' 편(`jang_olgongday_v2_1/v2_2`)이 `"1번 결집, 2번 고립. 번호로 답글."`로 렌더돼 나갔다. 템플릿 5종이 전부 이 종결을 물고 있었고 검사가 없었다.
+  - **사각지대가 두 겹이었다** — ① `lint_cta`가 선택지형·길이만 보고 말투는 안 봤고, ② 2026-08-14 지시로 CTA를 **마지막 씬에 직접 쓰는 게 표준**이 되면서 `lint_cta`가 보는 top-level `cta` 블록 경로를 요즘 config가 아예 안 탄다.
+  - **4초(약 32자) 상한과 충돌한다** — 종결 문구가 9자를 먹어 남는 건 약 23자. 질문은 화면 자막이 이미 보여주므로 나레이션에선 빼고 선택지만 읽는다: `"1번 조국, 2번 이준석. 댓글로 알려주세요."`
+  - 반영: `political_cta.py` — `CTA_CLOSING` + `lint_cta_closing()`(블록 경로) + `scene_cta_closing_warnings()`(씬 직접 작성 경로, 자막에 `①`/`1번`이 박힌 씬만 CTA로 판정해 오탐 방지), `config_warnings()` 연결. 템플릿 5종 + `DEFAULT_PINNED_COMMENT` + README 035 절 + `shorts_domain.py` 체크리스트 1항목.
+  - **차단이 아니라 경고** — 기존 config 12개가 걸려 하드 게이트로 올리면 재렌더가 막힌다(035 길이 캡과 같은 방침: 과거 유지, 신규만 적용). 검증: pytest **1773 passed / 1 skipped**(신규 9), 변경 파일 ruff 통과.
+- 036 운영 지침 — **훅(scenes[0])은 가진 클립 중 가장 센 컷** (2026-08-13, 사용자 지시):
+  - 사연이 있는 소재는 시간순 배열이 자연스러워 보이지만, 그러면 **상황 설명이 앞에 오고 절정이 뒤로 간다.** 클립을 다 잘라 놓고 세기 순으로 재정렬해 1등을 `scenes[0]`에 놓는다. 순서를 바꿔 문맥이 깨지면 자막이 메운다 — 훅이 약한 것보다 낫다.
+  - **실패 사례**: 경제 1호(`bigeoju_1jutaek_v2_2.json`)가 씬0을 기자 나레이션("손주 돌보러 이사")으로 두고, 진짜 훅("제가 투기꾼입니까?" + 국민참여입법 의견 화면)을 씬1에 뒀다.
+  - **경제의 절정은 표정이 아니라 '내 돈이 걸린 한 문장'** — 034의 "클립 1순위 = 표정·리액션 절정"은 정치 기준이다. 경제는 화자가 당국자·기자·전문가라 표정이 없다. 훅 우선순위: ①당사자 1인칭 항의·반문 ②화면에 숫자·문구가 박힌 컷 ③당국자의 말 바꾸기·후퇴 ④(최후) 기자 나레이션 — 여기까지 내려오면 소재를 다시 볼 것.
+  - 반영: `README.md` 편집 규칙 + 036 절, `shorts_domain.py` economic 체크리스트 1항목, `_template_economic_v2_2.json` scene0 주석. 검증: pytest 51 passed, ruff 통과.
+- 036 운영 지침 — BGM(emotion_type) 선택 · 연예는 V2.2만 (2026-08-13):
+  - **`emotion_type` = 사실상 BGM 스위치**. BGM은 `select_bgm_for_script`가 `emotion_type` 하나로만 고른다(`data/bgm/<emotion>_N.mp3`). V2.1/V2.2는 배경색을 `bg_colors`, 자막색을 씬별 `color`로 따로 지정하므로 **emotion_type을 바꿔도 화면은 그대로고 BGM만 바뀐다** — 소재 톤에 맞춰 config에 직접 지정할 것.
+  - **실패 사례**: 하영 증조부 친일 논란 편이 연예 기본값 `funny`를 물려받아 **`funny_2.mp3`(코믹 BGM)**로 렌더됨. 카테고리 기본값은 소재의 톤을 모른다.
+  - 선택 기준 — 사실전달·중립 `relatable` / 대립·규탄 `angry` / 비극·서사 `touching` / 축하·가벼움 `funny`(**논란 소재 금지**). 카테고리 기본값: political `angry` / economic `relatable` / society `touching` / entertainment `funny`.
+  - 템플릿 3종에 `emotion_type`을 명시 항목으로 추가(경제 `relatable` / 사회 `touching` / 연예 `relatable`) — 기본값을 무심코 물려받지 않도록.
+  - **연예쇼츠는 V2.2만 제작**(사용자 확정). V2.1은 영상의 65%가 TTS 논평이라 연예 소재에서 논평이 곧 단죄로 읽히고 명예훼손 노출이 크다. 034 플랫폼 분리에서 연예의 V2.1(틱톡) 자리는 비운다.
 - 036 카테고리 확장 Phase 1~3 — 도메인 규칙 팩·가드레일·템플릿 (2026-08-13):
   - `scripts/shorts_domain.py` (신규) — frozen `DomainRules` × 4 카테고리. 결과어/공방어·CTA 예시·고정댓글·제목 앵커·emotion/배경색·금지어·주의어·체크리스트를 한 표로. 정치 규칙은 `political_upload_package`의 기존 상수를 **그대로 참조**(두 곳이 갈라지면 035 게이트가 조용히 약해짐).
   - **가드레일 2단** — 차단(`gate_domain_words`→ValueError): 경제 투자권유 13종(매수·매도·추천주·존버·물타기…, 유사투자자문 소지). 경고(`domain_warnings`): 사회 피의사실 / 연예 미확인 사생활 / 경제 전망 표현 / 연예 `source_channel` 누락. 둘 다 `"domain_gate": "off"` 우회.

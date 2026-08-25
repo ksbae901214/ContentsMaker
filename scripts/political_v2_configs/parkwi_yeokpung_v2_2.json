@@ -1,0 +1,154 @@
+{
+  "_comment": "연예쇼츠 V2.2 — 박위(위라클) 2탄 '사과 이후'. 1탄(20260824_parkwi_ktx_cctv)은 CCTV 공개~사과~구독자 100만 붕괴까지. 2탄은 8/24 밤~8/25 새로 나온 것만: 강연 2건 취소·댓글창 폐쇄·CCTV 초고속 입수 의혹·편향 편집 지적·김혁건 발언. [주의] 의혹 2건은 전부 '제기된 주장'이므로 자막에서 주장 주체(연예 유튜버 이진호)를 반드시 명시할 것 — 단정하면 명예훼손. 모든 clip 은 query 기반 자동 검색(뉴스 리포트) — 렌더 전 _verify 프레임으로 인물/장면 일치 반드시 확인.",
+  "category": "entertainment",
+  "slug": "20260825_parkwi_yeokpung_v2_2",
+  "title": "박위, 사과 나흘 뒤",
+  "yt_title": "박위, 사과 나흘 만에 강연 줄무산",
+  "yt_title_alt": "댓글창까지 닫은 박위, 강연 2건 무산",
+  "_yt_title_comment": "결과어 '만에'+'무산' 포함, 실명 앵커 '박위', 명사 종결(034 보도체 게이트 통과). 1탄 제목('벌써 세 번째 사과')과 겹치지 않게 '사과 이후'로 축을 옮김.",
+  "persons": [
+    "박위",
+    "송지은"
+  ],
+  "source_channel": "이진호(연예뒤통령) · iMBC연예뉴스 · YTN star",
+  "source_title": "박위 KTX CCTV 공개 후폭풍 — 강연 취소·댓글창 폐쇄·확보 경위 의혹 보도",
+  "youtube_url": "",
+  "_youtube_url_comment": "원본 CCTV 영상은 비공개 전환됨. sources 의 query 검색(뉴스 리포트 클립)으로 대체 — 확정 URL 없음.",
+  "emotion_type": "angry",
+  "_emotion_type_comment": "1탄과 동일 — 비판 국면이 이어지는 소재. 연예 기본값 funny 는 부적절(2026-08-13 하영 편 실패 사례).",
+  "tts_speed": 1.1,
+  "fallback_source": "cancel_news",
+  "hashtags": [
+    "#박위",
+    "#위라클",
+    "#송지은"
+  ],
+  "_cta_comment": "사용자 지시(2026-08-25)로 CTA를 top-level `cta` 블록이 아니라 **마지막 씬에 직접** 작성. 블록 경로는 cta_insert_index() 가 마지막 씬 뒤를 구조적으로 제외하므로(035 '말미 CTA 회귀 방지') 맨끝 배치가 불가능하다. 씬 직접 작성 경로는 scene_cta_closing_warnings() 가 검사한다 — 자막에 ①/② 기호를 유지해야 검사에 걸린다.",
+  "sources": {
+    "anger_clip": {
+      "url": "https://www.youtube.com/watch?v=VrrQiPlgJXE",
+      "dur_max": 900,
+      "verify_frac": 0.25,
+      "_확인": "'너무 화가났다' 박위, 공익 저격에 결국 구독자 100만 '붕괴' [투데이 픽/iMBC연예뉴스] 105s"
+    },
+    "cancel_news": {
+      "url": "https://www.youtube.com/watch?v=7RBoKvu3tiQ",
+      "dur_max": 900,
+      "verify_frac": 0.3,
+      "_확인": "박위, 구독자 100만 타이틀 뺏기고 강연·토크콘서트도 취소됐다 [투데이 '픽'/iMBC연예뉴스] 88s"
+    },
+    "comment_news": {
+      "url": "https://www.youtube.com/watch?v=ZLx10YP4OqI",
+      "dur_max": 900,
+      "verify_frac": 0.3,
+      "_확인": "박위 KTX 논란 일파만파…아내 송지은도 댓글 제한 / YTN star 64s"
+    },
+    "edit_suspicion": {
+      "url": "https://www.youtube.com/watch?v=WUfbmzYJBYA",
+      "dur_max": 1300,
+      "verify_frac": 0.25,
+      "_확인": "박위 분노에 벌벌 떤 코레일 직원들.. 아내 송지은도 놀란 이유 (이진호) 716s"
+    },
+    "kimdw_news": {
+      "url": "https://www.youtube.com/watch?v=9ylr5XLDfks",
+      "dur_max": 900,
+      "verify_frac": 0.25,
+      "_확인": "'그도 장애가 처음이다' 김동완, 박위 논란에 소신 발언 / YTN star 64s"
+    }
+  },
+  "_scenes_comment": "7씬(클립 5 + TTS 2, 마지막이 CTA). 컷은 전부 **문장 끝 단어가 다 발화된 뒤** 끝나도록 자동자막 단어 타임스탬프로 재조정(2026-08-25 사용자 지적). 끝맺음을 살리면 컷이 길어져 42s 캡을 넘기므로 '발단은 나흘 전 / 박위가 올린 CCTV' 씬을 뺐다 — 1탄 복습이라 이 편에서 유일하게 새 정보가 없는 씬이었다. 예상 약 38.5초.",
+  "scenes": [
+    {
+      "mode": "clip",
+      "source": "cancel_news",
+      "start_sec": 4.0,
+      "duration": 4.8,
+      "text": "사과 나흘 뒤\n강연 줄줄이 취소",
+      "hl": [
+        "나흘 뒤",
+        "취소"
+      ],
+      "_발화": "예정됐던 강연들이 줄줄이 취소되며 후폭풍을 맞고 있습니다 (‘있습니다’ 7.2→8.2, 8.8 종료)",
+      "_comment": "훅1 — 카드 ‘박위, 강연·토크콘서트 줄줄이 취소’."
+    },
+    {
+      "mode": "clip",
+      "source": "comment_news",
+      "start_sec": 2.2,
+      "duration": 4.6,
+      "text": "송지은 이어 박위도\n댓글창 폐쇄",
+      "hl": [
+        "댓글창 폐쇄"
+      ],
+      "_발화": "남편 박위를 둘러싼 논란이 계속되자 SNS 댓글 기능을 제한했습니다 (‘제한했습니다’ 5.8→6.7)",
+      "_comment": "훅2 — 기존 7.9s 컷은 ‘제한되었습니다라는’에서 끊겨 문장이 안 닫혔다. 문장 통째로 들어가는 앞 구간으로 이동."
+    },
+    {
+      "mode": "clip",
+      "source": "edit_suspicion",
+      "start_sec": 519.0,
+      "duration": 5.4,
+      "text": "\"7일 만에 CCTV 확보\"\n이진호, 특혜 의혹 제기",
+      "hl": [
+        "7일 만에",
+        "특혜 의혹"
+      ],
+      "_발화": "문제가 된 영상을 올린 시점은 8월 21일이었습니다. 7일이란 시차가 있는데요 (‘있는데요’ 523.6→524.3)",
+      "_comment": "주장 주체 명시 필수 — 이진호의 주장이지 확인된 사실이 아니다."
+    },
+    {
+      "mode": "clip",
+      "source": "edit_suspicion",
+      "start_sec": 320.3,
+      "duration": 5.7,
+      "text": "사과 장면은 빠지고\n\"벌서듯\" 선 직원들",
+      "hl": [
+        "사과 장면",
+        "벌서듯"
+      ],
+      "_발화": "오히려 경직된 상태로 벌서듯 서 있는 모습만 촬영이 됐습니다 (‘됐습니다’ 325.3→326.2)",
+      "_comment": "기존 5.2s 컷은 ‘촬영이 됐습니다’의 마지막 음절을 잘랐다."
+    },
+    {
+      "mode": "clip",
+      "source": "kimdw_news",
+      "start_sec": 13.0,
+      "duration": 6.3,
+      "text": "\"그도 장애가 처음이다\"\n김동완의 반론",
+      "hl": [
+        "장애가 처음",
+        "반론"
+      ],
+      "_발화": "그도 장애가 처음이다. 장애를 가진 사람 입장에서 모든 걸 생각할 수밖에 없었을 것이라고 전했습니다 (18.3→19.3)",
+      "_comment": "비판 일색을 깨는 균형추이자 CTA ‘② 지나치다’의 근거."
+    },
+    {
+      "mode": "tts",
+      "source": "anger_clip",
+      "frac": 0.1,
+      "color": "yellow",
+      "emph": true,
+      "_comment": "배경은 anger_clip ≈10.5s — 원본 카드가 '결국…구독자 100만 붕괴'이고 화면이 채널 구독자 페이지라 자막과 일치한다. cancel_news(≈52s)는 낙상 CCTV가 떠서 자막과 충돌했다.",
+      "text": "구독자 3만 명\n사라졌다",
+      "voice": "구독자는 101만에서 98만 3천 명대로 내려앉았습니다.",
+      "hl": [
+        "3만 명"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "comment_news",
+      "frac": 0.7,
+      "color": "yellow",
+      "emph": true,
+      "_comment": "맨끝 CTA(사용자 지시). 자막의 ①/② 기호는 scene_cta_closing_warnings() 검사 대상이므로 지우지 말 것. 나레이션은 존댓말 '댓글로 알려주세요'로 닫는다.",
+      "text": "계속되는 비판\n① 자업자득  ② 지나치다",
+      "voice": "1번 자업자득, 2번 지나치다. 댓글로 알려주세요.",
+      "hl": [
+        "자업자득",
+        "지나치다"
+      ]
+    }
+  ],
+  "_source_cut_comment": "컷 지점은 자동자막 단어 타임스탬프 + **원본에 박힌 자막 카드 육안 확인**으로 확정(2026-08-25). ① 연예뒤풀이(sEBUhiwjr7w) 제외 — 서술이 '사적 제재·밀실 특혜'처럼 단정적. ② 김혁건(APl9eAmYMyg) 제외 — 뉴스를 낭독만 하고 화면은 무관한 스트리밍 영상(다른 인물+채팅 도배). ③ 대신 김동완 반론(YTN star)을 넣어 CTA '② 지나치다' 쪽 근거를 만든다 — 전 씬이 비판 일색이면 선택지가 한쪽으로만 기울어 댓글이 갈리지 않는다."
+}

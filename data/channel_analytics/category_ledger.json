@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "description": "쇼츠 카테고리 원장 (036) — upload_package 생성 시 자동 기록. 키는 해시태그를 뗀 정규화 제목. 추론이 틀린 과거 편은 여기에 직접 추가.",
+  "entries": {
+    "하영, 하루 만에 뒤집힌 '사실무근'": {
+      "category": "entertainment",
+      "slug": "20260813_hayoung_jeungjobu_v2_2",
+      "recorded_at": "2026-08-13 13:47"
+    },
+    "집 샀더니 5년 해외발령, 한순간에 투기꾼": {
+      "category": "economic",
+      "slug": "20260813_bigeoju_1jutaek_v2_2",
+      "recorded_at": "2026-08-13 18:24"
+    },
+    "국힘도 말렸는데 결국 강행한 이진숙": {
+      "category": "political",
+      "slug": "20260814_ljs_518_forum_v2_2",
+      "recorded_at": "2026-08-14 13:12"
+    },
+    "국힘도 못 말린 이진숙, 결국 제명 위기": {
+      "category": "political",
+      "slug": "20260814_ljs_518_forum_v2_1",
+      "recorded_at": "2026-08-14 13:15"
+    },
+    "장동혁 동원령, 결국 모인 건 20명": {
+      "category": "political",
+      "slug": "20260818_jang_olgongday_v2_2",
+      "recorded_at": "2026-08-18 11:02"
+    },
+    "장동혁 '올공데이', 끝내 89명 불참": {
+      "category": "political",
+      "slug": "20260818_jang_olgongday_v2_1",
+      "recorded_at": "2026-08-18 11:03"
+    },
+    "17년 만에 뒤집힌 배정남 폭행 진술": {
+      "category": "entertainment",
+      "slug": "20260819_baejeongnam_marco_v2_2",
+      "recorded_at": "2026-08-19 13:37"
+    },
+    "배정남 폭행 진술, 17년 만의 반전": {
+      "category": "entertainment",
+      "slug": "20260819_baejeongnam_marco_v2_1",
+      "recorded_at": "2026-08-19 13:39"
+    },
+    "130km 세종행에 결국 총파업 예고": {
+      "category": "economic",
+      "slug": "20260820_sejong_iseon_v2_1",
+      "recorded_at": "2026-08-20 10:07"
+    },
+    "피고인이 대법관을 고른다고?": {
+      "category": "political",
+      "slug": "ljs_daebeopgwan_v2_2",
+      "recorded_at": "2026-08-21 11:35"
+    },
+    "친일파가 더 잘 살았다는 송일국의 고백": {
+      "category": "entertainment",
+      "slug": "20260821_songilguk_chinilpa_v2_1",
+      "recorded_at": "2026-08-21 16:13"
+    },
+    "위라클 박위, 벌써 세 번째 사과": {
+      "category": "entertainment",
+      "slug": "20260824_parkwi_ktx_cctv_v2_1",
+      "recorded_at": "2026-08-24 13:04"
+    },
+    "\"헌법에 대한 도전\"... 이진숙 결국 징계안": {
+      "category": "political",
+      "slug": "20260824_ljs_jikmujeongji_v2_2",
+      "recorded_at": "2026-08-24 13:38"
+    },
+    "김민석 \"국회서 못 있게\"... 나경원 결국 반격": {
+      "category": "political",
+      "slug": "20260824_ljs_jikmujeongji_v2_1",
+      "recorded_at": "2026-08-24 13:37"
+    },
+    "박위, 사과 나흘 만에 강연 줄무산": {
+      "category": "entertainment",
+      "slug": "20260825_parkwi_yeokpung_v2_1",
+      "recorded_at": "2026-08-25 13:10"
+    }
+  }
+}

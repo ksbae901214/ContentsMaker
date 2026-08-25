@@ -1,0 +1,104 @@
+{
+  "_comment": "정치쇼츠 V2.1 — 한동훈 '독재명' 편 (2026-07-30 기획). 034 플랫폼 분리 표준: 이 V2.1 편은 틱톡 업로드용, 같은 주제 V2.2(hando_dokjaemyeong_v2_2)는 유튜브용. 훅=조정식 육성 '연임 개헌은 국민의 선택 문제'(src_jjs=KBS CMSfIE8cYhg 33.25/8.65 — jjs_yeonim_v2_2 silencedetect 실측값 재사용, 청음 재확인 권장). 본문 TTS 4개: 한동훈 '독재명'·플랜A/B/C(페이스북 글 인용, 화면=JTBC 쇼츠) → 청와대 진화 → 이재명 과거 발언 부메랑 + CTA. 팩트 출처: 강원일보 2026-07-29 기사 + KBS·연합뉴스TV·JTBC 교차확인.",
+  "slug": "20260730_hando_dokjaemyeong_v2_1",
+  "title": "한동훈이 꼽은 감옥 회피 플랜 A·B·C",
+  "yt_title": "한동훈이 꼽은 감옥 회피 플랜 A·B·C",
+  "yt_title_alt": "감옥 안 가는 플랜이 셋이라고?",
+  "persons": [
+    "한동훈",
+    "이재명",
+    "조정식"
+  ],
+  "hashtags": [
+    "#한동훈",
+    "#독재명",
+    "#연임개헌",
+    "#이재명"
+  ],
+  "pinned_comment": "공소취소가 플랜A, 연임 개헌이 플랜B, 공소기각이 플랜C — 한동훈 의원의 주장입니다. 억지일까요, 정곡일까요? 댓글로 남겨주세요 👇",
+  "description": "조정식 국회의장의 '현직 대통령 연임 개헌은 국민 선택의 문제' 발언(7/28) 이후, 무소속 한동훈 의원이 페이스북에서 \"이재명 대통령이 '독재명'이 되려 한다\"며 \"공소취소가 플랜A, 독재명 연임개헌이 플랜B, 공소기각이 플랜C\"라고 비판했습니다(7/29). 논란이 커지자 청와대는 \"헌법 체계가 허용하지 않고 국민도 용인하지 않을 것이며 현실적으로 불가능하다\"(강훈식 비서실장)고 진화에 나섰습니다.",
+  "source_channel": "KBS News / 연합뉴스TV / JTBC News",
+  "source_title": "조정식 \"연임 개헌, 국민 선택 문제\" 후폭풍과 한동훈 '독재명' 비판 (2026-07-29)",
+  "youtube_url": "https://www.youtube.com/watch?v=CMSfIE8cYhg",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "yh",
+  "sources": {
+    "jjs": {
+      "url": "https://www.youtube.com/watch?v=CMSfIE8cYhg",
+      "dur_max": 200,
+      "verify_frac": 0.3
+    },
+    "hd": {
+      "url": "https://www.youtube.com/watch?v=ivvMWx-NeT0",
+      "dur_max": 60,
+      "dur_min": 10,
+      "verify_frac": 0.5
+    },
+    "yh": {
+      "url": "https://www.youtube.com/watch?v=WH93AOLn_dM",
+      "dur_max": 200,
+      "verify_frac": 0.25
+    }
+  },
+  "hook": {
+    "source": "jjs",
+    "start_sec": 33.25,
+    "duration": 8.65,
+    "text": "\"연임 개헌은\n국민의 선택 문제\"",
+    "hl": [
+      "연임 개헌",
+      "국민의 선택"
+    ],
+    "subtitle_position": "bottom"
+  },
+  "scenes": [
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "hd",
+      "frac": 0.2,
+      "text": "한동훈\n\"독재명 되려 하나\"",
+      "voice": "국회의장이 연임 개헌의 운을 띄우자, 한동훈 의원이 곧장 받아쳤습니다. 이재명 대통령이 독재명이 되려 한다는 겁니다.",
+      "hl": [
+        "독재명"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "hd",
+      "frac": 0.6,
+      "text": "감옥 회피 플랜\nA · B · C?",
+      "voice": "한 발 더 나갔습니다. 감옥에 안 가기 위한 플랜이 셋이라는 주장. 공소취소가 에이, 연임 개헌이 비, 공소기각이 씨.",
+      "hl": [
+        "플랜"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "blue",
+      "source": "yh",
+      "frac": 0.3,
+      "text": "청와대\n\"현실적으로 불가능\"",
+      "voice": "파장이 커지자 청와대는 하루 만에 물러섰습니다. 헌법이 허용하지 않고, 국민도 용인하지 않는다는 겁니다.",
+      "hl": [
+        "불가능"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "yh",
+      "frac": 0.68,
+      "text": "작년의 이재명은\n선을 그었다",
+      "voice": "정작 작년엔 이재명 대통령 본인이 연임에 선을 그었습니다. 운을 띄운 의장, 급해진 청와대. 여러분 생각은 어떤가요? 댓글로 남겨주세요.",
+      "hl": [
+        "선을 그었다"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "_comment": "정치쇼츠 V2.1 — 황희 '버스 하우스' 제안 → 역풍 → 글 삭제 → 기자간담회 취소 → 사흘 만에 사과. [035] 결과가 난 사건. 황희 본인 육성은 존재하지 않음(제안·해명·사과 모두 페이스북 글, 기자간담회 취소) → 훅은 장동혁 육성 사용.",
+  "slug": "20260811_hwanghee_buseuhouse_v2_1",
+  "title": "폐버스 청년주택 논란",
+  "yt_title": "황희, 폐버스 살라더니 결국 사과",
+  "yt_title_alt": "청년 난민 취급? 황희 결국 사과문",
+  "_yt_title_comment": "[035] 결과형 — '제안→사과' 번복이 제목에 드러남. 공방형('장동혁이 황희 직격') 회피.",
+  "persons": ["황희", "장동혁"],
+  "source_channel": "오마이TV / KBS News",
+  "source_title": "황희 '버스하우스' 제안 논란과 사과",
+  "youtube_url": "https://www.youtube.com/watch?v=QXgzILkK1zg",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "kbs",
+  "cta": {
+    "text": "황희 사과, 이걸로 끝?\n① 사과로 충분  ② 사과로 부족",
+    "voice": "사과로 충분한가요? 1번 충분, 2번 부족. 번호로 답글.",
+    "hl": ["사과로 충분", "사과로 부족"],
+    "at_frac": 0.4
+  },
+  "hook": {
+    "_comment": "장동혁 육성. JTBC 실측 — 발화 1.681~4.489s, 이후 1.15s 휴지. 문장 완결+0.7s 휴지 포함해 3.51s. 프레임 검증 완료(장동혁 국민의힘 대표). 오마이TV(jdh) 버전은 같은 문장이 5.4s이고 끝 휴지가 없어 미채택.",
+    "source": "jtbc",
+    "start_sec": 1.681,
+    "duration": 3.51,
+    "text": "\"장관까지 지냈던 국회의원 입에서\n이게 나올 말입니까?\"",
+    "hl": ["장관까지 지냈던", "나올 말입니까"]
+  },
+  "sources": {
+    "jdh": { "url": "https://www.youtube.com/watch?v=QXgzILkK1zg", "dur_max": 300, "verify_frac": 0.4 },
+    "kbs": { "url": "https://www.youtube.com/watch?v=CkHKp7MN0hY", "dur_max": 300, "verify_frac": 0.3 },
+    "jtbc": { "url": "https://www.youtube.com/watch?v=njOuQ0ehJug", "dur_max": 300, "verify_frac": 0.5 }
+  },
+  "scenes": [
+    { "type": "body", "color": "white", "emph": false, "subtitle_position": "bottom", "source": "kbs", "frac": 0.28,
+      "text": "폐기 버스를 개조해\n청년 주거 공간으로",
+      "voice": "폐기되는 버스를 개조해 청년 주거 공간으로 주자. 민주당 3선 황희 의원이 페이스북에 올린 제안입니다.",
+      "hl": ["폐기 버스", "청년 주거"] },
+    { "type": "body", "color": "red", "emph": true, "subtitle_position": "bottom", "source": "kbs", "frac": 0.2,
+      "text": "청년들 \"우리를\n난민 취급하나\"",
+      "voice": "반응은 정반대였습니다. 청년들은 우리를 난민 취급하냐고 했고, 온라인에는 조롱 이미지가 쏟아졌습니다.",
+      "hl": ["난민 취급", "조롱"] },
+    { "type": "body", "color": "red", "emph": true, "subtitle_position": "bottom", "source": "jdh", "frac": 0.75,
+      "text": "글 삭제, 해명글도 삭제\n기자간담회는 취소",
+      "voice": "황 의원은 글을 지웠고, 아이디어 차원이라던 해명글마저 지웠습니다. 예정됐던 기자간담회도 취소했습니다.",
+      "hl": ["삭제", "취소"] },
+    { "type": "body", "color": "yellow", "emph": true, "subtitle_position": "bottom", "source": "kbs", "frac": 0.55,
+      "_comment": "[035] 마지막 씬은 팩트 정리로 닫는다 — 댓글 유도는 cta 블록으로 분리.",
+      "text": "사흘 만에\n\"진심으로 사과\"",
+      "voice": "민주당은 실현 불가능한 해프닝이라며 고개를 숙였고, 황 의원은 사흘 만에 사과했습니다.",
+      "hl": ["사흘", "사과"] }
+  ]
+}

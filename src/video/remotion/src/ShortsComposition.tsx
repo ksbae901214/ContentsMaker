@@ -298,7 +298,8 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
       >
         <div
           style={{
-            fontSize: 75,
+            // 제목 크기 — 사용자 지정 2026-08-25 (75 → 100px). 서체는 기본 유지.
+            fontSize: 100,
             fontWeight: 800,
             color: "#FFFFFF",
             fontFamily: "Noto Sans KR, sans-serif",

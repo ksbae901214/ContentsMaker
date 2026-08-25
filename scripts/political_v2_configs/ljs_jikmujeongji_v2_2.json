@@ -1,0 +1,64 @@
+{
+  "_comment": "이진숙 '직무정지법·징계안' 편 — 20260813 ljs_518_forum(포럼 강행)의 속편. V2.2 원본 육성 릴레이. 훅=김민석 원본 육성(2026-08-20 의원총회, YouTube Shorts URL 확인 완료, 세기순 1등). download 실측 결과: bill_news 는 검색어와 다른 실제 사건(김민석, 국회의장 방문 요구)이 걸려 캡션 수정. 나경원 발언은 원본 영상이 아예 없음(2026-08-22 페이스북 게시글, 매일경제 보도) — capture_article.py 로 기사 캡처 mp4(najw_doc) 생성, 원본 육성이 아니므로 clip이 아닌 tts 모드로 사용(하우스 표준 폴백).",
+  "category": "political",
+  "slug": "20260824_ljs_jikmujeongji_v2_2",
+  "title": "헌법에 대한 도전, 그리고 징계안",
+  "yt_title": "\"헌법에 대한 도전\"... 이진숙 결국 징계안",
+  "yt_title_alt": "나경원 \"독재\" 반박에도 이진숙 결국 징계",
+  "_yt_title_comment": "[035] 결과어 '결국' 보유. [034] 보도체·해시태그 0 (gate_yt_title 통과 확인). V2.1과 다른 제목 — 같은 주제 중복 노출 완화.",
+  "persons": ["김민석", "나경원", "이진숙"],
+  "source_channel": "델리민주·채널A·YTN·매일경제",
+  "source_title": "이진숙 직무정지법 발의(8/14)·윤리위 징계안 제출(8/21)·나경원 반박 공방",
+  "youtube_url": "",
+  "emotion_type": "angry",
+  "_emotion_type_comment": "여야 정면 충돌·규탄 톤 — political 기본값과 동일하지만 명시(하영 편 코믹 BGM 사고 재발 방지).",
+  "tts_speed": 1.1,
+  "fallback_source": "bill_news",
+  "pinned_comment": "8월 13일 이진숙 의원의 5·18 재조명 포럼 강행에 이어, 민주당은 최대 1년 직무정지가 가능한 국회법 개정안(8/14)과 실제 윤리위 징계안(8/21)을 냈습니다. 나경원 의원은 이를 \"제명 노린 위헌적 권한 남용\"이자 \"입틀막·독재\"라고 반박했습니다. 이 법안, 어느 쪽인가요? ① 표적입법  ② 정당한 제재 — 댓글로 알려주세요 👇",
+  "cta": {
+    "_comment": "40% 지점 자동 삽입. '표적입법 vs 정당한 제재' — V2.1과 동일 선택지로 통일. 존댓말 종결.",
+    "text": "직무정지법\n① 표적입법  ② 정당한 제재",
+    "voice": "1번 표적입법, 2번 정당한 제재. 댓글로 알려주세요.",
+    "hl": ["표적입법", "정당한 제재"],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "kim_ms": {
+      "url": "https://www.youtube.com/shorts/RNcGWTA4Ngw",
+      "_comment": "김민석 대표(후보) 2026-08-20 의원총회 모두발언 — \"이진숙을 국회에 두면 안된다\" 원본. 확정 URL.",
+      "dur_max": 120,
+      "verify_frac": 0.3
+    },
+    "bill_news": {
+      "query": "이진숙 직무정지법 국회법 개정안 이용우 김민석 발의 뉴스",
+      "_comment": "실측: 채널A 현장영상 '김민석, 국회의장 만나 제명돼야…안되면 의원 자격정지라도' 210s 가 다운로드됨 — 캡션을 그 내용에 맞게 수정.",
+      "dur_max": 900, "verify_frac": 0.4
+    },
+    "disciplinary_news": { "query": "이진숙 윤리위 징계안 제출 민주당 뉴스", "dur_max": 900, "verify_frac": 0.3 },
+    "najw_doc": {
+      "_comment": "capture_article.py 로 생성한 기사 캡처 mp4(15s, 무음) — 나경원 2026-08-22 페이스북 게시글(매일경제 보도, n.news.naver.com/mnews/article/009/0005724444).",
+      "verify_frac": 0.2
+    }
+  },
+  "_scenes_comment": "5씬 구성(육성클립 3 + TTS 2, 033 릴레이 비율 준수) — hook(김민석) + 발의·자격정지 요구(사실 캡션) + 징계안 제출(실제 화면 자막 인용) + 나경원 페이스북 인용(TTS, najw_doc 배경) + TTS 팩트 클로징.",
+  "scenes": [
+    { "mode": "clip", "source": "kim_ms", "start_sec": 0.0, "duration": 6.0,
+      "_comment": "download 후 무음구간(silencedetect)으로 실제 start_sec/duration 보정 필요 — 현재는 자리표시값.",
+      "speaker": "김민석 / 민주당",
+      "text": "\"이진숙의 존재는\n헌법에 대한 도전\"",
+      "hl": ["헌법에 대한 도전"] },
+    { "mode": "clip", "source": "bill_news", "frac": 0.0, "duration": 4.5,
+      "_comment": "실제 다운로드된 영상 내용(김민석, 국회의장 방문 요구)에 맞춘 캡션. 발의 사유의 정확한 직접 인용문은 미확보 — 사실 캡션(따옴표 없음).",
+      "text": "김민석, 국회의장 찾아가\n자격정지 요구",
+      "hl": ["자격정지"] },
+    { "mode": "clip", "source": "disciplinary_news", "frac": 0.3, "duration": 4.0,
+      "_comment": "실제 YTN 화면 하단 자막 문구를 그대로 캡션에 사용 — 확인된 사실.",
+      "text": "민주 \"헌법 정신에 대한 도전\"\n징계안 국회 제출",
+      "hl": ["헌법 정신에 대한 도전"] },
+    { "mode": "tts", "source": "najw_doc", "frac": 0.15, "color": "red", "emph": true,
+      "_comment": "나경원 발언은 원본 영상 없음(페이스북 게시글) — najw_doc(기사 캡처) 배경 위 TTS. CTA가 40%에 tts 씬으로 자동 삽입되므로(총 tts 2개 = 이 씬+CTA), 클로징 요약을 여기 병합해 선언된 tts는 1개만 유지(033 권장).",
+      "text": "\"제명 노린 위헌적 권한 남용\"\n\"독재가 아니면 무엇인가\"",
+      "voice": "나경원 의원은 페이스북에서, 이것이 제명을 노린 위헌적 권한 남용이라며 입틀막 아니냐고 반문했습니다. 포럼 강행 이후 열흘 만에 벌어진 정면 충돌입니다.",
+      "hl": ["위헌적 권한 남용", "독재"] }
+  ]
+}

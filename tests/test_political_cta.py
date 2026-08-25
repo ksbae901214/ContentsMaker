@@ -4,8 +4,9 @@ from __future__ import annotations
 import pytest
 
 from scripts.political_cta import (
-    DEFAULT_CTA_AT_FRAC, apply_cta, build_cta_scene, cta_insert_index,
-    is_side_picking, lint_cta, trailing_cta_warnings,
+    CTA_CLOSING, DEFAULT_CTA_AT_FRAC, apply_cta, build_cta_scene,
+    cta_insert_index, is_side_picking, lint_cta, lint_cta_closing,
+    scene_cta_closing_warnings, trailing_cta_warnings,
 )
 
 
@@ -23,7 +24,7 @@ def cfg_with_cta(**over) -> dict:
         ],
         "cta": {
             "text": "이거 누구 잘못?\n① 조국  ② 이준석",
-            "voice": "이건 누구 잘못일까요? 1번, 2번 댓글로 남겨주세요.",
+            "voice": "이건 누구 잘못일까요? 1번, 2번 댓글로 알려주세요.",
             "hl": ["누구 잘못"],
         },
     }
@@ -163,3 +164,56 @@ class TestTrailingCtaWarnings:
     def test_cta_scene_itself_not_flagged(self):
         out = apply_cta(cfg_with_cta())
         assert trailing_cta_warnings(out) == []
+
+
+# ── CTA 종결 말투 (사용자 지시 2026-08-18) ──────────────────────────
+class TestCtaClosing:
+    def test_polite_closing_passes(self):
+        assert lint_cta_closing(f"1번 조국, 2번 이준석. {CTA_CLOSING}.") == []
+
+    def test_banmal_closing_warns(self):
+        assert lint_cta_closing("누구 잘못일까요? 번호로 답글.") != []
+
+    def test_empty_voice_not_flagged(self):
+        """빈 나레이션은 종결이 아니라 '누락' 경고가 맡는다."""
+        assert lint_cta_closing("") == []
+
+    def test_lint_cta_reports_closing(self):
+        cta = {"text": "누구 잘못?\n① A  ② B", "voice": "1번, 2번 번호로 답글."}
+        assert any(CTA_CLOSING in w for w in lint_cta(cta))
+
+    def test_clean_cta_block_has_no_warning(self):
+        cta = {"text": "누구 잘못?\n① A  ② B",
+               "voice": f"1번 A, 2번 B. {CTA_CLOSING}."}
+        assert lint_cta(cta) == []
+
+
+# ── 씬으로 직접 쓴 CTA 의 종결 (top-level cta 블록 미사용 경로) ─────
+class TestSceneCtaClosingWarnings:
+    def test_scene_cta_with_banmal_closing_warns(self):
+        cfg = {"scenes": [
+            {"text": "정리", "voice": "결과는 109명 중 20명입니다."},
+            {"text": "어느 쪽?\n① 결집이다  ② 고립이다",
+             "voice": "1번 결집, 2번 고립. 번호로 답글."},
+        ]}
+        out = scene_cta_closing_warnings(cfg)
+        assert len(out) == 1 and out[0].startswith("scene[1]")
+
+    def test_scene_cta_with_polite_closing_passes(self):
+        cfg = {"scenes": [
+            {"text": "어느 쪽?\n① 결집이다  ② 고립이다",
+             "voice": f"1번 결집, 2번 고립. {CTA_CLOSING}."},
+        ]}
+        assert scene_cta_closing_warnings(cfg) == []
+
+    def test_normal_scene_with_side_word_not_flagged(self):
+        """'찬성/반대'가 스쳐 가는 일반 나레이션은 CTA가 아니다 (오탐 방지)."""
+        cfg = {"scenes": [
+            {"text": "여야 격돌\n표결 무산", "voice": "찬성과 반대로 갈렸습니다."},
+        ]}
+        assert scene_cta_closing_warnings(cfg) == []
+
+    def test_block_inserted_cta_scene_skipped(self):
+        """블록에서 삽입된 씬은 lint_cta 가 이미 본다 — 중복 경고 금지."""
+        cfg = apply_cta(cfg_with_cta())
+        assert scene_cta_closing_warnings(cfg) == []

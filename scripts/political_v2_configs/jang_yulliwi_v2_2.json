@@ -1,0 +1,48 @@
+{
+  "_comment": "국민의힘 내홍 — 윤리위 '아바타' 논란 + 한동훈 제명 철회 요구. V2.2 육성 릴레이(조경태 에스컬레이션 아크: 규정 → 자격 → 철회 요구). 035 게이트 적용(42초 캡·cta 40% 삽입·결과형 제목). 팩트: 파이낸셜뉴스 조경태 회견(014/0005557508). ⚠️ 장동혁 측의 '동일 사안' 육성 반박은 유튜브에 없어 대립 배치 대신 단일 화자 에스컬레이션으로 구성했고, 지도부 입장은 마지막 TTS로 균형을 잡는다. 한동훈 제명 의결 자체는 2026년 1월 건이므로 당시 뉴스 영상은 사용하지 않는다(시점 혼동 방지). 배포: 유튜브 (034 플랫폼 분리 — 틱톡은 V2.1).",
+  "slug": "20260805_jang_yulliwi_v2_2",
+  "title": "쪼개진 국힘 윤리위",
+  "yt_title": "한동훈 제명 뒤집자, 결국 쪼개진 국힘 윤리위",
+  "yt_title_alt": "6선 조경태의 반란, 결국 아바타로 불린 윤리위",
+  "persons": ["조경태", "장동혁", "한동훈"],
+  "hashtags": ["#조경태", "#장동혁", "#한동훈", "#국민의힘"],
+  "description": "국민의힘 최다선 조경태 의원이 당 윤리위를 '장동혁 대표의 아바타 위원회'로 규정하며 해산과 한동훈 의원 제명 철회를 요구했다. 윤리위원장과 부위원장은 서로 사퇴를 요구하는 상황이다.",
+  "source_channel": "MBN / JTBC",
+  "source_title": "조경태 윤리위 징계 관련 기자회견(7/28 MBN) · 조경태 긴급 기자회견(8/5 JTBC)",
+  "youtube_url": "https://www.youtube.com/watch?v=qeSaNeihSms",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "jokt",
+  "cta": {
+    "text": "윤리위, 누가 맞나?\n① 조경태  ② 장동혁",
+    "voice": "누가 맞을까요? 1번 조경태, 2번 장동혁.",
+    "hl": ["누가 맞나"],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "avatar": { "url": "https://www.youtube.com/watch?v=F4-kvVycOdA", "dur_max": 4000, "dur_min": 30, "verify_frac": 0.76 },
+    "jokt":   { "url": "https://www.youtube.com/watch?v=qeSaNeihSms", "dur_max": 4000, "dur_min": 30, "verify_frac": 0.45 },
+    "jang":   { "url": "https://www.youtube.com/watch?v=gwkJKp9nt7A", "dur_max": 4000, "dur_min": 30, "verify_frac": 0.32 }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "avatar", "start_sec": 501.3, "duration": 8.0,
+      "_verify": "MBN 7/28 조경태 — '더 이상 윤리위원회가 아니라 장동혁 대표의 아바타 위원회라고 불러야 마땅할 것입니다' (자막 501.6~509.0s)",
+      "text": "\"윤리위원회가 아니라\n장동혁 아바타 위원회\"",
+      "hl": ["아바타 위원회"] },
+    { "mode": "clip", "source": "jokt", "start_sec": 251.0, "duration": 9.2,
+      "speaker": "조경태",
+      "_verify": "JTBC 8/5 — '위원장과 부위원장이 서로를 불신하고 윤리위원들이 위원장의 사퇴를 요구하는 조직이 과연 누구를 심판할 자격이 있습니까?' (자막 251.3~260.2s)",
+      "text": "\"서로 사퇴하라는 조직이\n누굴 심판합니까\"",
+      "hl": ["누굴 심판"] },
+    { "mode": "clip", "source": "jokt", "start_sec": 502.0, "duration": 7.6,
+      "speaker": "조경태",
+      "_verify": "JTBC 8/5 — '따라서 한동훈 의원의 제명 징계는 즉각 철회되어야 합니다' (자막 502.3~509.6s)",
+      "text": "\"한동훈 제명 징계\n즉각 철회하라\"",
+      "hl": ["즉각 철회"] },
+    { "mode": "tts", "source": "jang", "frac": 0.32, "color": "red", "emph": true,
+      "_comment": "마지막 씬은 팩트 정리 + 지도부 입장으로 균형. 댓글 유도는 cta 블록 담당.",
+      "text": "지도부는 \"독립기구 존중\"\n윤리위는 내부 분열",
+      "voice": "지도부는 독립 기구의 결정을 존중한다는 입장입니다. 그 사이 윤리위원장과 부위원장은 서로의 사퇴를 요구하고 있습니다.",
+      "hl": ["독립 기구", "서로의 사퇴"] }
+  ]
+}

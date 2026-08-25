@@ -42,6 +42,14 @@ HOOK_MAX_SEC = 10.0
 COLORS = {"white", "blue", "red", "yellow"}
 PY = sys.executable       # .venv311/bin/python 로 실행됨
 
+# YouTube 는 재생 URL 에 JS 챌린지(n-sig)를 걸어 두어, 이를 풀지 못하면 포맷이
+# 아예 안 잡히거나 다운로드가 HTTP 403 으로 떨어진다 (2026-08-13 실측: 전 소스
+# 403). yt-dlp 는 챌린지 솔버(EJS)를 기본 배포에 넣지 않으므로 원격 컴포넌트를
+# 명시적으로 켜야 한다. 로컬에 JS 런타임(deno)이 설치돼 있어야 동작한다.
+#   $ brew install deno   # 이미 설치됨: deno 2.9.1
+# 참고: https://github.com/yt-dlp/yt-dlp/wiki/EJS
+YTDLP_CHALLENGE_ARGS = ("--remote-components", "ejs:github")
+
 
 # ── 설정 로드 & 검증 ────────────────────────────────────────────────
 def load_config(path: Path) -> dict:
@@ -59,7 +67,9 @@ def config_warnings(cfg: dict) -> list[str]:
 
     V2.2(render_political_v2_2.py)도 이 함수를 재사용한다.
     """
-    from scripts.political_cta import lint_cta, trailing_cta_warnings
+    from scripts.political_cta import (
+        lint_cta, scene_cta_closing_warnings, trailing_cta_warnings,
+    )
     from scripts.political_length import length_warnings
     from scripts.shorts_category import resolve_config_category
     from scripts.shorts_domain import domain_warnings
@@ -67,6 +77,7 @@ def config_warnings(cfg: dict) -> list[str]:
     if cfg.get("cta"):
         warnings.extend(lint_cta(cfg["cta"], resolve_config_category(cfg)))
     warnings.extend(trailing_cta_warnings(cfg))
+    warnings.extend(scene_cta_closing_warnings(cfg))   # 씬으로 직접 쓴 CTA 종결
     warnings.extend(domain_warnings(cfg))     # 036: 도메인 주의어·출처 표기
     return warnings
 
@@ -170,6 +181,7 @@ def _download_source(key: str, spec: dict, out: Path) -> None:
     print(f"⬇️  {key}: {target}", flush=True)
     subprocess.run(
         [PY, "-m", "yt_dlp", target,
+         *YTDLP_CHALLENGE_ARGS,
          "--match-filter", f"duration<{dmax} & duration>{dmin}",
          "--max-downloads", "1", "--force-overwrites", "--no-playlist-reverse",
          "-f", "bv*[height<=720]+ba/b[height<=720]", "--merge-output-format", "mp4",

@@ -10,12 +10,14 @@
   "source_channel": "출처 채널명",
   "source_title": "원본 영상 제목",
   "youtube_url": "https://www.youtube.com/watch?v=XXXXXXXXXXX",
+  "emotion_type": "relatable",
+  "_emotion_type_comment": "[필수 판단] BGM은 emotion_type 하나로만 결정된다. 경제 기본값은 relatable(차분). 폭락·파산처럼 긴장이 필요하면 angry 로 바꿀 것.",
   "tts_speed": 1.1,
   "fallback_source": "news",
   "cta": {
     "_comment": "40% 지점 자동 삽입. 경제는 '내 지갑'으로 편이 갈린다 — 열린 질문 금지. 나레이션 4초(약 32자) 이내.",
     "text": "이 결정, 내 지갑엔?\n① 이득  ② 손해",
-    "voice": "내 지갑엔 이득일까요 손해일까요? 1번, 2번 답글.",
+    "voice": "내 지갑엔 이득일까요 손해일까요? 댓글로 알려주세요.",
     "hl": ["내 지갑"],
     "at_frac": 0.4
   },
@@ -24,7 +26,8 @@
     "news": { "query": "기준금리 동결 뉴스 리포트", "dur_max": 900, "verify_frac": 0.4 }
   },
   "scenes": [
-    { "mode": "clip", "source": "bok", "start_sec": 0.0, "duration": 4.0,
+    { "_comment": "[훅 — 가장 센 컷] 확보한 클립을 다 잘라 놓고 세기 순으로 정렬해 1등을 여기 놓는다. 사연을 시간순으로 배열하면 상황 설명이 앞에 오고 절정이 뒤로 간다(경제 1호 실패 사례). 경제의 절정은 표정이 아니라 **당사자가 자기 손해를 말하는 한 문장** — 1순위 1인칭 항의·반문('제가 투기꾼입니까?'), 2순위 화면에 숫자·문구가 박힌 컷, 3순위 당국자의 말 바꾸기. 기자 나레이션·상황 설명·배경 원경은 훅으로 쓰지 않는다.",
+      "mode": "clip", "source": "bok", "start_sec": 0.0, "duration": 4.0,
       "speaker": "이창용",
       "text": "\"기준금리를\n현 수준에서 유지\"",
       "hl": ["유지"] },

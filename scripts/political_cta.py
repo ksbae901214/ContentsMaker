@@ -7,13 +7,18 @@ CTA가 마지막 씬에 있어 도달 자체가 안 되고, "여러분 생각은
 
 처방: ① CTA를 별도 짧은 tts 씬으로 떼어 **40% 지점**에 삽입,
 ② 질문을 **선택지형(①/②·누구 잘못·어느 쪽)** 으로 강제(미달 시 경고),
-③ 마지막 씬에 남은 "댓글로…" 잔존 문구를 경고로 잡아 중복 제거.
+③ 마지막 씬에 남은 "댓글로…" 잔존 문구를 경고로 잡아 중복 제거,
+④ 나레이션을 **"댓글로 알려주세요"** 로 닫기(미달 시 경고, 사용자 지시 2026-08-18).
+
+④는 말투 규칙이다. CTA는 영상에서 유일하게 시청자에게 직접 말을 거는 문장인데
+"번호로 답글." 같은 명사형·반말 종결은 지시처럼 들린다. 채널 톤은 존댓말이므로
+CTA도 존댓말로 닫는다.
 
 config 예시:
 ```json
 "cta": {
   "text": "이거 누구 잘못?\\n① 조국  ② 이준석",
-  "voice": "이건 누구 잘못일까요? 1번, 2번 댓글로 남겨주세요.",
+  "voice": "누구 잘못일까요? 1번 조국, 2번 이준석. 댓글로 알려주세요.",
   "hl": ["누구 잘못"]
 }
 ```
@@ -37,9 +42,28 @@ SIDE_PICK_MARKERS = (
 )
 
 
+# CTA 나레이션 종결 문구 (사용자 지시 2026-08-18) — 존댓말로 닫는다.
+CTA_CLOSING = "댓글로 알려주세요"
+# 씬으로 직접 쓴 CTA를 자막에서 알아보는 신호 (선택지 기호만 — 오탐 방지)
+CTA_SCENE_MARKERS = ("①", "②", "③", "1번", "2번", "3번")
+
+
 def is_side_picking(text: str) -> bool:
     """편이 갈리는(선택지형) 질문인지 — 일반 열린 질문과 구분."""
     return any(m in (text or "") for m in SIDE_PICK_MARKERS)
+
+
+def lint_cta_closing(voice: str) -> list[str]:
+    """CTA 나레이션이 존댓말 종결로 닫히는지.
+
+    CTA는 영상에서 유일하게 시청자에게 직접 말을 거는 문장이라, "번호로 답글."
+    같은 명사형·반말 종결은 지시처럼 들린다. 채널 톤에 맞춰 존댓말로 닫는다.
+    """
+    if not voice or CTA_CLOSING in voice:
+        return []
+    return [f'CTA 나레이션을 "{CTA_CLOSING}"로 닫으세요 — 반말·명사형 종결'
+            f'("번호로 답글." 등)은 지시처럼 들립니다 (사용자 지시 2026-08-18). '
+            f'현재: "{voice[-20:]}"']
 
 
 def lint_cta(cta: dict, category: str = "political") -> list[str]:
@@ -59,6 +83,7 @@ def lint_cta(cta: dict, category: str = "political") -> list[str]:
             "CTA가 열린 질문 — 편 가르는 선택지형으로 바꾸세요 "
             f"(예: '{rules_for(category).cta_example}'). "
             "열린 질문은 실측상 댓글율 0.24%로 답글이 안 붙습니다 (035)")
+    warnings.extend(lint_cta_closing(voice))
     est = estimate_tts_sec(len(voice))
     if est > CTA_MAX_SEC:
         warnings.append(
@@ -137,8 +162,30 @@ def trailing_cta_warnings(cfg: dict) -> list[str]:
     return warnings
 
 
+def scene_cta_closing_warnings(cfg: dict) -> list[str]:
+    """씬으로 **직접 쓴** CTA의 종결 검사.
+
+    2026-08-14 지시 이후 CTA를 top-level `cta` 블록이 아니라 마지막 씬에 직접
+    쓰는 config 가 표준이 됐다. `lint_cta` 는 블록만 보므로 그 경로가 검사에서
+    통째로 빠진다 — 이 함수가 그 구멍을 메운다.
+
+    오탐을 줄이려고 자막에 선택지 기호(①/1번…)가 박힌 씬만 CTA로 본다.
+    나레이션에 '찬성/반대' 같은 단어가 스쳐 지나가는 일반 씬은 걸리지 않는다.
+    """
+    warnings = []
+    for i, sc in enumerate(cfg.get("scenes") or []):
+        if sc.get("_cta"):      # 블록에서 삽입된 씬은 lint_cta 가 이미 본다
+            continue
+        if not any(m in (sc.get("text") or "") for m in CTA_SCENE_MARKERS):
+            continue
+        warnings.extend(f"scene[{i}] {w}" for w in lint_cta_closing(sc.get("voice", "")))
+    return warnings
+
+
 __all__ = [
-    "CTA_MAX_SEC", "CTA_PHRASES", "DEFAULT_CTA_AT_FRAC", "SIDE_PICK_MARKERS",
+    "CTA_CLOSING", "CTA_MAX_SEC", "CTA_PHRASES", "CTA_SCENE_MARKERS",
+    "DEFAULT_CTA_AT_FRAC", "SIDE_PICK_MARKERS",
     "apply_cta", "build_cta_scene", "cta_insert_index", "is_side_picking",
-    "lint_cta", "trailing_cta_warnings",
+    "lint_cta", "lint_cta_closing", "scene_cta_closing_warnings",
+    "trailing_cta_warnings",
 ]

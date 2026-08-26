@@ -161,6 +161,84 @@ def lint_yt_title(title: str, persons: list[str] | None = None,
     return warnings
 
 
+_SUMMARY_MAX_LINE_LEN = 80  # 한 줄 가독성 상한. 초과 시 어절 경계에서 자름.
+
+
+def _flatten_scene_text(raw: str) -> str:
+    """화면 자막(개행 포함)을 한 줄 문장으로 합친다."""
+    return " ".join((raw or "").replace("\n", " ").split())
+
+
+def _shorten_summary_line(line: str, max_len: int = _SUMMARY_MAX_LINE_LEN) -> str:
+    if len(line) <= max_len:
+        return line
+    cut = line[:max_len]
+    space = cut.rfind(" ")
+    if space >= int(max_len * 0.6):
+        cut = cut[:space]
+    return cut.rstrip(",.…— ") + "…"
+
+
+def build_three_line_summary(cfg: dict) -> str:
+    """제목 아래 붙일 3줄요약 — 화면 자막(`text`) 기준으로 v2.1(hook 블록)·
+    v2.2(clip 씬이 훅) 공통 스키마에서 뽑는다.
+
+    `voice`(TTS 나레이션)는 v2.2의 clip 씬엔 없어서(원본 육성이라 나레이션 없음)
+    기준으로 못 쓴다 — 항상 존재하는 `text`(화면 자막)를 쓴다.
+    CTA 씬(`_cta` 또는 선택지 기호가 박힌 씬)은 사실 요약이 아니라 질문이므로 제외한다.
+
+    line 1 — 훅(top-level `hook` 블록, 없으면 scenes[0])
+    line 2 — 본문 중 가장 정보 밀도 높은(긴) 자막
+    line 3 — 마지막 본문 씬 자막
+    """
+    from scripts.political_cta import CTA_SCENE_MARKERS
+
+    scenes = cfg.get("scenes") or []
+    non_cta = [
+        s for s in scenes
+        if not s.get("_cta")
+        and not any(m in (s.get("text") or "") for m in CTA_SCENE_MARKERS)
+    ]
+
+    hook = cfg.get("hook")
+    candidates: list[str] = []
+    if hook and hook.get("text"):
+        candidates.append(_flatten_scene_text(hook["text"]))
+    candidates.extend(
+        t for s in non_cta if (t := _flatten_scene_text(s.get("text", "")))
+    )
+
+    if not candidates:
+        return _flatten_scene_text(cfg.get("yt_title") or cfg.get("title", ""))
+    if len(candidates) == 1:
+        return candidates[0]
+
+    line1 = candidates[0]
+    rest = candidates[1:]
+    line3 = rest[-1]
+    mid_candidates = [c for c in rest[:-1] if c not in (line1, line3)]
+    if mid_candidates:
+        line2 = max(mid_candidates, key=len)
+    else:
+        line2 = next((c for c in rest if c not in (line1, line3)), line1)
+
+    lines = [line1, line2, line3]
+    seen: list[str] = []
+    for ln in lines:
+        if ln not in seen:
+            seen.append(ln)
+        else:
+            fallback = next(
+                (c for c in sorted(candidates, key=len, reverse=True) if c not in seen),
+                ln,
+            )
+            seen.append(fallback)
+
+    return "\n".join(
+        f"{i + 1}. {_shorten_summary_line(ln)}" for i, ln in enumerate(seen[:3])
+    )
+
+
 def build_hashtags(cfg: dict) -> list[str]:
     """config `hashtags` 우선, 없으면 `persons` 로 #인물명 자동 생성 (최대 4개)."""
     raw = cfg.get("hashtags") or [f"#{p}" for p in cfg.get("persons", [])]
@@ -229,6 +307,9 @@ def build_upload_package_md(
         lines.extend(f"- ⚠️ {w}" for w in warnings)
     lines += [
         "",
+        "## 3줄요약",
+        build_three_line_summary(cfg),
+        "",
         "## 설명",
         "```",
         build_description(cfg, hashtags),
@@ -256,6 +337,25 @@ def build_upload_package_md(
         "",
     ]
     return "\n".join(lines)
+
+
+def build_chat_ready_block(cfg: dict) -> str:
+    """렌더 완료 메시지에 바로 붙여넣을 제목·3줄요약·해시태그 블록.
+
+    upload_package.md가 authoritative — 채팅에 다시 손으로 써 넣지 말고 이 블록을
+    그대로 인용한다 (038, 반복 누락 방지).
+    """
+    yt_title_raw = cfg.get("yt_title") or cfg["title"]
+    yt_title, _ = sanitize_yt_title(yt_title_raw)
+    hashtags = build_hashtags(cfg)
+    return "\n".join([
+        f"제목: {yt_title}",
+        "",
+        "3줄요약:",
+        build_three_line_summary(cfg),
+        "",
+        "해시태그: " + (" ".join(hashtags) if hashtags else "(persons 또는 hashtags 설정 필요)"),
+    ])
 
 
 # ── 부수효과 (ffmpeg / 파일 쓰기) ──────────────────────────────────

@@ -145,6 +145,7 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 - **Per-scene TTS timing** — `generate_voice_with_timing()` returns `scene_timings` (start_ms/end_ms per scene) for precise audio-video sync. Scene ID `-1` is the outro.
 - **Max scene duration** — `MAX_SCENE_DURATION_SECONDS=5.0` enforced at script generation time. Pre-existing scripts can be split with `scene_ops.split_scenes_to_max_duration()`. This ensures each scene fits within one Kling 2.5 / Wan 2.2 / MiniMax clip (shortest common ceiling across Premium+ unlimited models).
 - **Reference images** — webtoon-style image generation reads from `data/references/`. Pass `--no-references` to skip.
+- **Upload package is authoritative for the completion message (038)** — `render_political_v2_1.py`/`_v2_2.py` print a 제목/3줄요약/해시태그 block (`political_upload_package.build_chat_ready_block()`) to stdout right after rendering, and write the same content into `upload_package.md`. When reporting a finished 정치쇼츠 in chat, quote that block verbatim — do not hand-write a new title/summary/hashtags from scratch. This closes a recurring failure (see `[[video-completion-summary-hashtags]]` memory) where the set was omitted or improvised because nothing upstream generated it.
 
 ### Input Modes
 
@@ -223,6 +224,30 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 038 업로드 패키지 자동화 강화 + CTA 위치 변경 (2026-08-25, 사용자 지시):
+  - **3줄요약 자동 생성** — `political_upload_package.py`에 `build_three_line_summary(cfg)`
+    신규. `upload_package.md`에 애초에 3줄요약 섹션이 없었던 게 반복 누락의 원인이었다
+    (assistant가 매번 파일에도 없는 요약을 기억만으로 새로 써서 채팅에 붙이다 3회 누락 —
+    `[[video-completion-summary-hashtags]]` 메모리). `cfg["hook"]["text"]`(v2.1) 또는
+    `scenes[0]["text"]`(v2.2, 훅이 clip 씬)를 1줄, 본문 중 최장 자막을 2줄, 마지막
+    비-CTA 씬 자막을 3줄로 뽑는다. `voice`(TTS 나레이션) 대신 `text`(화면 자막) 기준 —
+    v2.2 clip 씬은 원본 육성이라 `voice`가 없다.
+  - **렌더 완료 시 콘솔에 세트 전체 출력** — `render_political_v2_1.py`/`_v2_2.py`가
+    `upload_package.md` **경로만** 찍던 것을 `build_chat_ready_block()`(제목·3줄요약·
+    해시태그)까지 stdout에 출력하도록 변경. 렌더 완료 메시지는 이 블록을 그대로
+    인용한다(직접 재작성 금지) — Key Conventions에 규칙 추가.
+  - **제목 자극성 강화** — `political_planner_stage_a_prompt.py`의 3개 STAGE_A
+    프롬프트(정치/토픽/경제)에 "제목 톤" 절 추가, 공포·충격·호기심 단어를 기본값으로
+    명시(`[[shorts-title-sensational-tone]]` 메모리 반영). `gate_yt_title`(보도체 금칙
+    어미)과는 별개 게이트라 충돌 없음.
+  - **CTA를 마지막 씬으로 되돌림** — `political_cta.py`의 `apply_cta()`가 035에서 도입한
+    40% 지점 삽입을 그만두고 항상 `scenes` 끝에 CTA를 붙인다. 035 결정(당시 댓글율
+    0.24% 실측, "CTA가 끝에 있으면 도달 자체가 안 된다")을 뒤집는 것 — 사용자가
+    "CTA가 중간에 나오는 게 싫다"고 명시적으로 지시. 변경 후 댓글율 재확인 권장(강제 아님).
+    `cta_insert_index()`/40% 관련 로직은 향후 재사용 대비 보존, `apply_cta()`만 미사용.
+  - 반영: `political_upload_package.py`, `render_political_v2_1/2.py`, `political_cta.py`,
+    `political_planner_stage_a_prompt.py`, `CLAUDE.md`, `political_v2_configs/README.md`
+    035/2절, `prompt_plan.md` 038 절. 상세 계획: `prompt_plan.md`.
 - 037 제작 규격 고정 — **제목 100px · 클립은 말 끝맺음까지** (2026-08-25, 사용자 지시):
   - **제목 폰트 크기 = 100px 고정** — `src/video/remotion/src/ShortsComposition.tsx` 의 `TitleBar`
     (`fontSize: 100`, 서체는 기본 `Noto Sans KR` 유지). 75px 기본값은 쇼츠 피드에서 제목이 안 읽힌다.

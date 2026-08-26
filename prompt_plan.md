@@ -2,7 +2,70 @@
 
 > 블라인드 / NATV / 정치 / 셀럽 영상을 YouTube Shorts로 자동 변환하는 파이프라인
 
-**마지막 업데이트**: 2026-08-13
+**마지막 업데이트**: 2026-08-25
+
+---
+
+## 🚧 신규: 업로드 패키지 자동화 강화 + CTA 위치 변경 (038) — 2026-08-25
+
+> 사용자 요청: "제목·3줄요약·해시태그를 자동으로 만들어달라고 했는데 왜 자꾸 못 알아듣는거지?
+> 영상 생성하기 전에 제목을 더 자극적인걸로 뽑아줘야해" + "CTA가 영상 중간에 나오는것도 싫어
+> 영상 끝에 나오게끔 추가해줘"
+> **상태**: 계획 확정 (2026-08-25, 사용자 "진행" 승인). 구현 중.
+
+### 진단 (핵심 결론)
+"어시스턴트가 깜빡함"이 아니라 구조적 공백이었다.
+1. **3종 세트 누락**: `render_political_v2_1/2.py`는 렌더 완료 시 `upload_package.md`를
+   자동 생성하지만, 그 파일엔 애초에 **3줄요약 섹션이 없었다**(제목 A/B·설명·해시태그·
+   고정댓글만). 터미널엔 파일 **경로만** 찍히고 내용은 안 찍혀서, 매번 ①파일을 열어
+   ②거기 없는 3줄요약을 손으로 새로 써서 ③채팅에 붙이는 3단계를 순수 기억에만
+   의존해왔다. 웹 UI 경로(`metadata_generator.generate_metadata()`)는 이미 자동인데
+   실제 주력 워크플로우인 political-pro CLI 경로엔 연결이 안 돼 있었다.
+2. **제목이 밍밍함**: `political_planner_stage_a_prompt.py`의 `yt_title` 가이드에
+   "자극적이되 팩트 기반" 문구는 있지만 공포·충격·호기심 단어를 명시적으로
+   요구하지 않아 무난한 사실요약형이 기본으로 나왔다.
+3. **CTA 중반 삽입 재검토**: `political_cta.py`가 CTA를 40% 지점에 넣는 이유(035,
+   2026-08-05)는 "CTA가 마지막 씬에 있으면 도달 자체가 안 된다"는 실측(댓글율 0.24%)
+   때문이었다. 이번 요청은 그 결정을 되돌리는 것 — 사용자가 명시적으로 확정,
+   변경 후 댓글율 재확인을 권장(강제 아님).
+
+### Phase 1 — `political_upload_package.py`에 3줄요약 자동 생성
+- `build_three_line_summary(cfg)` 신규: `cfg["hook"]`(1줄) + `cfg["scenes"][*]["voice"]`
+  중 가장 정보 밀도 높은 문장(2줄) + 마지막 씬 voice(3줄). `metadata_generator.
+  _build_three_line_summary`와 동일 알고리즘을 cfg 스키마(v2.1/v2.2 공용)로 포팅.
+- `build_upload_package_md()`에 "## 3줄요약" 섹션 추가(제목 A/B와 해시태그 사이).
+
+### Phase 2 — 렌더 완료 시 콘솔에 세트 전체 출력
+- `render_political_v2_1.py`/`_v2_2.py`: `generate_upload_package()` 호출 직후
+  파일 경로만 찍던 것을 제목·3줄요약·해시태그 블록 자체를 stdout에 출력하도록 변경.
+  렌더 실행한 순간 터미널에 완성된 세트가 있으므로 재작성 없이 인용만 하면 된다.
+
+### Phase 3 — CLAUDE.md에 규칙 승격
+- Key Conventions에 "정치쇼츠 렌더 완료 메시지는 upload_package.md의 제목/3줄요약/
+  해시태그 섹션을 그대로 인용한다(직접 재작성 금지, 파일이 authoritative)" 추가.
+
+### Phase 4 — 제목 자극성 프롬프트 강화
+- `political_planner_stage_a_prompt.py`의 정치/토픽/경제 3개 STAGE_A 프롬프트
+  `yt_title` 가이드에 공포·충격·호기심 단어 예시 명시(메모리 `shorts-title-
+  sensational-tone.md` 내용을 프롬프트 텍스트로 이식). `gate_yt_title`(보도체
+  금칙 어미)과 충돌 없음 확인.
+
+### Phase 5 — CTA를 항상 영상 끝에 배치
+- `political_cta.py`의 `apply_cta()`: `cta` 블록을 40% 지점이 아니라 **마지막 씬
+  뒤**에 삽입(`cta_insert_index`의 frac 기반 계산 대신 `len(scenes)`로 고정).
+- `lint_cta`/`trailing_cta_warnings`/모듈 독스트링의 "40% 지점" 문구를 "마지막 씬"으로 갱신.
+- 이미 CTA를 마지막 씬에 직접 써넣는 최근 config(예: `jeju_missing_police_v2_1.json`)는
+  그대로 유지 — 새 표준과 일치.
+- `CLAUDE.md` 035 절 최신화(과거 히스토리는 남기고 최신 결정만 반영).
+
+### 리스크
+- v2.1/v2.2 씬 구조 차이(훅 위치, hook clip vs relay)로 3줄요약 함수가 두 포맷
+  모두에서 자연스럽게 동작하는지 케이스별 확인 필요.
+- 기존 렌더 완료된 config(60여개)는 재렌더하지 않는 한 3줄요약 섹션 없이 남음
+  — 신규 렌더분부터 적용.
+- CTA 위치 변경은 035의 데이터 기반 결정을 뒤집는 것 — 향후 댓글율 재확인 권장.
+
+### 복잡도: MEDIUM
 
 ---
 

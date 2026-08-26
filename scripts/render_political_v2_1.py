@@ -431,9 +431,10 @@ def cmd_render(cfg: dict) -> int:
     )
     print(f"\n📁 출력: {mp4} ({mp4.stat().st_size/1024/1024:.1f}MB)", flush=True)
 
-    from scripts.political_upload_package import generate_upload_package
+    from scripts.political_upload_package import build_chat_ready_block, generate_upload_package
     pkg = generate_upload_package(cfg, video_path=mp4, out_dir=wd)
     print(f"📦 업로드 패키지: {pkg}", flush=True)
+    print(f"\n{build_chat_ready_block(cfg)}\n", flush=True)
     print(str(mp4))
     return 0
 

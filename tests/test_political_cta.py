@@ -136,15 +136,21 @@ class TestApplyCta:
         apply_cta(cfg)
         assert len(cfg["scenes"]) == before
 
-    def test_cta_is_not_last_scene(self):
+    def test_cta_is_last_scene(self):
+        """038: CTA는 항상 마지막 씬 — 40% 중반 삽입에서 되돌림."""
         out = apply_cta(cfg_with_cta())
-        assert out["scenes"][-1].get("text") == "정리"
-        assert any(s.get("_cta") for s in out["scenes"][:-1])
+        assert out["scenes"][-1].get("_cta") is True
+        assert out["scenes"][-2].get("text") == "정리"
 
     def test_cta_not_first_scene(self):
         """scene[0]은 훅(clip) 유지 — V2.2 검증 규칙 보호."""
         out = apply_cta(cfg_with_cta())
         assert out["scenes"][0].get("mode") == "clip"
+
+    def test_cta_inherits_last_scene_as_neighbor(self):
+        cfg = cfg_with_cta()
+        out = apply_cta(cfg)
+        assert out["scenes"][-1]["source"] == cfg["scenes"][-1]["source"]
 
     def test_malformed_config_returns_unchanged(self):
         cfg = {"slug": "x", "cta": {"text": "t", "voice": "v"}}

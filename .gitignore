@@ -26,6 +26,10 @@ data/audio/
 data/outputs/
 data/backgrounds/
 data/political_pro/
+# 039 자동 슬롯 런타임 산출물 — 정책 JSON(channel_policy/review_policy)만 추적한다
+data/auto_daily/*/
+data/auto_daily/.*
+data/auto_daily/publish_log.jsonl
 data/tts_cache/
 data/natv_clips/
 data/videos/

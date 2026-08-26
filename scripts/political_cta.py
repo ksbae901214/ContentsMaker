@@ -1,13 +1,16 @@
-"""정치쇼츠 중반 CTA (035) — 댓글 유도를 40% 지점으로, 편 가르기 질문으로.
+"""정치쇼츠 CTA — 편 가르기 질문으로 댓글 유도 (035, 038).
 
-**근거 (채널 실측 2026-08-05, 최근 18편)**: 조회 19,835회에 좋아요 507(2.56%),
-댓글 47(0.24%). 쇼츠 건강 기준(좋아요 4~5%, 댓글 0.5~1%)의 절반 이하다.
-CTA가 마지막 씬에 있어 도달 자체가 안 되고, "여러분 생각은 어떠신가요?" 같은
-열린 질문은 편이 갈리지 않아 답글이 붙지 않는다.
+**근거 (채널 실측 2026-08-05, 당시 최근 18편)**: 조회 19,835회에 좋아요 507
+(2.56%), 댓글 47(0.24%). 쇼츠 건강 기준(좋아요 4~5%, 댓글 0.5~1%)의 절반 이하다.
+당시 "CTA가 마지막 씬에 있어 도달 자체가 안 된다"고 보고 **40% 지점**으로
+옮겼었다. **038(2026-08-25, 사용자 지시)로 다시 마지막 씬으로 되돌렸다** —
+영상 중간에 CTA가 끼어드는 게 시청 흐름을 끊는다는 판단. 되돌린 뒤 댓글율을
+다시 확인해볼 것(강제 아님). "여러분 생각은 어떠신가요?" 같은 열린 질문은
+위치와 무관하게 편이 갈리지 않아 답글이 붙지 않으므로 ②는 그대로 유지한다.
 
-처방: ① CTA를 별도 짧은 tts 씬으로 떼어 **40% 지점**에 삽입,
+처방: ① CTA를 별도 짧은 tts 씬으로 떼어 **마지막 씬 뒤**에 삽입(038),
 ② 질문을 **선택지형(①/②·누구 잘못·어느 쪽)** 으로 강제(미달 시 경고),
-③ 마지막 씬에 남은 "댓글로…" 잔존 문구를 경고로 잡아 중복 제거,
+③ 마지막 씬(CTA 삽입 전 기준)에 남은 "댓글로…" 잔존 문구를 경고로 잡아 중복 제거,
 ④ 나레이션을 **"댓글로 알려주세요"** 로 닫기(미달 시 경고, 사용자 지시 2026-08-18).
 
 ④는 말투 규칙이다. CTA는 영상에서 유일하게 시청자에게 직접 말을 거는 문장인데
@@ -25,11 +28,10 @@ config 예시:
 """
 from __future__ import annotations
 
-from scripts.political_length import (
-    estimate_tts_sec, hook_offset_sec, scene_duration_estimates,
-)
+from scripts.political_length import estimate_tts_sec
 
-DEFAULT_CTA_AT_FRAC = 0.4       # 040 지점 — 스와이프 이탈 전, 초반 훅 직후
+DEFAULT_CTA_AT_FRAC = 0.4       # 038: apply_cta는 더 이상 이 값을 쓰지 않음(항상 마지막
+                                 # 씬 뒤 삽입) — cta_insert_index()의 기본 인자로만 남음
 CTA_MAX_SEC = 4.0               # CTA 씬 권장 상한 — 2지선다 낭독 1회분 (길이 캡 잠식 방지)
 
 # 댓글 유도 문구 — 일반 씬에 남아 있으면 중복 CTA
@@ -99,7 +101,9 @@ def cta_insert_index(
 ) -> int:
     """CTA를 끼워 넣을 씬 인덱스 — 누적 시간이 at_frac 지점에 가장 가까운 경계.
 
-    scene[0](훅) 앞과 마지막 씬 뒤는 제외 — 훅 보호 + 말미 CTA 회귀 방지.
+    038: `apply_cta()`는 이제 이 함수를 쓰지 않는다(항상 마지막 씬 뒤에 삽입).
+    frac 기반 중반 삽입이 다시 필요해지는 경우를 위해 로직만 보존한다.
+    scene[0](훅) 앞과 마지막 씬 뒤는 제외 — 훅 보호 + 중반 삽입 시 말미 회귀 방지.
     """
     n = len(durations)
     if n < 2:
@@ -133,19 +137,17 @@ def build_cta_scene(cta: dict, neighbor: dict) -> dict:
 
 
 def apply_cta(cfg: dict) -> dict:
-    """cfg["cta"] 를 40% 지점의 tts 씬으로 삽입한 **새 cfg** 반환 (불변)."""
+    """cfg["cta"] 를 **마지막 씬 뒤**의 tts 씬으로 삽입한 **새 cfg** 반환 (불변, 038).
+
+    035에서 쓰던 40% 지점 삽입(`cta_insert_index`)은 더 이상 쓰지 않는다 —
+    사용자 지시(2026-08-25)로 CTA는 항상 영상 맨 끝에 온다.
+    """
     cta = cfg.get("cta")
     scenes = cfg.get("scenes")
     if not cta or not isinstance(scenes, list) or not scenes:
         return cfg
-    idx = cta_insert_index(
-        scene_duration_estimates(cfg),
-        at_frac=float(cta.get("at_frac", DEFAULT_CTA_AT_FRAC)),
-        prefix_sec=hook_offset_sec(cfg),
-    )
-    idx = max(1, min(idx, len(scenes)))
-    scene = build_cta_scene(cta, scenes[idx - 1])
-    return {**cfg, "scenes": [*scenes[:idx], scene, *scenes[idx:]]}
+    scene = build_cta_scene(cta, scenes[-1])
+    return {**cfg, "scenes": [*scenes, scene]}
 
 
 def trailing_cta_warnings(cfg: dict) -> list[str]:
@@ -158,7 +160,7 @@ def trailing_cta_warnings(cfg: dict) -> list[str]:
         if any(p in voice for p in CTA_PHRASES):
             warnings.append(
                 f"scene[{i}] 나레이션에 댓글 유도 문구 잔존 — "
-                "cta 블록으로 옮기세요 (CTA는 40% 지점 1회만, 035)")
+                "cta 블록으로 옮기세요 (CTA는 마지막 씬 1회만, 035/038)")
     return warnings
 
 

@@ -145,6 +145,25 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 - **Per-scene TTS timing** — `generate_voice_with_timing()` returns `scene_timings` (start_ms/end_ms per scene) for precise audio-video sync. Scene ID `-1` is the outro.
 - **Max scene duration** — `MAX_SCENE_DURATION_SECONDS=5.0` enforced at script generation time. Pre-existing scripts can be split with `scene_ops.split_scenes_to_max_duration()`. This ensures each scene fits within one Kling 2.5 / Wan 2.2 / MiniMax clip (shortest common ceiling across Premium+ unlimited models).
 - **Reference images** — webtoon-style image generation reads from `data/references/`. Pass `--no-references` to skip.
+- **쇼츠 영상은 만들기 전에 버전부터 묻는다 (2026-09-30 사용자 지시)** — 영상 제작 요청이
+  오면 기획안을 쓰기 **전에** `AskUserQuestion` 으로 어떤 버전으로 만들지 먼저 묻는다.
+  `multiSelect: true` 로 물어 **V2.1+V2.2 병행**(같은 주제 하루 2편, V2.2→유튜브 · V2.1→틱톡,
+  034)도 고를 수 있게 한다. 소재를 보고 고른 추천 버전을 첫 선택지에 두고 라벨 끝에
+  "(추천)" 을 붙인다. **사용자가 요청에 버전을 이미 적었으면("V4로 만들어줘") 묻지 않는다.**
+  각 선택지 설명에는 아래 표의 한 줄 설명을 쓴다.
+
+  | 버전 | 한 줄 설명 | 잘 맞는 소재 | 렌더러 (`format`) |
+  |---|---|---|---|
+  | **V2.1** | 원본 육성 훅 1컷 + TTS 논평 브리핑 (육성 약 35%) | 인물의 한 마디가 센 소재 · 틱톡용 | `render_political_v2_1.py` (`v2_1`) |
+  | **V2.2** | 원본 육성 클립 2~5개 릴레이 + 마지막 TTS 정리 1개 (육성 65% 이상) | 여야·당사자 발언이 영상으로 다 있는 소재 · 유튜브용 | `render_political_v2_2.py` (`v2_2`) |
+  | **V3.0** | 인물 1명 프로필 다큐 — 훅만 육성, 무음 B-roll + 전체 TTS, 흰 캔버스·궁서 제목·인물 배지, BGM 없음, 구독형 CTA | 지금 화제인 인물의 이력·배경 | `render_profile_v3.py` (`profile_v3`) |
+  | **V4.0** | 영상 없이 사진 슬라이드(3.4초 고정) + 전체 TTS, BGM 없음, **정치 전용**, 완료 시 제목 A/B+3줄요약+해시태그 | 육성 영상이 없는 소재 (SNS 글·성명·기사만 있는 경우) | `render_news_v4.py` (`news_v4`) |
+
+  추천 기준: 육성 영상이 있으면 V2.2(+V2.1 병행) / 인물 소개면 V3.0 / 육성이 없으면 V4.0.
+  비정치 소재(경제·사회·연예)에는 V4.0 을 권하지 않는다(렌더러가 차단한다). 레거시 파이프라인
+  (027 jpolitics 모먼트 직캠, 030 하이브리드, 009 political-pro 3기획안)은 선택지에 넣지
+  않는다 — 사용자가 이름을 대면 그때 쓴다. 버전을 정한 뒤에 039 돌파 3문항과 040 대칭 검토로
+  넘어간다.
 - **소재 선정은 돌파 3문항이 먼저다 (039)** — 쇼츠를 기획할 때(채팅에서 소재를
   제안하는 경우 포함) 다른 무엇보다 먼저 `scripts/shorts_breakout.py`의 3조건을
   통과시킨다: ①이 사람에게 화내는 데 정치 성향이 필요한가(필요하면 탈락, 민간인

@@ -329,6 +329,19 @@ def build_upload_package_md(
     rules = _domain(category)
     lines += ["", f"## 업로드 전 체크리스트 ({rules.label}, 034/035/036)"]
     lines.extend(f"- [ ] {item}" for item in rules.checklist)
+    # 041: 포맷 고유 체크리스트. 카테고리 체크리스트는 포맷을 모르므로 V3.0 에는
+    # 맞지 않는 항목(40% CTA·선택지형·진영 대칭)이 섞인다 — 어긋나는 항목을
+    # 여기서 명시적으로 무효화한다.
+    from scripts.shorts_format import DEFAULT_FORMAT, rules_for_config
+    fmt = rules_for_config(cfg)
+    if fmt.format != DEFAULT_FORMAT:
+        lines += ["", f"## 포맷 체크리스트 ({fmt.label}, `{fmt.format}`)",
+                  f"> 오디오: {fmt.audio_policy}"]
+        lines.extend(f"- [ ] {item}" for item in fmt.checklist)
+        if not fmt.symmetry_applies:
+            lines.append(
+                "- ⓘ 위 카테고리 체크리스트의 **진영 대칭·선택지형 CTA 항목은 이 "
+                "포맷에 적용되지 않는다** — 인물 1명을 다루고 CTA 는 구독 유도형이다")
     lines += [
         "",
         "---",
@@ -407,13 +420,15 @@ def generate_upload_package(cfg: dict, video_path: Path, out_dir: Path,
     pkg = out_dir / "upload_package.md"
     pkg.write_text(md, encoding="utf-8")
 
+    from scripts.shorts_format import record_format, resolve_config_format
+    path = ledger_path or CATEGORY_LEDGER_PATH
+    title = cfg.get("yt_title") or cfg["title"]
     try:
-        record_category(
-            ledger_path or CATEGORY_LEDGER_PATH,
-            cfg.get("yt_title") or cfg["title"],
-            resolve_config_category(cfg),
-            slug=cfg.get("slug", ""),
-        )
+        record_category(path, title, resolve_config_category(cfg),
+                        slug=cfg.get("slug", ""))
+        # 041: 포맷 축도 같은 원장에 기록한다 — V3.0 파일럿 판정의 유일한 근거
+        record_format(path, title, resolve_config_format(cfg),
+                      slug=cfg.get("slug", ""))
     except OSError as e:
-        print(f"   ⚠️ 카테고리 원장 기록 실패 (계측만 영향): {e}")
+        print(f"   ⚠️ 성과 원장 기록 실패 (계측만 영향): {e}")
     return pkg

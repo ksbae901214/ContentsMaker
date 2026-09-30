@@ -145,7 +145,67 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
 - **Per-scene TTS timing** — `generate_voice_with_timing()` returns `scene_timings` (start_ms/end_ms per scene) for precise audio-video sync. Scene ID `-1` is the outro.
 - **Max scene duration** — `MAX_SCENE_DURATION_SECONDS=5.0` enforced at script generation time. Pre-existing scripts can be split with `scene_ops.split_scenes_to_max_duration()`. This ensures each scene fits within one Kling 2.5 / Wan 2.2 / MiniMax clip (shortest common ceiling across Premium+ unlimited models).
 - **Reference images** — webtoon-style image generation reads from `data/references/`. Pass `--no-references` to skip.
+- **소재 선정은 돌파 3문항이 먼저다 (039)** — 쇼츠를 기획할 때(채팅에서 소재를
+  제안하는 경우 포함) 다른 무엇보다 먼저 `scripts/shorts_breakout.py`의 3조건을
+  통과시킨다: ①이 사람에게 화내는 데 정치 성향이 필요한가(필요하면 탈락, 민간인
+  75% vs 정치인 9%) ②이미 무언가를 잃었는가(사과·취소·사퇴·박탈, 36% vs 7%)
+  ③당내 절차인가(제명·재신임·공천·청원·낙선·징계 — **무조건 탈락, 실측 13편 0%**).
+  유명 정치인이라는 이유로 소재를 고르지 말 것 — 인물 인지도는 실측상 변수가
+  아니다. 한 편이 뚫리면 새 소재보다 **후속을 먼저** 붙인다. 근거표는
+  `political_v2_configs/README.md` 039 절.
+- **정치편은 한 편 안에서 대칭이어야 한다 (040)** — 실측 133편의 진영 감사는
+  여권만 21편(중앙 1,400) / 야권만 22편(1,300) / 양쪽 32편(1,297)로 **채널
+  전체로는 이미 균형인데 셋 다 1,300**이다. 균형이 133편 단위로만 있고 한 편
+  단위로는 없어서다 — 시청자는 한 편만 본다. 정치 소재는 ①한 편에 양쪽 진영을
+  다 넣고 ②같은 잣대로 다루며(코드가 못 잡는다, 눈으로 확인) ③**'과거 발언 vs
+  현재 행동'** 프레임을 최우선으로 고른다(정치편 상위가 전부 이 프레임이고 양쪽
+  모두에게 성립해 중도 포지션이 자동 유지된다). CTA는 '누구 잘못'이 아니라 판정을
+  넘기는 질문으로. 편성 목표는 political 40 / society 25 / entertainment 20 /
+  economic 15%(범죄 소재 제외) — `scripts/shorts_symmetry.py`,
+  `scripts/shorts_balance.py`, README 040 절.
+- **훅 앞에 한 줄 인트로가 기본이다 (V2.1·V2.2, 2026-09-15 사용자 확정)** —
+  `scenes[0]` 에 `"intro": true` + 한 문장(4초 이내) 나레이션을 넣으면 그 씬이
+  육성 훅보다 **먼저** 나온다. 등장인물이 여럿인 소재(청문회·국정감사)는 맥락
+  없이 첫 육성을 틀면 누가 누구에게 하는 말인지 몰라 이탈한다. 036 "훅은 가장
+  센 컷"과 맞바꾸는 것이라 **1개·4초 상한**으로 묶었다. 템플릿 5종에 포함,
+  누락 시 렌더 경고(차단 아님, 우회 `"intro_gate": "off"`), profile_v3 는 면제
+  (`shorts_format.FormatRules.intro_required`). 훅 씬은 나레이션이 없어 TTS
+  타이밍에 안 잡히므로 `with_hook_timing()` 이 구간을 명시 주입한다 — 이게
+  없으면 훅 자막이 `timestamp=float(sid)` 로 1초에 떠서 인트로를 덮는다.
+  상세는 `political_v2_configs/README.md` "intro" 절.
 - **Upload package is authoritative for the completion message (038)** — `render_political_v2_1.py`/`_v2_2.py` print a 제목/3줄요약/해시태그 block (`political_upload_package.build_chat_ready_block()`) to stdout right after rendering, and write the same content into `upload_package.md`. When reporting a finished 정치쇼츠 in chat, quote that block verbatim — do not hand-write a new title/summary/hashtags from scratch. This closes a recurring failure (see `[[video-completion-summary-hashtags]]` memory) where the set was omitted or improvised because nothing upstream generated it.
+- **CTA 나레이션은 질문까지 읽는다 (V2.1·V2.2 고정 지침, 2026-09-17 사용자 지시)** —
+  `cta.voice` 는 선택지만 읽지 말고 **질문 문장을 앞에 붙인다**:
+  `"이건 누가 잘못한 걸까요? 1번 노인, 2번 여성. 댓글로 알려주세요."` 035 는 4초
+  상한을 아끼려 "질문은 화면 자막이 보여주니 나레이션에선 뺀다"였는데, 쇼츠는
+  소리만 듣는 시청자가 많아 번호만 들리면 **무엇을 고르라는 건지 알 수 없다.**
+  상한도 4.0 → **5.0초(약 41자)** 로 함께 올렸다(`CTA_MAX_SEC`). 검사는
+  `political_cta.lint_cta_question` — 블록 CTA·씬으로 직접 쓴 CTA 양쪽 경로 모두.
+  구독형(`cta_style: "subscribe"`, 041 V3.0)은 질문이 아니라 부탁이라 면제.
+  **경고이지 차단이 아니다** — 기존 config 51개가 걸리므로 과거 편은 그대로 두고
+  신규만 적용한다(035/036/039/040 과 같은 방침).
+- **BGM(`emotion_type`)만 바꾸고 싶으면 `highlight_category` 로 강조어 색을 고정한다** —
+  036 은 "emotion_type 을 바꿔도 화면은 그대로고 BGM 만 바뀐다"고 했지만 그 약속은
+  배경색·자막색에만 해당했고 **강조어 색은 emotion 에 묶여 있었다**(relatable 하늘색
+  ↔ touching 분홍 ↔ angry 빨강). V2.1/V2.2 렌더러가 씬의 `highlight_category`
+  (`fact` 노랑 / `criticism` 빨강)를 전달하도록 연결했다 — 미지정 `"neutral"` 이면
+  기존 동작 그대로다. **어두운 BGM = `touching`** (실측: `touching_2/_3` 는 고역이
+  46~53dB 낮아 9개 트랙 중 가장 어둡다. `angry` 는 저역만 크고 고역이 밝아
+  '긴장'이지 '어두움'이 아니다).
+- **정치쇼츠 BGM 은 어두운 트랙만 — 코드로 고정, config 로 못 끈다 (2026-09-18 사용자 지시)** —
+  밝은 BGM 이 규탄 소재를 가볍게 만든다는 지적이 반복돼 지침으로 박았다.
+  `emotion_type` 지정으로는 보장이 안 된다: ①`angry` 는 고역이 `relatable_2` 보다
+  밝고 ②`touching` 이어도 트랙 번호는 **에너지 점수**(씬 수·강조 비율·길이)가
+  고르므로 짧은 편은 `touching_1`(-44.6dB, `relatable_2` 와 사실상 동급)이 걸린다.
+  그래서 풀 자체를 좁혔다 — `voice_config.DARK_BGM_FILES`
+  (`touching_2`/`touching_3`) + `DARK_BGM_SOURCE_TYPES`(`political_pro`).
+  `select_bgm_for_script()` 가 이 source_type 이면 **emotion 을 무시**한다.
+  `shorts_domain` 의 political 기본 emotion 도 `touching` 으로 바꿨지만 그건 표시일
+  뿐(되돌려도 안 밝아진다). **기존 정치 config 도 재렌더하면 어두워진다** — 035/039/040
+  과 달리 "과거는 유지"가 아니다(음악은 소급이 곧 원하는 결과). profile_v3 는
+  `USE_BGM=False` 라 무관, 연예·사회·경제는 source_type 이 달라 무변경.
+  검증: 렌더 아웃트로 고역 **-64.1 → -83.3dB**, `tests/test_political_dark_bgm.py` 6건.
+  상세는 `political_v2_configs/README.md` 마지막 절.
 
 ### Input Modes
 
@@ -224,6 +284,166 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 042 쇼츠 V4.0 사진 슬라이드 뉴스 카드 (2026-09-30, 사용자 확정):
+  - 벤치마크 = 경쟁 채널 @gokorea012 틱톡 1편(29.3초). **영상 클립 0개** — 사진을
+    **3.4초 고정 타이머**(실측 컷 간격)로 넘기며 줌, 전 구간 Charon TTS, **BGM 없음(코드
+    고정)**. `scripts/render_news_v4.py`(validate/photos-sheet/render), 템플릿
+    `_template_news_v4.json`, 포맷 키 **`news_v4`**, 상세는 README 042 절.
+  - **정치 전용**(category≠political 차단). 사진은 네이버 뉴스·검색 캡처, `photos[*].credit`
+    필수(하단 `출처 : A · B` 자동 조립). fact_sources·나무위키 차단은 041 과 동일.
+  - **사진과 자막은 다른 시계** — `scripts/news_v4_timeline.py`(순수 함수): photos[0]=첫 문장
+    끝까지, 이후 3.4초 고정 / 자막은 나레이션을 어절 경계 16자로 쪼개 글자 수 비례.
+    TTS 는 문장 단위 그대로라 Gemini 한도 영향 없음. 사진 누락은 **TTS 전에** 차단.
+  - Remotion: `NewsCardLayer.tsx` 신규(1080 정사각 박스 y=440, 검정 자막 박스, 회색 출처 줄)
+    + 옵트인 프롭 `newsCard`/`headlinePlain`/`badgeBoxed`. 제목은 배민 도현(`BM Dohyeon`).
+    **기존 4종 still 8장 변경 전후 바이트 동일.**
+  - 같은 채널을 025 에 벤치마크한 `src/jpolitics/` 와 무관(당시는 노란 헤드라인+클립).
+  - **완료 블록 = 자극적 제목 A/B + 3줄요약 + 해시태그** (2026-09-30 사용자 지시) —
+    `render` 가 `news_v4_chat_block()` 을 출력하고 채팅엔 그 블록을 그대로 인용한다.
+    config 에 `yt_title`·`yt_title_alt`(공포·충격·호기심 톤, 명사로 닫기)·`hashtags` 3~4개를
+    적는다 — 누락 시 경고. 1호 DMZ 지뢰×김여정 편(`20260930_dmz_mine_kimyj_news_v4.json`) 렌더 완료.
+  - 미착수: Phase E(사진 수집 보조) · `render --reuse-tts`(지금은 TTS 캐시를 429 때만 읽어 재렌더마다 Gemini 1회 소모).
+- 041 쇼츠 V3.0 인물 프로필 다큐멘터리 — Phase A (2026-09-14, 사용자 확정):
+  - 외부 지침(Click Shortform "뉴스 3.0") 2종을 이 레포의 V2.1 파이프라인 위로
+    옮긴 신규 포맷. **`scripts/render_profile_v3.py`**, 템플릿
+    `_template_profile_v3.json`, 상세 규격은 `political_v2_configs/README.md` 041 절.
+  - ⚠️ **이름 충돌** — 레포에 이미 "V3"가 둘 있다(`src/jpolitics/` 027 모먼트 직캠,
+    `src/analyzer/hybrid_*` 030 하이브리드). 신규 포맷은 **항상 `profile_v3`**.
+  - **V2.1 의 확장이지 새 파이프라인이 아니다.** 사용자가 오디오를 "훅만 육성"으로
+    확정한 덕에 오디오 조립이 V2.1 `hook` 블록(무음 패딩 + 타이밍 시프트)과 동일
+    구조가 됐다 — 새 오디오 코드 0. 씬 컷·길이 캡·업로드 패키지 전부 재사용.
+  - 사용자 확정 4건: ①**정치인 프로필**(지침 원문) ②**훅만 육성**(절충)
+    ③**V3.0에만 궁서체** ④**구독·댓글 유도형 CTA**(지침 원문).
+    **①④는 채널 실측과 반대 방향이다** — 차단하지 않고 계측으로 판정한다(아래).
+  - `scripts/shorts_format.py` (신규) — frozen `FormatRules` × 3 포맷
+    (`v2_1`/`v2_2`/`profile_v3`) + 포맷 원장. 036 카테고리 원장과 **같은 파일**을
+    쓰되 항목을 **병합**한다(덮어쓰면 먼저 쓴 축이 조용히 사라진다).
+    **포맷은 제목으로 추론하지 않는다** — 제목만으로 V2.1/V2.2/V3.0 구분이 불가능해
+    원장에 없는 과거 편은 `unknown`(legacy). 틀린 추론은 파일럿 근거를 오염시킨다.
+  - 게이트 3종을 포맷 인지화: **040 진영 대칭 침묵**(인물 1명이라 개념상 성립 안 함),
+    **039 경고를 1회 고지로**(정치인 인물편은 기본 C등급 — 매 편 3줄씩 붙으면
+    게이트 전체가 무시당한다. **당내 절차 DEAD 는 유지**), **`cta_style: "subscribe"`**
+    로 선택지형 요구만 면제(존댓말 종결·4초 상한은 그대로 — 말투 규칙은 포맷 무관).
+  - **차단 신설 2건 (법적 요건)**: `fact_sources` 누락 · **나무위키 URL**.
+    V2.2 는 화면의 육성이 인용이라 그 자체가 방패인데 V3.0 은 나레이션 전체가 채널
+    자신의 서술이라 방패가 없다. 나무위키는 CC BY-NC-SA 라 celebrity 모드가 업로드를
+    코드로 막아 둔 것과 같은 이유로 **업로드용 근거로 못 쓴다**. 우회 `"fact_gate": "off"`.
+  - Remotion 옵트인 2종: `PersonBadge.tsx`(우상단 실명+직책, 아웃트로 전까지),
+    `TitleBar` 에 `fontFamily`/`letterSpacing` 프롭. **미지정이면 037 규격(Noto
+    100px) 그대로** — still 프레임 비교로 V2 렌더 결과가 **바이트 동일**임을 확인.
+  - 디자인 실측 확정: macOS `GungSeo` 는 **Regular 단일 웨이트**(→3px 외곽선으로 보강),
+    궁서는 자폭이 넓어 10자만 넘어도 줄이 접히고 **3줄이 되면 인물 배지를 덮는다**
+    → 각 줄 `nowrap` + 72~100px 자동 축소 + 줄당 12자 경고. 2줄 투톤(1열 흰색 /
+    2열 `#E50914`)은 지침의 딥 차콜 투톤을 이 레포 캔버스(클립 위 반투명 검정)에 맞춘 것.
+  - 도입 안 함: Google Drive 자동 업로드·Zero Disk(로컬 보관이 이 레포 표준),
+    원본 100% 음소거(사용자 절충), Whisper 전사(037 VTT 방식으로 대체 예정),
+    `zoompan`+`trim` 절단(Remotion 은 프레임 기반이라 그 버그가 구조적으로 없다).
+  - **낭독 톤·흰 캔버스 (2026-09-14 추가 지시)**:
+    - "V3.0 속도를 V2.1과 같게" → 확인해 보니 **`tts_speed` 는 원래부터 양쪽 다
+      1.1 로 같았다.** 체감 속도를 가른 건 Gemini TTS 의 **style_prompt** 다 —
+      `calm documentary narration` 은 같은 대본에서 타임라인 50.8초,
+      `fast newscaster`(V2.1 문구)는 **35.7초**. Gemini TTS 속도는 배속이 아니라
+      이 문구로 맞춘다. 지침의 다큐 톤보다 채널 일관성을 택했다.
+    - 지침 §4-1 흰 캔버스(`#F5F5F5`)는 **레이어 세 겹**을 다 바꿔야 한다:
+      ①`ShortsComposition` 의 `isPoliticalPro` 강제 검정(`respectBackgroundColors`
+      옵트인) ②`SceneWithVideo` 의 `background:"#000"`(`canvasColor` 프롭)
+      ③**`cut_segment` 의 `pad=...:black`** — 패딩 색이 **클립 파일에 구워진다**.
+      ③은 캔버스가 검정이던 시절 배경과 구분이 안 돼 아무도 몰랐던 것이고,
+      흰 배경으로 바꾸는 순간 검은 띠로 드러난다. + 밝은 캔버스에서는
+      `SceneWithVideo` 의 dark overlay 도 생략(자막이 레터박스 밖에 있어 목적 없음).
+    - **기본값은 전부 기존 동작** — `respect_background_colors=False` /
+      `canvasColor="#000"` / `pad_color="black"`. V2.1/V2.2·dem_shorts 무변경.
+  - **V3.0 고정 규격 3건 (2026-09-14 사용자 지시)**:
+    - **BGM 없음** — `render_profile_v3.USE_BGM = False` 로 **코드 고정**(config 로
+      켤 수 없다). 인물 프로필은 나레이션이 전부라 BGM 이 낭독을 덮는다.
+      **036 의 `emotion_type` = BGM 스위치 규칙은 V3.0에 적용되지 않는다**
+      (emotion_type 은 자막·배경색 기본값으로만 남는다). V2.1/V2.2 무변경.
+      검증은 나레이션 없는 아웃트로 구간 음량으로 — 없음 **-91.0dB**(무음) vs
+      있음 -31.7dB (`ffmpeg -sseof -3.5 -i x.mp4 -af volumedetect -f null -`).
+    - **헤드라인 1열·인물 배지 = 딥 차콜 `#111111`** — 흰 캔버스에서 흰 글자는
+      박스 없이는 안 보인다. 지침 §3-1 투톤(딥 차콜/비비드 레드)을 그대로 적용.
+    - **제목·배지의 반투명 검정 박스 제거** — 흰 캔버스에서 회색 박스로 보인다.
+      출처 라벨의 박스는 지시 범위 밖이라 유지. 궁서 3px 외곽선은 유지(어두운
+      글자에서 합성 볼드 역할).
+    - 렌더 프롭 `headline_color`/`overlay_boxes` — 기본값은 기존 동작(흰색·박스
+      유지)이라 V2.1/V2.2 무변경.
+  - 검증: pytest **1969 passed / 1 skipped**(신규 114), 변경 파일 ruff 통과
+    (`renderer.py` 의 `DATA_AUDIO_DIR` 미사용 import 1건은 HEAD 부터 있던 것),
+    tsc 통과, **기존 config 112개 스캔 = 차단 4건·경고 284건으로 변경 전과 완전 동일**.
+  - **Phase B(소싱 자동화)는 미착수** — 039 실측상 정치인 인물편이 불리한 축이라
+    1호 검증이 먼저다. 판정: profile_v3 8~10편 중앙값이 political 1,255회를 넘고
+    society/인물 논란(1,912/2,200)대에 접근하는가. 실패 시 조정 순서는 ①인물 범위
+    (정치인 → 화제의 비정치 인물) ②CTA(구독형 → 선택지형).
+- 040 중도 상품화 + 편성 비중 (2026-09-04, 채널 실측 133편, 사용자 확정):
+  - **문제**: 어제 업로드분이 청주 교권 627회 / 박위–전장연 1,600회로 죽었다.
+    둘 다 039 게이트(민간인·대가)는 통과했다. 게이트가 못 보는 축이 있었다.
+  - **진단 ①(중도)** — 제목 진영 감사: 여권만 21편 1,400 / 야권만 22편 1,300 /
+    양쪽 32편 1,297. 인물별로도 국민의힘 39 / 이재명 27 / 민주당 21 / 장동혁 13.
+    **이미 균형인데 셋 다 1,300이다.** 균형이 133편 단위로만 존재하고 한 편
+    단위로는 없다 — 시청자는 한 편만 본다.
+  - **진단 ②(벤치마크)** — 구독자 대비 쇼츠 중앙: 슈카월드 10.4% / 김지윤의
+    지식Play 4.8%(중도·설명형)가 진영 채널 9곳(0.1~3.8%)을 전부 이긴다.
+    무인칭 사건 채널 1분현상수배는 구독자 295명에 중앙 6,400(2,170%).
+    내 채널은 515명에 1,850(359%) — **제작이 아니라 장르가 천장**이다.
+  - **진단 ③(편성)** — political 88편 66% 중앙 1,200 vs society 8편 1,912 /
+    인물 논란 23편 2,200. 중앙값이 높은 축이 편성의 6~17%뿐이다.
+  - `scripts/shorts_symmetry.py` (신규) — frozen `SymmetryVerdict` +
+    `sides_in()`/`evaluate_symmetry()`/`symmetry_warnings()`. 진영 사전(여/야) +
+    `BOTH_MARKERS`('여야') + `RECORD_CONTRAST_WORDS`('과거 발언 vs 현재 행동').
+    **정치 카테고리에만** 적용하고 사전 미검출이면 침묵(오탐 방지).
+    config 키 `"symmetry_gate": "off"`.
+  - `scripts/shorts_balance.py` (신규) — `TARGET_MIX` political 40 / society 25 /
+    entertainment 20 / economic 15%(**범죄 제외**, 사용자 확정). 036 카테고리
+    원장의 `recorded_at` 순 최근 20편으로 재고 목표 ±10%p 초과 시 경고.
+    표본 8편 미만이면 침묵. config 키 `"balance_gate": "off"`.
+  - **판정 범위** — 제목 + 씬 자막(`text`)만. 나레이션 제외 — 039 `frame_text`
+    와 같은 이유로 대칭은 화면에 보여야 시청자 판단에 반영된다.
+  - 반영: `render_political_v2_1.py` `config_warnings()`(v2.2도 재사용),
+    `shorts_domain.py` 정치 체크리스트 4항목 + 판정형 `cta_example`,
+    `political_planner_stage_a_prompt.py` 2개 프롬프트, README 040 절, `CLAUDE.md`.
+  - **경고, 차단 아님** (035/036/039와 같은 방침). 기존 config 87개 스캔 =
+    **차단 0건**, 정치 59개 중 55개 경고(양쪽 24 / 여권만 16 / 야권만 10 /
+    미검출 9). 과거 유지·신규만 적용. 검증: pytest **1855 passed / 1 skipped**
+    (신규 41), 변경 파일 ruff 통과.
+  - **한계**: 중도 설명형 성공 사례(김지윤·슈카)는 **둘 다 진행자 인물이 있다.**
+    무인칭 중도 설명형은 벤치마크에 사례가 없다 — 빈 자리이자 검증 안 된 자리다.
+    '판정을 시청자에게 넘긴다'(한문철TV 모델, 구독자 대비 중앙 59,000)가 그
+    인물 자리를 대신한다는 게 가설이다. **파일럿 10편 뒤 political 중앙값이
+    society/인물 논란(1,912 / 2,200)을 따라 올라오는지로 판정한다.**
+- 039 돌파 조건 — 소재 선정 3문항 (2026-09-03, 채널 실측 130편):
+  - **문제**: 조회수가 1,000~2,200 밴드에 갇혀 있고 3,000회 이상은 16편(12%)뿐.
+    정치 87편의 중간 50%가 1,000~1,700. 소재·인물·언어·제목 유형을 87번 바꿔도
+    분포가 안 흔들렸다 — **편차를 만드는 건 제작 품질이 아니라 소재 조건**이다.
+    인물 인지도는 변수가 아니다(이재명 20편 1,224 / 장동혁 16편 1,300 /
+    오세훈 9편 1,300 / 한동훈 9편 1,000), 언어판도 무관(한글 1,200 / 영문 1,300).
+  - **돌파 3조건** — ①진영 밖 인물인가(민간인 75% vs 정치인 9%, 정치인은 정책이
+    아니라 반칙이면 25%) ②이미 대가를 치렀는가(36% vs 7%) ③당내 절차인가
+    (**13편 전멸 0%** — ②를 갖춰도 ③을 어기면 죽는다: 장동혁 제명 위기 1,500 /
+    조국 징역 2년 1,471 / 이진숙 복귀 반전 581 / 장동혁 재신임 조건 **16회**).
+  - `scripts/shorts_breakout.py` (신규) — frozen `BreakoutVerdict` + `evaluate()` +
+    `breakout_warnings()`. 등급 A(민간인 75~83%) / B(정치인+반칙 25%) /
+    C(미충족 7%) / DEAD(당내 정치 0%). config 키 `subject_type`
+    (civilian/politician/institution) · 우회 `"breakout_gate": "off"`.
+  - **판정 범위** — ②(대가)는 제목+씬 자막, **③(당내·진행중)은 제목만**.
+    씬 자막까지 봤더니 `joguk_bangbae_v2_1`('조국은 왜 방배동을 안 팔까', 개인
+    위선 소재)이 자막의 "어제 전당대회 영상 축사" 한 단어로 DEAD가 됐다.
+    소재의 정체는 제목이 정한다. 자막에만 당내 어휘가 있으면 등급은 유지하고
+    별도 경고만 띄운다.
+  - **당사자 추정** — 명시값 > 직함 > **036 카테고리**. 직함 없는 정치인 이름
+    ("용혜인 내로남불")을 민간인으로 오판하면 게이트가 조용히 통과시켜 버린다.
+    정치 카테고리인데 당사자가 민간인인 편은 `subject_type`을 직접 박을 것.
+  - **증폭기**: 뚫린 소재는 후속도 뚫린다(박위 55,523→7,002→6,208,
+    용혜인 4,226→3,300→3,149). 밴드 안 소재의 후속은 그대로 밴드 안
+    (조국 1,471→1,248) — 한 편이 뚫리면 새 소재보다 후속이 먼저다.
+  - **경고, 차단 아님** (035/036과 같은 방침). 기존 config 83개 스캔 =
+    C 56 / A 16 / B 7 / DEAD 4, 과거 유지·신규만 적용.
+  - **한계**: ③은 13편 전멸이라 강하나 ①②는 민간인 표본 8~11편이고 박위 3편이
+    포함돼 83%는 "6편 중 5편"이다. 전부 조회수만 본 결과라 **돌파편이 노출을 더
+    받은 것인지 같은 노출에서 안 넘긴 것인지 미상**(리텐션·CTR 미계측).
+  - 반영: `shorts_breakout.py`, `shorts_domain.py` 공통 체크리스트 1항목,
+    `render_political_v2_1.py` `config_warnings()`, `political_planner_stage_a_prompt.py`
+    3개 프롬프트, `political_v2_configs/README.md` 039 절, `CLAUDE.md`.
+    검증: pytest **1814 passed / 1 skipped**(신규 31), 변경 파일 ruff 통과.
 - 038 업로드 패키지 자동화 강화 + CTA 위치 변경 (2026-08-25, 사용자 지시):
   - **3줄요약 자동 생성** — `political_upload_package.py`에 `build_three_line_summary(cfg)`
     신규. `upload_package.md`에 애초에 3줄요약 섹션이 없었던 게 반복 누락의 원인이었다

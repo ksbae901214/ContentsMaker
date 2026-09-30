@@ -14,6 +14,9 @@ import { SceneText } from "./components/SceneText";
 import { Transition } from "./components/Transition";
 import { SceneWithVideo } from "./components/SceneWithVideo";
 import { SplitScreenScene } from "./components/SplitScreenScene";
+import { PersonBadge } from "./components/PersonBadge";
+import { NewsCardLayer, NEWS_BOX_TOP } from "./components/NewsCardLayer";
+import type { NewsCardData } from "./components/NewsCardLayer";
 import { Outro } from "./components/Outro";
 import type { ShortsScriptData, TransitionType } from "./types";
 import { GRADIENT_THEMES } from "./types";
@@ -46,6 +49,24 @@ interface ShortsCompositionProps {
   // 콘텐츠 전체 구간에 깔고 그 위에 텍스트 자막만 씬별로 오버레이.
   // 비어있으면 기존 동작(씬별 sceneVideos / 그라데이션).
   backgroundVideoFile?: string;
+  // 041 V3.0 인물 프로필 옵트인. 전부 비어 있으면 037 규격(Noto Sans KR 100px,
+  // 배지 없음)이 그대로 유지된다 — V2.1/V2.2 렌더 경로는 무변경.
+  headlineFont?: string;
+  headlineLetterSpacing?: number;
+  personBadge?: string;
+  // political_pro/celebrity 의 배경 검정 강제를 푸는 옵트인. 기본 false 라
+  // bg_colors 를 적어 둔 기존 config 의 동작은 그대로다.
+  respectBackgroundColors?: boolean;
+  // 헤드라인 1열 + 인물 배지 글자색. "" 면 기존 흰색(037 규격).
+  headlineColor?: string;
+  // 제목·인물 배지의 반투명 검정 박스. 밝은 캔버스에서는 회색으로 보인다.
+  overlayBoxes?: boolean;
+  // 042 V4.0 옵트인. 커스텀 서체 헤드라인의 외곽선·그림자를 끈다 (궁서 전용 보강).
+  headlinePlain?: boolean;
+  // 배지 박스를 제목 박스와 따로 정한다. null/undefined 면 overlayBoxes 를 따른다.
+  badgeBoxed?: boolean | null;
+  // 사진 슬라이드 뉴스 카드. 지정 시 씬별 비주얼 대신 NewsCardLayer 가 그린다.
+  newsCard?: NewsCardData;
 }
 
 export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
@@ -57,6 +78,15 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   introBgmFile = "",
   sourceLabel = "",
   backgroundVideoFile = "",
+  headlineFont = "",
+  headlineLetterSpacing = 0,
+  personBadge = "",
+  respectBackgroundColors = false,
+  headlineColor = "",
+  overlayBoxes = true,
+  headlinePlain = false,
+  badgeBoxed = null,
+  newsCard,
 }) => {
   const emotion =
     (scriptData.metadata as any).emotionType ||
@@ -69,7 +99,8 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
     (scriptData.metadata as any).source_type;
   const isPoliticalPro = sourceType === "political_pro";
   const isCelebrity = sourceType === "celebrity";
-  const colors = isPoliticalPro || isCelebrity
+  // 041: respectBackgroundColors 는 이 강제를 푸는 옵트인 (V3.0 흰 배경).
+  const colors = (isPoliticalPro || isCelebrity) && !respectBackgroundColors
     ? ["#000000", "#000000"]
     : scriptData.background.colors.length > 0
       ? scriptData.background.colors
@@ -124,7 +155,8 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         </Sequence>
       )}
 
-      {scriptData.scenes.map((scene) => {
+      {/* 042: 뉴스 카드는 사진·자막을 씬과 다른 시계로 그린다 — 씬 비주얼 생략 */}
+      {!newsCard && scriptData.scenes.map((scene) => {
         const startFrame = Math.round(scene.timestamp * FPS);
         const durationFrames = Math.round(scene.duration * FPS);
         const imageFile = imageMap.get(scene.id);
@@ -150,7 +182,15 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
             emotion={emotion}
           />
         ) : videoFile ? (
-          <SceneWithVideo videoFile={videoFile} scene={scene} emotion={emotion} contained={true} />
+          <SceneWithVideo
+            videoFile={videoFile}
+            scene={scene}
+            emotion={emotion}
+            contained={true}
+            // 041: SceneWithVideo 는 캔버스를 자기 배경색으로 덮는다 — 흰 캔버스를
+            // 쓰는 포맷에서는 그 색을 넘겨야 레터박스가 흰색으로 남는다.
+            canvasColor={respectBackgroundColors ? colors[0] : undefined}
+          />
         ) : imageFile ? (
           <SceneWithImage imageFile={imageFile} scene={scene} emotion={emotion} contained={isCelebrity} />
         ) : (
@@ -174,10 +214,39 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         );
       })}
 
+      {newsCard && (
+        <NewsCardLayer
+          card={newsCard}
+          canvasColor={colors[0]}
+          contentEndFrame={contentEndFrame}
+        />
+      )}
+
       {/* Fixed title bar at top — visible during all content scenes */}
       <Sequence from={0} durationInFrames={contentEndFrame}>
-        <TitleBar title={title} />
+        <TitleBar
+          title={title}
+          fontFamily={headlineFont}
+          letterSpacing={headlineLetterSpacing}
+          primaryColor={headlineColor}
+          boxed={overlayBoxes}
+          plain={headlinePlain}
+        />
       </Sequence>
+
+      {/* 041 V3.0: 인물 배지 — 엔딩 아웃트로 전까지 유지 */}
+      {personBadge && (
+        <Sequence from={0} durationInFrames={contentEndFrame}>
+          <PersonBadge
+            label={personBadge}
+            boxed={badgeBoxed ?? overlayBoxes}
+            solid={badgeBoxed === true}
+            top={newsCard ? NEWS_BOX_TOP + 8 : undefined}
+            // 042: 박스를 따로 켜면 검정 박스 위 흰 글자 — 제목의 차콜색을 물려받지 않는다.
+            color={badgeBoxed === true ? "" : headlineColor}
+          />
+        </Sequence>
+      )}
 
       {/* Feature 009: 화면 하단 출처 표시 (political_pro 모드 등에서 source URL 명시) */}
       {sourceLabel && (
@@ -271,11 +340,63 @@ const SourceAttribution: React.FC<{ label: string }> = ({ label }) => {
   );
 };
 
-const TitleBar: React.FC<{ title: string }> = ({ title }) => {
+const TitleBar: React.FC<{
+  title: string;
+  fontFamily?: string;
+  letterSpacing?: number;
+  primaryColor?: string;
+  boxed?: boolean;
+  plain?: boolean;
+}> = ({
+  title,
+  fontFamily = "",
+  letterSpacing = 0,
+  primaryColor = "",
+  boxed = true,
+  plain = false,
+}) => {
   const frame = useCurrentFrame();
   const opacity = interpolate(frame, [0, 15], [0, 1], {
     extrapolateRight: "clamp",
   });
+
+  // 041: 서체 미지정이면 037 규격(Noto Sans KR 100px, 단색 1덩어리) 그대로.
+  // macOS 의 GungSeo 는 Regular 단일 웨이트라 fontWeight 만으로는 굵어지지 않는다
+  // — 합성 볼드 대신 검은 외곽선(stroke)으로 피드에서의 가독성을 확보한다.
+  const isCustomFont = !!fontFamily;
+  const fontStack = isCustomFont
+    ? `${fontFamily}, Noto Sans KR, serif`
+    : "Noto Sans KR, sans-serif";
+
+  // V3.0 2줄 투톤 헤드라인 — 1열은 지금 화제인 이유(사실), 2열은 이력·배경에
+  // 대한 질문형 훅. 지침 원문은 딥 차콜/비비드 레드 투톤이지만 그건 #F5F5F5
+  // 캔버스 기준이다. 이 레포는 클립 위 반투명 검정 박스라 차콜이 안 보이므로
+  // 1열 흰색 + 2열 비비드 레드로 옮긴다.
+  const lines = isCustomFont ? title.split("\n") : [title];
+  const accent = "#E50914";
+  // 지침 §3-1 의 "125px 초밀착 줄간격"(135pt 기준 0.93) 을 100px 로 환산.
+  // 042: plain(도현체)은 글자 키가 커서 0.95 면 1·2열이 맞닿는다 (still 실측).
+  const lineHeight = isCustomFont ? (plain ? 1.12 : 0.95) : 1.3;
+
+  // 2줄 규격을 **물리적으로** 보장한다. 궁서는 자폭이 넓어 100px 로는 10자만
+  // 넘어도 줄이 접히는데, 3줄이 되면 인물 배지를 덮어버린다(2026-09-14 실측).
+  // nowrap 으로 접힘을 막고, 대신 줄 길이에 맞춰 자동 축소한다 — 037 의
+  // "제목 100px 고정"은 V2 규격이고 V3.0 은 별도 규격이라 축소해도 무방하다.
+  const HEADLINE_BOX_PX = 980;
+  const maxLineChars = Math.max(...lines.map((l) => l.length), 1);
+  // V2 기본 경로도 2줄을 넘기지 않게 축소한다 (사용자 승인 2026-09-22). 037 의
+  // "제목 100px 고정"은 8자 안팎의 짧은 배너를 전제한 값이라, 25자 넘는 제목이
+  // 들어오면 3줄로 접혀 클립 인물의 얼굴을 덮었다. 축소는 **넘칠 때만** 걸리고
+  // 짧은 제목은 그대로 100px 이라 기존 편의 렌더 결과는 바뀌지 않는다.
+  // 여기는 nowrap 이 아니라 자동 줄바꿈이므로 한 줄 글자수가 아니라 `전체
+  // 글자수 ÷ 허용 줄수` 로 폭을 잡는다. 0.95 는 줄바꿈 여유분.
+  const V2_MAX_LINES = 2;
+  const v2Fitted = Math.floor(
+    (HEADLINE_BOX_PX * V2_MAX_LINES * 0.95) / Math.max(title.length, 1),
+  );
+  const headlineSize = isCustomFont
+    ? Math.max(72, Math.min(100, Math.floor(HEADLINE_BOX_PX / (maxLineChars * 0.96))))
+    : Math.max(64, Math.min(100, v2Fitted));
 
   return (
     <AbsoluteFill
@@ -290,7 +411,9 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
           opacity,
           marginTop: 180,
           padding: "16px 40px",
-          background: "rgba(0,0,0,0.6)",
+          // 041: 밝은 캔버스에서는 반투명 검정이 회색 박스로 보인다 (사용자 지시
+          // 2026-09-14). 박스를 빼고 글자색·외곽선만으로 대비를 만든다.
+          background: boxed ? "rgba(0,0,0,0.6)" : "transparent",
           borderRadius: 12,
           maxWidth: "90%",
           textAlign: "center",
@@ -299,16 +422,35 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
         <div
           style={{
             // 제목 크기 — 사용자 지정 2026-08-25 (75 → 100px). 서체는 기본 유지.
-            fontSize: 100,
+            fontSize: headlineSize,
             fontWeight: 800,
-            color: "#FFFFFF",
-            fontFamily: "Noto Sans KR, sans-serif",
-            textShadow: "2px 2px 6px rgba(0,0,0,0.8)",
-            lineHeight: 1.3,
+            // 1열 색 — 미지정이면 037 규격(흰색). 밝은 캔버스에서는 딥 차콜.
+            color: primaryColor || "#FFFFFF",
+            fontFamily: fontStack,
+            letterSpacing: letterSpacing ? `${letterSpacing}px` : undefined,
+            // 042: plain = 벤치마크처럼 밝은 캔버스 위 순수 글자 (그림자·외곽선 없음).
+            textShadow: plain ? "none" : "2px 2px 6px rgba(0,0,0,0.8)",
+            ...(isCustomFont && !plain
+              ? {
+                  WebkitTextStroke: "3px rgba(0,0,0,0.9)",
+                  paintOrder: "stroke fill",
+                }
+              : {}),
+            lineHeight,
             wordBreak: "keep-all",
           }}
         >
-          {title}
+          {lines.map((line, i) => (
+            <div
+              key={i}
+              style={{
+                ...(i > 0 ? { color: accent } : {}),
+                ...(isCustomFont ? { whiteSpace: "nowrap" as const } : {}),
+              }}
+            >
+              {line}
+            </div>
+          ))}
         </div>
       </div>
     </AbsoluteFill>

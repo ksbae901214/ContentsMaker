@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 DATA_OUTPUTS_DIR = PROJECT_ROOT / "data" / "outputs"
 REMOTION_DIR = PROJECT_ROOT / "src" / "video" / "remotion"
 FPS = 30
+# 041: 인물 배지(우상단 1줄) 상한 — 넘기면 인물 화면을 가린다.
+PERSON_BADGE_MAX_LEN = 40
 
 
 class RenderError(Exception):
@@ -72,6 +74,15 @@ def render_video(
     enable_transitions: bool = True,
     speed_multiplier: float = 1.0,
     background_video: Path | None = None,
+    headline_font: str = "",
+    headline_letter_spacing: int = 0,
+    person_badge: str = "",
+    respect_background_colors: bool = False,
+    headline_color: str = "",
+    overlay_boxes: bool = True,
+    headline_plain: bool = False,
+    badge_boxed: bool | None = None,
+    news_card: dict | None = None,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
@@ -95,6 +106,12 @@ def render_video(
         background_video: 단일 연속 배경 영상 경로. 지정 시 콘텐츠 전체 구간에
                   한 번만 마운트되는 OffthreadVideo로 깔리며, 씬별 자막은
                   텍스트 오버레이로만 렌더됨 (씬별 클립 끊김 제거).
+        headline_plain: 042 V4.0 — 커스텀 서체 헤드라인의 외곽선·그림자를 끈다.
+        badge_boxed: 042 V4.0 — 배지 박스를 제목 박스(overlay_boxes)와 따로 정한다.
+                  None 이면 overlay_boxes 를 따른다(041 동작).
+        news_card: 042 V4.0 사진 슬라이드 — {photos:[{path,fit,start_ms,end_ms}],
+                  captions:[{text,start_ms,end_ms,hl,color}], credit_line, font_family}.
+                  지정 시 씬별 비주얼 대신 NewsCardLayer 가 사진·자막·출처를 그린다.
     """
     # SFX globally disabled (2026-06-12) — UI 토글·CLI 인자와 무관하게 항상 OFF.
     # 데이터 모델(`SfxConfig`, `Scene.sfx`)·자동 할당 모듈(`sfx_matcher.py`)·에셋
@@ -161,6 +178,11 @@ def render_video(
                     "sceneId": img_data["scene_id"],
                     "imageFile": img_filename,
                 })
+
+    # 042 V4.0 뉴스 카드 사진 — 렌더 전 fail-fast (빠진 사진은 빈 박스로 렌더된다)
+    news_card_props = None
+    if news_card:
+        news_card_props = _news_card_props(news_card, public_dir, timestamp, temp_files)
 
     # Continuous background video (단일 연속 클립 — 씬별 컷 끊김 제거용).
     background_video_filename = ""
@@ -305,7 +327,27 @@ def render_video(
         "introBgmFile": intro_bgm_filename,
         "sourceLabel": source_label,
         "backgroundVideoFile": background_video_filename,
+        # 041 V3.0 옵트인 — 미지정이면 037 규격(Noto Sans KR 100px) 그대로.
+        "headlineFont": headline_font,
+        "headlineLetterSpacing": headline_letter_spacing,
+        # 인물 배지는 우상단 한 줄이라 길면 화면을 가린다.
+        "personBadge": (person_badge or "").strip()[:PERSON_BADGE_MAX_LEN],
+        # political_pro/celebrity 는 배경을 검정으로 강제한다(씬 사이 깜빡임에
+        # 그라데이션이 비치는 문제). 명시 옵트인일 때만 script.background.colors 를
+        # 그대로 쓴다 — bg_colors 를 적어 둔 기존 config 10개의 동작을 보존한다.
+        "respectBackgroundColors": respect_background_colors,
+        # 헤드라인 1열 글자색. "" 면 기존 흰색(037 규격).
+        "headlineColor": headline_color,
+        # 제목·인물 배지의 반투명 검정 박스. 밝은 캔버스에서는 회색으로 보이므로
+        # 끄고 글자색만으로 대비를 만든다.
+        "overlayBoxes": overlay_boxes,
+        "headlinePlain": headline_plain,
+        "badgeBoxed": badge_boxed,
     }
+    if news_card_props is not None:
+        props["newsCard"] = news_card_props
+        # 출처 줄은 카드가 자기 위치·스타일로 그린다 — 기본 박스 라벨과 중복 금지.
+        props["sourceLabel"] = ""
 
     props_path = target_dir / f"{timestamp}_props.json"
     props_path.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
@@ -368,6 +410,35 @@ def render_video(
         output_path = _apply_speed(output_path, speed_multiplier)
 
     return output_path
+
+
+def _news_card_props(card: dict, public_dir: Path, timestamp: str,
+                     temp_files: list[Path]) -> dict:
+    """042 V4.0 — 사진을 public/ 으로 복사하고 Remotion camelCase 프롭을 만든다."""
+    # 복사 전에 전부 확인한다 — 여기서의 예외는 렌더 try/finally 정리 구간보다
+    # 앞이라, 중간에 멈추면 먼저 복사한 사진이 public/ 에 남는다.
+    missing = [p["path"] for p in card.get("photos") or [] if not Path(p["path"]).exists()]
+    if missing:
+        raise FileNotFoundError(f"뉴스 카드 사진 없음: {', '.join(missing)}")
+    photos = []
+    for i, p in enumerate(card.get("photos") or []):
+        src = Path(p["path"])
+        name = f"news_{timestamp}_{i:02d}{src.suffix.lower() or '.jpg'}"
+        shutil.copy2(src, public_dir / name)
+        temp_files.append(public_dir / name)
+        photos.append({"file": name, "fit": p.get("fit", "cover"),
+                       "startMs": int(p["start_ms"]), "endMs": int(p["end_ms"])})
+    captions = [
+        {"text": c["text"], "startMs": int(c["start_ms"]), "endMs": int(c["end_ms"]),
+         "hl": list(c.get("hl") or []), "color": c.get("color", "white")}
+        for c in card.get("captions") or []
+    ]
+    return {
+        "photos": photos,
+        "captions": captions,
+        "creditLine": card.get("credit_line", ""),
+        "fontFamily": card.get("font_family", ""),
+    }
 
 
 def _apply_speed(input_path: Path, multiplier: float) -> Path:

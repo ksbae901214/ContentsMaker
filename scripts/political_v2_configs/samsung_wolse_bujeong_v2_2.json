@@ -1,0 +1,151 @@
+{
+  "_comment": "삼성전자 평택 월세지원금 부정수급 파문 V2.2 — 원본 육성 릴레이판. 당사자 육성 영상 자체가 없는 소재(속보 24시간 이내, TV 패키지 미제작)라 [[political-shorts-no-video-source-capture-tts]] 기법 적용: capture_article.py로 네이버뉴스 기사 캡처 무음 팬 mp4를 만든 뒤, 인용문을 TTS로 낭독한 오디오를 그 mp4의 오디오 트랙에 별도로 mux해 '육성 카드'로 만들고 clip 모드가 그대로 추출하게 한다(화면엔 [화자명] 라벨을 붙여 실제 육성이 아님을 명시). 인용문은 전부 네이버뉴스 원문 대조 완료(2026-09-08) — 파이낸셜뉴스(관계자 코멘트)·이데일리(직원 커뮤니티 실제 게시글) 원문 그대로.",
+  "category": "economic",
+  "slug": "20260908_samsung_wolse_bujeong_v2_2",
+  "title": "삼성전자 주거비 부정수급 파문",
+  "subject_type": "civilian",
+  "_subject_type_comment": "039 — civilian 명시(경제 카테고리 기본값 institution 오버라이드). 익명 직원 다수가 당사자.",
+  "yt_title": "월세 지원금 노리고 벌어진 집단 조작",
+  "yt_title_alt": "퇴사 걱정에 뒤늦게 올라온 선처 호소글",
+  "_yt_title_comment": "20자/21자. V2.1('성과급 6억...')과 축을 갈랐다 — V2.1은 인물의 위선, V2.2는 조작의 규모·과정. 034 게이트 통과(명사 종결).",
+  "persons": [
+    "삼성전자"
+  ],
+  "hashtags": [
+    "#삼성전자",
+    "#평택",
+    "#부정수급",
+    "#직장인"
+  ],
+  "source_channel": "한국경제·뉴시스·파이낸셜뉴스·이데일리 (네이버뉴스 캡처 + TTS 인용 낭독, 육성 없음)",
+  "source_title": "\"성과급 6억 받으면서 70만원까지?\"…삼성 발칵 뒤집혔다 (한국경제) 외 종합",
+  "youtube_url": "https://n.news.naver.com/mnews/article/015/0005329751?sid=101",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "hk",
+  "_production_note": "완료(2026-09-08): capture_article.py로 4개 배경 캡처 후, edge-tts(ko-KR-InJoonNeural)로 인용문 낭독 → ffmpeg adelay+amix로 각 소스의 지정 오프셋에 mux. hk/nsis는 0ms, edaily/fn은 4000ms 오프셋(같은 소스를 tts 무음 구간+clip 인용 구간 두 씬에서 나눠 쓰므로). 실제 낭독 길이에 맞춰 scene duration 보정 완료.",
+  "sources": {
+    "hk": {
+      "url": "https://n.news.naver.com/mnews/article/015/0005329751?sid=101",
+      "dur_max": 18,
+      "verify_frac": 0.15,
+      "_확인": "한국경제(네이버) 헤드라인 인용 — 훅. TTS 낭독 오디오 mux 필요."
+    },
+    "nsis": {
+      "url": "https://n.news.naver.com/mnews/article/003/0014174692?sid=101",
+      "dur_max": 18,
+      "verify_frac": 0.3,
+      "_확인": "뉴시스(네이버) '다운계약서' 인용. TTS 낭독 오디오 mux 필요."
+    },
+    "edaily": {
+      "url": "https://n.news.naver.com/mnews/article/018/0006365288?sid=101",
+      "dur_max": 18,
+      "verify_frac": 0.3,
+      "_확인": "이데일리(네이버) — 직원 커뮤니티 원문 인용(scene1 무음 배경용 + scene3 TTS 낭독 mux용)."
+    },
+    "fn": {
+      "url": "https://n.news.naver.com/mnews/article/014/0005572526?sid=101",
+      "dur_max": 18,
+      "verify_frac": 0.3,
+      "_확인": "파이낸셜뉴스(네이버) — 규모(scene4 무음 배경용) + 관계자 코멘트 원문 인용(scene5 TTS 낭독 mux용)."
+    }
+  },
+  "_scenes_comment": "클립 3(헤드라인/다운계약서/회사 해명) + TTS 3(제도 설명/규모/CTA). n_tts=3으로 MAX_TTS_SCENES_SOFT(2) 초과 경고 예상 — 실제 육성이 없어 클립마다 맥락 연결 나레이션이 필요하기 때문(kimsw_jeongwa_girok_v2_2 선례와 동일 사유). CLIP_RATIO_MIN(0.65) 미달 경고도 예상 — 클립이 실제 발언이 아닌 짧은 인용 낭독이라 정상(메모리 기록 사유).",
+  "scenes": [
+    {
+      "mode": "clip",
+      "source": "hk",
+      "start_sec": 0.0,
+      "duration": 4.2,
+      "speaker": "한국경제",
+      "text": "\"성과급 6억 받으면서\n70만원까지?\"",
+      "hl": [
+        "6억",
+        "70만원"
+      ],
+      "_comment": "훅 — 가장 센 컷(036). 언론 헤드라인 원문 그대로. [화자명]에 매체명을 넣어 실제 육성이 아님을 명시.",
+      "subtitle_position": "bottom"
+    },
+    {
+      "mode": "tts",
+      "source": "edaily",
+      "frac": 0.15,
+      "color": "white",
+      "emph": false,
+      "text": "평택 저연차 직원 대상\n10평 미만 원룸에 최대 70만원",
+      "voice": "삼성전자는 평택 사업장 인근에 사는 저연차 직원에게, 10평 미만 원룸 조건으로 월 최대 70만원 주거비를 지원해왔습니다.",
+      "hl": [
+        "10평 미만",
+        "70만원"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "mode": "clip",
+      "source": "nsis",
+      "start_sec": 0.0,
+      "duration": 4.0,
+      "speaker": "뉴시스 단독",
+      "text": "\"투룸 살면서\n원룸 다운계약서 제출\"",
+      "hl": [
+        "다운계약서"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "mode": "clip",
+      "source": "edaily",
+      "start_sec": 4.0,
+      "duration": 5.9,
+      "speaker": "직원 커뮤니티 글",
+      "text": "\"구제받을 수 있나\n대졸 3년 차, 퇴사하기 무섭다\"",
+      "hl": [
+        "퇴사하기 무섭다"
+      ],
+      "_발화": "이데일리 원문: '월세 지원도 면적 바꾸는 것도 부동산에서 먼저 말을 꺼낸 건데 구제받을 수 있나... 이제 대졸 3년 차인데 퇴사하기 무섭다' — 자막은 요지만, TTS는 원문 낭독.",
+      "_comment": "039 ② — 대가(퇴사 위기)에 대한 당사자 반응. edaily 소스 뒷부분(4~9.5s) 구간에 별도 mux.",
+      "subtitle_position": "bottom"
+    },
+    {
+      "mode": "tts",
+      "source": "fn",
+      "frac": 0.15,
+      "color": "white",
+      "emph": false,
+      "text": "부정수급 추정 최대 100명\n대졸 3년 차도 포함",
+      "voice": "온라인 커뮤니티에는, 부정수급 인원이 최대 백 명에 달한다는 글이 올라와 공분을 샀습니다.",
+      "hl": [
+        "최대 100명"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "mode": "clip",
+      "source": "fn",
+      "start_sec": 4.0,
+      "duration": 4.8,
+      "speaker": "삼성전자 관계자",
+      "text": "\"사실관계와 세부 현황을\n면밀히 들여다보는 단계\"",
+      "hl": [
+        "면밀히"
+      ],
+      "_발화": "파이낸셜뉴스 원문 그대로: '현재 관련 의혹을 인지하고 구체적인 사실관계와 세부 현황을 면밀히 들여다보는 단계'. fn 소스 뒷부분(4~8.5s) 구간에 별도 mux(scene4와 다른 구간).",
+      "subtitle_position": "bottom"
+    },
+    {
+      "mode": "tts",
+      "source": "fn",
+      "frac": 0.5,
+      "color": "yellow",
+      "emph": true,
+      "text": "① 개인 일탈  ② 관리 부실",
+      "voice": "1번 개인 일탈, 2번 관리 부실. 댓글로 알려주세요.",
+      "hl": [
+        "② 관리 부실"
+      ],
+      "_cta_comment": "V2.2는 top-level cta 블록이 없어 마지막 씬에 직접 작성(038). 종결은 '댓글로 알려주세요' 고정.",
+      "subtitle_position": "bottom"
+    }
+  ],
+  "pinned_comment": "1번 개인 일탈, 2번 관리 부실. 댓글로 알려주세요."
+}

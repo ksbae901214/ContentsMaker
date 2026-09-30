@@ -91,12 +91,17 @@ def build_ffmpeg_cmd(
     width: int = SHORTS_WIDTH,
     height: int = SHORTS_HEIGHT,
     mute: bool = False,
+    pad_color: str = "black",
 ) -> list[str]:
     """FFmpeg 명령어 생성. 9:16 비율 세로형 변환 + 구간 자르기.
 
     변환 전략:
     - 원본 가운데를 기준으로 높이 맞춤으로 크롭
-    - 결과가 1080x1920보다 작으면 검은색 패딩
+    - 결과가 1080x1920보다 작으면 패딩
+
+    pad_color: 패딩 색 (기본 검정). **클립 파일에 구워지는 색**이라, 캔버스가
+        검정이 아닌 포맷(041 V3.0 흰 캔버스)에서는 이 색을 캔버스와 맞춰야
+        레터박스가 검은 띠로 보이지 않는다.
     """
     validate_cut_duration(start_sec, end_sec)
     duration = end_sec - start_sec
@@ -104,7 +109,7 @@ def build_ffmpeg_cmd(
     # 세로 포맷 변환: scale + pad (크롭은 얼굴 손실 가능성 → 패딩 선택)
     vf = (
         f"scale='if(gt(a,{width}/{height}),{width},-2)':'if(gt(a,{width}/{height}),-2,{height})',"
-        f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black"
+        f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:{pad_color}"
     )
 
     audio_args: list[str]
@@ -146,12 +151,15 @@ def cut_segment(
     start_sec: float,
     end_sec: float,
     mute: bool = False,
+    pad_color: str = "black",
 ) -> Path:
     """구간 자르기 + 9:16 변환을 실제 실행.
 
     Args:
         mute: True 면 원본 음성을 제거(`-an`). TTS 나레이션을 메인 음성으로
             쓰는 political_pro 모드 기본값.
+        pad_color: 9:16 패딩 색 (기본 검정). 캔버스가 흰색인 포맷에서는
+            캔버스 색을 넘겨야 클립에 검은 띠가 구워지지 않는다 (041).
     """
     if not input_path.exists():
         raise SegmentCutError(f"input not found: {input_path}")
@@ -183,6 +191,7 @@ def cut_segment(
         start_sec=start_sec,
         end_sec=end_sec,
         mute=mute,
+        pad_color=pad_color,
     )
     result = subprocess.run(
         cmd,

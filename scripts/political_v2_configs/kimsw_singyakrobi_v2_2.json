@@ -1,0 +1,94 @@
+{
+  "_comment": "김승원 법무부 장관 후보자 신약 로비 의혹 V2.2(원본 육성 릴레이) — kimsw_singyakrobi_v2_1과 같은 소재, 같은 소스(ytn/kbs). V2.1은 TTS 나레이션 중심, 이건 실제 발언 육성 3클립이 뼈대(정점식→한동훈→김동아)+TTS 1개(2021 통화 vs 현재 해명 대조)+CTA.",
+  "category": "political",
+  "slug": "20260907_kimsw_singyakrobi_v2_2",
+  "title": "공익이었다는 로비",
+  "subject_type": "politician",
+  "_subject_type_comment": "039 — C등급(정치인, 진영무관 반칙 어휘 미검출). v2_1과 동일 판단.",
+  "yt_title": "5년 전 통화엔 '오빠 선거', 지금은 '공익 민원'",
+  "yt_title_alt": "'공익 민원'이라는 김승원, 녹취엔 계좌번호",
+  "_yt_title_comment": "034 보도체·해시태그 게이트 통과. 040 기록 대조 프레임.",
+  "persons": ["김승원", "한동훈"],
+  "hashtags": ["#김승원", "#법무부장관", "#신약로비", "#한동훈"],
+  "source_channel": "YTN · KBS",
+  "source_title": "\"승인 시 수천억\" \"오빠 선거에도 좋고\"...추가 녹취 폭로 / YTN",
+  "youtube_url": "https://www.youtube.com/watch?v=CtmjKxLw4xU",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "ytn",
+  "sources": {
+    "ytn": {
+      "url": "https://www.youtube.com/watch?v=CtmjKxLw4xU",
+      "dur_max": 300,
+      "verify_frac": 0.5,
+      "_확인": "YTN 159s — kimsw_singyakrobi_v2_1과 동일 소스."
+    },
+    "kbs": {
+      "url": "https://www.youtube.com/watch?v=_9_ZiCsiVp8",
+      "dur_max": 200,
+      "verify_frac": 0.6,
+      "_확인": "KBS 129s — kimsw_singyakrobi_v2_1과 동일 소스."
+    }
+  },
+  "_scenes_comment": "3클립(정점식/한동훈/김동아, 전부 당사자 실제 육성 실측 silencedetect로 문장 끝 확인) + TTS 1개(2021 통화 vs 현재 해명 대조, 040 핵심) + CTA. 034 훅=가장 센 컷 — 정점식 '국가적 비극' 유지. 클립 오디오 비중 약 62%로 권장 65%에 살짝 못 미치나(CLIP_RATIO_MIN 경고), 실제 발언 클립 3개 확보 상태에서 더 늘리면 TTS 설명이 부족해져 그대로 둔다.",
+  "scenes": [
+    {
+      "mode": "clip",
+      "color": "yellow",
+      "source": "ytn",
+      "start_sec": 141.2,
+      "duration": 6.8,
+      "speaker": "정점식 국민의힘 원내대표",
+      "subtitle_position": "bottom",
+      "text": "\"5개 재판 중인 대통령도 모자라\n법무장관까지, 국가적 비극\"",
+      "hl": ["국가적 비극"],
+      "_확인": "YTN 141.2~148.0s, silencedetect로 문장 끝 확인(147.5~148.8 장묵음). 034 훅=가장 센 컷."
+    },
+    {
+      "mode": "tts",
+      "color": "white",
+      "emph": true,
+      "source": "ytn",
+      "frac": 0.3019,
+      "subtitle_position": "bottom",
+      "text": "2021년 \"수천억\" 통화\n지금은 \"공익 민원\"",
+      "voice": "2021년 통화에서 김승원은 승인되면 수천억을 벌 수 있다며 후원회 계좌를 안내했지만, 지금은 공익성 민원일 뿐이라고 반박합니다.",
+      "hl": ["공익 민원"],
+      "_comment": "040 기록 대조 프레임 — 녹취(과거 발언)와 해명(현재 행동)을 한 문장에 담는다.",
+      "_확인": "YTN frac 0.3019(47.9s) — '2021년 10월 7일 통화 승인되면 수천억' 카드 (v2_1 S3와 동일 지점, 실측 확인됨)."
+    },
+    {
+      "mode": "clip",
+      "color": "red",
+      "source": "ytn",
+      "start_sec": 110.9,
+      "duration": 5.4,
+      "speaker": "한동훈",
+      "subtitle_position": "bottom",
+      "text": "\"검찰 수사팀 애초 기소 의견\n누가 막았나\"",
+      "hl": ["누가 막았나"],
+      "_comment": "040 대칭 ① 야권 축. 한동훈 본인 도어스테핑 실제 육성.",
+      "_확인": "YTN 110.9~116.3s, silencedetect 문장 끝 확인(116.1~117.0 묵음). 하단 배너 '한동훈 \"검찰 수사팀 애초 기소 의견…누가 막았나\"'와 자막 일치."
+    },
+    {
+      "mode": "clip",
+      "color": "blue",
+      "source": "kbs",
+      "start_sec": 99.1,
+      "duration": 5.5,
+      "speaker": "김동아 더불어민주당 의원",
+      "subtitle_position": "bottom",
+      "text": "\"정치공작 위해 꺼낸 것\n어느 쪽이든 추악한 범죄\"",
+      "hl": ["추악한 범죄"],
+      "_comment": "040 대칭 ② 여권 반격 축 — 야권 클립(S2) 바로 뒤에 배치해 대립 아크를 만든다.",
+      "_확인": "KBS 99.1~104.6s, silencedetect 문장 끝 확인(첫 문장 '...꺼내든 것입니까?' 뒤 104.2~104.8 묵음)."
+    }
+  ],
+  "cta": {
+    "text": "①공익 민원 ②대가성 로비",
+    "voice": "1번 공익 민원, 2번 대가성 로비. 댓글로 알려주세요.",
+    "hl": ["대가성 로비"],
+    "_cta_comment": "v2_1과 동일 CTA — 040 판정형."
+  },
+  "pinned_comment": "2021년 브로커와의 통화에서 김승원 후보자는 '승인되면 수천억을 벌 수 있다'는 말을 듣고 국회의원 후원회 계좌를 안내했습니다. 후보자 측은 공익성 민원을 전달했을 뿐 심사에는 관여하지 않았다고 반박합니다. 검찰은 이미 기소유예로 사건을 종결했지만, 한동훈 의원은 당시 수사팀의 기소 의견이 묵살됐다는 의혹을 추가로 제기했습니다. 청문회는 9월 15일입니다. 1번 공익 민원, 2번 대가성 로비. 댓글로 알려주세요."
+}

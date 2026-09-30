@@ -147,10 +147,12 @@ def resolve_config_category(cfg: dict) -> str:
     return _validate_category(cfg.get("category") or DEFAULT_CATEGORY)
 
 
-def load_ledger(path: Path) -> dict[str, str]:
-    """원장 파일 → {정규화 제목: category}. 없거나 깨졌으면 빈 dict.
+def load_entry_field(path: Path, field: str,
+                     allowed: tuple[str, ...]) -> dict[str, str]:
+    """원장 파일 → {정규화 제목: 해당 필드 값}. 없거나 깨졌으면 빈 dict.
 
     계측 보조 장치이므로 파일이 손상돼도 렌더·분석을 막지 않는다.
+    한 항목에 여러 축(036 카테고리 / 041 포맷)이 함께 들어가므로 필드로 조회한다.
     """
     try:
         raw = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -160,43 +162,48 @@ def load_ledger(path: Path) -> dict[str, str]:
     if not isinstance(entries, dict):
         return {}
     return {
-        key: entry["category"]
+        key: entry[field]
         for key, entry in entries.items()
-        if isinstance(entry, dict) and entry.get("category") in CATEGORIES
+        if isinstance(entry, dict) and entry.get(field) in allowed
     }
 
 
-def record_category(path: Path, title: str, category: str,
-                    slug: str = "") -> dict[str, str]:
-    """원장에 한 편을 기록하고 갱신된 {제목: category} 매핑을 **새로** 반환.
+def record_entry_fields(path: Path, title: str, fields: dict[str, str],
+                        slug: str = "") -> dict[str, dict]:
+    """원장 항목에 `fields` 를 **병합**하고 갱신된 entries 를 새로 반환.
 
-    같은 제목을 다시 기록하면 최신 값으로 덮어쓴다 (제목 수정 후 재렌더 대응).
-    제목이 비면 기록하지 않는다 — 키 없는 항목은 조회가 불가능해 쓸모가 없다.
+    덮어쓰기가 아니라 병합인 이유: 한 항목에 카테고리(036)와 포맷(041)이 각각
+    다른 호출로 기록된다. 통째로 갈아치우면 먼저 쓴 축이 조용히 사라진다.
+
+    같은 제목을 다시 기록하면 해당 필드만 최신 값으로 덮어쓴다(제목 수정 후
+    재렌더 대응). 제목이 비면 기록하지 않는다 — 키 없는 항목은 조회가 불가능하다.
     """
-    _validate_category(category)
     key = ledger_key(title)
-    if not key:
-        return load_ledger(path)
-
     path = Path(path)
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         raw = {}
     entries = raw.get("entries") if isinstance(raw.get("entries"), dict) else {}
+    if not key:
+        return entries
 
+    prev = entries.get(key)
+    prev = prev if isinstance(prev, dict) else {}
     updated = {
         **raw,
         "version": LEDGER_VERSION,
         "description": (
-            "쇼츠 카테고리 원장 (036) — upload_package 생성 시 자동 기록. "
-            "키는 해시태그를 뗀 정규화 제목. 추론이 틀린 과거 편은 여기에 직접 추가."
+            "쇼츠 성과 원장 (036 카테고리 · 041 포맷) — upload_package 생성 시 "
+            "자동 기록. 키는 해시태그를 뗀 정규화 제목. 추론이 틀린 과거 편은 "
+            "여기에 직접 추가."
         ),
         "entries": {
             **entries,
             key: {
-                "category": category,
-                "slug": slug,
+                **prev,
+                **fields,
+                "slug": slug or prev.get("slug", ""),
                 "recorded_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             },
         },
@@ -204,8 +211,21 @@ def record_category(path: Path, title: str, category: str,
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(updated, ensure_ascii=False, indent=2),
                     encoding="utf-8")
-    return {k: v["category"] for k, v in updated["entries"].items()
-            if v.get("category") in CATEGORIES}
+    return updated["entries"]
+
+
+def load_ledger(path: Path) -> dict[str, str]:
+    """원장 파일 → {정규화 제목: category}. 없거나 깨졌으면 빈 dict."""
+    return load_entry_field(path, "category", CATEGORIES)
+
+
+def record_category(path: Path, title: str, category: str,
+                    slug: str = "") -> dict[str, str]:
+    """원장에 한 편의 카테고리를 기록하고 갱신된 {제목: category} 를 새로 반환."""
+    _validate_category(category)
+    entries = record_entry_fields(path, title, {"category": category}, slug=slug)
+    return {k: v["category"] for k, v in entries.items()
+            if isinstance(v, dict) and v.get("category") in CATEGORIES}
 
 
 def resolve_category(title: str, ledger: dict[str, str]) -> str:
@@ -228,7 +248,7 @@ def resolve_category(title: str, ledger: dict[str, str]) -> str:
 __all__ = [
     "CATEGORIES", "CATEGORY_KEYWORDS", "DEFAULT_CATEGORY", "LEDGER_VERSION",
     "UNKNOWN", "category_scores", "classify_category", "classify_haystack",
-    "ledger_key",
+    "ledger_key", "load_entry_field", "record_entry_fields",
     "load_ledger", "record_category", "resolve_category",
     "resolve_config_category",
 ]

@@ -1,0 +1,107 @@
+{
+  "_comment": "V2.2 원본 육성 릴레이. 훅 = 주진우 \"사실상 사찰입니다\"(036: 가진 클립 중 가장 센 컷). 인접 클립은 대립 배치(주진우 → 김승원). clip2 가 [040] 기록 대조 축 — 같은 청문회에서 김 후보자가 한동훈 의원의 수사자료 입수 경위를 캐물은 육성. clip start_sec/duration 은 download 후 _verify 프레임 + 단어 단위 VTT 로 문장 끝맺음까지 확정할 것(037).",
+  "slug": "20260918_kimsw_docchal_v2_2",
+  "title": "청문회 도촬 논란",
+  "yt_title": "\"사찰에 가깝습니다\" 뒤집힌 청문회",
+  "yt_title_alt": "이중잣대 논란, 뒤에선 '찰칵'",
+  "persons": [
+    "김승원",
+    "주진우"
+  ],
+  "category": "political",
+  "subject_type": "politician",
+  "source_channel": "채널A News",
+  "source_title": "주진우 \"사실상 사찰입니다\"…김승원 \"막내 보좌진…너그럽게…\" [현장영상]",
+  "youtube_url": "https://www.youtube.com/watch?v=fzZs2t5bOyE",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "tvc",
+  "cta": {
+    "text": "몰래 본 자료\n① 둘 다 범죄  ② 급이 다르다",
+    "voice": "이건 둘 다 범죄일까요? 1번 범죄, 2번 다르다. 댓글로 알려주세요.",
+    "hl": [
+      "몰래 본 자료"
+    ],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "chA": {
+      "url": "https://www.youtube.com/watch?v=fzZs2t5bOyE",
+      "dur_max": 400,
+      "verify_frac": 0.3
+    },
+    "kbs": {
+      "url": "https://www.youtube.com/watch?v=NCmgADR3klU",
+      "dur_max": 400,
+      "verify_frac": 0.3
+    },
+    "hl3": {
+      "url": "https://www.youtube.com/watch?v=nzUNvCBbZW4",
+      "dur_max": 900,
+      "verify_frac": 0.3
+    },
+    "tvc": {
+      "url": "https://www.youtube.com/watch?v=FfP9s_FTZW8",
+      "dur_max": 300,
+      "verify_frac": 0.3
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "mode": "tts",
+      "source": "tvc",
+      "frac": 0.89,
+      "text": "9월 15일\n김승원 법무장관 후보자 청문회",
+      "voice": "9월 15일, 김승원 법무부 장관 후보자 인사청문회입니다."
+    },
+    {
+      "mode": "clip",
+      "source": "chA",
+      "start_sec": 73.96,
+      "duration": 8.04,
+      "speaker": "주진우",
+      "text": "주진우 \"질의 내용 촬영은\n사찰에 가까운 것\"",
+      "hl": [
+        "사찰"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "hl3",
+      "start_sec": 177.56,
+      "duration": 9.16,
+      "speaker": "김승원",
+      "_comment": "[040] 기록 대조 — 같은 청문회에서 남의 자료 입수 경위는 캐물었다.",
+      "text": "같은 청문회, 민주당 김승원\n\"어떻게 흘러갔는지 밝혀야\"",
+      "hl": [
+        "같은 청문회"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "kbs",
+      "start_sec": 122.76,
+      "duration": 8.24,
+      "speaker": "김승원",
+      "text": "\"배우는 중인 보좌진이\n큰 잘못을 한 것 같다\"",
+      "hl": [
+        "보좌진"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "kbs",
+      "frac": 0.04,
+      "color": "yellow",
+      "highlight_category": "fact",
+      "emph": true,
+      "text": "17일 청문보고서 여당 주도 채택\n국민의힘은 퇴장",
+      "voice": "이틀 뒤 청문보고서는 여당 주도로 채택됐고, 국민의힘은 퇴장했습니다. 법조계는 처벌은 간단치 않다고 봅니다.",
+      "hl": [
+        "여당 주도",
+        "퇴장"
+      ]
+    }
+  ]
+}

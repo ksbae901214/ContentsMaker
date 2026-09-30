@@ -1,0 +1,48 @@
+{
+  "_comment": "연예 V2.1 (2026-08-26). 팩트 교차검증: 스타뉴스/헤럴드경제/뉴스1/머니투데이/텐아시아/KNN/YTN 7개사 일치. 8/23 KE415(인천→괌) 탑승 후 박수홍 22개월 딸이 심하게 울자 가족이 자진 하기 요청 → 수하물 하기 절차 진행 → 아이가 울음을 그치자 재탑승 의사 번복 → 수하물 재탑재로 약 1시간(70분) 지연. 이코노미석 동승객(다른 아이 부모)이 후기로 '영문도 모르고 한 시간을 기다렸는데... 이코노미 아기도 힘들었다'고 피해를 증언(스타이슈·MHN이슈 보도). 8/26 박수홍 인스타그램으로 공식 사과('미숙한 판단', '변명의 여지 없다'). ⚠️ hook 없음(사용자 확정 2026-08-26): 박수홍 본인이 '죄송합니다'라고 말하는 원본 육성은 어느 방송사에도 없음 — 방송사들은 전부 온라인 커뮤니티 영상을 '음성 없는 캡처 사진'으로만 인용하고, 사과문(텍스트)을 아나운서가 낭독하는 방식. 사용자 지시 '(원본 음성이 없으니) TTS가 대신 이야기 하는 걸로 진행' 에 따라 hook 블록을 없애고 V2 기본형(전 구간 TTS + 실제 방송 B-roll)으로 전환. sources는 실제 확인한 KNN·YTN 뉴스 영상 URL(쿼리 아님) — download 단계에서 검색 실패 리스크 제거.",
+  "category": "entertainment",
+  "slug": "20260826_parksuhong_bihaenggi_v2_1",
+  "title": "박수홍 가족, 비행기 1시간 세웠다",
+  "yt_title": "이코노미 아기까지 울린 박수홍의 실체",
+  "yt_title_alt": "1시간 멈춘 비행기, 박수홍의 정체",
+  "_yt_title_comment": "2026-08-26 자극도 상향(사용자 요청, [[shorts-title-sensational-tone]]) — 폭로/충격형, is_report_style()·lint_yt_title() 통과 확인(경고 0).",
+  "persons": ["박수홍"],
+  "source_channel": "KNN NEWS / YTN",
+  "source_title": "\"내렸다 탔다 반복\"…박수홍 탑승 번복에 비행기 70분 지연 [KNN] / 박수홍, 비행기 지연 논란 사과 [YTN]",
+  "youtube_url": "https://www.youtube.com/watch?v=SucxTrX22SM",
+  "emotion_type": "relatable",
+  "_emotion_type_comment": "사실 전달 + 본인 사과로 마무리되는 톤 — angry(가해/피해 구도)나 funny(축하)는 부적합.",
+  "tts_speed": 1.1,
+  "fallback_source": "ytn",
+  "cta": {
+    "_comment": "온라인상 '연예인 특혜' 논란이 실제 쟁점(KNN 리포트에도 갑론을박 그래픽으로 등장)이라 이 축으로 CTA 구성.",
+    "text": "박수홍 가족, 어떻게 보세요?\n① 그럴 수 있다  ② 특혜였다",
+    "voice": "그럴 수 있다, 특혜였다. 댓글로 알려주세요.",
+    "hl": ["특혜였다"],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "knn": { "url": "https://www.youtube.com/watch?v=SucxTrX22SM", "dur_max": 200, "verify_frac": 0.3 },
+    "ytn": { "url": "https://www.youtube.com/watch?v=WztPf1HKPJA", "dur_max": 200, "verify_frac": 0.35 }
+  },
+  "scenes": [
+    { "type": "body", "color": "white", "emph": false, "source": "knn", "frac": 0.1,
+      "text": "22개월 딸이 울자\n\"내리겠습니다\"",
+      "voice": "인천에서 괌으로 향하던 대한항공 여객기, 22개월 딸이 울음을 그치지 않자 박수홍 가족은 자진 하기를 요청했습니다.",
+      "hl": ["자진 하기"] },
+    { "type": "body", "color": "red", "emph": true, "source": "knn", "frac": 0.3,
+      "text": "짐 내렸는데\n\"다시 탈게요\"",
+      "voice": "짐까지 내려졌는데, 아이가 울음을 그치자 박수홍 측은 다시 타겠다고 번복했습니다. 수하물을 재탑재하느라 비행기는 1시간 늦게 떴습니다.",
+      "hl": ["다시 탈게요", "1시간"] },
+    { "type": "body", "color": "red", "emph": true, "source": "ytn", "frac": 0.4,
+      "_comment": "동승객(이코노미석 다른 아이 부모) 실제 후기 인용 — 사용자 요청으로 추가(2026-08-26). 대립 배치: 박수홍 측 사정(②) 뒤에 피해 승객 목소리를 붙여 갈등 아크 형성.",
+      "text": "이코노미 승객\n\"영문도 모르고 한 시간 기다려\"",
+      "voice": "이코노미석에 있던 다른 아이 부모는 영문도 모르고 한 시간을 기다렸다며, 이코노미 아기도 힘들었다고 토로했습니다.",
+      "hl": ["한 시간", "힘들었다"] },
+    { "type": "body", "color": "yellow", "emph": true, "source": "ytn", "frac": 0.65,
+      "_comment": "마지막 씬 = 팩트 정리(사과로 마무리). 댓글 유도는 top-level cta로 분리.",
+      "text": "결국 박수홍\n\"변명의 여지 없다\"",
+      "voice": "논란이 커지자 박수홍은 SNS를 통해 미숙한 판단이었다며 고개 숙여 사과했습니다.",
+      "hl": ["사과"] }
+  ]
+}

@@ -5,7 +5,10 @@
   "yt_title": "'무섭노' 한마디에 사상검증, 결국 사과한 조국",
   "yt_title_alt": "죽창 들자던 사람이, 9시간 만에 물러섰다",
   "_yt_title_comment": "[035] 결과가 난 사건 프레임 — 번복/철회/사퇴/역전/컴백이 드러나야 함. 'A가 B를 직격/저격'만 있는 공방형은 실측상 조회수 1,100대 천장 (upload_package.md 경고).",
-  "persons": ["조국", "이준석"],
+  "persons": [
+    "조국",
+    "이준석"
+  ],
   "source_channel": "채널A 김진의돌직구쇼",
   "source_title": "'무섭노' 사투리에 때아닌 '일베' 논란",
   "youtube_url": "https://www.youtube.com/watch?v=VSAn-JTZsFA",
@@ -14,10 +17,12 @@
   "_tts_speed_comment": "나레이션 씬 배속 (훅 원본 육성 제외). V2.1 기본값 1.1 (사용자 확정 2026-07-21). 생략 시에도 코드 기본값 1.1 적용. 더 빠르게/느리게 하려면 값만 조정.",
   "fallback_source": "chA",
   "cta": {
-    "_comment": "[035] 댓글 CTA — 40% 지점에 tts 씬으로 자동 삽입된다(위치는 at_frac 으로 조정). 열린 질문('여러분 생각은?')은 실측 댓글율 0.24%라 금지 — ①/② 선택지형으로. voice 는 4초 이내(약 32자).",
+    "_comment": "[035/038] 댓글 CTA — 마지막 씬 뒤에 tts 씬으로 자동 삽입된다. 열린 질문('여러분 생각은?')은 실측 댓글율 0.24%라 금지 — ①/② 선택지형으로. [2026-09-17 고정 지침] 나레이션은 **질문까지 읽는다** — 선택지 번호만 읽으면 소리만 듣는 시청자는 무엇을 고르라는 건지 알 수 없다. 상한은 5초(약 41자), 종결은 '댓글로 알려주세요'.",
     "text": "이거 누구 잘못?\n① 조국  ② 이준석",
-    "voice": "1번 조국, 2번 이준석. 댓글로 알려주세요.",
-    "hl": ["누구 잘못"],
+    "voice": "이건 누가 잘못한 걸까요? 1번 조국, 2번 이준석. 댓글로 알려주세요.",
+    "hl": [
+      "누구 잘못"
+    ],
     "at_frac": 0.4
   },
   "hook": {
@@ -25,26 +30,76 @@
     "start_sec": 42.0,
     "duration": 3.0,
     "text": "\"일베는 기계적으로 '노'\"\n조국의 감별법",
-    "hl": ["일베", "감별법"]
+    "hl": [
+      "일베",
+      "감별법"
+    ]
   },
   "sources": {
-    "joguk": { "query": "조국 일베 감별법 무섭노 발언 논란", "dur_max": 900, "verify_frac": 0.25 },
-    "leejs": { "query": "이준석 조국 일베 사상검증 무섭노", "dur_max": 900, "verify_frac": 0.4 },
-    "chA":   { "url": "https://www.youtube.com/watch?v=VSAn-JTZsFA", "dur_max": 900, "verify_frac": 0.35 }
+    "joguk": {
+      "query": "조국 일베 감별법 무섭노 발언 논란",
+      "dur_max": 900,
+      "verify_frac": 0.25
+    },
+    "leejs": {
+      "query": "이준석 조국 일베 사상검증 무섭노",
+      "dur_max": 900,
+      "verify_frac": 0.4
+    },
+    "chA": {
+      "url": "https://www.youtube.com/watch?v=VSAn-JTZsFA",
+      "dur_max": 900,
+      "verify_frac": 0.35
+    }
   },
   "scenes": [
-    { "type": "body", "color": "white", "emph": false, "source": "joguk", "frac": 0.4,
+    {
+      "intro": true,
+      "_comment": "[기본 지침 2026-09-15] 훅 앞 한 줄 상황 설명. 등장인물이 여럿인 소재(청문회·국정감사)는 맥락 없이 육성부터 틀면 이탈한다. 한 문장·4초 이내. b-roll 은 소스의 '오늘' 구간인지 프레임으로 확인할 것. 빼려면 \"intro_gate\": \"off\".",
+      "source": "chA",
+      "frac": 0.2,
+      "text": "무슨 일이 있었는지\n한 줄로",
+      "voice": "오늘 열린 OOO 기자회견입니다."
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "joguk",
+      "frac": 0.4,
       "text": "거제 22살 아이돌\n'무섭노'에 사상검증",
       "voice": "경남 거제 출신 스물두 살 아이돌. 고향 말로 무섭노라 했다가, 일베 말투냐는 사상검증이 시작됐습니다.",
-      "hl": ["거제", "사상검증"] },
-    { "type": "body", "color": "red", "emph": true, "source": "leejs", "frac": 0.4,
+      "hl": [
+        "거제",
+        "사상검증"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "leejs",
+      "frac": 0.4,
       "text": "이준석 직격\n\"죽창 들자던 사람이 사상검증?\"",
       "voice": "역풍이 터졌습니다. 이준석은, 죽창 들자던 사람이 이젠 말끝 하나로 사상을 검증하냐고 직격했습니다.",
-      "hl": ["이준석", "죽창"] },
-    { "type": "body", "color": "yellow", "emph": true, "source": "chA", "frac": 0.35,
+      "hl": [
+        "이준석",
+        "죽창"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "chA",
+      "frac": 0.35,
       "_comment": "[035] 마지막 씬은 팩트 정리로 닫는다 — 댓글 유도는 cta 블록으로 분리(중복 시 경고).",
       "text": "9시간 만에\n글 내리고 사과",
       "voice": "논란 아홉 시간 만에 글은 내려갔고, 사과문이 올라왔습니다. 말투로 사람을 가르는 시도는 그렇게 끝났습니다.",
-      "hl": ["9시간", "사과"] }
+      "hl": [
+        "9시간",
+        "사과"
+      ]
+    }
   ]
 }

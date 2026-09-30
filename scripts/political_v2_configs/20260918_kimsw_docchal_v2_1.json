@@ -1,0 +1,122 @@
+{
+  "_comment": "2026-09-15 김승원 법무부 장관 후보자 인사청문회 — 후보자 측 보좌진이 국민의힘 주진우 의원 뒤에서 질의 메모를 촬영. [040] 기록 대조 축 = 같은 청문회에서 김 후보자는 한동훈 의원의 검찰 수사자료 입수 경위를 '밝히라'고 했다. [039] 후속편 — 20260910_hanhoon_ilbanin(총리실 간부 '일반인' 위장) 의 두 번째 사례. 클립 start_sec/duration 은 download 후 단어 단위 VTT 로 확정할 것(037).",
+  "slug": "20260918_kimsw_docchal_v2_1",
+  "title": "청문회 도촬 논란",
+  "yt_title": "자료 유출 캐겠다던 날, 뒤에선 '찰칵'",
+  "yt_title_alt": "이중잣대 논란, 8분 44초의 카메라",
+  "persons": [
+    "김승원",
+    "주진우"
+  ],
+  "category": "political",
+  "subject_type": "politician",
+  "source_channel": "채널A News",
+  "source_title": "주진우 \"사실상 사찰입니다\"…김승원 \"막내 보좌진…너그럽게…\" [현장영상]",
+  "youtube_url": "https://www.youtube.com/watch?v=fzZs2t5bOyE",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "tvc",
+  "cta": {
+    "text": "몰래 본 자료\n① 둘 다 범죄  ② 급이 다르다",
+    "voice": "이건 둘 다 범죄일까요? 1번 범죄, 2번 다르다. 댓글로 알려주세요.",
+    "hl": [
+      "몰래 본 자료"
+    ],
+    "at_frac": 0.4
+  },
+  "hook": {
+    "source": "chA",
+    "start_sec": 76.0,
+    "duration": 6.0,
+    "text": "주진우 \"질의 내용 촬영은\n사찰에 가까운 것\"",
+    "hl": [
+      "사찰"
+    ]
+  },
+  "sources": {
+    "chA": {
+      "url": "https://www.youtube.com/watch?v=fzZs2t5bOyE",
+      "dur_max": 400,
+      "verify_frac": 0.3
+    },
+    "kbs": {
+      "url": "https://www.youtube.com/watch?v=NCmgADR3klU",
+      "dur_max": 400,
+      "verify_frac": 0.3
+    },
+    "hl3": {
+      "url": "https://www.youtube.com/watch?v=nzUNvCBbZW4",
+      "dur_max": 900,
+      "verify_frac": 0.3
+    },
+    "tvc": {
+      "url": "https://www.youtube.com/watch?v=FfP9s_FTZW8",
+      "dur_max": 300,
+      "verify_frac": 0.3
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "source": "tvc",
+      "frac": 0.89,
+      "text": "9월 15일\n김승원 법무장관 후보자 청문회",
+      "voice": "9월 15일, 김승원 법무부 장관 후보자 인사청문회입니다."
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "highlight_category": "fact",
+      "emph": false,
+      "source": "chA",
+      "frac": 0.5,
+      "text": "국민의힘 주진우 뒤에서\n후보자 측 보좌진이 메모 촬영",
+      "voice": "국민의힘 주진우 의원 등 뒤에서, 후보자 측 보좌진이 질의 메모를 찍는 장면이 영상에 잡혔습니다.",
+      "hl": [
+        "메모 촬영"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "highlight_category": "criticism",
+      "emph": true,
+      "source": "tvc",
+      "frac": 0.86,
+      "text": "주진우 \"8분 44초 염탐\"\n\"찍고 확인까지, 보고용\"",
+      "voice": "주 의원은 8분 44초간 염탐당했다며, 찍은 뒤 잘 나왔는지 확인까지 했으니 보고용이라고 주장했습니다.",
+      "hl": [
+        "8분 44초",
+        "보고용"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "highlight_category": "fact",
+      "emph": false,
+      "source": "kbs",
+      "frac": 0.62,
+      "text": "민주당 김승원 \"막내 직원 실수\"\n사과, 지시는 부인",
+      "voice": "김 후보자는 배우는 과정의 막내 직원이 큰 잘못을 저질렀다며 사과했고, 지시한 사실은 없다고 선을 그었습니다.",
+      "hl": [
+        "사과"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "highlight_category": "fact",
+      "emph": true,
+      "source": "hl3",
+      "frac": 0.28,
+      "_comment": "[040] 기록 대조 축 — 같은 날 같은 청문회에서 나온 정반대 잣대. 대칭이 화면 자막에 보여야 한다.",
+      "text": "같은 청문회에서 김승원은\n\"한동훈 자료 출처 밝히라\"더니",
+      "voice": "그런데 같은 청문회에서 김 후보자는, 한동훈 의원이 검찰 수사자료를 어떻게 가졌는지 밝히라고 했습니다.",
+      "hl": [
+        "같은 청문회",
+        "밝히라"
+      ]
+    }
+  ]
+}

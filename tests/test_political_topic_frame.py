@@ -94,7 +94,7 @@ class TestChecklist:
         assert "플랫폼 분리" in md
 
     def test_has_length_item(self, tmp_path):
-        assert "42초" in self._md(tmp_path)
+        assert "62초" in self._md(tmp_path)
 
     def test_has_midroll_cta_item(self, tmp_path):
         md = self._md(tmp_path)

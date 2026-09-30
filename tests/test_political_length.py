@@ -128,7 +128,7 @@ class TestLengthWarnings:
         cfg = v21_cfg(scenes=[{"source": "a", "text": "t", "voice": "가" * 600}])
         warns = length_warnings(cfg)
         assert len(warns) == 1
-        assert "42" in warns[0]
+        assert "62" in warns[0]
         assert "자" in warns[0]
 
     def test_gate_off_suppresses_warning(self):
@@ -157,17 +157,17 @@ class TestEnforceLength:
         enforce_length(TARGET_MAX_SEC - OUTRO_SEC, v22_cfg())
 
     def test_over_cap_raises(self):
-        with pytest.raises(ValueError, match="42"):
+        with pytest.raises(ValueError, match="62"):
             enforce_length(TARGET_MAX_SEC - OUTRO_SEC + 0.5, v22_cfg())
 
     def test_timeline_at_cap_now_fails_due_to_outro(self):
-        """타임라인이 42초면 최종은 46초 — 회귀 방지 (2026-08-05 실측 결함)."""
+        """타임라인이 62초면 최종은 66초 — 회귀 방지 (2026-08-05 실측 결함)."""
         with pytest.raises(ValueError, match="아웃트로"):
             enforce_length(TARGET_MAX_SEC, v22_cfg())
 
     def test_error_message_states_how_much_to_cut(self):
         with pytest.raises(ValueError, match="8.0초"):
-            enforce_length(46.0, v22_cfg())
+            enforce_length(66.0, v22_cfg())
 
     def test_gate_off_bypasses(self):
         enforce_length(90.0, v22_cfg(duration_gate="off"))

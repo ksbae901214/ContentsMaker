@@ -1,0 +1,43 @@
+{
+  "_comment": "제주 실종 허위종결 경찰 편 (2026-08-28). 사용자 확정: 경찰 직무유기·허위종결에만 집중, 사망 원인(자살 추정, 미확정)은 다루지 않음. 클립 3개(SBS 2 + KBS 1) + TTS 정리 1개.",
+  "category": "society",
+  "slug": "20260828_jeju_siljong_v2_2",
+  "title": "제주 실종 허위종결 경찰",
+  "yt_title": "거짓말 뒤, 끝내 구속영장",
+  "yt_title_alt": "가족엔 거짓말, PC엔 '허위 사망'",
+  "hashtags": ["제주실종사건", "경찰허위종결", "구속영장"],
+  "source_channel": "SBS 뉴스 / KBS News",
+  "source_title": "2시간 반 만에 '교통사고 사망' 거짓 기재…지휘계통 감찰 착수 / SBS 8뉴스",
+  "youtube_url": "https://www.youtube.com/watch?v=KS52crYFkbI",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "sbs",
+  "cta": {
+    "text": "이 정도면 어떤가요?\n① 솜방망이다  ② 적당하다",
+    "voice": "솜방망이인가요, 적당한가요? 댓글로 알려주세요.",
+    "hl": ["솜방망이다"],
+    "source": "sbs",
+    "frac": 0.84
+  },
+  "sources": {
+    "sbs": { "url": "https://www.youtube.com/watch?v=KS52crYFkbI", "dur_max": 900, "verify_frac": 0.1 },
+    "kbs": { "url": "https://www.youtube.com/watch?v=7hQEiOmjt8k", "dur_max": 900, "verify_frac": 0.6 },
+    "yonhap2": { "url": "https://www.youtube.com/watch?v=oAF1Euk2B6g", "dur_max": 900, "verify_frac": 0.7 }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "sbs", "start_sec": 14.3, "duration": 7.7,
+      "text": "\"연락 닿았다\" 거짓말\n내부엔 \"교통사고 사망\" 허위 기재",
+      "hl": ["거짓말", "허위 기재"] },
+    { "mode": "clip", "source": "kbs", "start_sec": 77.0, "duration": 8.3,
+      "text": "CCTV 118대 분량 전부 삭제\n열람 요청은 96일 지난 뒤",
+      "hl": ["118대", "96일"] },
+    { "mode": "clip", "source": "yonhap2", "start_sec": 30.9, "duration": 9.2,
+      "_comment": "파도파도 괴담 — 별개 사건인 여자화장실 침입(7/22)이 성폭력처벌법 위반으로 입건된 뒤, 그게 계기로 실종 허위종결까지 드러남.",
+      "text": "경찰서 여자화장실 침입 적발\n성폭력처벌법 위반 입건 → 이후 허위종결까지 드러나 구속",
+      "hl": ["여자화장실", "구속"] },
+    { "mode": "tts", "source": "sbs", "start_sec": 124.0, "color": "yellow", "emph": true,
+      "text": "허위종결만 5건\n파도파도 괴담이다",
+      "voice": "허위 종결만 5건, 화장실 침입까지—파도파도 괴담입니다. 구속영장이 신청됐고, 지휘라인 4명은 대기발령됐습니다.",
+      "hl": ["5건", "파도파도 괴담"] }
+  ]
+}

@@ -5,6 +5,48 @@ from scripts.analyze_channel_performance import (
     build_report_md, category_mix_warnings, classify_title, compare_snapshots,
     duration_bucket, summarize, upload_gaps,
 )
+from scripts.shorts_format import PROFILE_V3, UNKNOWN_FORMAT, V2_2
+
+
+class TestSummarizeByFormat:
+    """041: 포맷별 슬라이스 — V3.0 파일럿 판정의 유일한 근거."""
+
+    ENTRIES = [
+        {"title": "이해민은 누구인가", "view_count": 3000},
+        {"title": "용혜인은 누구인가", "view_count": 1000},
+        {"title": "장동혁 눈물", "view_count": 1500},
+    ]
+    FORMATS = {"이해민은 누구인가": PROFILE_V3, "용혜인은 누구인가": PROFILE_V3}
+
+    def test_groups_by_format(self):
+        by_format = summarize(self.ENTRIES, formats=self.FORMATS)["by_format"]
+        assert by_format[PROFILE_V3] == {"count": 2, "median_views": 2000}
+
+    def test_unrecorded_editions_are_unknown(self):
+        """과거 107편은 포맷 기록이 없다 — 추론하지 않는다."""
+        by_format = summarize(self.ENTRIES, formats=self.FORMATS)["by_format"]
+        assert by_format[UNKNOWN_FORMAT]["count"] == 1
+
+    def test_without_formats_everything_is_unknown(self):
+        by_format = summarize(self.ENTRIES)["by_format"]
+        assert by_format == {UNKNOWN_FORMAT: {"count": 3, "median_views": 1500}}
+
+    def test_report_renders_format_table(self):
+        summary = summarize(self.ENTRIES, formats=self.FORMATS)
+        md = build_report_md("ch", summary, [], [], "2026-09-14 10:00")
+        assert "## 포맷별" in md
+        assert PROFILE_V3 in md
+
+    def test_report_omits_format_table_when_no_record(self):
+        """포맷 기록이 하나도 없으면 unknown 한 줄짜리 표는 노이즈다."""
+        md = build_report_md("ch", summarize(self.ENTRIES), [], [], "2026-09-14")
+        assert "## 포맷별" not in md
+
+    def test_mixed_formats_are_separated(self):
+        formats = {**self.FORMATS, "장동혁 눈물": V2_2}
+        by_format = summarize(self.ENTRIES, formats=formats)["by_format"]
+        assert by_format[V2_2] == {"count": 1, "median_views": 1500}
+        assert UNKNOWN_FORMAT not in by_format
 
 
 class TestClassifyTitle:

@@ -1,0 +1,101 @@
+{
+  "_comment": "V2.2 원본 육성 릴레이. 소재 = 9/18 이재명 대통령 7번째 기자회견, 집값 폭등 단기 원인으로 전 정권(윤석열·오세훈)을 지목. [039] 정치인이라 A 불가 — 같은 답변에서 '박원순 탓하는 분도 있다'며 남의 남 탓을 비웃은 clip3 가 '이중잣대'(진영 무관 반칙) 근거라 B등급. [040] 이재명(여) + 윤석열·오세훈·국민의힘(야) 양쪽 등장 + 기록 대조. 주의: 이 대통령 주장(2022년 이후 인허가·착공 반토막)은 통계상 사실에 가깝다(서울 2023 인허가 -40.2%, 착공 -67.1%) — 나레이션에서 '거짓'으로 단정하지 말 것. clip start_sec/duration 은 단어 단위 VTT + _verify 프레임으로 문장 끝맺음까지 확정함(037).",
+  "slug": "20260918_lee_namtat_v2_2",
+  "title": "아직도 전 정권 탓",
+  "yt_title": "지지율 33% 추락, 아직도 '전 정권 탓' 이중잣대",
+  "yt_title_alt": "남 탓 비웃던 그 입으로, 다시 남 탓",
+  "persons": [
+    "이재명",
+    "윤석열",
+    "오세훈"
+  ],
+  "category": "political",
+  "subject_type": "politician",
+  "source_channel": "춘천MBC뉴스",
+  "source_title": "[자막] \"사는 집이 100억? 저도 상상이 안 갑니다\" 이재명 대통령, 집값 부동산 폭등 질문에 작심하고 쏟아낸 솔직 고백",
+  "youtube_url": "https://www.youtube.com/watch?v=1e5AzeYsq1s",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "broll",
+  "cta": {
+    "text": "집값 폭등, 누구 책임?\n① 이 정부  ② 전 정권",
+    "voice": "누구 책임일까요? 1번 이 정부, 2번 전 정권. 댓글로 알려주세요.",
+    "hl": [
+      "누구 책임"
+    ],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "mbc": {
+      "url": "https://www.youtube.com/watch?v=1e5AzeYsq1s",
+      "dur_max": 900,
+      "verify_frac": 0.41
+    },
+    "_broll_comment": "src_broll.mp4 는 mbc 소스의 320~380초 구간을 세로 70%로 크롭해 만든 파일(번인 자막 제거). TTS 씬 자막이 원본 번인 자막과 겹쳐 안 읽히는 문제 때문에 분리했다. 재생성: ffmpeg -ss 320 -t 60 -i src_mbc.mp4 -vf crop=iw:ih*0.70:0:0 -an src_broll.mp4",
+    "broll": {
+      "url": "https://www.youtube.com/watch?v=1e5AzeYsq1s",
+      "dur_max": 900,
+      "verify_frac": 0.5
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "mode": "tts",
+      "source": "broll",
+      "frac": 0.1,
+      "text": "9월 18일\n이재명 대통령 기자회견",
+      "voice": "9월 18일, 이재명 대통령 기자회견입니다."
+    },
+    {
+      "mode": "clip",
+      "source": "mbc",
+      "start_sec": 273.4,
+      "duration": 9.9,
+      "speaker": "이재명",
+      "_comment": "훅 — 집값 폭등의 '단기적 원인'으로 전 정권을 지목하는 대목. 문장 끝('...해이기도 하죠')에서 컷(037).",
+      "text": "\"2022년 윤석열 정권,\n오세훈 시장 당선된 해부터\"",
+      "hl": [
+        "윤석열 정권",
+        "오세훈"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "mbc",
+      "start_sec": 283.5,
+      "duration": 4.8,
+      "speaker": "이재명",
+      "text": "\"허가와 착공 건수가\n절반으로 줄었습니다\"",
+      "hl": [
+        "절반"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "mbc",
+      "start_sec": 289.7,
+      "duration": 9.2,
+      "speaker": "이재명",
+      "_comment": "[039/040] 같은 답변 안에서 남의 남 탓을 비웃는 대목 — '이중잣대'가 추론이 아니라 육성으로 성립한다. 문장 끝('...하더군요')에서 컷(037).",
+      "text": "그런데 같은 답변에선\n\"박원순 탓하는 분도…\"",
+      "hl": [
+        "같은 답변"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "broll",
+      "frac": 0.55,
+      "color": "red",
+      "highlight_category": "criticism",
+      "emph": true,
+      "text": "지지율 9주 연속 하락 33.8%\n부정평가 1위 이유는 부동산",
+      "voice": "지지율은 9주 연속 떨어져 33.8%, 부정평가는 처음 60%대를 넘었고, 1위 이유는 부동산이었습니다.",
+      "hl": [
+        "9주 연속",
+        "부동산"
+      ]
+    }
+  ]
+}

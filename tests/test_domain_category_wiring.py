@@ -115,8 +115,13 @@ class TestUploadPackageByCategory:
 
 class TestRendererDomainDefaults:
     def test_political_defaults_unchanged(self):
+        """배경색은 036 그대로. emotion 만 2026-09-18 지침으로 touching 이 됐다.
+
+        정치쇼츠 BGM 은 어두운 트랙만 쓴다(사용자 지시). 실제 강제는
+        `voice_config.DARK_BGM_FILES` 에서 하고, 이 기본값은 config 상의 표시다.
+        """
         from scripts.shorts_domain import resolve_bg_colors, resolve_emotion_type
-        assert resolve_emotion_type({}) == "angry"
+        assert resolve_emotion_type({}) == "touching"
         assert resolve_bg_colors({}) == ("#7f1d1d", "#450a0a", "#000000")
 
     def test_economic_defaults_differ(self):

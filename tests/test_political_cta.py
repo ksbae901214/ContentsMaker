@@ -5,9 +5,11 @@ import pytest
 
 from scripts.political_cta import (
     CTA_CLOSING, DEFAULT_CTA_AT_FRAC, apply_cta, build_cta_scene,
-    cta_insert_index, is_side_picking, lint_cta, lint_cta_closing,
-    scene_cta_closing_warnings, trailing_cta_warnings,
+    cta_insert_index, has_spoken_question, is_side_picking, lint_cta,
+    lint_cta_closing, lint_cta_question, scene_cta_closing_warnings,
+    trailing_cta_warnings,
 )
+from scripts.shorts_format import CTA_STYLE_SUBSCRIBE
 
 
 def cfg_with_cta(**over) -> dict:
@@ -117,6 +119,25 @@ class TestBuildCtaScene:
         assert sc["emph"] is True
         assert sc["color"] == "yellow"
 
+    def test_inherits_neighbor_subtitle_position(self):
+        """038 이후 CTA는 항상 마지막 씬이라 b-roll 이 방송 클립이다 —
+        이웃이 번인 자막을 피해 bottom 에 있으면 CTA도 같이 내려가야 한다."""
+        sc = build_cta_scene(
+            {"text": "t", "voice": "v"},
+            {"source": "a", "subtitle_position": "bottom"})
+        assert sc["subtitle_position"] == "bottom"
+
+    def test_explicit_subtitle_position_wins(self):
+        sc = build_cta_scene(
+            {"text": "t", "voice": "v", "subtitle_position": "bottom"},
+            {"source": "a"})
+        assert sc["subtitle_position"] == "bottom"
+
+    def test_subtitle_position_defaults_to_empty(self):
+        """미지정이면 빈 문자열 — 기존 config 동작(position_y 0.652) 유지."""
+        sc = build_cta_scene({"text": "t", "voice": "v"}, {"source": "a"})
+        assert sc["subtitle_position"] == ""
+
 
 # ── cfg 적용 (불변) ─────────────────────────────────────────────────
 class TestApplyCta:
@@ -190,7 +211,7 @@ class TestCtaClosing:
 
     def test_clean_cta_block_has_no_warning(self):
         cta = {"text": "누구 잘못?\n① A  ② B",
-               "voice": f"1번 A, 2번 B. {CTA_CLOSING}."}
+               "voice": f"누구 잘못일까요? 1번 A, 2번 B. {CTA_CLOSING}."}
         assert lint_cta(cta) == []
 
 
@@ -200,7 +221,7 @@ class TestSceneCtaClosingWarnings:
         cfg = {"scenes": [
             {"text": "정리", "voice": "결과는 109명 중 20명입니다."},
             {"text": "어느 쪽?\n① 결집이다  ② 고립이다",
-             "voice": "1번 결집, 2번 고립. 번호로 답글."},
+             "voice": "어느 쪽일까요? 1번 결집, 2번 고립. 번호로 답글."},
         ]}
         out = scene_cta_closing_warnings(cfg)
         assert len(out) == 1 and out[0].startswith("scene[1]")
@@ -208,7 +229,7 @@ class TestSceneCtaClosingWarnings:
     def test_scene_cta_with_polite_closing_passes(self):
         cfg = {"scenes": [
             {"text": "어느 쪽?\n① 결집이다  ② 고립이다",
-             "voice": f"1번 결집, 2번 고립. {CTA_CLOSING}."},
+             "voice": f"어느 쪽일까요? 1번 결집, 2번 고립. {CTA_CLOSING}."},
         ]}
         assert scene_cta_closing_warnings(cfg) == []
 
@@ -223,3 +244,79 @@ class TestSceneCtaClosingWarnings:
         """블록에서 삽입된 씬은 lint_cta 가 이미 본다 — 중복 경고 금지."""
         cfg = apply_cta(cfg_with_cta())
         assert scene_cta_closing_warnings(cfg) == []
+
+
+class TestCtaQuestionRead:
+    """CTA 나레이션이 질문까지 읽는지 (V2.1·V2.2 고정 지침, 사용자 지시 2026-09-17).
+
+    035는 4초 상한을 아끼려 "질문은 자막이 보여주니 나레이션에선 뺀다"였는데,
+    선택지 번호만 들리면 소리만 듣는 시청자는 무엇을 고르라는 건지 알 수 없다.
+    """
+
+    def test_options_only_narration_warns(self):
+        w = lint_cta_question("1번 조국, 2번 이준석. 댓글로 알려주세요.")
+        assert len(w) == 1
+        assert "질문을 안 읽" in w[0]
+
+    def test_question_mark_passes(self):
+        assert lint_cta_question(
+            "이건 누가 잘못한 걸까요? 1번 조국, 2번 이준석. 댓글로 알려주세요.") == []
+
+    def test_question_ending_without_mark_passes(self):
+        # 물음표를 안 찍어도 의문형 어미면 소리로는 질문이다
+        assert lint_cta_question("너무 약한가요 적당한가요 댓글로 알려주세요.") == []
+
+    def test_empty_voice_not_flagged(self):
+        assert lint_cta_question("") == []
+
+    def test_subscribe_style_exempt(self):
+        # 041 구독형 CTA는 질문이 아니라 부탁 — 면제
+        assert lint_cta_question("구독 부탁드립니다.", CTA_STYLE_SUBSCRIBE) == []
+
+    def test_has_spoken_question_detects_markers(self):
+        assert has_spoken_question("누가 맞을까요")
+        assert has_spoken_question("이게 맞나요")
+        assert not has_spoken_question("1번 조국, 2번 이준석.")
+
+    def test_lint_cta_reports_question(self):
+        w = lint_cta({"text": "이거 누구 잘못?\n① 조국  ② 이준석",
+                      "voice": "1번 조국, 2번 이준석. 댓글로 알려주세요."})
+        assert any("질문을 안 읽" in x for x in w)
+
+    def test_question_narration_fits_raised_cap(self):
+        # 질문을 붙이면 4초를 넘으므로 상한을 5초로 올렸다 — 표준 문구는 통과해야 한다
+        w = lint_cta({"text": "이거 누구 잘못?\n① 노인  ② 여성",
+                      "voice": "이건 누가 잘못한 걸까요? 1번 노인, 2번 여성. "
+                               "댓글로 알려주세요."})
+        assert w == [], w
+
+    def test_over_cap_still_warns(self):
+        w = lint_cta({"text": "① 가  ② 나",
+                      "voice": "이건 누가 잘못한 걸까요? " + "라" * 40
+                               + " 댓글로 알려주세요."})
+        assert any("이내로 짧게" in x for x in w)
+
+    def test_scene_written_cta_without_question_warns(self):
+        cfg = {"scenes": [
+            {"text": "이거 누구 잘못?\n① 노인  ② 여성",
+             "voice": "1번 노인, 2번 여성. 댓글로 알려주세요."}]}
+        w = scene_cta_closing_warnings(cfg)
+        assert any("질문을 안 읽" in x for x in w)
+
+    def test_scene_written_cta_with_question_passes(self):
+        cfg = {"scenes": [
+            {"text": "이거 누구 잘못?\n① 노인  ② 여성",
+             "voice": "이건 누가 잘못한 걸까요? 1번 노인, 2번 여성. "
+                      "댓글로 알려주세요."}]}
+        assert scene_cta_closing_warnings(cfg) == []
+
+    def test_cta_scene_inherits_highlight_category(self):
+        # BGM(emotion_type)만 바꾸려고 씬에서 강조색을 고정해 뒀는데 CTA만
+        # emotion 색으로 튀면 눈에 걸린다
+        scene = build_cta_scene({"text": "t", "voice": "v"},
+                                {"source": "a", "highlight_category": "criticism"})
+        assert scene["highlight_category"] == "criticism"
+
+    def test_cta_scene_highlight_category_defaults_neutral(self):
+        scene = build_cta_scene({"text": "t", "voice": "v"}, {"source": "a"})
+        assert scene["highlight_category"] == "neutral"

@@ -1,0 +1,118 @@
+{
+  "_comment": "김승원 인사청문회(2026-09-15) V2.1. 037 b-roll 검증 반영: park 은 0.62 이상만(그 이전은 이원석 청문회 과거 영상), kimsw(YTN)는 씬마다 빨간 번인 자막이 달라 발언 내용과 일치하는 372s 구간에서만 사용. 한동훈·민주당 김남희 씬은 깨끗한 footage 가 없어 제외했다.",
+  "slug": "20260915_kimsw_charyo_v2_1",
+  "title": "김승원 청문회 자료 미제출",
+  "yt_title": "\"자료 왜 안 내냐\"던 김승원, 내로남불 64.6%",
+  "yt_title_alt": "서로 \"내 자료 내놔\", 김승원·한동훈의 내로남불",
+  "persons": [
+    "김승원",
+    "박형수",
+    "한동훈"
+  ],
+  "category": "political",
+  "subject_type": "politician",
+  "source_channel": "연합뉴스TV·YTN",
+  "source_title": "김승원 법무부 장관 후보자 인사청문회",
+  "youtube_url": "https://www.youtube.com/watch?v=QXUBbnxOFgc",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "park",
+  "cta": {
+    "_comment": "[038] apply_cta 가 마지막 씬 뒤에 자동 삽입. [040] '누구 잘못'이 아니라 판정을 넘기는 질문.",
+    "text": "① 그때가 맞다\n② 지금이 맞다",
+    "voice": "1번 그때가 맞다, 2번 지금이 맞다. 댓글로 알려주세요.",
+    "hl": [
+      "그때",
+      "지금"
+    ],
+    "frac": 0.93,
+    "source": "park"
+  },
+  "sources": {
+    "park": {
+      "url": "https://www.youtube.com/watch?v=QXUBbnxOFgc",
+      "_note": "연합뉴스TV 281s — 박형수 '자료 미제출률 64.6%' / '과거 김승원이 오늘 김승원에게'",
+      "dur_max": 900,
+      "verify_frac": 0.35
+    },
+    "kwak": {
+      "url": "https://www.youtube.com/watch?v=Q5SgM6iDL8E",
+      "_note": "연합뉴스TV 98s — 곽규택 '음주운전 징계 약하다더니… 내로남불 대마왕'",
+      "dur_max": 900,
+      "verify_frac": 0.5
+    },
+    "kimsw": {
+      "url": "https://www.youtube.com/watch?v=EtfZAQT2JGg",
+      "_note": "YTN 청문회 원본 ③ 1582s — 김승원 본인 육성. 372.7~381.8s '검찰의 은밀한 내부 자료가 어떻게 한동훈 전 장관에게 흘러갔는지 반드시 밝혀야'",
+      "dur_max": 2400,
+      "verify_frac": 0.24
+    }
+  },
+  "hook": {
+    "source": "park",
+    "start_sec": 222.7,
+    "duration": 6.4,
+    "_comment": "박형수(국민의힘). VTT 실측 222.7~229.1 — 끝맺음까지 포함(037).",
+    "text": "\"이런 내로남불이\n어디 있습니까\"",
+    "hl": [
+      "내로남불"
+    ]
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "source": "park",
+      "frac": 0.63,
+      "text": "김승원 법무부 장관\n후보자 인사청문회",
+      "voice": "오늘 열린 김승원 법무부 장관 후보자 인사청문회입니다.",
+      "hl": [
+        "인사청문회"
+      ]
+    },
+    {
+      "source": "park",
+      "frac": 0.66,
+      "color": "white",
+      "text": "2024년 그는 야당 간사였다\n\"자료를 왜 안 내나\"",
+      "voice": "2024년 심우정 검찰총장 청문회. 법사위 야당 간사 김승원은 자료 미제출을 강하게 질타했습니다.",
+      "hl": [
+        "2024년",
+        "야당 간사"
+      ]
+    },
+    {
+      "source": "park",
+      "frac": 0.9,
+      "color": "red",
+      "emph": true,
+      "text": "2026년, 자리가 바뀌었다\n376건 중 243건 미제출",
+      "voice": "2026년 9월 15일, 이번엔 본인이 법무부 장관 후보자입니다. 국민의힘이 요구한 삼백일흔여섯 건 중 이백마흔세 건이 오지 않았습니다.",
+      "hl": [
+        "376건",
+        "243건"
+      ]
+    },
+    {
+      "source": "kwak",
+      "frac": 0.45,
+      "color": "white",
+      "text": "곽규택 \"변협엔 음주운전\n처벌 약하다더니\"",
+      "voice": "국민의힘 곽규택 의원은 본인의 음주운전 판결문 제출 거부를 두고 내로남불의 대마왕이라고 했습니다.",
+      "hl": [
+        "음주운전"
+      ]
+    },
+    {
+      "source": "kimsw",
+      "frac": 0.235,
+      "color": "blue",
+      "subtitle_position": "bottom",
+      "_comment": "040 대칭. YTN 번인 자막이 이 구간에서만 발언 내용과 일치한다(037).",
+      "text": "민주당 김승원 \"내부 자료가\n어떻게 한동훈에게 갔나\"",
+      "voice": "김승원 후보자도 역공했습니다. 당사자인 자신도 못 받은 검찰 내부 자료가 한동훈 의원에게 흘러간 경위를 밝히라는 겁니다.",
+      "hl": [
+        "한동훈"
+      ]
+    }
+  ]
+}

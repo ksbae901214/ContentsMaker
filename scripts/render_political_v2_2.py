@@ -8,6 +8,7 @@ V2.1 대비 변경점:
   1. scene 스키마에 `mode: "clip" | "tts"` (기본 tts) — clip 씬은 인물 실제 발언
      오디오(mute=False + loudnorm) + 발언 요지 노란 자막 하단 배치.
      scene 0은 clip 강제(훅). top-level `hook` 섹션은 없다(씬으로 통일).
+     예외: scenes[0]에 `"intro": true`(상황 설명 TTS)를 두면 훅이 scene 1로 내려간다.
   2. 오디오 타임라인 조립 일반화 — TTS는 tts 씬만 합성(voice_text 빈 클립 씬은
      생성기가 자동 제외) 후 씬별 세그먼트로 잘라 클립 길이만큼 무음을 사이사이
      배치(ffmpeg filter_complex adelay+amix) → 전 씬 global 타이밍 재계산.
@@ -34,6 +35,7 @@ from scripts.render_political_v2_1 import (
     COLORS, HOOK_MAX_SEC, HOOK_MIN_SEC,
     _probe_dur, _speed_audio,
     cmd_download as v21_cmd_download,
+    gate_intro_position, intro_offset, is_intro_scene,
     scale_timings, scene_type, src_path, work_dir,
 )
 from scripts.shorts_domain import resolve_bg_colors, resolve_emotion_type
@@ -74,8 +76,16 @@ def scene_mode(sc: dict) -> str:
     return sc.get("mode", "tts")
 
 
-def clip_max_sec(scene_idx: int) -> float:
-    return CLIP_HOOK_MAX_SEC if scene_idx == 0 else CLIP_BODY_MAX_SEC
+def first_clip_index(cfg: dict) -> int:
+    """훅(원본 육성) 씬의 인덱스. 인트로가 있으면 1, 없으면 0."""
+    for i, sc in enumerate(cfg.get("scenes") or []):
+        if scene_mode(sc) == "clip":
+            return i
+    return 0
+
+
+def clip_max_sec(scene_idx: int, hook_idx: int = 0) -> float:
+    return CLIP_HOOK_MAX_SEC if scene_idx == hook_idx else CLIP_BODY_MAX_SEC
 
 
 def resolve_clip_cut(sc: dict, source_dur: float,
@@ -102,6 +112,8 @@ def validate_config(cfg: dict) -> list[str]:
     for key in ("slug", "title", "sources", "scenes"):
         if key not in cfg:
             raise ValueError(f"config에 '{key}' 누락")
+    gate_intro_position(cfg)
+    hook_idx = first_clip_index(cfg)
     n_clip = n_tts = 0
     for i, sc in enumerate(cfg["scenes"]):
         mode = scene_mode(sc)
@@ -114,19 +126,29 @@ def validate_config(cfg: dict) -> list[str]:
         if mode == "clip":
             n_clip += 1
             dur = float(sc.get("duration", 3.0))
-            max_sec = clip_max_sec(i)
+            max_sec = clip_max_sec(i, hook_idx)
             if not (CLIP_MIN_SEC <= dur <= max_sec):
                 raise ValueError(
                     f"scene[{i}] duration {dur}s 범위 밖 "
                     f"(허용 {CLIP_MIN_SEC}~{max_sec}s — 발언 문장 완결 단위)")
-            if i > 0 and not sc.get("text"):
+            if i != hook_idx and not sc.get("text"):
                 raise ValueError(f"scene[{i}] clip 씬 text(발언 요지 자막) 누락")
         else:
-            n_tts += 1
+            # 인트로는 상황 설명이지 논평이 아니다 — 논평 권장 개수에서 제외한다
+            # (오디오 시간 잠식은 CLIP_RATIO_MIN 경고가 따로 본다).
+            if not is_intro_scene(sc):
+                n_tts += 1
             if not sc.get("voice"):
                 raise ValueError(f"scene[{i}] voice(나레이션) 비어있음")
-    if cfg["scenes"] and scene_mode(cfg["scenes"][0]) != "clip":
-        raise ValueError("scene[0]은 clip(원본 육성 훅)이어야 합니다")
+    # 훅은 맨 앞이어야 한다. 예외는 `intro` 상황 설명 씬 하나뿐 —
+    # 그 경우 훅이 scene[1] 로 내려간다 (사용자 지시 2026-09-15).
+    intro_n = intro_offset(cfg)
+    if cfg["scenes"] and (
+            intro_n >= len(cfg["scenes"])
+            or scene_mode(cfg["scenes"][intro_n]) != "clip"):
+        raise ValueError(
+            f"scene[{intro_n}]은 clip(원본 육성 훅)이어야 합니다"
+            + (" — 인트로 씬 바로 다음" if intro_n else ""))
     if n_tts == 0:
         raise ValueError("tts 논평 씬이 최소 1개 필요합니다 (채널 아이덴티티 보존)")
     # 034: 보도체·해시태그 제목은 렌더 전에 차단 (yt_title_lint: "off" 로 우회)
@@ -248,13 +270,14 @@ def _loudnorm_clip_audio(clip: Path) -> None:
 
 
 # ── 스크립트 구성 ──────────────────────────────────────────────────
-def _clip_scene(cfg: dict, i: int, sc: dict, dur: float) -> Scene:
+def _clip_scene(cfg: dict, i: int, sc: dict, dur: float,
+                is_hook: bool = True) -> Scene:
     text = sc.get("text") or cfg.get("yt_title") or cfg["title"]
     if sc.get("speaker"):
         text = f"[{sc['speaker']}]\n{text}"
     return Scene(
         id=i, timestamp=float(i), duration=dur,
-        type="title" if i == 0 else "body",
+        type="title" if is_hook else "body",
         text=text,
         voice_text="",  # TTS 없음 — 원본 발언 음성 재생
         emphasis="high",
@@ -262,9 +285,10 @@ def _clip_scene(cfg: dict, i: int, sc: dict, dur: float) -> Scene:
         visual_type="video",
         subtitle_color=sc.get("color", "yellow"),
         subtitle_emphasis=True,
-        hook=(i == 0),
+        hook=is_hook,
         # 육성 씬 자막은 인물을 가리지 않도록 영상 아래 배치 (기본 bottom)
         subtitle_position=sc.get("subtitle_position", "bottom"),
+        highlight_category=sc.get("highlight_category", "neutral"),
     )
 
 
@@ -283,15 +307,20 @@ def _tts_scene(i: int, sc: dict) -> Scene:
         # 방송 번인 자막(로어서드)과 겹칠 때 "bottom" 으로 레터박스 아래 배치.
         # 미지정("")이면 기존 동작(position_y 0.652) 유지.
         subtitle_position=sc.get("subtitle_position", ""),
+        # 강조어 색을 emotion 에서 떼어 낸다 — BGM(emotion_type)만 바꾸고 싶을 때
+        # 자막색이 딸려 바뀌는 것을 막는다. 미지정 "neutral" = 기존 동작.
+        highlight_category=sc.get("highlight_category", "neutral"),
     )
 
 
 def build_script(cfg: dict, clip_durs: dict[int, float]) -> ShortsScript:
     """clip_durs: 클립 씬 index → 실측 컷 길이(초)."""
+    hook_idx = first_clip_index(cfg)
     scenes, parts = [], []
     for i, sc in enumerate(cfg["scenes"]):
         if scene_mode(sc) == "clip":
-            scenes.append(_clip_scene(cfg, i, sc, clip_durs.get(i, 3.0)))
+            scenes.append(_clip_scene(cfg, i, sc, clip_durs.get(i, 3.0),
+                                      is_hook=(i == hook_idx)))
         else:
             scenes.append(_tts_scene(i, sc))
             parts.append(sc["voice"])
@@ -334,7 +363,8 @@ def cmd_download(cfg: dict, force: bool) -> int:
         if not src.exists():
             print(f"⚠️ clip scene[{i}] 소스 '{sc['source']}' 없음 — 프리뷰 생략", flush=True)
             continue
-        start, dur = resolve_clip_cut(sc, _probe_dur(src), clip_max_sec(i))
+        start, dur = resolve_clip_cut(sc, _probe_dur(src),
+                                      clip_max_sec(i, first_clip_index(cfg)))
         preview = verify_dir / f"clip_{i:02d}.mp4"
         cut_segment(input_path=src, output_path=preview,
                     start_sec=start, end_sec=start + dur, mute=False)
@@ -347,6 +377,7 @@ def cmd_download(cfg: dict, force: bool) -> int:
 
 # ── 2단계: TTS → 타임라인 조립 → 씬 컷 → 렌더 → 업로드 패키지 ─────
 def _resolve_clip_cuts(cfg: dict, wd: Path) -> dict[int, tuple[float, float]]:
+    hook_idx = first_clip_index(cfg)
     cuts = {}
     for i, sc in enumerate(cfg["scenes"]):
         if scene_mode(sc) != "clip":
@@ -355,7 +386,7 @@ def _resolve_clip_cuts(cfg: dict, wd: Path) -> dict[int, tuple[float, float]]:
         if not src.exists():
             raise FileNotFoundError(
                 f"clip scene[{i}] 소스 '{sc['source']}' 없음 — download 먼저 실행")
-        cuts[i] = resolve_clip_cut(sc, _probe_dur(src), clip_max_sec(i))
+        cuts[i] = resolve_clip_cut(sc, _probe_dur(src), clip_max_sec(i, hook_idx))
     return cuts
 
 

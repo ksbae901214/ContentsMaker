@@ -1,0 +1,217 @@
+{
+  "_comment": "김승원 법무부 장관 후보자 인물 프로필 — V3.0(profile_v3) 1호. 039 증폭기: 같은 인물 1호 kimsw_jeongwa_girok(음주운전 전과)가 3,486회로 밴드를 뚫었고, 2호 singyakrobi·3호 oppagate가 이어졌다. 이 편은 사건이 아니라 '그래서 이 사람 누구인가'를 답하는 후속이다. 청문회 D-1(9/15 개최) 타이밍.",
+  "format": "profile_v3",
+  "category": "political",
+  "slug": "20260914_kimsw_inmul_profile_v3",
+  "person": "김승원",
+  "person_title": "법무부 장관 후보자",
+  "headline": [
+    "법무장관 후보 김승원",
+    "청와대 행정관 출신?"
+  ],
+  "_headline_comment": "1열 사실(현 직함) / 2열 질문형 훅. 2열은 개각 발표 공식 프로필에 명시된 이력(대통령비서실 정무수석실 행정관)이라 팩트 근거가 있다. 각 10·11자 — 12자 상한 이내.",
+  "title": "김승원은 누구인가",
+  "yt_title": "청와대 행정관에서 법무장관 후보까지",
+  "yt_title_alt": "내일 청문회, 김승원은 어떤 사람인가",
+  "_yt_title_comment": "18자. 034 보도체·해시태그 게이트 통과(명사 종결). 인물 프로필이라 035 결과어가 없어 경고가 뜰 수 있으나 소재 성격상 정상.",
+  "persons": [
+    "김승원"
+  ],
+  "hashtags": [
+    "#김승원",
+    "#법무부장관",
+    "#인사청문회",
+    "#검찰개혁"
+  ],
+  "subject_type": "politician",
+  "emotion_type": "relatable",
+  "_emotion_type_comment": "036 BGM. 인물 소개는 단죄가 아니라 사실 전달이다 — angry 를 쓰면 규탄으로 읽힌다. 1~3호(angry)와 톤을 일부러 다르게 간다.",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "李, 집권 2년 차 6개 부처 개각…재경·법무 등 후보자 지명 (공식 프로필 라인)",
+      "url": "https://search.naver.com/search.naver?where=news&query=%EA%B9%80%EC%8A%B9%EC%9B%90+%EA%B0%9C%EA%B0%81+%ED%94%84%EB%A1%9C%ED%95%84",
+      "outlet": "개각 발표 보도",
+      "_facts": "△1969년생, 경기 수원 △수성고 △서울대 공법학과 △사법연수원 28기 △수원지방법원 판사 △대통령비서실 정무수석실 행정관 △제21·22대 더불어민주당 국회의원 △현 국회 법제사법위원회 간사"
+    },
+    {
+      "title": "용혜인 아니다…국민의힘이 장관 지명 '철회 0순위'로 꼽은 후보자",
+      "url": "https://search.naver.com/search.naver?where=news&query=%EA%B9%80%EC%8A%B9%EC%9B%90+%EC%88%98%EC%9B%90%EA%B0%91+%EB%8B%B9%EC%84%A0",
+      "outlet": "뉴스 검색",
+      "_facts": "2020년 제21대 총선에서 경기 수원갑에 출마해 국회의원이 됐으며 22대 국회에서도 같은 지역구에서 당선됐다."
+    },
+    {
+      "title": "'龍 사퇴' 청문 정국 최대 뇌관 '김승원'",
+      "url": "https://search.naver.com/search.naver?where=news&query=%EA%B9%80%EC%8A%B9%EC%9B%90+%EB%B2%95%EC%82%AC%EC%9C%84+%EA%B0%84%EC%82%AC+%EA%B2%80%EC%B0%B0%EA%B0%9C%ED%98%81",
+      "outlet": "뉴스 검색",
+      "_facts": "김 후보자는 국회 법사위 간사로 검찰개혁 관련 입법을 주도해온 인사다."
+    },
+    {
+      "title": "청문회 D-1 김승원 \"30년 법조 경험 잘 쓰여지길\"",
+      "url": "https://search.naver.com/search.naver?where=news&query=%EA%B9%80%EC%8A%B9%EC%9B%90+30%EB%85%84+%EB%B2%95%EC%A1%B0+%EA%B2%BD%ED%97%98",
+      "outlet": "뉴스 검색",
+      "_facts": "본인 발언 — 청문회 준비단 출근길. 청문회는 9월 15일."
+    },
+    {
+      "title": "[특별기획] 청와대 행정관 출신 국회의원 인재풀",
+      "url": "https://search.naver.com/search.naver?where=news&query=%EC%B2%AD%EC%99%80%EB%8C%80+%ED%96%89%EC%A0%95%EA%B4%80+%EC%B6%9C%EC%8B%A0+%EA%B5%AD%ED%9A%8C%EC%9D%98%EC%9B%90+%ED%95%9C%EC%A4%80%ED%98%B8+%EA%B9%80%EC%8A%B9%EC%9B%90",
+      "outlet": "뉴스 검색",
+      "_facts": "청와대 행정관 출신 가운데 한준호·김승원·박상혁·문정복·이원택 등이 금배지를 달았다."
+    }
+  ],
+  "_fact_comment": "나무위키 미사용(코드가 차단). 나레이션의 모든 이력은 위 _facts 에 있는 문장에만 근거한다. **여성의당·주진우 의원 등이 제기한 성범죄 변호 이력·가족 협동조합 의혹은 의도적으로 제외** — 미확정 주장이고 인물 프로필에서 단정하면 명예훼손 노출이 커진다. 진행 중인 신약 청탁 의혹도 '의혹이 제기됐다'는 사실만 도입에서 스치고 본문에서 다루지 않는다(지침 §1-6).",
+  "source_channel": "JTBC News · KBS News · YTN · 장윤선의 취재편의점",
+  "cta_style": "subscribe",
+  "cta": {
+    "text": "더 궁금하다면?\n댓글 + 구독",
+    "voice": "더 알고 싶은 인물은 댓글로 남겨주세요.",
+    "hl": [
+      "댓글",
+      "구독"
+    ],
+    "source": "jtbc",
+    "frac": 0.0836
+  },
+  "sources": {
+    "jtbc": {
+      "url": "https://www.youtube.com/watch?v=756DYx-_jc8",
+      "dur_max": 400,
+      "verify_frac": 0.3,
+      "channel": "JTBC News",
+      "_확인": "263s (2026-09-14) 출근길 문답 풀영상 — 훅용 본인 육성 후보"
+    },
+    "kbs": {
+      "url": "https://www.youtube.com/watch?v=PSDxKnMDSPM",
+      "dur_max": 200,
+      "verify_frac": 0.35,
+      "channel": "KBS News",
+      "_확인": "120s (2026-09-14) 출근길 고성 리포트"
+    },
+    "ytn": {
+      "url": "https://www.youtube.com/watch?v=1kJlDpYCqyc",
+      "dur_max": 250,
+      "verify_frac": 0.3,
+      "channel": "YTN",
+      "_확인": "155s 법무장관 후보 지명 보도 — 프로필 그래픽 기대"
+    },
+    "talk": {
+      "url": "https://www.youtube.com/watch?v=gGmSLwiH4c4",
+      "dur_max": 600,
+      "verify_frac": 0.4,
+      "channel": "장윤선의 취재편의점",
+      "_확인": "502s 법사위 간사 인터뷰 — 앉아서 말하는 컷"
+    },
+    "_확인_own_제외": "김승원TV aTcmC47KZbQ 는 2022년 기자회견이라 전원 마스크 착용 + 수어통역사가 화면 1/3 + 연단 인물이 김승원인지 프레임으로 식별 불가 → 제외(지침 §2-5). 본인 채널이라 오귀속 위험은 0이지만 '화면에 누가 나오는지 모르는' 문제가 그대로 남는다."
+  },
+  "person_photos": [],
+  "scenes": [
+    {
+      "color": "white",
+      "emph": false,
+      "source": "kbs",
+      "frac": 0.008,
+      "subtitle_position": "bottom",
+      "_comment": "[지침 §1-6] 도입 — 지금 화제인 이유만. 의혹의 세부는 다루지 않는다.",
+      "text": "내일 인사청문회\n여야 최대 격전지",
+      "voice": "내일, 김승원 법무부 장관 후보자의 인사청문회가 열립니다.",
+      "hl": [
+        "인사청문회"
+      ],
+      "_배경확인": "KBS 1s — '14일 오전, 서울 종로구 적선현대빌딩 / 김승원 법무부 장관 후보자 출근길' 캡션"
+    },
+    {
+      "color": "white",
+      "emph": false,
+      "source": "kbs",
+      "frac": 0.269,
+      "subtitle_position": "bottom",
+      "_comment": "본문 시작 — 여기서부터는 이력·배경만.",
+      "text": "1969년 수원 출생\n서울대 공법학과",
+      "voice": "천구백육십구년 수원에서 태어나, 서울대 공법학과와 사법연수원 이십팔기를 거쳤습니다.",
+      "hl": [
+        "수원",
+        "공법학과"
+      ],
+      "_배경확인": "KBS 32s — 마이크 앞 정면 클로즈업, 번인 자막 없음"
+    },
+    {
+      "color": "yellow",
+      "emph": true,
+      "source": "talk",
+      "frac": 0.0996,
+      "subtitle_position": "bottom",
+      "text": "첫 자리는\n수원지방법원 판사",
+      "voice": "첫 자리는 수원지방법원 판사. 법복을 벗은 뒤엔 수원에서 변호사로 일했습니다.",
+      "hl": [
+        "판사"
+      ],
+      "_배경확인": "장윤선 50s — 김승원 정면, 하단 번인 자막 띠가 아직 안 뜬 구간(75s부터 '공소기각 요건 추가 프레임?' 상시 노출)"
+    },
+    {
+      "color": "yellow",
+      "emph": true,
+      "source": "ytn",
+      "frac": 0.2645,
+      "subtitle_position": "bottom",
+      "_comment": "2열 헤드라인 훅('청와대 행정관 출신?')의 답이 나오는 씬.",
+      "text": "정치의 문은\n청와대에서 열렸다",
+      "voice": "정치의 문은 청와대에서 열렸습니다. 대통령비서실 정무수석실 행정관을 지냈습니다.",
+      "hl": [
+        "청와대"
+      ],
+      "_배경확인": "YTN 41s — 공식 프로필 그래픽(40~49s): 김승원(1969년생)/서울대 공법학과/법사위 간사/더불어민주당 국회의원/**대통령비서실 정무수석실 행정관**/수원지방법원 판사. 헤드라인 2열 훅의 답이 화면에 그대로 있다."
+    },
+    {
+      "color": "white",
+      "emph": false,
+      "source": "jtbc",
+      "frac": 0.0418,
+      "subtitle_position": "bottom",
+      "text": "2020년 수원갑 당선\n22대까지 재선",
+      "voice": "이천이십년 수원갑에서 당선돼, 이십이대까지 재선했습니다.",
+      "hl": [
+        "수원갑",
+        "재선"
+      ],
+      "_배경확인": "JTBC 11s — 정면 답변(66s 이후는 기자 뒷모습이라 부적합)"
+    },
+    {
+      "color": "red",
+      "emph": true,
+      "source": "talk",
+      "frac": 0.0498,
+      "subtitle_position": "bottom",
+      "text": "법사위 간사\n검찰개혁 입법 주도",
+      "voice": "국회에서는 법사위 간사를 맡아 검찰개혁 입법을 주도했습니다.",
+      "hl": [
+        "검찰개혁"
+      ],
+      "_배경확인": "장윤선 25s — 김승원+진행자, 번인 자막 없음. 법사위 간사 인터뷰라 주제 일치"
+    },
+    {
+      "color": "white",
+      "emph": false,
+      "source": "jtbc",
+      "frac": 0.1255,
+      "subtitle_position": "bottom",
+      "_comment": "훅이 본인 육성('모든 경험이 잘 쓰여지기를 원합니다')이라, 여기서 같은 발언을 다시 서술하면 중복이다 — 판정만 내일로 넘기고 닫는다.",
+      "text": "그 평가는\n내일 가려진다",
+      "voice": "그 경험이 어떻게 평가될지는, 내일 가려집니다.",
+      "hl": [
+        "내일"
+      ],
+      "_배경확인": "JTBC 33s — 정면 답변 중"
+    }
+  ],
+  "hook": {
+    "source": "jtbc",
+    "start_sec": 48.8,
+    "duration": 8.0,
+    "text": "\"모든 경험이\n잘 쓰여지기를 원합니다\"",
+    "hl": [
+      "모든 경험이"
+    ],
+    "subtitle_position": "bottom",
+    "_확인": "JTBC 756DYx-_jc8 48.80~56.80s. 자동자막 단어 단위로 문장 끝('원합니다.' 55.64~56.92)을 잡고, 다음 문장 첫 단어('위해서' 56.92)가 물리지 않도록 56.8에서 끊었다(037). 현장이 시끄러워 silencedetect 로는 경계가 안 잡힌다. 8.0s 라 CLIP_MAX_SEC 6s 경고가 뜨지만 263초 영상의 3%이고 당사자 본인 발언 인용이라 목적성이 명확하다."
+  }
+}

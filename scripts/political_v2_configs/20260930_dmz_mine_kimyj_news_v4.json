@@ -1,0 +1,148 @@
+{
+  "_comment": "V4.0 기획 초안 (2026-09-30) — 기사: 연합뉴스 001/0016345980 '軍 北 국경선요새화 즉시 중단해야…사과와 책임있는조치 촉구' (댓글 223). 앵글: 김여정 '자작극' 주장 vs 현장 증거(추가 지뢰·유엔사 판단). 040 대칭: 국내 공방은 한 씬에 여야를 같은 잣대로. 사진 미수집 — photos-sheet 전.",
+  "format": "news_v4",
+  "slug": "20260930_dmz_mine_kimyj_news_v4",
+  "category": "political",
+  "subject_type": "institution",
+  "headline": [
+    "장병 3명 다쳤는데",
+    "김여정 \"자작극\""
+  ],
+  "tag": "김여정 담화 vs 유엔사",
+  "title": "자작극이라더니 유엔사 판단은 정전협정 위반",
+  "yt_title": "김여정 '자작극'이라더니… 유엔사 판단은 정전협정 위반",
+  "yt_title_alt": "장병 3명 다쳤는데 '자작극'이라는 김여정",
+  "persons": [
+    "김여정"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "軍 \"北 국경선요새화 즉시 중단해야…사과와 책임있는조치 촉구\"",
+      "url": "https://n.news.naver.com/mnews/article/001/0016345980",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "김여정, 'DMZ 北지뢰' 軍 발표 전면부인…\"반격수단 증강\"(종합)",
+      "url": "https://n.news.naver.com/mnews/article/001/0016345604",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "유엔사도 DMZ 북한 지뢰 폭발 사고 '정전협정 위반' 판단",
+      "url": "https://n.news.naver.com/mnews/article/421/0009199758",
+      "outlet": "뉴스1"
+    },
+    {
+      "title": "\"대북정책 文어게인\"·\"음모론이 안보 흔들어\"…지뢰사고 공방(종합)",
+      "url": "https://n.news.naver.com/mnews/article/001/0016345129",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "강신철 지뢰폭발 \"지연 은폐 아니지만… 언론대응 부족 있었다\" 시인",
+      "url": "https://n.news.naver.com/mnews/article/006/0000137971",
+      "outlet": "미디어오늘"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/01_hoist.jpg",
+      "credit": "합동참모본부",
+      "_comment": "9/28 합참 공개 호이스트(환자결속) — 연합 001/0016345980. 상처·혈흔 없음 확인"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/02_kimyj.jpg",
+      "credit": "조선중앙TV",
+      "_comment": "연합 001/0016345604 — '국내에서만 사용가능·재배포 금지'"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/03_kimyj_article.png",
+      "credit": "연합뉴스",
+      "fit": "contain",
+      "_comment": "연합 001/0016345604 화면 캡처(머리+자작극 인용 문단)"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/04_mine_found.jpg",
+      "credit": "합동참모본부",
+      "_comment": "9/29 추가 발견 북한 수지 반보병지뢰"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/05_mine_report.jpg",
+      "credit": "연합뉴스",
+      "_comment": "국방위 회의장 현장조사 보고서"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/06_unc_survey.jpg",
+      "credit": "합동참모본부",
+      "_comment": "9/26 군·유엔사 DMZ 현장조사 준비 — 연합 001/0016341078"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/07_jcs_briefing.jpg",
+      "credit": "연합뉴스",
+      "_comment": "9/30 강현우 합참 작전본부장 입장 발표"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/08_defense_committee.jpg",
+      "credit": "연합뉴스",
+      "_comment": "9/29 국방위 전경(강신철·진영승)"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/09_defense_committee_map.jpg",
+      "credit": "뉴시스",
+      "_comment": "9/29 국방위 전체회의 지도 — 뉴시스 003/0014221632"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/10_defense_minister.jpg",
+      "credit": "연합뉴스",
+      "_comment": "9/29 강신철 국방장관 현황 보고"
+    },
+    {
+      "path": "data/political_pro/20260930_dmz_mine_kimyj_news_v4/photos/11_minister_jcs_chief.jpg",
+      "credit": "뉴스1",
+      "_comment": "9/29 국방위 강신철·진영승 — 뉴스1(009/0005741604 게재)"
+    }
+  ],
+  "cta": {
+    "text": "①사과·책임 요구\nVS ②확성기 재개",
+    "voice": "어떻게 할까요? 1번 사과 요구, 2번 확성기 재개. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "비무장지대 수색 작전 중 지뢰 두 발이 터져, 우리 장병 3명이 크게 다쳤습니다.",
+      "hl": [
+        "3명"
+      ]
+    },
+    {
+      "voice": "김여정 노동당 총무부장은 담화를 내고, 목함지뢰 사건 같은 서울의 명백한 자작극이라고 주장했습니다.",
+      "hl": [
+        "자작극"
+      ]
+    },
+    {
+      "voice": "하지만 현장조사에선 군사분계선 남쪽에서 북한 대인지뢰가 추가로 나왔고, 유엔사도 정전협정 위반으로 판단했습니다.",
+      "hl": [
+        "유엔사"
+      ]
+    },
+    {
+      "voice": "합참은 사고 9일 만에 첫 공식 입장을 내고, 북한의 사과와 책임 있는 조치를 촉구했습니다.",
+      "hl": [
+        "사과"
+      ]
+    },
+    {
+      "voice": "국회에선 여야가 함께 북한을 규탄하고도, 확성기 재개 등 문구를 놓고 부딪혀 결의문 채택은 불발됐습니다.",
+      "hl": [
+        "불발"
+      ]
+    }
+  ],
+  "hashtags": [
+    "#김여정",
+    "#DMZ지뢰",
+    "#유엔사",
+    "#합참"
+  ]
+}

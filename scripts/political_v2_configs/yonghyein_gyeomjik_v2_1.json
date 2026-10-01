@@ -1,0 +1,63 @@
+{
+  "_comment": "용혜인 겸직 논란 편 (2026-08-31) V2.1. 이재명정부 2기내각 성평등가족부 장관 후보자로 지명된 용혜인 기본소득당 의원이, 청문회 통과 시에도 비례대표 의원직을 사퇴하지 않고 겸직하기로 함 — 역대 비례대표 입각 시 의석을 승계자에게 넘기던 관례를 깬 결정. 안철수(귀족행세·자폭카드)·한동훈(특정진영 대변인·지명철회) 비판은 전부 SNS/페이스북 게시글이라 원본 육성이 없어 TTS로 인용(관행: 037 앵커 리포트 인용과 동일 처리). 훅=채널A 국회 출근길 현장영상에서 겸직 논란 질문에 그가 스스로 '별도로 말씀드리겠다'며 즉답을 피한 실제 육성(ASR 'ㅈ대'는 '저희 당'으로 표기 보정, download 시 재확인 필요). source_channel/title은 hook 소스 기준.",
+  "category": "political",
+  "slug": "20260831_yonghyein_gyeomjik_v2_1",
+  "title": "용혜인 장관 겸직 논란",
+  "yt_title": "용혜인, 장관 되고도 배지는 그대로?",
+  "yt_title_alt": "이재명도 놀랄 용혜인의 결정",
+  "_yt_title_comment": "결과가 난 사건 프레임 — '관례를 깨고 겸직을 강행하기로 결정'이 결과에 해당(035). 공방형 클래시 단어 없음, 논란/공방 등 보도체 금칙어 미포함 — validate 통과 확인.",
+  "persons": ["용혜인", "이재명"],
+  "hashtags": ["용혜인", "의원겸직", "성평등가족부장관", "이재명2기내각"],
+  "source_channel": "채널A 뉴스",
+  "source_title": "'의원 겸직' 논란 속 용혜인 성평등장관 후보자, 국회 출근길 현장",
+  "youtube_url": "https://www.youtube.com/watch?v=xBWlW4RUcTs",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "briefing",
+  "cta": {
+    "text": "이 겸직, 어떻게 보세요?\n① 상관없다  ② 관례 파괴",
+    "voice": "상관없나요, 관례 파괴인가요? 댓글로 알려주세요.",
+    "hl": ["관례 파괴"],
+    "source": "briefing",
+    "frac": 0.1
+  },
+  "hook": {
+    "source": "doorstep",
+    "start_sec": 7.05,
+    "duration": 3.4,
+    "text": "\"저희 당 대변인들과 논의해서\n별도로 말씀드리겠습니다\"",
+    "hl": ["별도로"],
+    "_comment": "채널A 국회 출근길 현장영상 0:07.05~0:10.45 — 기자가 장관 지명 소감을 묻자 그가 답한 실제 발언. 직후(0:10.7~) 기자가 '의원직 겸직 논란 관련해서도 한 말씀' 이라 재질문하지만 답변은 캡션에 잡히지 않음(영상이 동일 문답을 반복하며 끝남) — 겸직 질문에 대한 직접 답변으로 오인 표기하지 말 것, 문맥상 '겸직 관련해서도 별도로 답하겠다'는 취지로만 사용. 경계는 자동자막뿐 아니라 ffmpeg silencedetect(-30dB)로 재검증 — 7.04s 앞 무음 종료 직후 시작, 10.29~10.53s 무음 구간 안에서 종료(다음 기자 질문 발화 전).",
+    "subtitle_position": "bottom"
+  },
+  "sources": {
+    "doorstep": { "url": "https://www.youtube.com/watch?v=xBWlW4RUcTs", "dur_max": 60, "verify_frac": 0.16 },
+    "briefing": { "url": "https://www.youtube.com/watch?v=jFMJ8pbImdY", "dur_max": 900, "verify_frac": 0.011 },
+    "airport": { "url": "https://www.youtube.com/watch?v=7BIVuwNFLQg", "dur_max": 200, "verify_frac": 0.15 }
+  },
+  "scenes": [
+    { "type": "body", "color": "yellow", "emph": true, "source": "briefing", "frac": 0.02,
+      "text": "이재명, 용혜인 장관 지명\n장관 되어도 의원직 유지",
+      "voice": "이재명 대통령이 용혜인 의원을 성평등가족부 장관 후보로 지명했습니다. 그런데 장관이 되어도 의원직은 내려놓지 않기로 했습니다.",
+      "hl": ["의원직 유지"] },
+    { "type": "body", "color": "white", "emph": false, "source": "doorstep", "frac": 0.3,
+      "text": "비례대표가 입각하면\n의석은 승계자에게 갔다",
+      "voice": "그동안 비례대표 의원이 장관이 되면 의원직을 내려놓고, 다음 순번에게 의석을 넘기는 게 관례였습니다.",
+      "hl": ["관례"] },
+    { "type": "body", "color": "red", "emph": false, "source": "airport", "frac": 0.15,
+      "_comment": "2023-03 SBS 단독보도(안희재 기자) 기반 — 제주 가족여행 중 김포공항 귀빈실 이용. 귀빈실은 공무 목적만 가능하고 부모는 대상자가 아닌데도 이용, '몰랐다' 해명 후 이용료 5만5천원 사후 납부. 그의 원본 육성 사과 클립은 못 찾아 TTS 인용.",
+      "text": "2023년엔 가족여행에\n공항 귀빈실도 썼다",
+      "voice": "이번이 처음도 아닙니다. 2023년엔 가족 여행을 가면서, 국회의원만 쓸 수 있는 공항 귀빈실을 부모님까지 데리고 이용했다가 논란이 됐습니다.",
+      "hl": ["공항 귀빈실"] },
+    { "type": "body", "color": "red", "emph": true, "source": "briefing", "frac": 0.06,
+      "_comment": "안철수(페이스북, 8/31)·한동훈(SNS/기자 배포문) 비판 — 원본 육성 없어 TTS 인용, 배경은 개각 발표 영상 재사용.",
+      "text": "안철수 \"귀족 행세\"\n한동훈 \"지명 철회해야\"",
+      "voice": "안철수 의원은 '귀족 행세'라고 적었고, 한동훈 의원도 지명 철회를 요구했습니다.",
+      "hl": ["귀족 행세", "지명 철회"] },
+    { "type": "body", "color": "white", "emph": false, "source": "doorstep", "frac": 0.6,
+      "_comment": "마지막 씬은 팩트 정리로 닫는다 — 댓글 유도는 cta 블록으로 분리.",
+      "text": "법적으론 겸직 가능\n그래서 더 시끄럽다",
+      "voice": "법적으로는 겸직이 가능합니다. 하지만 관례를 깬 결정이라 논란은 가라앉지 않고 있습니다.",
+      "hl": ["관례를 깬"] }
+  ]
+}

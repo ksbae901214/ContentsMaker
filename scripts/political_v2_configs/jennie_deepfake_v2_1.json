@@ -1,0 +1,50 @@
+{
+  "_comment": "연예 V2.1 (2026-08-27, 3차 수정 - 실제 공연 영상 배경). 팩트/안전 근거는 _v2_2와 동일 파일 참고. hook = 포크뉴스(MBN) 앵커 육성 '제니 소속사는 무관용 대응을 예고했습니다.'(037 단어단위, _sub/fork.ko.vtt), 배경은 공식입장문 텍스트(안전). 사용자 지시(2026-08-27)로 본문 씬 배경을 서머소닉 실제 공연 와이드샷으로 교체 - 사용자 확인 기준 '상체 보이는 장면도 허용'. perf_2/9/17.png로 사전 확인(전신·그룹댄스·와이드샷, 클로즈업 아님).",
+  "category": "entertainment",
+  "slug": "20260827_jennie_deepfake_v2_1",
+  "title": "제니 노출 영상, AI 딥페이크로 확인",
+  "yt_title": "반나절 만에 터진 제니 딥페이크",
+  "yt_title_alt": "1250만이 본 제니 영상의 정체",
+  "persons": ["제니"],
+  "source_channel": "MBN (포크뉴스)",
+  "source_title": "제니 노출 영상 확산에 '법적 대응'…소속사 \"합의·선처 없다\" [포크뉴스]",
+  "youtube_url": "https://www.youtube.com/watch?v=37dzs2Eei3M",
+  "emotion_type": "angry",
+  "bg_colors": ["#7f1d1d", "#450a0a", "#000000"],
+  "tts_speed": 1.1,
+  "fallback_source": "fork",
+  "hook": {
+    "source": "fork",
+    "start_sec": 41.0,
+    "duration": 3.0,
+    "_comment": "037 확정: '제니 소속사는 무관용 대응을 예고했습니다.' 다음 단어 'OA' 44.08 직전 컷. 배경 = 공식입장문 텍스트 화면(안전).",
+    "text": "제니 소속사\n\"무관용 대응 예고\"",
+    "hl": ["무관용"],
+    "subtitle_position": "bottom"
+  },
+  "cta": {
+    "text": "이런 딥페이크 영상 보면\n어떻게 하실 건가요?\n① 바로 신고  ② 그냥 넘어간다",
+    "voice": "바로 신고, 그냥 넘어간다. 댓글로 알려주세요.",
+    "hl": ["바로 신고"]
+  },
+  "sources": {
+    "fork": { "url": "https://www.youtube.com/watch?v=37dzs2Eei3M", "dur_max": 200, "verify_frac": 0.62 }
+  },
+  "scenes": [
+    { "type": "body", "color": "white", "emph": false, "source": "fork", "frac": 0.03,
+      "_comment": "배경 frac=0.03→약 2초, 서머소닉 무대 등장 와이드샷(전신, perf_2.png 확인).",
+      "text": "반나절 만에\n조회수 1,250만",
+      "voice": "지난 14일 일본 서머소닉 무대 직후 확산된 이 영상은 반나절 만에 조회수 1,250만을 넘겼습니다. 하지만 확인 결과, AI로 조작된 허위 영상물이었습니다.",
+      "hl": ["1,250만", "AI로 조작된"] },
+    { "type": "body", "color": "red", "emph": true, "source": "fork", "frac": 0.13,
+      "_comment": "배경 frac=0.13→약 9초, 그룹 댄스 와이드샷(perf_9.png 확인).",
+      "text": "\"합의나 선처도 없다\"\n소속사, 법적 조치 예고",
+      "voice": "소속사는 공식 입장을 통해 사진과 영상을 악의적으로 편집해 유포하는 행위가 계속 확인되고 있다며 법적 조치를 예고했습니다. 합의나 선처도 없을 것이라고 못 박았습니다.",
+      "hl": ["합의나 선처도 없다"] },
+    { "type": "body", "color": "yellow", "emph": true, "source": "fork", "frac": 0.25,
+      "_comment": "배경 frac=0.25→약 17초, 솔로 무대 미디엄샷(perf_17.png 확인, 클로즈업 아님).",
+      "text": "계정은 정지됐고\n최대 징역 7년",
+      "voice": "영상을 처음 올린 계정은 이후 정지됐습니다. 허위 영상물 유포는 최대 징역 7년, 벌금 5천만 원까지 처벌받을 수 있습니다.",
+      "hl": ["징역 7년"] }
+  ]
+}

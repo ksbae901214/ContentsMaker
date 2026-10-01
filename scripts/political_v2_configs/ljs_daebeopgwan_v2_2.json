@@ -1,0 +1,41 @@
+{
+  "_comment": "V2.1과 동일 소재. 실제 육성 클립이 없어(이준석=페이스북 글, 이용우=확인 가능한 영상 없음) 사용자 결정(2026-08-21)으로 V2.2도 이미지 캐처+TTS로 강행 — clip 씬의 mute=False 오디오 추출을 역이용해, 기사 캡처 팬 영상에 인용문 TTS 낭독(edge-tts)을 오디오 트랙으로 미리 심어 넣은 소스(src_ljs.mp4/src_lyw.mp4, 각 인용문 길이에 맞춤)를 '클립'으로 사용한다. 기존 V2.2(실제 육성 릴레이) 관례와는 다른 예외 케이스 — 클립 오디오 비중이 낮다는 경고가 뜨는 게 정상(클립이 짧은 인용문 낭독이라 실제 발언 클립보다 짧음).",
+  "slug": "ljs_daebeopgwan_v2_2",
+  "title": "대법관 인사, 이준석 vs 민주당",
+  "yt_title": "피고인이 대법관을 고른다고?",
+  "yt_title_alt": "이준석 한마디에 민주당 발끈",
+  "persons": ["이준석", "이용우", "조희대"],
+  "source_channel": "문화일보 · 채널A (기사 캡처 + TTS 낭독)",
+  "source_title": "이준석 페이스북 발언 · 민주당 이용우 대변인 브리핑 반박",
+  "youtube_url": "",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "ljs",
+  "cta": {
+    "text": "이 논리, 누가 맞다고 보세요?\n① 이준석  ② 민주당",
+    "voice": "1번 이준석, 2번 민주당. 댓글로 알려주세요.",
+    "hl": ["누가 맞다"],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "ljs": { "url": "https://n.news.naver.com/article/021/0002812493", "verify_frac": 0.1,
+             "_comment": "문화일보 캡처 + 인용문 TTS 낭독 mux (사전 배치됨, 길이=낭독 오디오 길이)" },
+    "lyw": { "url": "https://n.news.naver.com/mnews/article/449/0000357549", "verify_frac": 0.1,
+             "_comment": "채널A 캡처 + 인용문 TTS 낭독 mux (사전 배치됨, 길이=낭독 오디오 길이)" }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "ljs", "start_sec": 0.0, "duration": 4.7,
+      "speaker": "이준석",
+      "text": "\"어떤 형사 피고인이\n감히 자신을 재판할\n대법관을 고르냐\"",
+      "hl": ["피고인", "대법관"] },
+    { "mode": "clip", "source": "lyw", "start_sec": 0.0, "duration": 3.6,
+      "speaker": "이용우",
+      "text": "\"조희대 대법원장의\n하수인인가\"",
+      "hl": ["하수인"] },
+    { "mode": "tts", "source": "ljs", "frac": 0.35, "color": "white", "emph": false,
+      "_comment": "[035] 마지막 씬은 팩트 정리로 닫는다 — 댓글 유도는 cta 블록으로 분리. V2.2 tts 씬 권장 상한(1~2개) 준수 위해 배경+결론을 한 씬에 압축.",
+      "text": "조희대 서면 통보가 발단\n대법관 임기는 6년",
+      "voice": "발단은 조희대 대법원장의 서면 통보입니다. 이재명 대통령도 다섯 건의 재판 피고인이라, 임기 6년짜리 대법관이 그 재판을 맡게 된다는 논리입니다.",
+      "hl": ["서면", "6년"] }
+  ]
+}

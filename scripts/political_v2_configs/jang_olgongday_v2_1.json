@@ -1,0 +1,128 @@
+{
+  "_comment": "장동혁 '올공데이' 동원령 → 국힘 의원 80% 불참 (2026-08-15 광복절 올림픽공원) — V2.1 TTS 브리핑형(틱톡용, 034 플랫폼 분리). 훅은 V2.2(장동혁 '막아내야 되지 않겠습니까?')와 겹치지 않게 신동욱 최고위원의 '함께 싸우겠습니다' 결의 육성으로 분리 — 결의 육성 직후 TTS가 '정작 89명은 안 왔다'로 받아 아이러니를 만든다. [사용자 지시 2026-08-14 관행] 댓글 CTA는 맨 마지막 씬에 직접 배치 → top-level cta 블록 미사용, pinned_comment 명시. render 시 trailing_cta 경고 1줄은 의도된 동작.",
+  "slug": "20260818_jang_olgongday_v2_1",
+  "title": "동원령 내렸는데, 결국 20명",
+  "yt_title": "장동혁 '올공데이', 끝내 89명 불참",
+  "yt_title_alt": "함께 싸우겠다더니, 결국 20명만 왔다",
+  "_yt_title_comment": "[035] 결과 프레임 — '끝내'(결과어) 보유. 공방어 미사용. [034] 보도체 어미 없음(명사 종결) · 해시태그 0 · 실명 앵커 '장동혁' 포함, 20자. V2.2와 다른 제목을 써 같은 주제 중복 노출을 줄인다.",
+  "persons": [
+    "장동혁",
+    "정점식",
+    "신동욱"
+  ],
+  "category": "political",
+  "source_channel": "JTBC 뉴스·신통방통",
+  "source_title": "광복절 '올공' 집회 간 장동혁 / 국힘 의원 80% 불참 (2026-08-15~16)",
+  "youtube_url": "https://www.youtube.com/watch?v=ABzbb_Ki43Y",
+  "emotion_type": "angry",
+  "_emotion_type_comment": "BGM 스위치 — 동원·규탄 대립 소재라 angry 명시 (카테고리 기본값을 물려받지 않는다).",
+  "tts_speed": 1.1,
+  "fallback_source": "jtbc",
+  "pinned_comment": "광복절 올림픽공원 '참정권 침해' 항의 집회에 모인 인원은 경찰 추산 1,800명, 국민의힘 의원은 109명 중 장동혁 대표를 포함해 20명이 참석했습니다. 정점식 원내대표 등 원내지도부는 \"우리는 역할이 따로 있다\"며 불참했고, 당 지도부는 \"당 차원에서 참석을 요청한 적 없다\"고 선을 그었습니다. 장 대표는 이튿날 페이스북에 \"올공데이는 계속될 것\"이라고 적었습니다. 장동혁 대표의 장외집회, 어느 쪽으로 보세요? ① 결집이다 ② 고립이다 — 번호로 답글 남겨주세요 👇",
+  "hook": {
+    "source": "sintong",
+    "start_sec": 340.4,
+    "duration": 3.9,
+    "_start_sec_comment": "RMS 엔벨로프 실측 — 340.4~340.6 국소 저점에서 시작, '싸우겠습니다' 뒤 344.3~344.5 디지털 무음(-120dB, 편집점)에서 종료. 연설 구간이라 군중 소음으로 바닥이 높아 silencedetect(-25dB)로는 잡히지 않는다. 최초 5.2초는 끝에 1.2초 데드 사운드를 물고 있었다.",
+    "_choice_comment": "V2.2 훅(장동혁 육성)과 분리. 결의에 찬 육성을 먼저 들려주고 씬1 TTS가 '89명은 안 왔다'로 받는 배치 — 훅 단독 세기는 장동혁이 위지만, 같은 날 두 편을 올리므로 중복을 피한다.",
+    "text": "\"그날까지 여러분과 함께\n싸우겠습니다\"",
+    "hl": [
+      "싸우겠습니다"
+    ],
+    "subtitle_position": "bottom"
+  },
+  "sources": {
+    "sintong": {
+      "url": "https://www.youtube.com/watch?v=H2PnXWmB5yA",
+      "_comment": "신통방통 864s — 신동욱 최고위원 연설 육성(훅), 진행자 '20% 참석 80% 불참', 최창열 교수 논평",
+      "dur_max": 2400,
+      "verify_frac": 0.4
+    },
+    "jtbc": {
+      "url": "https://www.youtube.com/watch?v=ABzbb_Ki43Y",
+      "_comment": "JTBC '지금 이 뉴스' 126s — 태극기 행진·무대 등단·이승만 목걸이·집회 구호 화면. 당초 잡았던 b2N5p--NBww는 실제 5,604s 라이브 아카이브라 교체(자막 타임스탬프는 동일).",
+      "dur_max": 300,
+      "verify_frac": 0.3
+    }
+  },
+  "scenes": [
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "jtbc",
+      "frac": 0.012,
+      "_frac_comment": "배경(mute) — 1.9~9 대형 태극기 행진 후 무대 등단. ⚠️ V2.1 본문 씬은 start_sec을 읽지 않고 frac만 쓴다(render_political_v2_1.py:414) — start_sec을 쓰면 조용히 기본값 frac 0.4로 떨어져 씬들이 같은 화면이 된다. jtbc 125.6s 기준 1.5s.",
+      "text": "광복절 올림픽공원\n이승만 목걸이에 대형 태극기",
+      "voice": "광복절 저녁 올림픽공원. 장동혁 대표가 이승만 목걸이를 걸고 대형 태극기를 흔들었습니다.",
+      "hl": [
+        "광복절",
+        "태극기"
+      ],
+      "subtitle_position": "bottom",
+      "_subtitle_position_comment": "소스가 방송 리포트라 화면 하단에 번인 자막이 상시 깔린다 — 기본값(중앙)이면 우리 자막이 그 위에 겹쳐 둘 다 못 읽는다. 레터박스로 내린다."
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "jtbc",
+      "frac": 0.167,
+      "_frac_comment": "배경(mute) — 21.2~ 이승만 사진 목걸이 착용 장면 (jtbc 125.6s 기준 21.0s).",
+      "text": "\"지역에선 호응이 적다\"\n당내 \"사실상 동원령\"",
+      "voice": "사흘 전 장 대표가 지역 호응이 적다고 하자, 당내에선 사실상 동원령이란 말이 돌았습니다.",
+      "hl": [
+        "동원령"
+      ],
+      "subtitle_position": "bottom",
+      "_subtitle_position_comment": "소스가 방송 리포트라 화면 하단에 번인 자막이 상시 깔린다 — 기본값(중앙)이면 우리 자막이 그 위에 겹쳐 둘 다 못 읽는다. 레터박스로 내린다."
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "sintong",
+      "frac": 0.25,
+      "text": "의원 109명 중 20명\n원내지도부는 전원 불참",
+      "voice": "결과는 109명 중 20명. 정점식 원내대표를 비롯한 원내지도부는 우리는 역할이 따로 있다며 가지 않았습니다.",
+      "hl": [
+        "20명",
+        "불참"
+      ],
+      "subtitle_position": "bottom",
+      "_subtitle_position_comment": "소스가 방송 리포트라 화면 하단에 번인 자막이 상시 깔린다 — 기본값(중앙)이면 우리 자막이 그 위에 겹쳐 둘 다 못 읽는다. 레터박스로 내린다."
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "jtbc",
+      "frac": 0.569,
+      "_frac_comment": "배경(mute) — 71.9~86 부정선거·재선거 구호 + 원내지도부 불참 리포트 화면 (jtbc 125.6s 기준 71.5s).",
+      "_comment": "팩트 정리 — 집회 규모와 당의 공식 입장, 그리고 그럼에도 계속하겠다는 대표의 말로 닫는다.",
+      "text": "경찰 추산 1,800명\n\"올공데이는 계속\"",
+      "voice": "모인 인원은 경찰 추산 천팔백 명. 당은 요청한 적 없다고 선을 그었지만, 장 대표는 올공데이는 계속된다고 적었습니다.",
+      "hl": [
+        "1,800명",
+        "계속"
+      ],
+      "subtitle_position": "bottom",
+      "_subtitle_position_comment": "소스가 방송 리포트라 화면 하단에 번인 자막이 상시 깔린다 — 기본값(중앙)이면 우리 자막이 그 위에 겹쳐 둘 다 못 읽는다. 레터박스로 내린다."
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "sintong",
+      "frac": 0.55,
+      "_comment": "[사용자 지시 2026-08-14] 댓글 CTA를 맨 마지막에 배치. top-level cta 블록(40% 자동삽입) 미사용.",
+      "text": "장동혁의 장외집회, 어느 쪽?\n① 결집이다  ② 고립이다",
+      "voice": "1번 결집, 2번 고립. 번호로 답글.",
+      "hl": [
+        "어느 쪽"
+      ],
+      "subtitle_position": "bottom",
+      "_subtitle_position_comment": "소스가 방송 리포트라 화면 하단에 번인 자막이 상시 깔린다 — 기본값(중앙)이면 우리 자막이 그 위에 겹쳐 둘 다 못 읽는다. 레터박스로 내린다."
+    }
+  ]
+}

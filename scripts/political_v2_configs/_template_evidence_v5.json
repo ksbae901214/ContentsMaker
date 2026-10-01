@@ -1,0 +1,67 @@
+{
+  "_comment": "쇼츠 V5.0 증거 삽입형 TTS 논평 템플릿 (render_evidence_v5.py 전용, 043). 벤치마크 틱톡 @lkbhop(폴리버스) 504편 전수 + 상위 10편 분석. 여성 TTS 가 논평을 끌고 원본 육성·캡처를 증거로 끼워 모순을 터뜨린다. [차단] format=evidence_v5 / fact_sources 필수(우회 fact_gate='off') / 나무위키 금지 / clip 씬 text·duration(1~10s 훅, 12s 본문) / evidence 마커 좌표 0~1 / 034 보도체 제목 / 036 도메인 금지어 / 최종 70초 캡. [경고] 증거 0개 / 헤드라인 2줄·줄당 14자 / 55초 미만(권장 60~66초) / yt_title_alt·hashtags·영상출처 누락 / 035·038 CTA 규칙 / 039 돌파 조건 / 040 편성 비중. [면제] 040 진영 대칭(한쪽 공격 허용, 사용자 확정 2026-10-01) · 인트로. 효과음 없음(029), BGM 은 정치 어두운 트랙 고정.",
+  "format": "evidence_v5",
+  "slug": "20261001_example_evidence_v5",
+  "category": "political",
+
+  "headline": ["밤새 선거무효 외쳤는데", "이기니까 조용?"],
+  "headline_colors": ["#FFE14D", "#3FE0F0"],
+  "_headline_comment": "상단 검정 띠 2줄 투톤(기본 노랑/시안 — 순서를 바꾸려면 headline_colors). 1줄 = 사실(무엇), 2줄 = 질문/폭로('?'/'!'). 줄당 14자 이내. 2줄은 영상 상단에 걸쳐 겹친다.",
+
+  "title": "밤새 선거무효 외치더니",
+  "yt_title": "밤새 선거무효 외치더니 이기자 침묵",
+  "yt_title_alt": "이기니까 입 닫은 선거무효 소송 전말",
+  "hashtags": ["#선거무효", "#내로남불", "#정치쇼츠"],
+  "_packaging_comment": "완료 블록 = 자극적 제목 A/B + 3줄요약 + 해시태그 (042 규격 재사용). 공포·충격·호기심 톤, 명사로 닫기 — 034 보도체 게이트(~했다 어미 금지)는 그대로.",
+  "persons": ["인물명"],
+  "subject_type": "politician",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+
+  "source_label": "",
+  "channel_label": "",
+  "_label_comment": "source_label 을 비우면 sources[*].channel 을 모아 우상단에 '영상출처: A, B' 로 자동 표기한다. channel_label 은 좌상단 채널 로고 문구(선택).",
+
+  "fact_sources": [
+    { "title": "기사 제목", "url": "https://n.news.naver.com/mnews/article/...", "outlet": "OO일보" }
+  ],
+  "_fact_comment": "한쪽 진영 공격을 허용하는 대가 — 금액·날짜·판결·발언 요지는 전부 여기 있는 실제 기사에 있어야 한다. 조롱(은유·반문)은 허용, 지어낸 사실은 불가.",
+
+  "sources": {
+    "claim": { "url": "https://www.youtube.com/watch?v=...", "channel": "MBC",
+               "_comment": "과거 발언 육성 (증거 1)" },
+    "result": { "query": "개표 결과 당선 확정 뉴스", "channel": "JTBC",
+                "_comment": "TTS 씬 B-roll (음소거)" }
+  },
+
+  "scenes": [
+    { "mode": "clip", "source": "claim", "start_sec": 12.0, "duration": 4.0,
+      "text": "당연히 선거 무효 사유입니다", "pop": "선거 무효!",
+      "_comment": "[0~3초 훅] 결정적 한 줄 — 육성·숫자·황당 발언 그대로. 37: 말 끝맺음까지 컷. pop = 씬 첫머리 초대형 강조어(1.8초)." },
+    { "mode": "tts", "source": "result", "frac": 0.2,
+      "voice": "밤새 선관위 위원장실까지 쳐들어가며 선거가 오염됐다고 외쳤던 사람들.",
+      "hl": ["오염"],
+      "_comment": "[3~12초 상황] '~했는데' 기대 세팅. 자막은 나레이션 원문을 12자 단위로 자동 분할." },
+    { "mode": "tts", "source": "result", "frac": 0.5,
+      "voice": "그런데 새벽 사이 막판 대역전극으로 자기 당 후보가 당선돼 버린 겁니다.",
+      "_comment": "[12~30초 사실] 금액·날짜·장소를 구체적으로." },
+    { "mode": "tts", "source": "result", "frac": 0.7, "flash": true,
+      "voice": "자, 이제 어떡합니까? 밤새 외쳤던 오염된 선거인데 이기니까 갑자기 조용해졌습니다.",
+      "evidence": { "image": "data/political_pro/20261001_example_evidence_v5/evidence/01_post.png",
+                    "marks": [ { "kind": "underline", "x": 0.08, "y": 0.62, "w": 0.55, "h": 0.05 },
+                               { "kind": "circle", "x": 0.62, "y": 0.08, "w": 0.32, "h": 0.30 } ] },
+      "_comment": "[~30초 반전] 반전 신호어 + flash(흰 번쩍임, 효과음 없음). evidence = 캡처 카드(SNS 글·업로드 날짜·판결문). marks 좌표는 이미지 기준 0~1 (x,y = 왼쪽 위, w,h = 크기)." },
+    { "mode": "clip", "source": "claim", "start_sec": 30.0, "duration": 3.5,
+      "text": "재선거를 실시해야 합니다",
+      "_comment": "[30~50초 증거] 과거 발언을 한 번 더 — 상위작은 같은 육성을 반전 뒤에 다시 튼다." },
+    { "mode": "tts", "source": "result", "frac": 0.85,
+      "voice": "화장실 들어갈 때랑 나올 때가 이렇게 달라서야 되겠습니까?",
+      "_comment": "[50~60초 펀치라인] 조롱 은유·반문. 사실 주장 금지 구간." }
+  ],
+
+  "cta": {
+    "voice": "말 바꾸기일까요? 1번 말 바꾸기, 2번 현실 반영. 댓글로 알려주세요.",
+    "text": "① 말 바꾸기\n② 현실 반영",
+    "_comment": "[끝] 채널 지침 그대로 — 질문 문장 + 선택지 + '댓글로 알려주세요', 5초(약 41자) 상한, 마지막 씬에 자동 삽입."
+  }
+}

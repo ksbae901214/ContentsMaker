@@ -1,0 +1,58 @@
+{
+  "_comment": "쇼츠 V4.0 사진 슬라이드 뉴스 카드 템플릿 (render_news_v4.py 전용, 042). 벤치마크 @gokorea012 '영화 암살자들 한동훈 직격탄'. 영상 클립 0개 — 사진이 3.4초 고정 타이머로 넘어가고 전 구간 TTS, BGM 없음(코드 고정). [차단] format=news_v4 / 정치 전용 / photos[*].credit 필수 / fact_sources 필수(우회 fact_gate='off') / 나무위키 금지 / 034 보도체 제목 / 036 도메인 금지어. [경고] 사진 4장 미만 / 헤드라인 2줄·줄당 12자 / tag 누락 / 035~040 공통(CTA 질문+'댓글로 알려주세요', 진영 대칭, 돌파 조건). [면제] 인트로(육성 훅이 없어 첫 문장이 곧 상황 설명). 길이는 기준 없음 — 62초 하드 캡만 유지.",
+  "format": "news_v4",
+  "slug": "20260930_example_news_v4",
+  "category": "political",
+
+  "headline": ["영화 암살자들", "한동훈 직격탄"],
+  "_headline_comment": "2줄 투톤(1열 딥 차콜 / 2열 레드), 배민 도현체. 1열 = 소재(무엇), 2열 = 인물 + 명사형 동작('직격탄'·'쓴소리'). V3.0 과 달리 질문형일 필요 없다. 줄당 12자 이내.",
+
+  "tag": "페이스북 직격 비판",
+  "_tag_comment": "사진 박스 우상단 검정 배지. 출처 유형 + 앵글 한 줄 — 시청자가 '어디서 나온 말인지'를 첫 프레임에 안다.",
+
+  "title": "영화 암살자들 한동훈 직격탄",
+  "yt_title": "영화 암살자들 한동훈 직격탄",
+  "yt_title_alt": "5.18이 북한 소행이었다면? 한동훈이 꺼낸 반문",
+  "hashtags": ["#한동훈", "#암살자들", "#역사왜곡", "#표현의자유"],
+  "_packaging_comment": "[V4.0 완료 블록 규격, 사용자 지시 2026-09-30] 렌더가 끝나면 **자극적 제목 A/B + 3줄요약 + 해시태그**를 한 블록으로 출력하고 채팅엔 그 블록을 그대로 인용한다. yt_title(A)·yt_title_alt(B)는 공포·충격·호기심 톤으로 두 안 — 034 보도체 게이트(~했다 어미 금지, 명사로 닫기)는 그대로. hashtags 는 인물+사건 키워드 3~4개를 직접 적는다(미지정이면 persons 로 1~2개만 붙어 경고).",
+  "persons": ["한동훈"],
+  "emotion_type": "touching",
+  "_emotion_comment": "BGM 은 V4.0 에서 코드로 꺼져 있어 emotion_type 은 표시용일 뿐이다.",
+  "tts_speed": 1.1,
+
+  "fact_sources": [
+    { "title": "한동훈 페이스북 원문", "url": "https://www.facebook.com/..." },
+    { "title": "한동훈 \"영화 암살자들 비판받아 마땅\"", "url": "https://n.news.naver.com/mnews/article/...", "outlet": "OO일보" }
+  ],
+  "_fact_comment": "나레이션 100% 가 채널 자신의 서술이다 — 모든 사실·수치·발언 요지는 여기 있는 실제 기사·원문에 있어야 한다. 발언은 간접화법('~라며', '~고 직격했습니다')으로 옮기고, 원문에 없는 표현을 따옴표로 넣지 않는다.",
+
+  "photos": [
+    { "path": "data/political_pro/20260930_example_news_v4/photos/01_hdh_poster.jpg", "credit": "연합뉴스", "fit": "cover",
+      "_comment": "photos[0] = 첫 문장(사건 요약) 끝까지 유지되는 대표 컷. 인물 + 소재(포스터 등) 합성이면 벤치마크와 같다. 중간에 다시 나오지 않는다." },
+    { "path": "data/political_pro/20260930_example_news_v4/photos/02_facebook.png", "credit": "한동훈 페이스북", "fit": "contain",
+      "_comment": "원문 캡처(SNS·기사)는 fit=contain — 잘리지 않고 흰 캔버스 위에 놓이며 줌도 약하게 걸린다." },
+    { "path": "data/political_pro/20260930_example_news_v4/photos/03_walk.jpg", "credit": "뉴스1" },
+    { "path": "data/political_pro/20260930_example_news_v4/photos/04_interview.jpg", "credit": "뉴스1" },
+    { "path": "data/political_pro/20260930_example_news_v4/photos/05_briefing.jpg", "credit": "이데일리" },
+    { "path": "data/political_pro/20260930_example_news_v4/photos/06_plenary.jpg", "credit": "연합뉴스" }
+  ],
+  "_photos_comment": "네이버 뉴스 기사 사진 / 네이버 검색 이미지에서 캡처. 2번째부터 3.4초마다 넘어가고, 모자라면 photos[1:] 을 다시 돈다(경고). 특정 컷만 길게 두려면 \"dur\": 4.5 (초). credit 은 하단 출처 줄 '출처 : A · B · C' 로 자동 조립된다 — 표기는 이용 허락이 아니므로 당사자 SNS·공식 사진을 먼저 쓴다. 렌더 전 `photos-sheet` 로 인물 본인이 맞는지 확인할 것.",
+
+  "cta": {
+    "_comment": "우리 규칙 그대로 — 질문을 읽고 선택지를 읽고 '댓글로 알려주세요'로 닫는다(5초 상한). 화면은 벤치마크처럼 빨강 2줄 'A / VS B'.",
+    "text": "①역사 왜곡 비판 타당\nVS ②표현의 자유",
+    "voice": "어느 쪽일까요? 1번 비판 타당, 2번 표현의 자유. 댓글로 알려주세요.",
+    "color": "red"
+  },
+
+  "scenes": [
+    { "_comment": "①사건 — 한 문장으로 무슨 일인지. 숫자 하나를 넣는다(벤치마크: 130만).",
+      "voice": "육영수 여사 피격 사건을 다룬 영화 암살자들이 관객 130만 명을 돌파하며 역사 왜곡 논란에 휩싸였습니다.",
+      "hl": ["논란"] },
+    { "_comment": "②인물 + 매체 + 동사 — 전제('사전검열엔 반대한다는')를 먼저 깔면 비판이 공정해 보인다.",
+      "voice": "사전검열에는 반대한다는 한동훈 무소속 의원이 페이스북을 통해 쓴소리를 날렸습니다.",
+      "hl": ["한동훈"] },
+    { "_comment": "③발언 인용(간접화법) — 원문의 가장 센 문장. 벤치마크는 양 진영 가정을 나란히 놓아 한 편 안에서 대칭(040)이 된다.",
+      "voice": "만약 5.18이 북한 소행이라는 영화나 세월호 참사가 민주당 소행이라는 영화가 개봉됐다면 정말 많이 비판받았을 것이라며, 이 영화 역시 비판받아 마땅하다고 직격했습니다." }
+  ]
+}

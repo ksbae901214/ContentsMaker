@@ -1,0 +1,80 @@
+{
+  "_comment": "배우 하영(본명 안하영) 증조부 안상호 친일 행적 논란 (2026-08-07~13). [기획 원칙] 하영 개인을 단죄하지 않는다 — 확인된 사실 타임라인 + 양측 반론을 다 넣고 판단은 CTA로 시청자에게 넘긴다. '친일파'로 단정하지 않고 '친일 단체 명단 등재'라는 확인된 사실로만 말한다(명예훼손 방어선). [저작권] 036 연예 카테고리는 방송 클립 저작권 위험이 가장 크다 — KBS2 '옥탑방의 문제아들' 원본 대신 **뉴스 리포트에 인용된 화면**을 소스로 쓰고, 인용은 4~6초로 제한하며 출처를 화면·설명란에 명시할 것. [필수] start_sec/duration은 전부 잠정값 — download 후 _verify/clip_NN.mp4 청음으로 문장 완결을 확인하고 확정할 것.",
+  "category": "entertainment",
+  "slug": "20260813_hayoung_jeungjobu_v2_2",
+  "title": "자랑에서 사과까지, 닷새",
+  "yt_title": "하영, 하루 만에 뒤집힌 '사실무근'",
+  "yt_title_alt": "자랑에서 사과까지, 하영의 닷새",
+  "_yt_title_comment": "결과어 '만에'·'뒤집' 포함(035 결과형 프레임). 034 보도체 게이트를 피하려고 명사로 닫았다. '친일파 후손 손절' 같은 단죄형 제목은 명예훼손·여론재판 위험이 커 쓰지 않는다.",
+  "persons": ["하영", "안상호"],
+  "hashtags": ["#하영", "#안상호", "#친일논란", "#연좌제"],
+  "source_channel": "YTN / 연합뉴스TV",
+  "source_title": "배우 하영 '4대 의사 집안' 발언에…증조부 친일 논란 / \"이토 히로부미까지\" 추가 행적",
+  "youtube_url": "https://www.youtube.com/watch?v=IULt7Ca4R8g",
+  "emotion_type": "relatable",
+  "_emotion_type_comment": "[2026-08-13 교정] 이 값은 사실상 BGM 스위치다 — 배경색(bg_colors)·자막색(씬 color)은 따로 지정되므로 화면은 안 바뀌고 BGM만 바뀐다. 최초 렌더(20260813_134717)는 연예 카테고리 기본값 'funny'를 물려받아 funny_2.mp3(코믹 BGM)로 나갔고, 마지막 TTS 논평 구간에서 소재와 어긋났다. 사실 전달·중립 검증 톤이므로 relatable이 맞다. **배포된 영상은 재렌더하지 않았으므로 파일과 이 값이 다르다** — 다시 렌더하면 BGM이 relatable로 바뀐다.",
+  "tts_speed": 1.1,
+  "fallback_source": "news",
+  "_cta_comment": "[사용자 지정 2026-08-13] CTA를 40% 자동 삽입이 아니라 **맨 마지막 씬**에 둔다. top-level `cta` 블록은 구조상 마지막 씬 뒤에 삽입하지 않으므로(035 말미 CTA 회귀 방지) 블록을 쓰지 않고 scenes 끝에 tts 씬으로 직접 넣었다. 035 실측(최근 18편 댓글율 0.24%)은 말미 CTA가 도달되지 않는다는 근거였으므로, 이 편은 그 반례 검증용이다 — 성과 비교 후 40% 복귀 여부를 판단할 것.",
+  "pinned_comment": "조상의 잘못, 후손 책임은 어디까지일까요? ① 사과로 충분  ② 더 있다 — 번호로 답글 👇",
+  "sources": {
+    "okmoon": {
+      "_comment": "YTN '파묘' 리포트(152s, IULt7Ca4R8g). 하영 육성이 29~46초에 **뉴스에 인용된 형태**로 들어 있다 — KBS 예능 원본을 직접 쓰지 않아 저작권 노출이 한 겹 낮다.",
+      "url": "https://www.youtube.com/watch?v=IULt7Ca4R8g",
+      "dur_max": 900, "verify_frac": 0.2
+    },
+    "mfr": {
+      "_comment": "YTN '이토 히로부미까지' 리포트(167s, H_4rhtjah3o). 방학진 민족문제연구소 사무처장 인용 + **신중론(반론)** + 소속사 번복까지 한 리포트에 다 있어 씬 3개를 여기서 뽑는다(구간이 달라 프레임 반복 아님).",
+      "url": "https://www.youtube.com/watch?v=H_4rhtjah3o",
+      "dur_max": 1200, "verify_frac": 0.4
+    },
+    "news": {
+      "_comment": "YTN 공식 사과 리포트(38s, FcAkCxTZTyA). 마지막 TTS 씬 배경용.",
+      "url": "https://www.youtube.com/watch?v=FcAkCxTZTyA",
+      "dur_max": 900, "verify_frac": 0.35
+    }
+  },
+  "scenes": [
+    {
+      "_comment": "[실측 확정] 하영 육성. 28.2~35.9s = 음량 포락선 저점 사이의 완결 문장(-98dB / -122dB). 자막은 실제 발언과 일치시킬 것 — '고종 황제 진료'는 이 클립의 음성에 없다.",
+      "mode": "clip", "source": "okmoon", "start_sec": 28.2, "duration": 7.7,
+      "speaker": "하영",
+      "text": "\"증조할아버지부터\n의사를 하셨다고 들었어\"",
+      "hl": ["증조할아버지부터"]
+    },
+    {
+      "_comment": "[실측 확정] 5.0~9.3s (저점 -69dB / -76dB). 방학진 민족문제연구소 사무처장 주장을 전한 YTN 기자 나레이션이라 speaker 라벨은 붙이지 않는다.",
+      "mode": "clip", "source": "mfr", "start_sec": 5.0, "duration": 4.3,
+      "text": "이토 히로부미 추도 모임에도\n이름을 올렸다",
+      "hl": ["이토 히로부미"]
+    },
+    {
+      "_comment": "[실측 확정] 88.1~96.1s (끝 -270dB 디지털 무음). **반론 씬** — 이 씬이 빠지면 단죄 콘텐츠가 되고 명예훼손 위험이 올라간다. 개인 이슈 채널 대신 YTN 리포트 안의 신중론을 쓴다.",
+      "mode": "clip", "source": "mfr", "start_sec": 88.1, "duration": 8.0,
+      "text": "\"친일인명사전엔 미등재\"\n신중론도 제기",
+      "hl": ["신중론"]
+    },
+    {
+      "_comment": "[실측 확정] 121.5~129.2s (시작 -270dB 디지털 무음). 결과 비트 — 부인에서 번복까지.",
+      "mode": "clip", "source": "mfr", "start_sec": 121.5, "duration": 7.7,
+      "text": "\"사실무근\"이라던 소속사\n하루 만에 번복",
+      "hl": ["하루 만에", "번복"]
+    },
+    {
+      "mode": "tts", "source": "news", "frac": 0.6, "color": "yellow", "emph": true,
+      "subtitle_position": "bottom",
+      "_comment": "팩트 정리. 확인된 사실만 — 광고 중단·웹예능 미공개는 보도로 확인됨. '친일파'로 단정하지 않는다. 길이 캡 때문에 짧게 유지(클립 4개가 27.7s를 쓴다). [실측] news 소스(연합뉴스TV)는 화면이 세로로 커서 TTS 씬 기본 자막 위치(중앙 하단)가 방송 번인 자막과 겹친다 → bottom(레터박스) 강제.",
+      "text": "광고 중단\n웹예능도 미공개",
+      "voice": "광고는 내려갔고, 촬영을 마친 웹예능도 결국 미공개로 결정됐습니다.",
+      "hl": ["미공개"]
+    },
+    {
+      "mode": "tts", "source": "news", "frac": 0.75, "color": "yellow", "emph": true,
+      "subtitle_position": "bottom",
+      "_comment": "[사용자 지정] 맨 마지막 CTA. 여론이 실제로 반으로 갈린 쟁점이라 억지 선택지가 아니다(연좌제 반대 vs 조상 미화는 문제). 나레이션 4초(약 32자) 이내 유지.",
+      "text": "조상의 잘못, 후손 책임은?\n① 사과로 충분  ② 더 있다",
+      "voice": "후손 책임 어디까지? 1번 사과로 충분, 2번 더 있다.",
+      "hl": ["후손 책임"]
+    }
+  ]
+}

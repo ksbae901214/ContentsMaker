@@ -1,0 +1,161 @@
+{
+  "_comment": "2026-09-21 파주 25사단 DMZ 수색로 개척 중 지뢰 2발 폭발 — 수색대대장(중령) 발목 절단, 간부 3명 부상. 9/28 밤 합참·유엔사 2차 조사 중간발표(권대원 합참차장): 아군 지뢰 배제(국과수 TNT+갈색 이물질, 철제 파편 없음·살상반경 작음 / 아군 지뢰는 파편 다량·반경 20m↑), '북한군 지뢰 가능성 매우 높다'. 폭발 위치 MDL 남쪽 10여m, 북한군 매설 추정 지형변화 지역서 10여m 이격. 핵심 대조: ①2025-08-04 대북확성기 20여 대 전면 철거 → 2025-09 위성에 북한군 지뢰 매설 흔적 포착 ②사고 다음날(9/22 현지) 이재명 대통령 제81차 유엔총회 기조연설 '국제 무대에서도 북측을 존중하고 협력할 것은 협력해 나가겠습니다' ③국힘은 2015년처럼 확성기 재설치 요구 — 그 2015년 확성기는 8/25 정오 북한 '유감 표명' 받고 재개 15일 만에 스스로 중단. 청와대는 9/29 '지뢰 현장조사는 대통령 유엔 연설과 무관, 순전히 군사적 판단'이라 공식 부인(야권 늑장조사 의혹 반박) — 연결 자체가 이미 공론장 쟁점. 039: subject_type=civilian(피해 당사자=수색대대장, 진영 밖) → A등급. ②'대가' 미충족 경고는 남음 — 북한은 아무 대가도 치르지 않았고 최종 판정 전(합참도 '가능성'). 040: '1년 전 걷은 확성기'(여권) + '11년 전 그 확성기도 15일 만에'(야권) 양쪽 기록 대조 → 통과. 마무리 문장은 사용자 지시(2026-09-29). 타임스탬프는 yt-dlp 자동자막 기준 — 렌더 전 download 후 _verify/hook.mp4 청음으로 문장 끝맺음 재확인 필수(037).",
+  "slug": "20260929_dmz_jiroe_un_v2_1",
+  "title": "DMZ 지뢰 폭발, 그리고 유엔 연설",
+  "category": "political",
+  "subject_type": "civilian",
+  "_subject_type_comment": "[039] 당사자는 발목을 잃은 수색대대장 — 직업 정치인이 아니고, 북한 지뢰에 화내는 데 정치 성향이 필요하지 않다. 정치인(institution/politician)으로 잡으면 C등급(돌파율 7%)으로 떨어진다.",
+  "yt_title": "발목 잃은 다음 날, 유엔에서 한 말",
+  "yt_title_alt": "지뢰 터진 다음 날 유엔에서 '협력'",
+  "_yt_title_comment": "[034] 명사 종결(보도체 아님), 해시태그 없음, 20자. [039] '대가' 결과어는 아직 없음 — 최종 판정 전이라 의도적으로 생략. 호기심형 훅.",
+  "persons": [
+    "이재명",
+    "권대원",
+    "정점식"
+  ],
+  "hashtags": [
+    "#DMZ지뢰",
+    "#북한지뢰",
+    "#대북확성기",
+    "#유엔총회",
+    "#이재명"
+  ],
+  "source_channel": "경인방송 / KNN / 채널A / OBS뉴스",
+  "source_title": "합참 DMZ 지뢰 폭발 사고 조사 결과 — 북한군 지뢰 가능성 매우 높다",
+  "youtube_url": "https://www.youtube.com/watch?v=PaKsvyDwCxU",
+  "emotion_type": "touching",
+  "_emotion_type_comment": "정치 source_type 은 DARK_BGM_FILES(touching_2/_3)가 코드로 강제되므로 표시값. 밝은 BGM 이 걸릴 일은 없다.",
+  "tts_speed": 1.1,
+  "fallback_source": "hapcham",
+  "cta": {
+    "text": "협력, 계속 가능할까요?\n① 그래도 대화  ② 불가능",
+    "voice": "협력 가능할까요? 1번 그래도 대화, 2번 불가능. 댓글로 알려주세요.",
+    "hl": [
+      "계속 가능"
+    ],
+    "at_frac": 0.4
+  },
+  "hook": {
+    "_comment": "권대원 합참차장 육성 '아군 지뢰는 아니며 북한군 지뢰일 가능성이 매우 높습니다'. [037 경계 검증] silencedetect(-32dB/0.25s) 실측: 무음 1347.385~1347.687 → 발화 1347.69 시작, 1351.356부터 1.09초 무음(문장 끝) → 1352.442 다음 문장 '우리 군은 과학적 근거에...'. 자동자막(22:27.75)보다 0.06초 이르다. 끝을 1351.6으로 둬 어미 '높습니다'를 완전히 담고 0.24초 여유를 남김.",
+    "source": "hapcham",
+    "start_sec": 1347.55,
+    "duration": 4.05,
+    "text": "\"아군 지뢰 아니다\n북한군 지뢰 가능성 매우 높다\"",
+    "hl": [
+      "북한군 지뢰"
+    ],
+    "highlight_category": "fact"
+  },
+  "sources": {
+    "hapcham": {
+      "url": "https://www.youtube.com/watch?v=PaKsvyDwCxU",
+      "dur_max": 1700
+    },
+    "un": {
+      "url": "https://www.youtube.com/watch?v=kKxUz_M0anU",
+      "dur_max": 400
+    },
+    "obs": {
+      "url": "https://www.youtube.com/watch?v=VMP2AVkArms",
+      "dur_max": 420
+    },
+    "jjs": {
+      "url": "https://www.youtube.com/watch?v=NU_eB4ouVrs",
+      "dur_max": 200
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "source": "obs",
+      "frac": 0.3,
+      "text": "지난 21일\n파주 DMZ",
+      "voice": "지난 21일, 파주 비무장지대에서 있었던 일입니다."
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "obs",
+      "frac": 0.55,
+      "text": "수색대대장 발목 절단\n간부 3명 부상",
+      "voice": "수색로를 개척하던 대대장이 발목을 잃었습니다. 간부 세 명이 다쳤습니다.",
+      "hl": [
+        "발목 절단"
+      ],
+      "highlight_category": "criticism"
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "hapcham",
+      "frac": 0.09,
+      "_comment": "브리핑 초반(약 2분30초 부근) = 위치 설명·지도 그래픽 구간. muted b-roll.",
+      "text": "MDL 남쪽 10여 m\n북한군 매설 흔적 10여 m",
+      "voice": "군사분계선 남쪽 십여 미터, 북한군이 지뢰를 묻은 흔적에서 십여 미터입니다.",
+      "hl": [
+        "10여 m"
+      ],
+      "highlight_category": "fact"
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "obs",
+      "frac": 0.75,
+      "_comment": "[040] 기록 대조 — 여권. '1년 전'이 RECORD_CONTRAST_WORDS 매칭 지점.",
+      "text": "1년 전 걷은 확성기\n한 달 뒤 묻힌 지뢰",
+      "voice": "일 년 전 우리 군은 대북 확성기를 전부 걷었습니다. 그 한 달 뒤, 북한군의 매설 흔적이 잡혔습니다.",
+      "hl": [
+        "1년 전",
+        "한 달 뒤"
+      ],
+      "highlight_category": "fact"
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "jjs",
+      "frac": 0.5,
+      "_comment": "[040] 기록 대조 — 야권. 국힘이 근거로 드는 2015년 확성기는 재개 15일 만에 북한 '유감 표명' 받고 스스로 중단됐다(2015-08-25 정오).",
+      "text": "11년 전 그 확성기도\n15일 만에 꺼졌다",
+      "voice": "야당은 다시 켜라고 합니다. 십일 년 전 그 확성기도 십오일 만에 꺼졌습니다.",
+      "hl": [
+        "15일 만에"
+      ],
+      "highlight_category": "fact"
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "un",
+      "frac": 0.2,
+      "_comment": "클라이맥스 — 사고 다음날(9/22 현지) 유엔총회 기조연설.",
+      "text": "사고 다음 날 유엔에서\n\"협력할 것은 협력\"",
+      "voice": "그리고 사고 다음 날, 대통령은 유엔 연단에서 북측을 존중하고 협력할 것은 협력하겠다고 말했습니다.",
+      "hl": [
+        "다음 날",
+        "협력"
+      ],
+      "highlight_category": "criticism"
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "un",
+      "frac": 0.35,
+      "_comment": "[사용자 지시 2026-09-29] 마무리 문장.",
+      "text": "지뢰를 묻는 상대와\n무슨 협력을",
+      "voice": "지뢰를 묻는 상대와, 무슨 협력을 하겠습니까.",
+      "hl": [
+        "무슨 협력"
+      ],
+      "highlight_category": "criticism"
+    }
+  ]
+}

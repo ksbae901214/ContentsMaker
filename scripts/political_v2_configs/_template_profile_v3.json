@@ -1,0 +1,74 @@
+{
+  "_comment": "쇼츠 V3.0 인물 프로필 다큐멘터리 템플릿 (render_profile_v3.py 전용, 041). V2.1 의 확장 — 훅 육성 1컷 + 이후 무음 B-roll + 전체 TTS. [차단] format 은 profile_v3 고정 / fact_sources 필수(우회: fact_gate='off') / 나무위키 URL 금지(CC BY-NC-SA, 업로드용으로 못 씀) / 034 보도체 제목 / 036 도메인 금지어. [경고] 헤드라인 2줄·줄당 12자·2열 질문형 / 클립 6초 / person_title·채널명 누락. [면제] 040 진영 대칭은 인물 1명 포맷이라 검사 안 함, 039 돌파 조건은 1회 고지만.",
+  "format": "profile_v3",
+  "slug": "20260914_example_profile_v3",
+
+  "person": "이해민",
+  "person_title": "국정기획위 수석 내정자",
+  "_person_comment": "우상단 인물 배지에 '이해민 · 국정기획위 수석 내정자' 로 표시된다(아웃트로 전까지 유지). 사실과 다르면 그대로 오보가 되므로 직책 표기를 확인할 것.",
+
+  "headline": ["이해민 수석 내정자", "구글 엔지니어 출신?"],
+  "_headline_comment": "궁서체 2줄 투톤 헤드라인. 1열(흰색)=지금 화제인 이유(사실), 2열(비비드 레드)=이력·배경을 파헤쳐보고 싶게 만드는 **질문형 훅**. 1.0/2.0 의 스캔들형 '의혹?' 과 다르며 반드시 fact_sources 에 실제로 있는 이력이어야 한다. 줄당 12자 이내 — 길면 자동 축소되고, 그래도 길면 줄이 접혀 인물 배지를 덮는다(2026-09-14 실측).",
+
+  "title": "이해민은 누구인가",
+  "yt_title": "구글 그만두고 국회 간 사람",
+  "yt_title_alt": "개발자가 왜 여기에 있나",
+  "persons": ["이해민"],
+  "category": "political",
+  "emotion_type": "relatable",
+  "_emotion_comment": "BGM 스위치다(036). 인물 소개는 단죄가 아니므로 relatable 권장 — 논란 인물이라도 angry 는 '규탄'으로 읽힌다.",
+  "tts_speed": 1.1,
+  "_length_comment": "대본 220~320자(훅 제외)가 목표 — 1.1배속 기준 34~40초. 캡 62초는 아웃트로 4초를 포함한 최종 파일 기준이며 render 단계에서 하드 차단된다(우회: duration_gate='off').",
+
+  "fact_sources": [
+    { "title": "이해민, 국정기획위 수석 내정", "url": "https://n.news.naver.com/mnews/article/...", "outlet": "OO일보" },
+    { "title": "네이버 인물정보 — 이해민", "url": "https://search.naver.com/search.naver?query=..." }
+  ],
+  "_fact_comment": "나레이션의 모든 이력·직책·수치는 여기 있는 실제 기사/공식 프로필에 근거해야 한다. V2.2 는 화면의 육성이 인용이라 방패가 되지만 V3.0 은 나레이션 전체가 채널 자신의 서술이다. **나무위키 금지** — celebrity 모드가 업로드를 코드로 막아 둔 것과 같은 라이선스 이유.",
+
+  "cta_style": "subscribe",
+  "cta": {
+    "_comment": "[041] V3.0 은 ①② 찬반 CTA 를 쓰지 않는다(사용자 확정 2026-09-14) — 인물 프로필에 찬반을 붙이면 인물 평가가 되어 명예훼손 노출이 커진다. 대신 구독·댓글 유도형. 존댓말 종결·4초(약 32자) 상한은 그대로 적용된다.",
+    "text": "더 궁금하다면?\n댓글 + 구독",
+    "voice": "궁금한 점은 댓글로 남겨주세요.",
+    "hl": ["댓글", "구독"]
+  },
+
+  "hook": {
+    "_comment": "scenes[0] = 그 인물의 실제 발언 육성 1컷. download 후 소리로 구간을 확인해 start_sec 을 잡고, **문장이 끝맺음될 때까지** 넣는다(037). 6초 이내 권장(저작권).",
+    "source": "interview",
+    "start_sec": 42.0,
+    "duration": 4.0,
+    "text": "\"코드를 짜던 사람이\n국회로 왔습니다\"",
+    "hl": ["코드"]
+  },
+
+  "sources": {
+    "_comment_": "인물이 등장하는 영상 5개(인터뷰/연설/기자회견/국회 발언/근황). 씬에 source 를 안 쓰면 이 선언 순서대로 순환 배치되고, 매 순환마다 오프셋이 밀린다. channel 은 download 가 채널명을 받아오지만, 하단 출처 표기를 직접 고정하려면 여기에 적는다.",
+    "interview": { "query": "이해민 인터뷰", "dur_max": 900, "verify_frac": 0.3, "channel": "채널A" },
+    "speech":    { "query": "이해민 연설", "dur_max": 900, "verify_frac": 0.4, "channel": "채널B" },
+    "press":     { "query": "이해민 기자회견", "dur_max": 900, "verify_frac": 0.35 },
+    "assembly":  { "query": "이해민 국회 발언", "dur_max": 900, "verify_frac": 0.5 },
+    "recent":    { "query": "이해민 근황", "dur_max": 900, "verify_frac": 0.45 }
+  },
+
+  "person_photos": [],
+  "_photos_comment": "인물 사진 풀(파일 경로). 소스를 못 받았거나 그 구간에 본인이 나오는지 확신이 없을 때 영상 대신 쓴다 — '확인 안 된 사람이 화면에 나오는' 위험보다 '정지 사진이 나오는' 쪽이 안전하다(지침 §2-6). 여러 장을 넣으면 순환 선택되고 Remotion 이 Ken Burns 줌을 준다. 씬에 use_photo:true 를 주면 강제로 사진을 쓴다.",
+
+  "scenes": [
+    { "color": "white", "emph": false,
+      "_comment": "[지침 §1-6] 2단 구성 — ①도입 1~2문장: 지금 화제인 이유. 여기서 현재 이슈의 세부 논란까지 파고들지 않는다.",
+      "text": "국정기획위 수석 내정",
+      "voice": "최근 국정기획위원회 수석으로 내정되며 이름이 오르내리고 있습니다.",
+      "hl": ["수석"] },
+    { "color": "yellow", "emph": true,
+      "_comment": "②본문: 그 인물이 정치에 입문하게 된 계기·배경만. 서사가 얇으면 공식 프로필의 확인된 배경(생년·학력·이전 경력)으로 채운다 — 지어내지 않는다.",
+      "text": "출발은 개발자였다",
+      "voice": "출발은 정치가 아니었습니다. 검색 엔진을 만들던 개발자였습니다.",
+      "hl": ["개발자"] },
+    { "color": "white", "emph": false, "use_photo": true,
+      "text": "규제를 만드는 자리로",
+      "voice": "기술을 만들던 사람이, 이번에는 그 기술을 다루는 규칙을 만드는 자리에 섰습니다.",
+      "hl": ["규칙"] }
+  ]
+}

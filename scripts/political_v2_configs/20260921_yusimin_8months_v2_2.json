@@ -1,0 +1,115 @@
+{
+  "_comment": "민주당 내분 조사 결과 채택안(B++) — '유시민 이중잣대 + 야권 대칭'. 당내 절차(전당대회·제명)를 제목에서 배제하고 인물의 기록 대조로 좁혔다. 클립 경계는 037 규격대로 auto-sub 단어 타임스탬프로 확정(_sub/vtt_timeline.py).",
+  "slug": "20260921_yusimin_8months_v2_2",
+  "title": "8개월 만에 등 돌렸다",
+  "yt_title": "극찬 8개월 만에 썩은 내, 유시민에게 무슨 일이",
+  "yt_title_alt": "지지할 땐 똑똑하다더니, 돌아서자 썩은 내",
+  "persons": [
+    "유시민",
+    "이재명",
+    "한동훈",
+    "장동혁"
+  ],
+  "subject_type": "civilian",
+  "_subject_type_comment": "[039] 유시민은 전 장관·전 의원 이력이 있어 미지정이면 politician 으로 추정돼 C등급이 된다. 현재 직업은 작가·방송인이고 당적이 없어 civilian 으로 명시한다 — 이 한 줄이 등급을 A로 올리므로 판단 근거를 남긴다.",
+  "category": "political",
+  "source_channel": "채널A 뉴스A / JTBC 지금 이 뉴스 / KBS 9시 뉴스",
+  "source_title": "유시민 '필연적 실패' 직격 · 2025년 12월 '사람이 똑똑해' 극찬",
+  "youtube_url": "https://www.youtube.com/watch?v=qXV-zYe-vyg",
+  "emotion_type": "touching",
+  "_emotion_type_comment": "[036/BGM] 규탄이 아니라 '평가가 뒤집힌' 서사라 touching. 정치쇼츠는 어차피 DARK_BGM_SOURCE_TYPES 로 어두운 트랙이 코드 고정된다.",
+  "tts_speed": 1.1,
+  "fallback_source": "ysm_now",
+  "cta": {
+    "text": "돌아선 건 뭘까?\n① 소신  ② 배신",
+    "voice": "이건 소신일까요 배신일까요? 1번 소신, 2번 배신. 댓글로 알려주세요.",
+    "hl": [
+      "돌아선 건"
+    ],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "ysm_now": {
+      "url": "https://www.youtube.com/watch?v=qXV-zYe-vyg",
+      "dur_max": 900,
+      "verify_frac": 0.2
+    },
+    "ysm_past": {
+      "url": "https://www.youtube.com/watch?v=f0_paRb73I4",
+      "dur_max": 900,
+      "verify_frac": 0.1
+    },
+    "han": {
+      "url": "https://www.youtube.com/watch?v=dfAdJV6W4Yk",
+      "dur_max": 900,
+      "verify_frac": 0.35
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "_comment": "[2026-09-15 기본 지침] 등장인물이 넷이라 맥락 없이 육성부터 틀면 이탈한다. 한 문장·4초 이내.",
+      "source": "ysm_now",
+      "frac": 0.15,
+      "text": "유시민이 이재명 대통령을\n정면 비판했습니다",
+      "voice": "유시민 작가가 이재명 대통령을 정면으로 비판했습니다.",
+      "mode": "tts"
+    },
+    {
+      "_comment": "[036] 훅 = 가진 클립 중 가장 센 컷. 단어 경계 23.96 '대통령의' → 29.52 '있다.' 다음 단어 30.20 에서 컷.",
+      "mode": "clip",
+      "source": "ysm_now",
+      "start_sec": 23.96,
+      "duration": 6.24,
+      "speaker": "유시민",
+      "highlight_category": "criticism",
+      "text": "\"필연적인 실패의 길로\n가고 있다\"",
+      "hl": [
+        "필연적인 실패"
+      ]
+    },
+    {
+      "_comment": "과거 축 — 2025년 12월 극찬. 6.12 '이재명' → 11.40 '싶었다.' 다음 단어 11.96 에서 컷. 제목의 '똑똑하다더니'를 육성으로 들려줘야 해서 이 구간을 쓴다(36~44초의 '점수를 주고 싶어요' 블록이 더 길지만 '6개월'이라 8개월 프레임과 충돌).",
+      "mode": "clip",
+      "source": "ysm_past",
+      "start_sec": 6.12,
+      "duration": 5.84,
+      "speaker": "유시민",
+      "highlight_category": "fact",
+      "text": "8개월 전 같은 사람에게\n\"우선 사람이 똑똑하다\"",
+      "hl": [
+        "8개월 전",
+        "똑똑하다"
+      ]
+    },
+    {
+      "_comment": "[040] 야권 대칭 — 당내 절차가 아니라 '돌아선 사람에게 찍히는 낙인'으로 프레임. 42.56 '우리' → 49.80 '것이다.' 다음 단어 50.96 에서 컷.",
+      "mode": "clip",
+      "source": "han",
+      "start_sec": 42.56,
+      "duration": 8.4,
+      "speaker": "한동훈",
+      "highlight_category": "criticism",
+      "text": "야권도 똑같다\n\"저를 찍어내기 위한 일\"",
+      "hl": [
+        "야권도 똑같다",
+        "찍어내기"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "ysm_now",
+      "frac": 0.6,
+      "color": "yellow",
+      "emph": true,
+      "highlight_category": "fact",
+      "_comment": "[035] 마지막 씬은 팩트 정리. 댓글 유도는 cta 블록이 담당.",
+      "text": "극찬이 8개월 만에\n뒤집혔다",
+      "voice": "같은 사람을 두고 평가가 여덟 달 만에 뒤집혔습니다. 돌아선 쪽은 배신자가 되고, 그건 여야가 똑같습니다.",
+      "hl": [
+        "8개월",
+        "뒤집혔다"
+      ]
+    }
+  ]
+}

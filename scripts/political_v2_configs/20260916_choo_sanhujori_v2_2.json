@@ -1,0 +1,109 @@
+{
+  "_comment": "V2.2 원본 육성 릴레이 — 추미애 육성 3컷(긴축 호소 → 원점 재검토 선언 → '안 쫓겨납니다')으로 기록 대조를 화면에서 직접 보여주고, TTS 1개가 관사·관용차 사실로 닫는다. 클립 경계는 yt-dlp 자동자막 단어 타임스탬프 기준(037) — download 후 _verify/clip_NN.mp4 청음 재확인 필수.",
+  "slug": "20260916_choo_sanhujori_v2_2",
+  "title": "산후조리비 끊은 경기도, 관사는 12억",
+  "yt_title": "9월생은 50만원, 10월생은 0원",
+  "yt_title_alt": "재정 비상이라더니 7700만원 새 차",
+  "category": "political",
+  "persons": [
+    "추미애",
+    "김동연"
+  ],
+  "source_channel": "JTBC News",
+  "source_title": "'혼란' 예비부모…산후조리비 지원 종료",
+  "youtube_url": "https://www.youtube.com/watch?v=30Ny9bZn78w",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "yonhap",
+  "cta": {
+    "text": "이거 누구 책임?\n① 추미애  ② 김동연",
+    "voice": "1번 추미애, 2번 김동연. 댓글로 알려주세요.",
+    "hl": [
+      "누구 책임"
+    ]
+  },
+  "sources": {
+    "jtbc": {
+      "url": "https://www.youtube.com/watch?v=30Ny9bZn78w",
+      "dur_max": 600,
+      "verify_frac": 0.35
+    },
+    "chA": {
+      "url": "https://www.youtube.com/watch?v=dM4SSuv4Jfs",
+      "dur_max": 900,
+      "verify_frac": 0.02
+    },
+    "yonhap": {
+      "url": "https://www.youtube.com/watch?v=r1sXkCh0ods",
+      "dur_max": 600,
+      "verify_frac": 0.4
+    },
+    "sbs": {
+      "url": "https://www.youtube.com/watch?v=ONyhGQQKVus",
+      "dur_max": 600,
+      "verify_frac": 0.3
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "mode": "tts",
+      "source": "sbs",
+      "frac": 0.15,
+      "text": "경기도, 산후조리비\n이달 말 폐지",
+      "voice": "경기도가 산후조리비 지원을 이달 말로 끊습니다.",
+      "subtitle_position": "bottom"
+    },
+    {
+      "_comment": "훅 — JTBC 75.60~85.55. '이 위기는 결코 일시적 위기가 아닙니다'부터 '실정입니다' 완결. 프레임 실측: 85.50 까지 추미애, 85.75 부터 경기도청 b-roll.",
+      "mode": "clip",
+      "source": "jtbc",
+      "start_sec": 75.6,
+      "duration": 9.95,
+      "speaker": "추미애 경기도지사",
+      "text": "\"무려 7700억\n감액 추경을 해야 하는 실정\"",
+      "hl": [
+        "7700억",
+        "감액 추경"
+      ]
+    },
+    {
+      "_comment": "JTBC 125.85~135.00. '도지사 직속의 참모 조직부터'~'점검하도록 하겠습니다' 완결. 프레임 실측: 135.00 까지 추미애, 135.25 부터 광교 b-roll.",
+      "mode": "clip",
+      "source": "jtbc",
+      "start_sec": 125.85,
+      "duration": 9.15,
+      "speaker": "추미애 경기도지사",
+      "text": "\"필요성과 중복 여부를\n원점에서 점검하겠다\"",
+      "hl": [
+        "원점에서"
+      ]
+    },
+    {
+      "_comment": "채널A 현장영상 6.90~13.00. '안 쫓겨납니다'+웃음+'며느리 쫓아내려고 그러는 분들도 있더라고요' 완결. 프레임 실측: 13.00 까지 클로즈업, 13.25 블러 전환 후 무대 원경.",
+      "mode": "clip",
+      "source": "chA",
+      "start_sec": 6.9,
+      "duration": 6.1,
+      "speaker": "추미애 경기도지사",
+      "text": "\"저 추미애가\n안 쫓겨납니다\"",
+      "hl": [
+        "안 쫓겨납니다"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "yonhap",
+      "frac": 0.35,
+      "color": "red",
+      "emph": true,
+      "text": "도청 노조도 \"내로남불\"\n여야는 채무 규모로 맞붙었다",
+      "voice": "재정 비상 서른일곱 날 전에 산 칠천칠백육십오만 원 관용차, 도 예산으로 얻은 십이억 관사. 도청 노조까지 내로남불이라 했습니다.",
+      "hl": [
+        "내로남불",
+        "여야"
+      ],
+      "subtitle_position": "bottom"
+    }
+  ]
+}

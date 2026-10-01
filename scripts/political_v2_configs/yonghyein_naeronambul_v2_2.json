@@ -1,0 +1,48 @@
+{
+  "_comment": "용혜인(성평등가족부 장관 후보자) 과거 논란 총집합 — V2.2 '훅들로만' 버전 (사용자 지시 2026-09-01). scene0~3 전부 mode:clip(원본 육성 릴레이), 마지막 딱 1개 TTS로 '기득권 욕하던 사람이 기득권처럼 살아왔다' 결론만 덧붙임. ⚠️ 신뢰도 메모 — scene0(야! 설전)·scene1(금배지)은 word-timestamp로 해당 인물 육성 구간을 특정했으나 다자간 크로스토크/앵커 내레이션 혼재라 완전한 문장 경계 확신은 낮음. scene2(공항귀빈실)·scene3(이태원)은 소스가 앵커·기자 내레이션 위주라 용혜인 본인 육성 여부를 텍스트만으로 확정 못 함 — 그래서 자막을 직접인용(\"...\") 대신 사실 서술체로 안전하게 처리. 렌더 후 _verify/clip_NN.mp4 전부 청음 확인 필수(제가 오디오를 들을 수 없어 이 부분은 사람 확인이 반드시 필요).",
+  "slug": "20260901_yonghyein_naeronambul_v2_2",
+  "title": "용혜인 내로남불",
+  "yt_title": "기득권 욕하던 용혜인의 내로남불",
+  "yt_title_alt": "용혜인이 다 챙긴 특혜 총정리",
+  "persons": ["용혜인"],
+  "hashtags": ["#용혜인", "#내로남불", "#장관후보자", "#기본소득당"],
+  "source_channel": "종합(JTBC·뉴스A·SBS·연합뉴스TV)",
+  "source_title": "용혜인 과거 논란 총정리",
+  "youtube_url": "https://www.youtube.com/watch?v=Y9GVibQ-APk",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "hearing",
+  "cta": {
+    "text": "이 정도면\n① 내로남불이다  ② 억울하다",
+    "voice": "1번 내로남불이다, 2번 억울하다. 댓글로 알려주세요.",
+    "hl": ["내로남불"]
+  },
+  "sources": {
+    "hearing": { "url": "https://www.youtube.com/watch?v=Y9GVibQ-APk", "dur_max": 900, "verify_frac": 0.27 },
+    "badge2":  { "url": "https://www.youtube.com/watch?v=btoKB9PZ4sg", "dur_max": 200, "verify_frac": 0.31 },
+    "airport": { "url": "https://www.youtube.com/watch?v=hMQ9ap5f7uM", "dur_max": 200, "verify_frac": 0.05 },
+    "itaewon": { "url": "https://www.youtube.com/watch?v=jaGscnCus4k", "dur_max": 100, "verify_frac": 0.21 }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "hearing", "start_sec": 205.5, "duration": 6.0,
+      "_comment": "word-timestamp: '제발 본인을 좀 자제해...강선영 의원 야 야' 구간(t≈206~211.4). 크로스토크 있어 문장 경계 저신뢰 — 청음 확인 필수.",
+      "text": "고성 오간\n청문회장",
+      "hl": ["고성"] },
+    { "mode": "clip", "source": "badge2", "start_sec": 32.5, "duration": 5.0,
+      "_comment": "word-timestamp: '까망 말처럼 되서 중고나라의 10만원...이런거 좋아' 구간(t≈33~37) — 라이브 방송 임베드 재생 구간으로 추정, 확신도 중간.",
+      "text": "라이브로 금배지\n언박싱한 당선인",
+      "hl": ["금배지", "언박싱"] },
+    { "mode": "clip", "source": "airport", "start_sec": 7.0, "duration": 4.5,
+      "_comment": "안희재 기자 리포트 — 이 구간은 기자 내레이션일 가능성이 높음(그녀 본인 육성 미확인). 화면은 귀빈실 표지판+용혜인 사진 합성.",
+      "text": "가족여행 중\n공항 귀빈실 사용",
+      "hl": ["귀빈실"] },
+    { "mode": "clip", "source": "itaewon", "start_sec": 9.0, "duration": 6.0,
+      "_comment": "연합뉴스TV 리포트 — 이 구간도 앵커 내레이션일 가능성이 높음(그녀 본인 육성 미확인). 화면은 국조특위 회의장, 용혜인 본인 등장 확인됨.",
+      "text": "이태원 국조,\n촬영 논란으로 파행",
+      "hl": ["파행"] },
+    { "mode": "tts", "source": "itaewon", "frac": 0.3, "color": "red", "emph": true,
+      "text": "기득권 욕하던 사람이\n기득권처럼 살아왔다",
+      "voice": "기득권을 없애자던 사람이, 정작 기득권처럼 살아온 겁니다.",
+      "hl": ["기득권"] }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "_comment": "김승원 법무부장관 후보자 인사청문회(2026-09-15) V2.2 육성 릴레이. 037 검증 결과 반영: 구간은 전부 단어 단위 VTT 실측. 연합뉴스TV PICK(4suBRF0tSJ8)은 앵커 낭독뿐이라 제외, 김승원 육성은 YTN 원본 ③에서 확보. 040 대칭 = 야(박형수) → 여(김승원) → 야(박형수의 2024년 김승원 발언 인용). 039 등급 B.",
+  "slug": "20260915_kimsw_charyo_v2_2",
+  "title": "김승원 청문회 자료 미제출",
+  "yt_title": "\"자료 왜 안 내냐\"던 김승원, 내로남불 64.6%",
+  "yt_title_alt": "서로 \"내 자료 내놔\", 김승원·한동훈의 내로남불",
+  "persons": [
+    "김승원",
+    "박형수",
+    "한동훈"
+  ],
+  "category": "political",
+  "subject_type": "politician",
+  "source_channel": "연합뉴스TV·YTN",
+  "source_title": "김승원 법무부 장관 후보자 인사청문회",
+  "youtube_url": "https://www.youtube.com/watch?v=QXUBbnxOFgc",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "park",
+  "cta": {
+    "_comment": "[038] apply_cta 가 마지막 씬 뒤에 자동 삽입. [040] '누구 잘못'이 아니라 판정을 넘기는 질문.",
+    "text": "① 그때가 맞다\n② 지금이 맞다",
+    "voice": "1번 그때가 맞다, 2번 지금이 맞다. 댓글로 알려주세요.",
+    "hl": [
+      "그때",
+      "지금"
+    ],
+    "frac": 0.93
+  },
+  "sources": {
+    "park": {
+      "url": "https://www.youtube.com/watch?v=QXUBbnxOFgc",
+      "_note": "연합뉴스TV 281s — 국민의힘 '자료 미제출률 64.6%' / '과거 김승원이 오늘 김승원에게'",
+      "dur_max": 900,
+      "verify_frac": 0.35
+    },
+    "kimsw": {
+      "url": "https://www.youtube.com/watch?v=EtfZAQT2JGg",
+      "_note": "YTN 청문회 원본 ③ 1582s — 김승원 본인 육성. 372.7~381.8s '검찰의 은밀한 내부 자료가 어떻게 한동훈 전 장관에게 흘러갔는지 반드시 밝혀야'",
+      "dur_max": 2400,
+      "verify_frac": 0.24
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "mode": "tts",
+      "source": "park",
+      "frac": 0.63,
+      "_comment": "훅 앞 상황 설명. b-roll frac 은 반드시 0.62 이상 — park 클립 0~172s 는 과거(이원석 청문회) 영상이라 마스크가 보인다(037).",
+      "text": "김승원 법무부 장관\n후보자 인사청문회",
+      "voice": "오늘 열린 김승원 법무부 장관 후보자 인사청문회입니다.",
+      "hl": [
+        "인사청문회"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "park",
+      "start_sec": 222.7,
+      "duration": 6.4,
+      "_comment": "훅. VTT 실측 222.7~229.1 — '있습니까?'[227.7] 다음 단어 [229.1] 까지 포함해 끝맺음 확보(037).",
+      "text": "박형수 \"전체 64.6%를 안 냈다\n이런 내로남불이 어디 있나\"",
+      "hl": [
+        "64.6%",
+        "내로남불"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "kimsw",
+      "start_sec": 372.7,
+      "duration": 9.1,
+      "_comment": "여권 육성(040 대칭). VTT 실측 372.7~381.8. ⚠️ '…생각하고'는 연결어미 — 청음해서 호흡이 끊기면 366.7~372.7('한 번도 본 적이 없는 자료입니다', 6.0s 완결)로 교체.",
+      "color": "blue",
+      "text": "민주당 김승원 \"내부 자료가\n어떻게 한동훈에게 갔나\"",
+      "hl": [
+        "한동훈"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "park",
+      "start_sec": 201.6,
+      "duration": 7.5,
+      "_comment": "기록 대조(040 최우선 프레임). 박형수가 2024년 김승원 발언을 인용. VTT 실측 201.6~209.1.",
+      "text": "박형수 \"2024년 김승원은\n청문회법 무력화라고 했다\"",
+      "hl": [
+        "2024년",
+        "무력화"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "park",
+      "frac": 0.85,
+      "color": "red",
+      "emph": true,
+      "text": "376건 중 243건\n미제출",
+      "voice": "2024년 검찰총장 청문회에서 자료 미제출을 질타한 사람이 당시 법사위 야당 간사 김승원이었습니다. 오늘은 삼백일흔여섯 건 중 이백마흔세 건이 오지 않았습니다.",
+      "hl": [
+        "376건",
+        "243건"
+      ]
+    }
+  ]
+}

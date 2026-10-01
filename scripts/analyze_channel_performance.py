@@ -10,6 +10,7 @@ YouTube Studio 수동 확인 병행.)
       [--channel UCYNNMfkMW_EZJBp514-DjaA] [--details 30] [--out data/channel_analytics]
 
   --details N : 최근 N편은 개별 조회로 upload_date 보강 (업로드 공백 분석용, 기본 30)
+  --ledger P  : 카테고리 원장 경로 (036, 기본 <out>/category_ledger.json)
 """
 from __future__ import annotations
 
@@ -23,9 +24,19 @@ import unicodedata
 from datetime import datetime
 from pathlib import Path
 
+from scripts.shorts_category import UNKNOWN, load_ledger, resolve_category
+from scripts.shorts_format import UNKNOWN_FORMAT, load_formats, resolve_format
+
 DEFAULT_CHANNEL = "UCYNNMfkMW_EZJBp514-DjaA"
 DEFAULT_OUT = Path("data/channel_analytics")
+LEDGER_NAME = "category_ledger.json"
 GAP_ALERT_DAYS = 3          # 030 실측: 업로드 공백 → 배포 붕괴
+
+# 036: 단일 채널에 카테고리를 섞기로 한 이상(사용자 확정 2026-08-13), 어떤
+# 카테고리가 전체 성과를 끌어내리는지/끌어올리는지를 매 리포트에서 봐야 한다.
+CATEGORY_MIN_SAMPLE = 3     # 이하 표본은 판단 보류 (중앙값이 흔들린다)
+DILUTION_RATIO = 0.7        # 전체 중앙값의 70% 미만 = 희석 후보
+BREAKOUT_RATIO = 1.3        # 전체 중앙값의 130% 이상 = 확대 후보
 
 HOOK_MARKERS = (
     "참교육", "사이다", "직격", "저격", "응징", "역공", "반격",
@@ -90,17 +101,56 @@ def _median_views(entries: list[dict]) -> int:
     return int(statistics.median(views)) if views else 0
 
 
-def summarize(entries: list[dict]) -> dict:
-    """전체/제목유형별/길이구간별 조회수 요약 + 상·하위 5편."""
+def category_mix_warnings(by_category: dict, overall_median: int) -> list[str]:
+    """036: 카테고리 혼합이 채널 성과를 희석/견인하는지 경고.
+
+    단일 채널 혼합 전략에서는 카테고리 하나가 조용히 전체 노출을 끌어내려도
+    총합 중앙값만 보면 보이지 않는다. 표본이 얕은 구간(`CATEGORY_MIN_SAMPLE`
+    이하)과 분류 실패(`unknown`)는 판단하지 않는다.
+    """
+    if overall_median <= 0:
+        return []
+    warnings = []
+    for cat, v in sorted(by_category.items()):
+        if cat == UNKNOWN or v["count"] < CATEGORY_MIN_SAMPLE:
+            continue
+        ratio = v["median_views"] / overall_median
+        if ratio < DILUTION_RATIO:
+            warnings.append(
+                f"{cat} {v['count']}편 중앙값 {v['median_views']:,}회 — "
+                f"전체의 {ratio * 100:.0f}% (희석 후보: 편성 축소 또는 포맷 재검토)")
+        elif ratio >= BREAKOUT_RATIO:
+            warnings.append(
+                f"{cat} {v['count']}편 중앙값 {v['median_views']:,}회 — "
+                f"전체의 {ratio * 100:.0f}% (확대 후보: 편성 비중 상향)")
+    return warnings
+
+
+def summarize(entries: list[dict], ledger: dict[str, str] | None = None,
+              formats: dict[str, str] | None = None) -> dict:
+    """전체/제목유형별/길이구간별/카테고리별/포맷별 조회수 요약 + 상·하위 5편.
+
+    ledger:  {정규화 제목: category} — 없으면 제목 키워드 추론으로 대체 (036).
+    formats: {정규화 제목: format} — 없으면 전부 `unknown` (041). 카테고리와 달리
+             **추론하지 않는다** — 제목만 보고 V2.1/V2.2/V3.0 을 구분할 방법이 없다.
+    """
     valid = [e for e in entries if e.get("view_count") is not None]
+    ledger = ledger or {}
+    formats = formats or {}
     by_type: dict[str, list[dict]] = {}
     by_bucket: dict[str, list[dict]] = {}
     by_hash: dict[str, list[dict]] = {}
+    by_category: dict[str, list[dict]] = {}
+    by_format: dict[str, list[dict]] = {}
     for e in valid:
         by_type.setdefault(classify_title(e.get("title", "")), []).append(e)
         by_bucket.setdefault(duration_bucket(e.get("duration")), []).append(e)
         spam = hashtag_count(e.get("title", "")) >= HASHTAG_SPAM_MIN
         by_hash.setdefault("4+" if spam else "0-3", []).append(e)
+        by_category.setdefault(
+            resolve_category(e.get("title", ""), ledger), []).append(e)
+        by_format.setdefault(
+            resolve_format(e.get("title", ""), formats), []).append(e)
     ranked = sorted(valid, key=lambda e: e["view_count"], reverse=True)
     return {
         "count": len(valid),
@@ -108,6 +158,14 @@ def summarize(entries: list[dict]) -> dict:
         "by_title_type": {
             k: {"count": len(v), "median_views": _median_views(v)}
             for k, v in sorted(by_type.items())
+        },
+        "by_category": {
+            k: {"count": len(v), "median_views": _median_views(v)}
+            for k, v in sorted(by_category.items())
+        },
+        "by_format": {
+            k: {"count": len(v), "median_views": _median_views(v)}
+            for k, v in sorted(by_format.items())
         },
         "by_duration": {
             k: {"count": len(v), "median_views": _median_views(v)}
@@ -168,6 +226,34 @@ def build_report_md(channel: str, summary: dict, gaps: list[dict],
     ]
     for k, v in summary["by_title_type"].items():
         lines.append(f"| {k} | {v['count']} | {v['median_views']:,} |")
+    if summary.get("by_category"):
+        lines += ["", "## 카테고리별 (036 — 단일 채널 혼합 계측)", "",
+                  "| 카테고리 | 편수 | 조회수 중앙값 | 전체 대비 |", "|---|---|---|---|"]
+        overall = summary["median_views"]
+        for k, v in summary["by_category"].items():
+            rel = f"{v['median_views'] / overall * 100:.0f}%" if overall else "—"
+            lines.append(f"| {k} | {v['count']} | {v['median_views']:,} | {rel} |")
+        mix = category_mix_warnings(summary["by_category"], overall)
+        if mix:
+            lines.append("")
+            lines.extend(f"- ⚠️ {w}" for w in mix)
+        unknown = summary["by_category"].get(UNKNOWN, {}).get("count", 0)
+        if unknown:
+            lines += ["", f"> `unknown` {unknown}편 — 원장에 없고 제목 키워드로도 "
+                      f"분류되지 않은 편. `{LEDGER_NAME}` 의 `entries` 에 직접 "
+                      "추가하면 다음 리포트부터 반영된다."]
+    # 041: 포맷 기록이 하나도 없으면(전부 unknown) 표가 한 줄짜리 노이즈가 된다.
+    by_format = summary.get("by_format") or {}
+    if set(by_format) - {UNKNOWN_FORMAT}:
+        lines += ["", "## 포맷별 (041 — V3.0 인물 프로필 파일럿 판정용)", "",
+                  "| 포맷 | 편수 | 조회수 중앙값 | 전체 대비 |", "|---|---|---|---|"]
+        overall = summary["median_views"]
+        for k, v in by_format.items():
+            rel = f"{v['median_views'] / overall * 100:.0f}%" if overall else "—"
+            lines.append(f"| {k} | {v['count']} | {v['median_views']:,} | {rel} |")
+        lines += ["", f"> `{UNKNOWN_FORMAT}` = 포맷 기록 이전 편(legacy). 포맷은 "
+                  "제목으로 추론하지 않는다 — 틀린 추론은 파일럿 판정 근거를 "
+                  "오염시킨다."]
     lines += ["", "## 길이 구간별", "", "| 구간 | 편수 | 조회수 중앙값 |", "|---|---|---|"]
     for k, v in summary["by_duration"].items():
         lines.append(f"| {k} | {v['count']} | {v['median_views']:,} |")
@@ -251,6 +337,8 @@ def main() -> int:
     ap.add_argument("--channel", default=DEFAULT_CHANNEL)
     ap.add_argument("--details", type=int, default=30)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    ap.add_argument("--ledger", type=Path, default=None,
+                    help="카테고리 원장 (기본 <out>/category_ledger.json)")
     args = ap.parse_args()
 
     args.out.mkdir(parents=True, exist_ok=True)
@@ -270,7 +358,10 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    summary = summarize(entries)
+    ledger_path = args.ledger or (args.out / LEDGER_NAME)
+    ledger = load_ledger(ledger_path)
+    formats = load_formats(ledger_path)      # 041: 같은 원장 파일의 format 축
+    summary = summarize(entries, ledger=ledger, formats=formats)
     gaps = upload_gaps([e.get("upload_date") or "" for e in entries])
     deltas = compare_snapshots(prev, entries) if prev else []
     report = args.out / f"{stamp}_report.md"
@@ -282,6 +373,15 @@ def main() -> int:
     print(f"\n📊 전체 중앙값 {summary['median_views']:,}회 ({summary['count']}편)")
     for k, v in summary["by_title_type"].items():
         print(f"   {k:8s}: {v['count']:3d}편, 중앙값 {v['median_views']:,}회")
+    print(f"\n🏷️  카테고리별 (원장 {len(ledger)}건)")
+    for k, v in summary["by_category"].items():
+        print(f"   {k:14s}: {v['count']:3d}편, 중앙값 {v['median_views']:,}회")
+    for w in category_mix_warnings(summary["by_category"], summary["median_views"]):
+        print(f"   ⚠️  {w}")
+    if set(summary["by_format"]) - {UNKNOWN_FORMAT}:
+        print(f"\n🎞️  포맷별 (기록 {len(formats)}건)")
+        for k, v in summary["by_format"].items():
+            print(f"   {k:14s}: {v['count']:3d}편, 중앙값 {v['median_views']:,}회")
     print(f"\n📁 리포트: {report}\n📁 스냅샷: {snapshot}")
     return 0
 

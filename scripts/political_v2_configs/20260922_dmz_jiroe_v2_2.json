@@ -1,0 +1,128 @@
+{
+  "_comment": "[040] 기록 대조 프레임 — 9/14 브리핑의 '원칙대로 대응 중' vs 9/21 지뢰 폭발. 진영 어휘를 쓰지 않는다(당사자는 국방부/합참 = institution). 원인은 조사 중이므로 '북한 지뢰가 터졌다'로 단정 금지 — 군 당국은 '폭발 장소는 북한 매설 지점과 거리가 있다'고 설명했다.",
+  "slug": "20260922_dmz_jiroe_v2_2",
+  "title": "이재명 '평화 선언' 사흘 뒤, 잘려나간 장병 발목",
+  "category": "political",
+  "subject_type": "institution",
+  "yt_title": "이재명 '평화 선언' 사흘 뒤, 잘려나간 장병 발목",
+  "yt_title_alt": "지뢰 묻는 북한, '평화' 외치는 이재명 정권",
+  "persons": [
+    "이재명",
+    "국방부"
+  ],
+  "source_channel": "채널A News",
+  "source_title": "DMZ '지뢰 폭발' 추정 사고… 지난주 합참 발표 재조명 [뉴스A]",
+  "youtube_url": "https://www.youtube.com/watch?v=HTy3mLAUQ8o",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "brief",
+  "cta": {
+    "text": "이 사태, 누구 책임인가?\n① 북한  ② 이재명 정권",
+    "voice": "누구 책임일까요? 1번 북한, 2번 이재명 정권. 댓글로 알려주세요.",
+    "hl": [
+      "누구 책임"
+    ],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "brief": {
+      "url": "https://www.youtube.com/watch?v=HTy3mLAUQ8o",
+      "dur_max": 500,
+      "verify_frac": 0.5
+    },
+    "acc": {
+      "url": "https://www.youtube.com/watch?v=c4MHNAudayc",
+      "dur_max": 200,
+      "verify_frac": 0.768
+    },
+    "lee": {
+      "_comment": "2026-09-18 9·19 평양공동선언 8주년 기념식 — 대통령 축사를 김경수 정무특보가 대독. 사고(9/21) 사흘 전.",
+      "url": "https://www.youtube.com/watch?v=kdQNWdf3PT0",
+      "dur_max": 300,
+      "verify_frac": 0.4
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "mode": "tts",
+      "source": "brief",
+      "frac": 0.08,
+      "text": "지난 14일\n국방부 정례브리핑",
+      "voice": "지난 14일, 국방부 정례브리핑입니다.",
+      "hl": [
+        "14일"
+      ]
+    },
+    {
+      "_comment": "[036] 훅 = 가장 센 컷. 단어단위 VTT 기준 175.20 '그러니까' ~ 182.08(다음 화자 시작). 문장 끝맺음 포함.",
+      "mode": "clip",
+      "source": "brief",
+      "start_sec": 148.83,
+      "duration": 6.93,
+      "speaker": "합참 공보실장",
+      "highlight_category": "criticism",
+      "text": "\"우리 군의 원칙이\n무대응인 건가요?\"",
+      "hl": [
+        "무대응"
+      ]
+    },
+    {
+      "_comment": "217.80 '기존에' ~ 223.95(다음 화자 '왜' 시작 직전). 대조의 핵심 — '실패'를 부인한 답변.",
+      "mode": "clip",
+      "source": "brief",
+      "start_sec": 191.4,
+      "duration": 6.2,
+      "speaker": "합참 공보실장",
+      "highlight_category": "criticism",
+      "text": "\"실패한 것 아닙니까?\"\n\"동의할 수 없습니다\"",
+      "hl": [
+        "실패",
+        "동의할 수 없습니다"
+      ]
+    },
+    {
+      "_comment": "195.50 '앞으로 우리 군의 원칙도' ~ 199.85(다음 화자 '근데' 직전). 쐐기.",
+      "mode": "clip",
+      "source": "brief",
+      "start_sec": 169.0,
+      "duration": 4.35,
+      "speaker": "합참 공보실장",
+      "highlight_category": "criticism",
+      "text": "\"저희 원칙은\n변함이 없습니다\"",
+      "hl": [
+        "변함이 없습니다"
+      ]
+    },
+    {
+      "_comment": "[035] 마지막은 팩트 정리. 원인 단정 금지 — 조사 중.",
+      "mode": "tts",
+      "source": "acc",
+      "frac": 0.768,
+      "highlight_category": "fact",
+      "color": "yellow",
+      "emph": true,
+      "text": "일주일 뒤, 25사단\n간부 3명 부상·1명 발목 절단",
+      "voice": "그리고 일주일 뒤인 어제, 같은 서부전선 DMZ에서 지뢰가 터졌습니다. 수색로를 개척하던 25사단 간부 세 명이 다쳤고, 한 명은 발목이 절단됐습니다. DMZ 지뢰 중상은 11년 만이고, 원인은 아직 조사 중입니다.",
+      "hl": [
+        "일주일 뒤",
+        "발목 절단"
+      ]
+    },
+    {
+      "_comment": "논평 씬 — 검증된 사실 3개(북 MDL 이남 지뢰지대 / 대북 확성기 철거 / 9-18 대통령 축사) 위에 채널의 평가를 얹는다. '복원 약속'이라고 쓰지 말 것 — 축사 표현은 '길잡이'다.",
+      "mode": "tts",
+      "source": "lee",
+      "frac": 0.4,
+      "highlight_category": "criticism",
+      "color": "red",
+      "emph": true,
+      "text": "\"평화의 숨결\" 불어넣겠다더니\n사흘 뒤 잘려나간 장병 발목",
+      "voice": "북한이 군사분계선을 넘어와 지뢰를 묻는 동안, 정부는 대북 확성기를 철거했습니다. 사고 사흘 전, 대통령은 9·19 군사합의를 길잡이 삼아 평화의 숨결을 불어넣겠다고 했습니다. 이재명 정권의 안보가 무너지고 있습니다.",
+      "hl": [
+        "평화의 숨결",
+        "잘려나간"
+      ]
+    }
+  ]
+}

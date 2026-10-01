@@ -1,0 +1,62 @@
+{
+  "_comment": "[사용자 지정 예외 2026-08-21] 연예 카테고리는 원칙상 V2.2만 제작(036 방침, upload_package.md 참조)하지만 이 소재는 예외 허가됨. 송일국은 논란 당사자가 아니라 발언 주체라 하영 케이스 대비 명예훼손 리스크는 낮으나, TTS 논평 비중이 높은 V2.1 특성상 발언을 임의로 확대 해석하지 않도록 원문 그대로만 요약할 것. [저작권] MBN Entertainment 공식 채널 방송 클립, 훅 인용은 8.7초로 최소화. [2026-08-21 download 검증 완료] silencedetect로 hook 구간 재확정. **소스 영상 전체에 방송 자체 번인 자막('송일국 | ...')이 있어 subtitle_position을 전부 ''(중앙)로 강제.** [2026-08-21 사용자 수정] ①CTA를 40% 자동삽입 대신 맨 마지막 씬으로 이동 ②국립현충원 무명용사 일화를 새 TTS 씬으로 추가 ③CTA 직전에 이완용 증손자 사례 추가.",
+  "category": "entertainment",
+  "slug": "20260821_songilguk_chinilpa_v2_1",
+  "title": "친일파가 더 잘 살았다",
+  "yt_title": "친일파가 더 잘 살았다는 송일국의 고백",
+  "yt_title_alt": "독립유공자 후손, 송일국의 고백",
+  "persons": ["송일국", "김좌진"],
+  "hashtags": ["#송일국", "#김좌진", "#독립유공자", "#친일파"],
+  "source_channel": "MBN 김주하의 데이앤나잇",
+  "source_title": "'사실 독립운동가 가족은 많이 힘들어요' 김좌진 증손자 송일국의 솔직발언",
+  "youtube_url": "https://www.youtube.com/watch?v=yRPIwkNiAfQ",
+  "emotion_type": "touching",
+  "_emotion_type_comment": "단죄·대립이 아니라 가족사의 비극·회한 톤 — 연예 기본값 funny를 두면 코믹 BGM이 어긋난다.",
+  "tts_speed": 1.1,
+  "fallback_source": "interview",
+  "_cta_comment": "[2026-08-21 사용자 지정] top-level cta 블록(40% 자동삽입) 대신 scenes 맨 끝에 직접 넣었다.",
+  "pinned_comment": "독립유공자 예우, 지금 충분하다고 보시나요? ① 부족하다  ② 충분하다 — 댓글로 알려주세요 👇",
+  "_pinned_comment_comment": "[2026-08-21 버그 수정] cta 블록을 안 쓰다 보니 resolve_pinned_comment가 카테고리 기본 템플릿('이번 복귀... 번호로 답글')으로 폴백해 렌더 1차본 upload_package.md에 엉뚱한 고정댓글이 나갔다. 명시값으로 덮어씀.",
+  "hook": {
+    "_comment": "[실측 확정] silencedetect: 724.70(무음 종료, 발화 시작)~733.4(무음 시작 733.25~733.37). '친일파들은 오히려 가정적이었던 거예요... 교육을 잘 받고 유학도 보내고'.",
+    "source": "interview",
+    "start_sec": 724.7,
+    "duration": 8.7,
+    "subtitle_position": "",
+    "text": "\"친일파들은 오히려\n가정적이었던 거예요\"",
+    "hl": ["친일파들은", "가정적"]
+  },
+  "sources": {
+    "interview": {
+      "_comment": "MBN Entertainment 공식 채널, 966초 풀영상.",
+      "url": "https://www.youtube.com/watch?v=yRPIwkNiAfQ",
+      "dur_max": 1200,
+      "verify_frac": 0.75
+    }
+  },
+  "scenes": [
+    { "type": "body", "color": "red", "emph": true, "source": "interview", "frac": 0.76, "subtitle_position": "",
+      "text": "독립유공자 후손은\n공부는커녕 먹고살기도 힘들었다",
+      "voice": "반면 독립유공자 후손들은 공부는커녕 먹고살기도 힘들었다고 합니다.",
+      "hl": ["공부는커녕", "먹고살기도"] },
+    { "type": "body", "color": "white", "emph": false, "source": "interview", "frac": 0.7, "subtitle_position": "",
+      "text": "김좌진 장군, 재산 다 쏟아붓고\n가족은 길거리에",
+      "voice": "김좌진 장군은 재산을 독립운동에 다 쏟아붓고, 남은 가족은 하루아침에 길거리에 나앉았습니다.",
+      "hl": ["길거리"] },
+    { "type": "body", "color": "white", "emph": false, "source": "interview", "frac": 0.79, "subtitle_position": "",
+      "_comment": "[신규] 국립현충원 장모 일화 — 이름 없는 희생자 테마로 내용 보강.",
+      "text": "장모님이 데려간 작은 묘비\n\"당신의 아버지, 6·25 전사자\"",
+      "voice": "장모님이 데려간 국립현충원의 작은 묘비는, 6.25 때 전사한 이름 없는 참전용사였습니다.",
+      "hl": ["이름 없는", "참전용사"] },
+    { "type": "body", "color": "yellow", "emph": true, "source": "interview", "frac": 0.771, "subtitle_position": "",
+      "_comment": "[2026-08-21 사용자 요청, frac 수정] CTA 직전 대조 사실. 이완용 증손자 이윤형이 1997년 조상 땅(서울 북아현동 712평) 반환소송 승소 후 30억에 매각, 캐나다로 이주(2005년 특별법 제정 전이라 소급 미적용). 팩트체크: 머니투데이·서울경제·fnnews 등 2025-04-30 보도. 원래 초안이던 '이완용·송병준 후손 모두 패소'는 오류(이완용은 승소) — 검증 후 이완용 단독 사례로 교체. frac 0.85(821s)는 다른 게스트 구간이라 화면 왼쪽 하단에 실루엣+말풍선 개그 캡션이 있어 우리 자막과 겹쳤음 — 745s(클린 프레임, 확인됨)로 교체.",
+      "text": "이완용 증손자는\n30억 받고 캐나다로 떠났다",
+      "voice": "이완용 증손자는 조상 땅을 되찾아 30억에 팔고, 캐나다로 떠났습니다.",
+      "hl": ["30억", "캐나다"] },
+    { "type": "body", "color": "yellow", "emph": true, "source": "interview", "frac": 0.740, "subtitle_position": "",
+      "_comment": "[2026-08-21] CTA를 맨 마지막 씬으로 이동. frac 0.9(869s)는 다른 게스트 구간 중앙 하단 타이틀 카드('역사 대장정 용정')와 겹쳐 715s(클린 프레임, 확인됨)로 교체.",
+      "text": "독립유공자 예우, 지금\n① 부족하다  ② 충분하다",
+      "voice": "예우가 부족한가요, 충분한가요? 댓글로 알려주세요.",
+      "hl": ["부족하다"] }
+  ]
+}

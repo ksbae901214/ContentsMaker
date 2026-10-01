@@ -1,0 +1,135 @@
+{
+  "_comment": "V2.2 와 같은 소재의 V2.1 판 (034 플랫폼 분리 — V2.1은 틱톡). 훅만 원본 육성, 본문은 TTS 논평. body 씬은 start_sec 을 안 받으므로 b-roll 위치를 frac 으로 지정한다. 승인 대본 대비 [1]·[4] 나레이션을 조금 줄였다 — 원문 그대로면 아웃트로 포함 42초 캡을 넘긴다.",
+  "slug": "20260921_choo_jungsuchung_v2_1",
+  "title": "12억 관사까지 꺼냈다",
+  "yt_title": "12억 관사까지 꺼냈다, 민주당 내부 전면전",
+  "yt_title_alt": "대통령 때린 추미애, 돌아온 건 노무현 탄핵",
+  "persons": [
+    "추미애",
+    "김민석",
+    "박지원",
+    "유시민"
+  ],
+  "category": "political",
+  "source_channel": "채널A 뉴스A CITY / 정치9단 박지원 / 채널A 뉴스A",
+  "source_title": "김민석, '盧 탄핵 주도' 추미애 향한 경고 · 박지원 추미애 작심비판",
+  "youtube_url": "https://www.youtube.com/watch?v=6aZQF3pr8hI",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "choo",
+  "cta": {
+    "text": "누가 문제일까?\n① 추미애  ② 김민석",
+    "voice": "누가 문제일까요? 1번 추미애, 2번 김민석. 댓글로 알려주세요.",
+    "hl": [
+      "누가 문제"
+    ],
+    "at_frac": 0.4
+  },
+  "hook": {
+    "_comment": "단어 경계 74.72 '왜' → 77.80 '것입니까?' 다음 단어 79.88 에서 컷 (037).",
+    "source": "choo",
+    "start_sec": 74.72,
+    "duration": 5.16,
+    "text": "추미애, 대통령 직격\n\"왜 업혀서 전전긍긍합니까\"",
+    "hl": [
+      "전전긍긍"
+    ]
+  },
+  "sources": {
+    "choo": {
+      "url": "https://www.youtube.com/watch?v=6aZQF3pr8hI",
+      "dur_max": 900,
+      "verify_frac": 0.42
+    },
+    "pjw": {
+      "_comment": "다운로드 후 crop=880:562:400:0 으로 잘라 교체할 것 — 원본 스튜디오에 제3자 보험 광고판(전화번호)과 하단 번인 카드가 잡힌다. v2_2 디렉터리에 크롭본(src_pjw.mp4)과 원본(src_pjw_orig.mp4)이 있다.",
+      "url": "https://www.youtube.com/watch?v=vnMWqXT4nHE",
+      "dur_max": 900,
+      "verify_frac": 0.62
+    },
+    "ysm": {
+      "url": "https://www.youtube.com/watch?v=qXV-zYe-vyg",
+      "dur_max": 900,
+      "verify_frac": 0.2
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "_comment": "[2026-09-15 기본 지침] 훅 앞 한 줄. 한 문장·4초 이내.",
+      "source": "choo",
+      "frac": 0.1,
+      "text": "민주당이 안에서\n서로를 때리고 있습니다",
+      "voice": "민주당이 안에서 서로를 때리고 있습니다."
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "highlight_category": "fact",
+      "source": "choo",
+      "frac": 0.42,
+      "text": "발단은 중수청장 인선\n\"한동훈과 한배 탔던 사람\"",
+      "voice": "발단은 중수청장 인선입니다. 추미애 지사가 후보자를 한동훈과 한배를 탔던 사람이라고 했습니다.",
+      "hl": [
+        "중수청장",
+        "한배"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "highlight_category": "criticism",
+      "source": "choo",
+      "frac": 0.55,
+      "text": "당에서 돌아온 답\n\"노무현 탄핵 전조\"",
+      "voice": "김민석 대표는 노무현 대통령 탄핵 전조와 비슷한 상황이라고 받아쳤습니다.",
+      "hl": [
+        "탄핵 전조"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "highlight_category": "fact",
+      "source": "pjw",
+      "frac": 0.617,
+      "text": "박지원은 특권을 꺼냈다\n12억 관사 · 7천만원 관용차",
+      "voice": "박지원 의원은 12억짜리 관사와 칠천만원 관용차를 꺼냈습니다. 문제는 추미애라고 했습니다.",
+      "hl": [
+        "특권",
+        "12억 관사"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "highlight_category": "criticism",
+      "source": "ysm",
+      "frac": 0.15,
+      "text": "밖에서는 유시민도\n등을 돌렸다",
+      "voice": "밖에서는 유시민이 등을 돌렸습니다. 여덟 달 전 극찬이 지금은 썩은 내가 됐습니다.",
+      "hl": [
+        "등을 돌렸다"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "highlight_category": "fact",
+      "_comment": "[035] 마지막 씬은 팩트 정리 — 댓글 유도는 cta 블록이 담당. [040] 기록 대조는 '그때는/지금은' 으로.",
+      "source": "choo",
+      "frac": 0.75,
+      "text": "그때는 탄핵을 주도했던 추미애\n지금은 대통령을 지키라 한다",
+      "voice": "김민석 대표가 하필 노무현을 꺼낸 이유가 있습니다. 2004년 그 탄핵을 주도했던 사람이, 바로 추미애였습니다.",
+      "hl": [
+        "그때는",
+        "지금은"
+      ]
+    }
+  ]
+}

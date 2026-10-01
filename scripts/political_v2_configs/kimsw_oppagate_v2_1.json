@@ -1,0 +1,57 @@
+{
+  "_comment": "김승원 법무부 장관 후보자 신약로비 3호 후속 — '오빠 게이트' 확전 (2026-09-07~08). 1호 kimsw_jeongwa_girok(음주운전 전과), 2호 kimsw_singyakrobi(2021 통화 녹취)에 이은 후속. 이번 편의 차별점: 한동훈이 사건을 '오빠 게이트'로 명명하며 최재성·송영길로 확전시킨 지점 + 김승원 본인의 카메라 육성 반박(1·2호엔 없었음). 훅·김승원 인용 둘 다 실제 다운로드+로어서드(인물명 자막) 확인 완료.",
+  "category": "political",
+  "slug": "20260908_kimsw_oppagate_v2_1",
+  "title": "오빠 게이트 확전",
+  "subject_type": "politician",
+  "_subject_type_comment": "039 — 김승원은 직업 정치인(법무부 장관 후보자). ②(대가) 미충족 — 청문회(9/15) 전, 사퇴·철회 없음. 경고 대상이나 사용자 확정으로 진행. 040 — 이번 편은 '과거 문자 vs 현재 부인'보다 '폭로자 대 당사자의 정면 반박'이 더 강한 축. 양쪽 실제 육성이 확보돼 대칭이 화면에 그대로 보인다.",
+  "yt_title": "'오빠 카르텔' 저격에 입 연 김승원",
+  "yt_title_alt": "최재성·송영길까지 번진 '오빠 게이트'",
+  "_yt_title_comment": "17자/18자. 034 보도체·해시태그 게이트 통과(명사 종결).",
+  "persons": ["한동훈", "김승원"],
+  "hashtags": ["#한동훈", "#김승원", "#오빠게이트", "#법무부장관"],
+  "source_channel": "MBN · 연합뉴스TV · 채널A",
+  "source_title": "한동훈 \"민주당 오빠들 게이트\" 의혹 제기 / 김승원 \"검찰 캐비닛 정치\" 반박",
+  "youtube_url": "https://www.youtube.com/watch?v=XpngeP3JE0k",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "han",
+  "hook": {
+    "source": "han",
+    "start_sec": 75.5,
+    "duration": 6.6,
+    "text": "\"민주당 오빠 카르텔이\n얼마나 부패했는지 보여드리겠다\"",
+    "hl": ["오빠 카르텔"],
+    "subtitle_position": "bottom"
+  },
+  "_hook_comment": "한동훈 무소속 의원 실제 육성 (MBN XpngeP3JE0k, 75.5~82.1s, silencedetect로 절 경계 확인). 원문은 '왜 민주당 오빠 카르텔이 이 오빠 독약 로비를 이렇게 몸으로 보호하고 있는지, 민주당 오빠 카르텔이 얼마나 부패한 세력인지를 국민 앞에 낱낱이 보여드리고자 함입니다' — 캡 안에 넣기 위해 완결된 후반 절만 사용. 로어서드 '한동훈|무소속 의원' 프레임 확인 완료.",
+  "sources": {
+    "han":  { "url": "https://www.youtube.com/watch?v=XpngeP3JE0k", "dur_max": 200, "verify_frac": 0.503 },
+    "han2": { "url": "https://www.youtube.com/watch?v=XVMV2il1lz4", "dur_max": 200, "verify_frac": 0.38 },
+    "kim":  { "url": "https://www.youtube.com/watch?v=dGdXaKkyS_A", "dur_max": 300, "verify_frac": 0.72 }
+  },
+  "scenes": [
+    { "type": "body", "color": "yellow", "emph": true, "source": "han2", "frac": 0.381,
+      "text": "2021년 문자엔\n\"승인되면 수천억\"",
+      "voice": "브로커와 나눈 2021년 문자에는 승인만 나면 수천억을 벌 수 있다는 말이 담겨 있었습니다.",
+      "hl": ["수천억"] },
+    { "type": "body", "color": "white", "emph": false, "source": "han2", "frac": 0.063,
+      "text": "최재성 · 송영길까지\n번진 의혹",
+      "voice": "의혹은 최재성 전 청와대 정무수석, 송영길 전 대표까지 번졌습니다.",
+      "hl": ["최재성", "송영길"] },
+    { "type": "body", "color": "blue", "emph": false, "source": "kim", "frac": 0.488,
+      "text": "김승원 \"부정청탁\n없었다\"",
+      "voice": "김승원 후보자는 취재진 앞에서 부정청탁은 없었다고 직접 밝혔습니다.",
+      "hl": ["부정청탁"] },
+    { "type": "body", "color": "red", "emph": true, "source": "kim", "frac": 0.72,
+      "_comment": "[040] CTA 프레이밍 씬 — 절차(캐비닛 유출) vs 실체(부패)의 서로 다른 층위 대립을 명시.",
+      "text": "캐비닛이냐, 부패냐\n서로 다른 걸 문제 삼는다",
+      "voice": "김승원 측은 자료 유출이 문제라 하고, 한동훈 측은 부패 자체가 문제라고 맞섭니다.",
+      "hl": ["캐비닛", "부패"] }
+  ],
+  "cta": {
+    "text": "① 캐비닛 꺼낸 게 잘못\n② 부패하고 나무란 게 잘못",
+    "voice": "1번 캐비닛 문제, 2번 부패가 문제. 댓글로 알려주세요.",
+    "hl": ["잘못"]
+  }
+}

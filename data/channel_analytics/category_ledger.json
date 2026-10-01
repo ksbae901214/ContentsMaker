@@ -1,0 +1,387 @@
+{
+  "version": 1,
+  "description": "쇼츠 성과 원장 (036 카테고리 · 041 포맷) — upload_package 생성 시 자동 기록. 키는 해시태그를 뗀 정규화 제목. 추론이 틀린 과거 편은 여기에 직접 추가.",
+  "entries": {
+    "하영, 하루 만에 뒤집힌 '사실무근'": {
+      "category": "entertainment",
+      "slug": "20260813_hayoung_jeungjobu_v2_2",
+      "recorded_at": "2026-08-13 13:47"
+    },
+    "집 샀더니 5년 해외발령, 한순간에 투기꾼": {
+      "category": "economic",
+      "slug": "20260813_bigeoju_1jutaek_v2_2",
+      "recorded_at": "2026-08-13 18:24"
+    },
+    "국힘도 말렸는데 결국 강행한 이진숙": {
+      "category": "political",
+      "slug": "20260814_ljs_518_forum_v2_2",
+      "recorded_at": "2026-08-14 13:12"
+    },
+    "국힘도 못 말린 이진숙, 결국 제명 위기": {
+      "category": "political",
+      "slug": "20260814_ljs_518_forum_v2_1",
+      "recorded_at": "2026-08-14 13:15"
+    },
+    "장동혁 동원령, 결국 모인 건 20명": {
+      "category": "political",
+      "slug": "20260818_jang_olgongday_v2_2",
+      "recorded_at": "2026-08-18 11:02"
+    },
+    "장동혁 '올공데이', 끝내 89명 불참": {
+      "category": "political",
+      "slug": "20260818_jang_olgongday_v2_1",
+      "recorded_at": "2026-08-18 11:03"
+    },
+    "17년 만에 뒤집힌 배정남 폭행 진술": {
+      "category": "entertainment",
+      "slug": "20260819_baejeongnam_marco_v2_2",
+      "recorded_at": "2026-08-19 13:37"
+    },
+    "배정남 폭행 진술, 17년 만의 반전": {
+      "category": "entertainment",
+      "slug": "20260819_baejeongnam_marco_v2_1",
+      "recorded_at": "2026-08-19 13:39"
+    },
+    "130km 세종행에 결국 총파업 예고": {
+      "category": "economic",
+      "slug": "20260820_sejong_iseon_v2_1",
+      "recorded_at": "2026-08-20 10:07"
+    },
+    "피고인이 대법관을 고른다고?": {
+      "category": "political",
+      "slug": "ljs_daebeopgwan_v2_2",
+      "recorded_at": "2026-08-21 11:35"
+    },
+    "친일파가 더 잘 살았다는 송일국의 고백": {
+      "category": "entertainment",
+      "slug": "20260821_songilguk_chinilpa_v2_1",
+      "recorded_at": "2026-08-21 16:13"
+    },
+    "위라클 박위, 벌써 세 번째 사과": {
+      "category": "entertainment",
+      "slug": "20260824_parkwi_ktx_cctv_v2_1",
+      "recorded_at": "2026-08-24 13:04"
+    },
+    "\"헌법에 대한 도전\"... 이진숙 결국 징계안": {
+      "category": "political",
+      "slug": "20260824_ljs_jikmujeongji_v2_2",
+      "recorded_at": "2026-08-24 13:38"
+    },
+    "김민석 \"국회서 못 있게\"... 나경원 결국 반격": {
+      "category": "political",
+      "slug": "20260824_ljs_jikmujeongji_v2_1",
+      "recorded_at": "2026-08-24 13:37"
+    },
+    "박위, 사과 나흘 만에 강연 줄무산": {
+      "category": "entertainment",
+      "slug": "20260825_parkwi_yeokpung_v2_1",
+      "recorded_at": "2026-08-25 13:10"
+    },
+    "실종 298건, 혼자 처리한 경찰": {
+      "category": "society",
+      "slug": "20260825_jeju_missing_police_v2_2",
+      "recorded_at": "2026-08-25 16:32"
+    },
+    "제주도 실종 공포, 298건의 진실": {
+      "category": "society",
+      "slug": "20260825_jeju_missing_police_v2_1",
+      "recorded_at": "2026-08-25 16:46"
+    },
+    "유시민 입 열자 하루 만에 30%대": {
+      "category": "political",
+      "slug": "20260826_leejm_yusimin_30_v2_2",
+      "recorded_at": "2026-08-26 16:01"
+    },
+    "윤석열과 똑같다는 일등공신의 경고": {
+      "category": "political",
+      "slug": "20260826_leejm_yusimin_30_v2_1",
+      "recorded_at": "2026-08-26 16:04"
+    },
+    "이코노미 아기까지 울린 박수홍의 실체": {
+      "category": "entertainment",
+      "slug": "20260826_parksuhong_bihaenggi_v2_2",
+      "recorded_at": "2026-08-26 17:18"
+    },
+    "또 오른 금리, 등골 휘는 서민들": {
+      "category": "political",
+      "slug": "20260827_leejm_geumri_v2_2",
+      "recorded_at": "2026-08-27 11:33"
+    },
+    "반나절 만에 터진 제니 딥페이크": {
+      "category": "entertainment",
+      "slug": "20260827_jennie_deepfake_v2_2",
+      "recorded_at": "2026-08-27 14:30"
+    },
+    "거짓말 뒤, 끝내 구속영장": {
+      "category": "society",
+      "slug": "20260828_jeju_siljong_v2_1",
+      "recorded_at": "2026-08-28 10:58"
+    },
+    "이재명 경고에도 결국 이 꼴": {
+      "category": "political",
+      "slug": "20260828_susagwon_gyeongchal_v2_2",
+      "recorded_at": "2026-08-28 17:20"
+    },
+    "용혜인, 장관 되고도 배지는 그대로?": {
+      "category": "political",
+      "slug": "20260831_yonghyein_gyeomjik_v2_2",
+      "recorded_at": "2026-08-31 10:59"
+    },
+    "즉흥 여행이라던 나혼산, 결국 외교부行": {
+      "category": "entertainment",
+      "slug": "20260831_jeonhyunmoo_nahonsan_v2_2",
+      "recorded_at": "2026-08-31 11:33"
+    },
+    "전현무 즉흥여행, 결국 외교부行": {
+      "category": "entertainment",
+      "slug": "20260831_jeonhyunmoo_nahonsan_v2_2",
+      "recorded_at": "2026-08-31 13:53"
+    },
+    "기득권 욕하던 용혜인의 내로남불": {
+      "category": "political",
+      "slug": "20260901_yonghyein_naeronambul_v2_2",
+      "recorded_at": "2026-09-01 17:26"
+    },
+    "징역 2년 전과자 조국의 대통령 재판 훈수": {
+      "category": "political",
+      "slug": "20260901_joguk_hunsu",
+      "recorded_at": "2026-09-01 18:23"
+    },
+    "전과자 조국이 던진 '유죄' 훈수": {
+      "category": "political",
+      "slug": "20260901_joguk_hunsu_relay",
+      "recorded_at": "2026-09-01 18:22"
+    },
+    "3억 내고 20년 살았더니 돌아온 대답": {
+      "category": "economic",
+      "slug": "20260902_jangijeonse_20nyeon_v2_2",
+      "recorded_at": "2026-09-02 13:58"
+    },
+    "821조 던진 대통령의 도박수": {
+      "category": "political",
+      "slug": "20260902_yesan821jo_v2_2",
+      "recorded_at": "2026-09-02 17:26"
+    },
+    "\"이제 같이 싸우자\" 사과한 박위에 손 내민 전장연": {
+      "category": "entertainment",
+      "slug": "20260903_parkwi_jeonjangyeon_v2_1",
+      "recorded_at": "2026-09-03 14:44"
+    },
+    "\"안 좋아했다\" 사과한 박위 편에 선 전장연": {
+      "category": "entertainment",
+      "slug": "20260903_parkwi_jeonjangyeon_v2_2",
+      "recorded_at": "2026-09-03 14:47"
+    },
+    "출근 첫날 머리채 잡힌 60대 기간제 교사": {
+      "category": "society",
+      "slug": "20260903_cheongju_gyogwon_v2_1",
+      "recorded_at": "2026-09-03 17:33"
+    },
+    "전날 난동에도 분리 없이 등교시킨 학교": {
+      "category": "society",
+      "slug": "20260903_cheongju_gyogwon_v2_2",
+      "recorded_at": "2026-09-03 17:34"
+    },
+    "벌금 70만원, 전과 기록에서 사라진 판사 출신 후보자": {
+      "category": "political",
+      "slug": "20260904_kimsw_jeongwa_girok_v2_1",
+      "recorded_at": "2026-09-04 14:51"
+    },
+    "두 번 출마하는 동안 비어 있던 전과 기록": {
+      "category": "political",
+      "slug": "20260904_kimsw_jeongwa_girok_v2_2",
+      "recorded_at": "2026-09-04 15:10"
+    },
+    "강신철, 위장전입 7개월이 만든 22억 아파트": {
+      "category": "political",
+      "slug": "20260907_kangsc_wijang_jeonip_v2_1",
+      "recorded_at": "2026-09-07 11:00"
+    },
+    "5억 2천에 받은 서초 아파트, 지금 22억": {
+      "category": "political",
+      "slug": "20260907_kangsc_wijang_jeonip_v2_2",
+      "recorded_at": "2026-09-07 11:04"
+    },
+    "강신철이 5억 2천에 받은 서초 아파트, 지금 22억": {
+      "category": "political",
+      "slug": "20260907_kangsc_wijang_jeonip_v2_2",
+      "recorded_at": "2026-09-07 11:05"
+    },
+    "'공익 민원'이라는 김승원, 녹취엔 계좌번호": {
+      "category": "political",
+      "slug": "20260907_kimsw_singyakrobi_v2_1",
+      "recorded_at": "2026-09-07 15:00"
+    },
+    "5년 전 통화엔 '오빠 선거', 지금은 '공익 민원'": {
+      "category": "political",
+      "slug": "20260907_kimsw_singyakrobi_v2_2",
+      "recorded_at": "2026-09-07 15:04"
+    },
+    "성과급 6억인데 월세 70만원 속인 정황 발각": {
+      "category": "economic",
+      "slug": "20260908_samsung_wolse_bujeong_v2_1",
+      "recorded_at": "2026-09-08 13:40"
+    },
+    "월세 지원금 노리고 벌어진 집단 조작": {
+      "category": "economic",
+      "slug": "20260908_samsung_wolse_bujeong_v2_2",
+      "recorded_at": "2026-09-08 13:41"
+    },
+    "'오빠 카르텔' 저격에 입 연 김승원": {
+      "category": "political",
+      "slug": "20260908_kimsw_oppagate_v2_2",
+      "recorded_at": "2026-09-08 17:06"
+    },
+    "이재명 재판을 흔든 대법원장의 한마디": {
+      "category": "political",
+      "slug": "20260909_johuidae_gukgawonryeok_v2_1",
+      "recorded_at": "2026-09-09 13:41"
+    },
+    "한동훈 조롱한 김민석, 룸싸롱 역풍": {
+      "category": "political",
+      "slug": "20260909_kimms_hdh_v2_2",
+      "recorded_at": "2026-09-09 15:38"
+    },
+    "\"자리 연연 마세요\" 그 말, 부메랑": {
+      "category": "political",
+      "slug": "20260910_yonghyein_yeonyeon_bumerang_v2_2",
+      "recorded_at": "2026-09-10 16:49"
+    },
+    "정체 숨기고 접근한 총리실 과장의 실체": {
+      "category": "political",
+      "slug": "20260911_hdh_chongrisil_v2_2",
+      "recorded_at": "2026-09-11 13:15"
+    },
+    "국회서 두 번 거짓말한 총리실 간부": {
+      "category": "political",
+      "slug": "20260910_hanhoon_ilbanin_v2_2",
+      "recorded_at": "2026-09-14 11:19"
+    },
+    "청와대 행정관에서 법무장관 후보까지": {
+      "category": "political",
+      "slug": "20260914_kimsw_inmul_profile_v3",
+      "recorded_at": "2026-09-14 16:32",
+      "format": "profile_v3"
+    },
+    "양파남 박위, 2시간 강연에 1500만원": {
+      "category": "entertainment",
+      "slug": "20260914_parkwi_gangyeonryo_v2_2",
+      "recorded_at": "2026-09-14 18:48",
+      "format": "v2_1"
+    },
+    "양파남 박위 소년원설, 동창들이 꺼낸 졸업앨범": {
+      "category": "entertainment",
+      "slug": "20260914_parkwi_pamyo_v2_1",
+      "recorded_at": "2026-09-14 18:54",
+      "format": "v2_1"
+    },
+    "\"자료 왜 안 내냐\"던 김승원, 내로남불 64.6%": {
+      "category": "political",
+      "slug": "20260915_kimsw_charyo_v2_1",
+      "recorded_at": "2026-09-15 16:24",
+      "format": "v2_1"
+    },
+    "사퇴시켰는데 지지율은 왜 더 떨어질까": {
+      "category": "political",
+      "slug": "20260916_leejm_jijiyul_v2_2",
+      "recorded_at": "2026-09-16 14:36",
+      "format": "v2_1"
+    },
+    "한 명은 사퇴, 한 명은 강행, 지지율 33%": {
+      "category": "political",
+      "slug": "20260916_leejm_jijiyul_v2_1",
+      "recorded_at": "2026-09-16 14:35",
+      "format": "v2_1"
+    },
+    "9월생은 50만원, 10월생은 0원": {
+      "category": "political",
+      "slug": "20260916_choo_sanhujori_v2_1",
+      "recorded_at": "2026-09-16 16:49",
+      "format": "v2_1"
+    },
+    "\"내려!\" 소리에 날아든 발길질": {
+      "category": "society",
+      "slug": "20260917_noyakja_2hoseon_v2_1",
+      "recorded_at": "2026-09-17 16:06",
+      "format": "v2_1"
+    },
+    "노인이 옷깃 잡자 날아든 발길질": {
+      "category": "society",
+      "slug": "20260917_noyakja_2hoseon_v2_2",
+      "recorded_at": "2026-09-17 16:07",
+      "format": "v2_1"
+    },
+    "자료 유출 캐겠다던 날, 뒤에선 '찰칵'": {
+      "category": "political",
+      "slug": "20260918_kimsw_docchal_v2_1",
+      "recorded_at": "2026-09-18 11:19",
+      "format": "v2_1"
+    },
+    "\"사찰에 가깝습니다\" 뒤집힌 청문회": {
+      "category": "political",
+      "slug": "20260918_kimsw_docchal_v2_2",
+      "recorded_at": "2026-09-18 11:20",
+      "format": "v2_1"
+    },
+    "지지율 33% 추락, 아직도 '전 정권 탓' 이중잣대": {
+      "category": "political",
+      "slug": "20260918_lee_namtat_v2_2",
+      "recorded_at": "2026-09-18 13:39",
+      "format": "v2_1"
+    },
+    "남 탓 비웃던 이재명, 본인도 전 정권 탓 내로남불": {
+      "category": "political",
+      "slug": "20260918_lee_namtat_v2_1",
+      "recorded_at": "2026-09-18 13:40",
+      "format": "v2_1"
+    },
+    "똑똑하다더니 썩은 내, 유시민의 8개월": {
+      "category": "political",
+      "slug": "20260921_yusimin_8months_v2_1",
+      "recorded_at": "2026-09-21 11:07",
+      "format": "v2_1"
+    },
+    "12억 관사까지 꺼냈다, 민주당 내부 전면전": {
+      "category": "political",
+      "slug": "20260921_choo_jungsuchung_v2_1",
+      "recorded_at": "2026-09-21 13:41",
+      "format": "v2_1"
+    },
+    "극찬 8개월 만에 썩은 내, 유시민에게 무슨 일이": {
+      "category": "political",
+      "slug": "20260921_yusimin_8months_v2_1",
+      "recorded_at": "2026-09-21 13:48",
+      "format": "v2_1"
+    },
+    "이재명 '평화 선언' 사흘 뒤, 잘려나간 장병 발목": {
+      "category": "political",
+      "slug": "20260922_dmz_jiroe_v2_1",
+      "recorded_at": "2026-09-22 15:31",
+      "format": "v2_1"
+    },
+    "발목 잃은 다음 날, 유엔에서 한 말": {
+      "category": "political",
+      "slug": "20260929_dmz_jiroe_un_v2_1",
+      "recorded_at": "2026-09-29 14:12",
+      "format": "v2_1"
+    },
+    "지뢰 터진 다음 날 유엔에서 '협력'": {
+      "category": "political",
+      "slug": "20260929_dmz_jiroe_un_v2_2",
+      "recorded_at": "2026-09-29 14:14",
+      "format": "v2_1"
+    },
+    "김여정 '자작극'이라더니… 유엔사 판단은 정전협정 위반": {
+      "category": "political",
+      "slug": "20260930_dmz_mine_kimyj_news_v4",
+      "recorded_at": "2026-09-30 11:32",
+      "format": "news_v4"
+    },
+    "조의금까지 돌려줬는데 대권 작업이라는 박지원": {
+      "category": "political",
+      "slug": "20261001_johd_joeuigeum_v5",
+      "recorded_at": "2026-10-01 14:09",
+      "format": "evidence_v5"
+    }
+  }
+}

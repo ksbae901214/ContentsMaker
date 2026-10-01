@@ -8,6 +8,8 @@ V2 대비 변경점:
      인물의 실제 발언 오디오(mute=False + loudnorm)를 0초에 배치하고
      `yt_title`을 노란 자막으로 오버레이. TTS는 scene 1부터.
      (TTS mp3 앞에 훅 길이만큼 무음 패딩 + 타이밍 시프트 → Remotion 무수정)
+     `scenes[0]` 에 `"intro": true` 를 달면 그 상황 설명 TTS 가 훅보다 **먼저**
+     나오고, 무음은 앞이 아니라 **인트로 나레이션 뒤**에 삽입된다.
   2. **업로드 패키지 자동 생성** — 렌더 완료 시 upload_package.md
      (제목 A/B·설명·해시태그·고정댓글·권장 업로드 시각·썸네일 후보 3장).
   3. scene `type` 기본값 body, `comment` 입력은 body로 강제
@@ -29,6 +31,7 @@ import sys
 import time
 from pathlib import Path
 
+from scripts.shorts_domain import resolve_bg_colors, resolve_emotion_type
 from src.analyzer.script_models import (
     ShortsScript, Metadata, Scene, AudioConfig, BackgroundConfig,
 )
@@ -38,21 +41,135 @@ HOOK_MIN_SEC = 1.0        # 훅 원본 클립 최소 길이
 # 훅은 실촬영 클립이라 AI 생성 5s 제한(MAX_SCENE_DURATION)이 무관하고,
 # 발언이 문장 끝까지 완결되어야 하므로 10s까지 허용 (사용자 피드백 2026-07-14).
 HOOK_MAX_SEC = 10.0
+# 인트로(훅 앞 상황 설명 TTS) 상한. 036 "훅은 가장 센 컷" 규칙과 맞바꾸는 것이라
+# 길어질수록 훅이 밀린다 — 한 문장·4초를 넘으면 경고 (사용자 지시 2026-09-15).
+INTRO_MAX_SEC = 4.0
+INTRO_GATE_KEY = "intro_gate"   # "off" 로 인트로 경고 전체 우회
+GATE_OFF = "off"
 COLORS = {"white", "blue", "red", "yellow"}
 PY = sys.executable       # .venv311/bin/python 로 실행됨
+
+# YouTube 는 재생 URL 에 JS 챌린지(n-sig)를 걸어 두어, 이를 풀지 못하면 포맷이
+# 아예 안 잡히거나 다운로드가 HTTP 403 으로 떨어진다 (2026-08-13 실측: 전 소스
+# 403). yt-dlp 는 챌린지 솔버(EJS)를 기본 배포에 넣지 않으므로 원격 컴포넌트를
+# 명시적으로 켜야 한다. 로컬에 JS 런타임(deno)이 설치돼 있어야 동작한다.
+#   $ brew install deno   # 이미 설치됨: deno 2.9.1
+# 참고: https://github.com/yt-dlp/yt-dlp/wiki/EJS
+YTDLP_CHALLENGE_ARGS = ("--remote-components", "ejs:github")
 
 
 # ── 설정 로드 & 검증 ────────────────────────────────────────────────
 def load_config(path: Path) -> dict:
-    cfg = json.loads(path.read_text(encoding="utf-8"))
+    from scripts.political_cta import apply_cta
+    # 035: cta 블록이 있으면 40% 지점에 tts 씬으로 삽입한 뒤 검증한다
+    cfg = apply_cta(json.loads(path.read_text(encoding="utf-8")))
     validate_config(cfg)
+    for w in config_warnings(cfg):
+        print(f"⚠️ {w}", flush=True)
     return cfg
+
+
+def config_warnings(cfg: dict) -> list[str]:
+    """품질 경고 모음 — 035 길이·CTA, 036 도메인, 039 돌파, 040 중도·편성.
+
+    전부 하드 오류가 아니다 (과거 config 는 유지하고 신규만 기준을 적용한다).
+
+    V2.2(render_political_v2_2.py)도 이 함수를 재사용한다.
+    """
+    from scripts.political_cta import (
+        lint_cta, resolve_cta_style, scene_cta_closing_warnings,
+        trailing_cta_warnings,
+    )
+    from scripts.political_length import length_warnings
+    from scripts.shorts_balance import balance_warnings
+    from scripts.shorts_breakout import breakout_warnings
+    from scripts.shorts_category import resolve_config_category
+    from scripts.shorts_domain import domain_warnings
+    from scripts.shorts_symmetry import symmetry_warnings
+    warnings = list(length_warnings(cfg))
+    if cfg.get("cta"):
+        # 041: 스타일은 포맷이 정한다 — v2_1/v2_2 는 pick(035 선택지형),
+        # profile_v3 는 subscribe(구독 유도형). 미지정 config 는 pick 그대로.
+        warnings.extend(lint_cta(cfg["cta"], resolve_config_category(cfg),
+                                 resolve_cta_style(cfg)))
+    warnings.extend(trailing_cta_warnings(cfg))
+    warnings.extend(scene_cta_closing_warnings(cfg))   # 씬으로 직접 쓴 CTA 종결
+    warnings.extend(domain_warnings(cfg))     # 036: 도메인 주의어·출처 표기
+    warnings.extend(breakout_warnings(cfg))   # 039: 돌파 3조건 (진영밖·대가·종결)
+    warnings.extend(symmetry_warnings(cfg))   # 040: 진영 대칭·기록 대조 프레임
+    warnings.extend(balance_warnings(cfg))    # 040: 편성 비중
+    warnings.extend(intro_warnings(cfg))      # 인트로 상한·훅 누락
+    return warnings
+
+
+# ── 인트로 씬 (훅 앞 상황 설명 TTS) ────────────────────────────────
+def is_intro_scene(sc: dict) -> bool:
+    return bool(sc.get("intro"))
+
+
+def intro_offset(cfg: dict) -> int:
+    """인트로 씬 개수 — 0 또는 1. 훅(원본 육성) 위치를 그만큼 뒤로 민다."""
+    scenes = cfg.get("scenes") or []
+    return 1 if scenes and is_intro_scene(scenes[0]) else 0
+
+
+def hook_scene_id(cfg: dict) -> int:
+    """훅(원본 육성) 씬이 들어갈 scene id. 인트로가 있으면 1, 없으면 0."""
+    return intro_offset(cfg)
+
+
+def gate_intro_position(cfg: dict) -> None:
+    """인트로는 `scenes[0]` 에 최대 1개 — 그 외 위치는 하드 오류.
+
+    중간에 상황 설명을 또 넣으면 릴레이가 끊긴다. 위치를 코드로 묶어 둔다.
+    """
+    for i, sc in enumerate(cfg.get("scenes") or []):
+        if i > 0 and is_intro_scene(sc):
+            raise ValueError(
+                f"scene[{i}] intro — 인트로는 scenes[0] 에 1개만 허용됩니다")
+
+
+def intro_warnings(cfg: dict) -> list[str]:
+    """인트로 누락·길이 상한·훅 누락 경고 (전부 차단 아님).
+
+    **인트로는 V2.1/V2.2 의 기본이다** (사용자 확정 2026-09-15) — 등장인물이
+    여럿인 소재는 맥락 없이 육성부터 틀면 누가 누구에게 하는 말인지 몰라
+    이탈한다. 035/036/039/040 과 같은 방침으로 경고만 하고 차단하지 않는다.
+    우회: `"intro_gate": "off"`.
+    """
+    from scripts.political_length import estimate_tts_sec
+    from scripts.shorts_format import rules_for_config
+    if cfg.get(INTRO_GATE_KEY) == GATE_OFF:
+        return []
+    if not intro_offset(cfg):
+        if not rules_for_config(cfg).intro_required:
+            return []
+        return [
+            "인트로(훅 앞 한 줄 상황 설명 TTS)가 없습니다 — V2.1/V2.2 기본 지침. "
+            f"`scenes[0]` 에 `\"intro\": true` + 한 문장({INTRO_MAX_SEC:.0f}초 이내) "
+            "나레이션을 넣으세요 (우회: \"intro_gate\": \"off\")"
+        ]
+    out = []
+    sc = cfg["scenes"][0]
+    speed = float(cfg.get("tts_speed", 1.1) or 1.1)
+    est = estimate_tts_sec(len(sc.get("voice", "")), speed)
+    if est > INTRO_MAX_SEC:
+        out.append(
+            f"인트로 나레이션 {est:.1f}초 추정 — 상한 {INTRO_MAX_SEC:.0f}초. "
+            "훅이 그만큼 밀립니다 (036: 훅은 가장 센 컷). 한 문장으로 줄이세요")
+    if not cfg.get("hook") and all(
+            s.get("mode", "tts") != "clip" for s in cfg["scenes"]):
+        out.append(
+            "인트로가 있는데 원본 육성 훅이 없습니다 — 인트로는 훅 앞 "
+            "상황 설명용입니다. hook 블록을 넣거나 intro 플래그를 빼세요")
+    return out
 
 
 def validate_config(cfg: dict) -> None:
     for key in ("slug", "title", "sources", "scenes"):
         if key not in cfg:
             raise ValueError(f"config에 '{key}' 누락")
+    gate_intro_position(cfg)
     for i, sc in enumerate(cfg["scenes"]):
         if sc.get("color", "white") not in COLORS:
             raise ValueError(f"scene[{i}] color 잘못됨: {sc.get('color')} (허용: {COLORS})")
@@ -71,6 +188,11 @@ def validate_config(cfg: dict) -> None:
     # 034: 보도체·해시태그 제목은 렌더 전에 차단 (yt_title_lint: "off" 로 우회)
     from scripts.political_upload_package import gate_yt_title
     gate_yt_title(cfg)
+    # 036: category 오타 + 도메인 금지어(경제 투자권유)를 렌더 전에 차단
+    from scripts.shorts_category import resolve_config_category
+    from scripts.shorts_domain import gate_domain_words
+    resolve_config_category(cfg)
+    gate_domain_words(cfg)
 
 
 def scene_type(sc: dict) -> str:
@@ -143,6 +265,7 @@ def _download_source(key: str, spec: dict, out: Path) -> None:
     print(f"⬇️  {key}: {target}", flush=True)
     subprocess.run(
         [PY, "-m", "yt_dlp", target,
+         *YTDLP_CHALLENGE_ARGS,
          "--match-filter", f"duration<{dmax} & duration>{dmin}",
          "--max-downloads", "1", "--force-overwrites", "--no-playlist-reverse",
          "-f", "bv*[height<=720]+ba/b[height<=720]", "--merge-output-format", "mp4",
@@ -162,6 +285,43 @@ def shift_timings(timings: list[dict], offset_ms: int) -> list[dict]:
         {**t, "start_ms": t["start_ms"] + offset_ms, "end_ms": t["end_ms"] + offset_ms}
         for t in timings
     ]
+
+
+def shift_timings_after(timings: list[dict], at_ms: int,
+                        offset_ms: int) -> list[dict]:
+    """at_ms 이후에 시작하는 씬만 뒤로 민다.
+
+    인트로 나레이션 뒤에 훅 육성 구간을 끼워 넣을 때 쓴다. `shift_timings` 는
+    전부 미는 앞 패딩 전용이라 인트로까지 같이 밀려 버린다.
+    """
+    return [
+        {**t, "start_ms": t["start_ms"] + offset_ms,
+               "end_ms": t["end_ms"] + offset_ms}
+        if t["start_ms"] >= at_ms else {**t}
+        for t in timings
+    ]
+
+
+def with_hook_timing(timings: list[dict], hook_sid: int, at_ms: int,
+                     hook_ms: int) -> list[dict]:
+    """훅 씬 구간을 타이밍 목록에 명시적으로 추가한다.
+
+    훅은 voice 가 없어 TTS 타이밍에 안 잡히고, `renderer.py` 는 타이밍이 없는
+    씬의 timestamp 를 `build_script` 값(`float(sid)`) 그대로 둔다. 훅이 scene 0
+    이면 0.0 이라 우연히 맞지만, 인트로가 앞에 오면 sid=1 → 1.0초가 되어
+    인트로 자막을 덮어 버린다 (2026-09-15 렌더 실측).
+    """
+    if hook_sid <= 0:
+        return timings
+    return [*timings, {"scene_id": hook_sid,
+                       "start_ms": at_ms, "end_ms": at_ms + hook_ms}]
+
+
+def config_scene_index(sid: int, hook_sid: int) -> int:
+    """scene id → cfg["scenes"] 인덱스. hook_sid=-1 이면 훅 없음(그대로)."""
+    if hook_sid < 0:
+        return sid
+    return sid if sid < hook_sid else sid - 1
 
 
 def scale_timings(timings: list[dict], speed: float) -> list[dict]:
@@ -198,6 +358,35 @@ def _pad_audio_front(audio: Path, pad_ms: int, out: Path) -> Path:
     return out
 
 
+def build_insert_silence_filter(at_ms: int, pad_ms: int) -> str:
+    """TTS mp3 의 at_ms 지점에 무음 pad_ms 를 끼워 넣는 filter_complex 문자열.
+
+    at_ms=0 이면 분할이 필요 없어 `_pad_audio_front` 와 같은 adelay 한 줄이다.
+    """
+    if at_ms <= 0:
+        return f"[0:a]adelay={pad_ms}:all=1[aout]"
+    cut = at_ms / 1000
+    return (
+        f"[0:a]atrim=end={cut:.3f},asetpts=PTS-STARTPTS[a0];"
+        f"[0:a]atrim=start={cut:.3f},asetpts=PTS-STARTPTS,"
+        f"adelay={at_ms + pad_ms}:all=1[a1];"
+        f"[a0][a1]amix=inputs=2:normalize=0[aout]"
+    )
+
+
+def _insert_silence(audio: Path, at_ms: int, pad_ms: int, out: Path) -> Path:
+    """인트로 나레이션 뒤(at_ms)에 훅 길이만큼 무음을 삽입한 mp3 생성."""
+    r = subprocess.run(
+        ["ffmpeg", "-v", "error", "-y", "-i", str(audio),
+         "-filter_complex", build_insert_silence_filter(at_ms, pad_ms),
+         "-map", "[aout]", "-codec:a", "libmp3lame", "-q:a", "2", str(out)],
+        capture_output=True, text=True,
+    )
+    if r.returncode != 0 or not out.exists():
+        raise RuntimeError(f"TTS 무음 삽입 실패: {r.stderr[:300]}")
+    return out
+
+
 def _speed_audio(audio: Path, speed: float, out: Path) -> Path:
     """TTS mp3 를 speed 배로 가속 (atempo, 피치 유지). 훅 육성엔 미적용."""
     r = subprocess.run(
@@ -228,49 +417,74 @@ def _loudnorm_clip_audio(clip: Path) -> None:
 
 
 # ── 스크립트 구성 ──────────────────────────────────────────────────
+def _hook_scene(cfg: dict, sid: int, hook_dur: float) -> Scene:
+    hook = cfg["hook"]
+    return Scene(
+        id=sid, timestamp=float(sid), duration=hook_dur,
+        type="title",
+        text=hook.get("text") or cfg.get("yt_title") or cfg["title"],
+        voice_text="",  # TTS 없음 — 원본 발언 음성 재생
+        emphasis="high",
+        highlight_words=tuple(hook.get("hl", ())),
+        visual_type="video",
+        subtitle_color="yellow",
+        subtitle_emphasis=True,
+        hook=True,
+        # 훅 원본 육성 씬은 자막이 인물을 가리지 않도록 영상 아래 배치 (기본 bottom)
+        subtitle_position=hook.get("subtitle_position", "bottom"),
+        highlight_category=hook.get("highlight_category", "neutral"),
+    )
+
+
+def _tts_scene(sc: dict, sid: int, is_hook: bool) -> Scene:
+    emph = bool(sc.get("emph", False))
+    return Scene(
+        id=sid, timestamp=float(sid), duration=1.0,
+        type=scene_type(sc),
+        text=sc["text"], voice_text=sc["voice"],
+        emphasis="high" if emph else "medium",
+        highlight_words=tuple(sc.get("hl", ())),
+        visual_type="video",
+        subtitle_color=sc.get("color", "white"),
+        subtitle_emphasis=emph,
+        hook=is_hook,
+        # 방송 번인 자막(로어서드)과 겹칠 때 "bottom" 으로 레터박스 아래 배치.
+        # 미지정("")이면 기존 동작(position_y 0.652) 유지.
+        subtitle_position=sc.get("subtitle_position", ""),
+        # 036 은 "emotion_type 을 바꿔도 화면은 그대로고 BGM 만 바뀐다"고 했지만,
+        # 강조어 색만은 emotion 에 묶여 있었다(relatable 하늘색 ↔ touching 분홍).
+        # BGM 을 어둡게 바꾸려고 emotion 을 건드리면 자막색이 딸려 바뀌므로
+        # 씬에서 직접 고정할 수 있게 연결한다. 미지정 "neutral" = 기존 동작.
+        highlight_category=sc.get("highlight_category", "neutral"),
+    )
+
+
 def build_script(cfg: dict, hook_dur: float = 0.0) -> ShortsScript:
-    """hook_dur > 0 이면 scene 0 = 원본 육성 훅 (voice_text="")."""
-    scenes, parts = [], []
-    offset = 0
+    """hook_dur > 0 이면 원본 육성 훅(voice_text="")을 씬 목록에 끼워 넣는다.
+
+    훅 위치는 인트로 유무가 정한다 — 인트로가 있으면 [인트로 → 훅 → 본문],
+    없으면 기존대로 [훅 → 본문].
+    """
+    cfg_scenes = cfg["scenes"]
+    intro_n = intro_offset(cfg) if hook_dur > 0 else 0
+    # None = 훅 자리, dict = config 씬
+    ordered: list[dict | None] = [*cfg_scenes[:intro_n]]
     if hook_dur > 0:
-        hook = cfg["hook"]
-        scenes.append(Scene(
-            id=0, timestamp=0.0, duration=hook_dur,
-            type="title",
-            text=hook.get("text") or cfg.get("yt_title") or cfg["title"],
-            voice_text="",  # TTS 없음 — 원본 발언 음성 재생
-            emphasis="high",
-            highlight_words=tuple(hook.get("hl", ())),
-            visual_type="video",
-            subtitle_color="yellow",
-            subtitle_emphasis=True,
-            hook=True,
-            # 훅 원본 육성 씬은 자막이 인물을 가리지 않도록 영상 아래 배치 (기본 bottom)
-            subtitle_position=hook.get("subtitle_position", "bottom"),
-        ))
-        offset = 1
-    for i, sc in enumerate(cfg["scenes"]):
-        sid = i + offset
-        emph = bool(sc.get("emph", False))
-        scenes.append(Scene(
-            id=sid, timestamp=float(sid), duration=1.0,
-            type=scene_type(sc),
-            text=sc["text"], voice_text=sc["voice"],
-            emphasis="high" if emph else "medium",
-            highlight_words=tuple(sc.get("hl", ())),
-            visual_type="video",
-            subtitle_color=sc.get("color", "white"),
-            subtitle_emphasis=emph,
-            hook=(sid == 0),
-            # 방송 번인 자막(로어서드)과 겹칠 때 "bottom" 으로 레터박스 아래 배치.
-            # 미지정("")이면 기존 동작(position_y 0.652) 유지.
-            subtitle_position=sc.get("subtitle_position", ""),
-        ))
+        ordered.append(None)
+    ordered.extend(cfg_scenes[intro_n:])
+
+    scenes, parts = [], []
+    for sid, sc in enumerate(ordered):
+        if sc is None:
+            scenes.append(_hook_scene(cfg, sid, hook_dur))
+            continue
+        # 훅이 있으면 어떤 TTS 씬도 hook 이 아니다 (훅 스타일은 육성 씬 전용).
+        scenes.append(_tts_scene(sc, sid, is_hook=(sid == 0 and hook_dur <= 0)))
         parts.append(sc["voice"])
     return ShortsScript(
         metadata=Metadata(
             title=cfg["title"],
-            emotion_type=cfg.get("emotion_type", "angry"),
+            emotion_type=resolve_emotion_type(cfg),          # 036: 카테고리별 기본값
             duration=float(cfg.get("duration", 40.0)),
             source_url=cfg.get("youtube_url", ""),
             source_type="political_pro",
@@ -287,7 +501,7 @@ def build_script(cfg: dict, hook_dur: float = 0.0) -> ShortsScript:
         ),
         background=BackgroundConfig(
             type="gradient",
-            colors=tuple(cfg.get("bg_colors", ("#7f1d1d", "#450a0a", "#000000"))),
+            colors=resolve_bg_colors(cfg),                   # 036: 카테고리별 기본값
         ),
     )
 
@@ -333,16 +547,30 @@ def cmd_render(cfg: dict) -> int:
         timings = scale_timings(timings, speed)
         print(f"⏩ TTS {speed:.2f}x 가속 (atempo + 타이밍 스케일, 훅 제외)", flush=True)
 
+    hook_sid = hook_scene_id(cfg) if hook_dur > 0 else -1
     if hook_dur > 0:
         hook_ms = int(round(hook_dur * 1000))
         padded = wd / f"{audio_path.stem}_hookpad.mp3"
-        audio_path = _pad_audio_front(audio_path, hook_ms, padded)
-        timings = shift_timings(timings, hook_ms)
-        print(f"✅ TTS 앞 무음 {hook_ms}ms 패딩 + 타이밍 시프트", flush=True)
+        if hook_sid == 0:
+            audio_path = _pad_audio_front(audio_path, hook_ms, padded)
+            timings = shift_timings(timings, hook_ms)
+            print(f"✅ TTS 앞 무음 {hook_ms}ms 패딩 + 타이밍 시프트", flush=True)
+        else:
+            # 인트로 나레이션이 끝나는 지점에 훅 길이만큼 무음을 끼워 넣는다.
+            at_ms = max(t["end_ms"] for t in timings
+                        if t["scene_id"] < hook_sid and t["scene_id"] != -1)
+            audio_path = _insert_silence(audio_path, at_ms, hook_ms, padded)
+            timings = shift_timings_after(timings, at_ms, hook_ms)
+            timings = with_hook_timing(timings, hook_sid, at_ms, hook_ms)
+            print(f"✅ 인트로 뒤 {at_ms}ms 지점에 무음 {hook_ms}ms 삽입 "
+                  "+ 이후 타이밍 시프트", flush=True)
 
     main = [t for t in timings if t["scene_id"] != -1]
     total_ms = max(t["end_ms"] for t in main)
     print(f"✅ 합성·정렬 완료: {total_ms/1000:.1f}s (훅 포함), {len(main)}씬", flush=True)
+    # 035 완주율 게이트 — 실측 길이로 하드 차단 (Remotion 렌더 전에 fail-fast)
+    from scripts.political_length import enforce_length
+    enforce_length(total_ms / 1000.0, cfg)
 
     print("✂️ 씬 클립 9:16 컷 (인물별 소스)...", flush=True)
     from src.dem_shorts.editor.segment_cutter import cut_segment
@@ -350,21 +578,22 @@ def cmd_render(cfg: dict) -> int:
                  for k in cfg["sources"]}
     ts = int(time.time())
     scene_videos = []
-    scene_offset = 1 if hook_dur > 0 else 0
 
     if hook_dur > 0:
         hook_src = src_path(wd, cfg["hook"]["source"])
-        hook_out = wd / f"scene_{ts}_00.mp4"
+        hook_out = wd / f"scene_{ts}_{hook_sid:02d}.mp4"
         cut_segment(input_path=hook_src, output_path=hook_out,
                     start_sec=hook_start, end_sec=hook_start + hook_dur, mute=False)
         _loudnorm_clip_audio(hook_out)
-        scene_videos.append({"scene_id": 0, "video_path": str(hook_out)})
-        print(f"   S0(훅·육성) ← {cfg['hook']['source']} "
+        scene_videos.append({"scene_id": hook_sid, "video_path": str(hook_out)})
+        print(f"   S{hook_sid}(훅·육성) ← {cfg['hook']['source']} "
               f"[{hook_start:.1f}~{hook_start + hook_dur:.1f}]", flush=True)
 
     for t in main:
         sid = t["scene_id"]
-        sc = cfg["scenes"][sid - scene_offset]
+        if sid == hook_sid:
+            continue    # 훅은 위에서 육성으로 컷했다 — b-roll 로 덮어쓰면 안 된다
+        sc = cfg["scenes"][config_scene_index(sid, hook_sid)]
         key = sc["source"]
         if not src_path(wd, key).exists():
             key = fallback
@@ -389,9 +618,10 @@ def cmd_render(cfg: dict) -> int:
     )
     print(f"\n📁 출력: {mp4} ({mp4.stat().st_size/1024/1024:.1f}MB)", flush=True)
 
-    from scripts.political_upload_package import generate_upload_package
+    from scripts.political_upload_package import build_chat_ready_block, generate_upload_package
     pkg = generate_upload_package(cfg, video_path=mp4, out_dir=wd)
     print(f"📦 업로드 패키지: {pkg}", flush=True)
+    print(f"\n{build_chat_ready_block(cfg)}\n", flush=True)
     print(str(mp4))
     return 0
 

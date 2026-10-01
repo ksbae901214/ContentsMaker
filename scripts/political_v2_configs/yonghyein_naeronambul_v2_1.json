@@ -1,0 +1,45 @@
+{
+  "_comment": "용혜인(성평등가족부 장관 후보자) 과거 논란 총집합 — '기득권을 욕하던 사람이 기득권처럼 살았다' 내로남불 프레임. 훅(우원식 생중계 제지) 제거 — 사용자 청음 확인 결과 소재와 무관 판단(2026-09-01). 4개 TTS 나레이션 씬(청문회 반말 설전/금배지 언박싱/공항 귀빈실/이태원 도촬+내로남불 정리) 전부 실제 관련 뉴스 영상으로 매칭, verify frame으로 용혜인 본인 등장 확인 완료. 전부 mode:tts(B-roll+나레이션) — 소스 전부 앵커·기자 내레이션 뉴스 패키지라 원본 오디오 그대로 쓰는 clip 모드에 넣을 깨끗한 단독 육성 구간을 못 찾음.",
+  "slug": "20260901_yonghyein_naeronambul_v2_1",
+  "title": "용혜인 내로남불",
+  "yt_title": "기득권 욕하던 용혜인의 내로남불",
+  "yt_title_alt": "용혜인이 다 챙긴 특혜 총정리",
+  "persons": ["용혜인"],
+  "hashtags": ["#용혜인", "#내로남불", "#장관후보자", "#기본소득당"],
+  "source_channel": "종합(JTBC·TV조선·SBS·연합뉴스TV)",
+  "source_title": "용혜인 과거 논란 총정리",
+  "youtube_url": "https://www.youtube.com/watch?v=Y9GVibQ-APk",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "hearing",
+  "cta": {
+    "text": "이 정도면\n① 내로남불이다  ② 억울하다",
+    "voice": "1번 내로남불이다, 2번 억울하다. 댓글로 알려주세요.",
+    "hl": ["내로남불"]
+  },
+  "sources": {
+    "hearing":  { "url": "https://www.youtube.com/watch?v=Y9GVibQ-APk", "dur_max": 900, "verify_frac": 0.274 },
+    "badge":    { "url": "https://www.youtube.com/watch?v=LTHP-kiTqOs", "dur_max": 200, "verify_frac": 0.3 },
+    "airport":  { "url": "https://www.youtube.com/watch?v=hMQ9ap5f7uM", "dur_max": 200, "verify_frac": 0.056 },
+    "itaewon":  { "url": "https://www.youtube.com/watch?v=jaGscnCus4k", "dur_max": 100, "verify_frac": 0.302 }
+  },
+  "scenes": [
+    { "type": "body", "color": "red", "emph": true, "source": "hearing", "frac": 0.274,
+      "text": "청문회장 뒤집은\n\"야!\" 고성 설전",
+      "voice": "국정조사 자리에서는 여야 의원과 고성이 오가는 반말 설전까지 벌였습니다.",
+      "hl": ["고성", "설전"] },
+    { "type": "body", "color": "yellow", "emph": true, "source": "badge", "frac": 0.3,
+      "text": "금배지 팔면\n\"신박한 재테크\"",
+      "voice": "당선 직후엔 금배지를 언박싱하며, 팔면 신박한 재테크라는 말로 논란을 자초했습니다.",
+      "hl": ["금배지", "재테크"] },
+    { "type": "body", "color": "white", "emph": false, "source": "airport", "frac": 0.056,
+      "text": "가족여행엔\n공항 귀빈실까지",
+      "voice": "가족 여행을 가면서는 공항 귀빈실까지 썼습니다. 규정에 없는 특혜였습니다.",
+      "hl": ["공항 귀빈실", "특혜"] },
+    { "type": "body", "color": "red", "emph": true, "source": "itaewon", "frac": 0.302,
+      "_comment": "[035] 마지막 씬은 팩트 정리로 닫는다 — 댓글 유도는 cta 블록으로 분리.",
+      "text": "기득권 욕하던 사람이\n기득권처럼 살아왔다",
+      "voice": "이태원 참사 국정조사에선 보좌진 촬영 논란으로 파행까지 냈습니다. 기득권을 없애자던 사람이, 정작 기득권처럼 살아온 겁니다.",
+      "hl": ["기득권", "파행"] }
+  ]
+}

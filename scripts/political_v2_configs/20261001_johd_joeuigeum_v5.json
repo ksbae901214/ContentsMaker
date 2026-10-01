@@ -1,0 +1,148 @@
+{
+  "_comment": "V5.0 파일럿 1호 (043 Phase E). 박지원 '조희대 인지도 작업' 발언 vs 부고 사양·조의금 봉투째 반환 사실 대조. 사실 근거는 fact_sources 4건.",
+  "format": "evidence_v5",
+  "slug": "20261001_johd_joeuigeum_v5",
+  "category": "political",
+  "subject_type": "politician",
+  "headline": [
+    "봉투째 돌려준 조희대",
+    "이게 대권 작업?"
+  ],
+  "title": "조의금까지 돌려줬는데 대권 작업",
+  "yt_title": "조의금까지 돌려줬는데 대권 작업이라는 박지원",
+  "yt_title_alt": "부고도 숨긴 대법원장에게 인지도 작업 프레임",
+  "hashtags": [
+    "#조희대",
+    "#박지원",
+    "#조의금",
+    "#대법원장"
+  ],
+  "persons": [
+    "조희대",
+    "박지원"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "조희대, 부친상 조의금 봉투째 돌려줘… \"가족끼리 조용히 치르려 했다\"",
+      "url": "https://n.news.naver.com/article/023/0004001290",
+      "outlet": "조선일보"
+    },
+    {
+      "title": "\"부친상 조용히 치르겠다\"던 조희대, 조의금도 봉투째 전부 돌려줬다",
+      "url": "https://n.news.naver.com/article/088/0001031526",
+      "outlet": "매일신문"
+    },
+    {
+      "title": "박지원 \"조희대, 대통령 나오려고 인지도 작업…국감서 맞짱 뜰 것\"",
+      "url": "https://n.news.naver.com/article/028/0002825263",
+      "outlet": "한겨레"
+    },
+    {
+      "title": "SBS 뉴스 — 조희대 조의금 봉투째 반환 (김민석 대표 조문·지방은 사무국장 보내 반환)",
+      "url": "https://www.youtube.com/watch?v=jiye8OyEqHA",
+      "outlet": "SBS"
+    }
+  ],
+  "sources": {
+    "jtbc": {
+      "url": "https://www.youtube.com/watch?v=rXAbPTSnQsw",
+      "channel": "JTBC"
+    },
+    "sbs": {
+      "url": "https://www.youtube.com/watch?v=jiye8OyEqHA",
+      "channel": "SBS"
+    },
+    "kbs": {
+      "url": "https://www.youtube.com/watch?v=qbc95B9Otv0",
+      "channel": "KBS"
+    },
+    "yna": {
+      "url": "https://www.youtube.com/watch?v=kQ2lk7ONUeI",
+      "channel": "연합뉴스TV"
+    }
+  },
+  "scenes": [
+    {
+      "mode": "clip",
+      "source": "jtbc",
+      "start_sec": 21.55,
+      "duration": 5.8,
+      "focus_x": 0.3,
+      "text": "검찰총장 윤석열 대통령 나오려고 인지도 높이는 작업을 하는 것 같아",
+      "pop": "인지도 작업?"
+    },
+    {
+      "mode": "tts",
+      "source": "kbs",
+      "start_sec": 37.0,
+      "flash": true,
+      "voice": "박지원 의원이 대권 작업 중이라던 조희대 대법원장, 정작 아버지 부고부터 알리지 말라고 했습니다.",
+      "hl": [
+        "대권 작업"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "sbs",
+      "start_sec": 55.5,
+      "voice": "법원엔 절대 조문 오지 말라 했고, 빈소엔 조의금 사양 안내문까지 붙였습니다.",
+      "hl": [
+        "절대 조문 오지 말라"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "sbs",
+      "start_sec": 37.0,
+      "voice": "그래도 놓고 간 봉투는 장례 뒤 봉투째 돌려줬고, 지방 부의금은 법원 사무국장을 일일이 보내 돌려줬답니다.",
+      "hl": [
+        "봉투째",
+        "일일이"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "kbs",
+      "start_sec": 45.0,
+      "flash": true,
+      "pop": "부고부터 막는다?",
+      "voice": "자, 여기서 이상합니다. 인지도를 쌓으려는 사람이 부고부터 막습니까?"
+    },
+    {
+      "mode": "clip",
+      "source": "kbs",
+      "start_sec": 17.6,
+      "duration": 9.6,
+      "text": "가족끼리 조촐하게 치르려고 했는데 갑자기 요란스럽게 되어서 국민들께 송구한 마음입니다"
+    },
+    {
+      "mode": "tts",
+      "source": "sbs",
+      "start_sec": 64.0,
+      "voice": "더 웃긴 건 그 빈소에 김민석 민주당 대표도 조문을 다녀갔다는 겁니다.",
+      "hl": [
+        "김민석"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "yna",
+      "start_sec": 31.0,
+      "voice": "당 대표는 조문을 가고, 같은 당 의원은 대권 작업이라니. 손발부터 맞추셔야겠습니다."
+    },
+    {
+      "mode": "tts",
+      "source": "yna",
+      "start_sec": 109.0,
+      "voice": "봉투는 봉투째 돌아왔는데, 대권 프레임은 끝까지 안 거둬들이나 봅니다."
+    }
+  ],
+  "cta": {
+    "voice": "조의금 반환, 진심일까요? 1번 진심, 2번 계산. 댓글로 알려주세요.",
+    "text": "① 진심\n② 계산",
+    "source": "kbs",
+    "frac": 0.6
+  }
+}

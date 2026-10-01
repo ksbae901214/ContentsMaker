@@ -83,6 +83,7 @@ def render_video(
     headline_plain: bool = False,
     badge_boxed: bool | None = None,
     news_card: dict | None = None,
+    evidence_layer: dict | None = None,
 ) -> Path:
     """Render a ShortsScript into an MP4 video.
 
@@ -112,6 +113,10 @@ def render_video(
         news_card: 042 V4.0 사진 슬라이드 — {photos:[{path,fit,start_ms,end_ms}],
                   captions:[{text,start_ms,end_ms,hl,color}], credit_line, font_family}.
                   지정 시 씬별 비주얼 대신 NewsCardLayer 가 사진·자막·출처를 그린다.
+        evidence_layer: 043 V5.0 증거 삽입형 — {headline, headline_colors, captions,
+                  pops, evidence:[{path,start_ms,end_ms,marks}], flashes, channel_label,
+                  source_label, font_family}. 지정 시 씬 영상은 미디어 박스에만 깔리고
+                  헤드라인·자막·증거 카드는 EvidenceLayer 가 그린다.
     """
     # SFX globally disabled (2026-06-12) — UI 토글·CLI 인자와 무관하게 항상 OFF.
     # 데이터 모델(`SfxConfig`, `Scene.sfx`)·자동 할당 모듈(`sfx_matcher.py`)·에셋
@@ -183,6 +188,12 @@ def render_video(
     news_card_props = None
     if news_card:
         news_card_props = _news_card_props(news_card, public_dir, timestamp, temp_files)
+
+    # 043 V5.0 증거 카드 캡처 — 렌더 전 fail-fast (042 와 같은 이유)
+    evidence_props = None
+    if evidence_layer:
+        evidence_props = _evidence_layer_props(evidence_layer, public_dir, timestamp,
+                                               temp_files)
 
     # Continuous background video (단일 연속 클립 — 씬별 컷 끊김 제거용).
     background_video_filename = ""
@@ -348,6 +359,10 @@ def render_video(
         props["newsCard"] = news_card_props
         # 출처 줄은 카드가 자기 위치·스타일로 그린다 — 기본 박스 라벨과 중복 금지.
         props["sourceLabel"] = ""
+    if evidence_props is not None:
+        props["evidenceLayer"] = evidence_props
+        # 출처는 레이어가 우상단에 그린다 — 하단 기본 박스 라벨과 중복 금지.
+        props["sourceLabel"] = ""
 
     props_path = target_dir / f"{timestamp}_props.json"
     props_path.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
@@ -438,6 +453,41 @@ def _news_card_props(card: dict, public_dir: Path, timestamp: str,
         "captions": captions,
         "creditLine": card.get("credit_line", ""),
         "fontFamily": card.get("font_family", ""),
+    }
+
+
+def _evidence_layer_props(layer: dict, public_dir: Path, timestamp: str,
+                          temp_files: list[Path]) -> dict:
+    """043 V5.0 — 증거 캡처를 public/ 으로 복사하고 Remotion camelCase 프롭을 만든다."""
+    evidence = layer.get("evidence") or []
+    missing = [e["path"] for e in evidence if not Path(e["path"]).exists()]
+    if missing:
+        raise FileNotFoundError(f"증거 캡처 없음: {', '.join(missing)}")
+    cards = []
+    for i, e in enumerate(evidence):
+        src = Path(e["path"])
+        name = f"evid_{timestamp}_{i:02d}{src.suffix.lower() or '.png'}"
+        shutil.copy2(src, public_dir / name)
+        temp_files.append(public_dir / name)
+        cards.append({"file": name, "startMs": int(e["start_ms"]),
+                      "endMs": int(e["end_ms"]),
+                      "marks": [dict(m) for m in e.get("marks") or []]})
+    return {
+        "headline": list(layer.get("headline") or []),
+        "headlineColors": list(layer.get("headline_colors") or []),
+        "captions": [{"text": c["text"], "startMs": int(c["start_ms"]),
+                      "endMs": int(c["end_ms"]), "hl": list(c.get("hl") or [])}
+                     for c in layer.get("captions") or []],
+        "pops": [{"text": p["text"], "startMs": int(p["start_ms"]),
+                  "endMs": int(p["end_ms"])} for p in layer.get("pops") or []],
+        "evidence": cards,
+        "flashesMs": [int(ms) for ms in layer.get("flashes") or []],
+        "framing": [{"sceneId": int(f["scene_id"]), "zoom": float(f.get("zoom", 1.0)),
+                     "focusX": float(f.get("focus_x", 0.5))}
+                    for f in layer.get("framing") or []],
+        "channelLabel": layer.get("channel_label", ""),
+        "sourceLabel": layer.get("source_label", ""),
+        "fontFamily": layer.get("font_family", ""),
     }
 
 

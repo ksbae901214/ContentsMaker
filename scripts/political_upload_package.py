@@ -338,10 +338,8 @@ def build_upload_package_md(
         lines += ["", f"## 포맷 체크리스트 ({fmt.label}, `{fmt.format}`)",
                   f"> 오디오: {fmt.audio_policy}"]
         lines.extend(f"- [ ] {item}" for item in fmt.checklist)
-        if not fmt.symmetry_applies:
-            lines.append(
-                "- ⓘ 위 카테고리 체크리스트의 **진영 대칭·선택지형 CTA 항목은 이 "
-                "포맷에 적용되지 않는다** — 인물 1명을 다루고 CTA 는 구독 유도형이다")
+        if not fmt.symmetry_applies and fmt.symmetry_off_note:
+            lines.append(f"- ⓘ {fmt.symmetry_off_note}")
     lines += [
         "",
         "---",

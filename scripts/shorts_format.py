@@ -32,8 +32,9 @@ V2_1 = "v2_1"
 V2_2 = "v2_2"
 PROFILE_V3 = "profile_v3"
 NEWS_V4 = "news_v4"
+EVIDENCE_V5 = "evidence_v5"
 
-FORMATS = (V2_1, V2_2, PROFILE_V3, NEWS_V4)
+FORMATS = (V2_1, V2_2, PROFILE_V3, NEWS_V4, EVIDENCE_V5)
 DEFAULT_FORMAT = V2_1          # 미지정 config = 기존 정치쇼츠 (동작 무변경)
 UNKNOWN_FORMAT = "unknown"     # 원장에 기록이 없는 과거 편
 FORMAT_KEY = "format"
@@ -61,6 +62,10 @@ class FormatRules:
     # 훅 앞 한 줄 상황 설명(intro) 이 기본인가 (사용자 확정 2026-09-15)
     intro_required: bool
     checklist: tuple[str, ...]
+    # 최종 mp4 하드 캡(초). 0 이면 political_length 기본값(035 캡)을 쓴다.
+    max_final_sec: float = 0.0
+    # symmetry_applies=False 일 때 업로드 패키지에 붙이는 고지 한 줄 (왜 빠지는지)
+    symmetry_off_note: str = ""
 
 
 _V2_CHECKLIST = (
@@ -100,6 +105,9 @@ FORMAT_RULES: dict[str, FormatRules] = {
         headline_font="GungSeo",
         # 훅 육성 뒤 나레이션이 전체를 끌고 가는 구조라 별도 상황 설명이 중복된다.
         intro_required=False,
+        symmetry_off_note=(
+            "위 카테고리 체크리스트의 **진영 대칭·선택지형 CTA 항목은 이 포맷에 "
+            "적용되지 않는다** — 인물 1명을 다루고 CTA 는 구독 유도형이다"),
         checklist=(
             "나레이션의 모든 이력·수치가 fact_sources 의 실제 기사에 있는가 "
             "— 소스에 없는 경력·직책·수상·생년을 지어내지 않았는가 (명예훼손 "
@@ -140,6 +148,38 @@ FORMAT_RULES: dict[str, FormatRules] = {
             "원문 캡처(SNS·기사)는 fit=contain 으로 잘리지 않고 읽히는가",
             "완료 블록에 자극적 제목 A/B(yt_title·yt_title_alt) + 3줄요약 + 해시태그 "
             "3~4개가 다 있는가 — 공포·충격·호기심 톤, 명사로 닫기 (사용자 지시 2026-09-30)",
+        ),
+    ),
+    EVIDENCE_V5: FormatRules(
+        format=EVIDENCE_V5, label="V5.0 증거 삽입형 TTS 논평",
+        audio_policy="여성 TTS 논평 75~100% + 원본 육성 증거 클립 10~25%, "
+                     "정치 어두운 BGM 저음량, 효과음 없음",
+        # 한쪽 진영 공격 허용 (사용자 확정 2026-10-01, 벤치마크 @lkbhop 전 편이 단방향)
+        symmetry_applies=False,
+        breakout_notice_only=False,
+        # CTA 는 채널 지침 그대로 — 질문 + 선택지 + '댓글로 알려주세요' (사용자 확정)
+        default_cta_style=CTA_STYLE_PICK,
+        headline_font="BM Dohyeon",
+        # 상위 10편 전부 훅이 첫 프레임에 바로 터진다 — 상황 설명 한 줄을 앞에 두지 않는다
+        intro_required=False,
+        # 벤치마크 실측 62~66초가 주력, 채널 내 60~74초 구간 중앙값 최고 (043 §1)
+        max_final_sec=70.0,
+        symmetry_off_note=(
+            "위 카테고리 체크리스트의 **진영 대칭 항목은 이 포맷에 적용되지 않는다** "
+            "— 한쪽 진영 공격을 허용하는 포맷이다 (사용자 확정 2026-10-01). 대신 모든 "
+            "사실 주장(금액·날짜·판결)에 fact_sources 근거가 있어야 한다"),
+        checklist=(
+            "증거가 최소 1개 있는가 — 원본 육성 클립(mode: clip) 또는 캡처 증거 카드"
+            "(evidence). 인신 조롱만 있는 편은 중앙값에 머문다 (043 실측 상위 10/10 vs 중앙 0/3)",
+            "시청자 이해관계(세금 금액·내 지갑) 또는 '과거 발언 vs 현재 행동' 모순이 "
+            "제목·훅에 드러나는가",
+            "나레이션의 모든 사실 주장이 fact_sources 의 실제 기사에 있는가 — 논평 "
+            "75% 이상이 채널 자신의 서술이라 육성 인용이라는 방패가 없다",
+            "조롱(은유·반문)과 사실 주장을 섞지 않았는가 — 조롱은 허용, 지어낸 사실은 불가",
+            "약 30초 지점에 반전 신호어('근데 어쩝니까?' 등)와 증거가 있는가",
+            "최종 길이가 60~66초 안인가 (70초 하드 캡)",
+            "사용한 영상·캡처의 출처가 우상단 라벨에 다 있는가",
+            "완료 블록에 자극적 제목 A/B(yt_title·yt_title_alt) + 3줄요약 + 해시태그가 다 있는가",
         ),
     ),
 }
@@ -200,7 +240,7 @@ def resolve_format(title: str, ledger: dict[str, str]) -> str:
 
 __all__ = [
     "CTA_STYLE_PICK", "CTA_STYLE_SUBSCRIBE", "DEFAULT_FORMAT", "FORMATS",
-    "FORMAT_KEY", "FORMAT_RULES", "NEWS_V4", "PROFILE_V3", "UNKNOWN_FORMAT", "V2_1",
+    "EVIDENCE_V5", "FORMAT_KEY", "FORMAT_RULES", "NEWS_V4", "PROFILE_V3", "UNKNOWN_FORMAT", "V2_1",
     "V2_2", "FormatRules", "load_formats", "record_format",
     "resolve_config_format", "resolve_format", "rules_for_config",
     "rules_for_format",

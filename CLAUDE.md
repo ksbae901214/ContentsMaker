@@ -158,8 +158,10 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
   | **V2.2** | 원본 육성 클립 2~5개 릴레이 + 마지막 TTS 정리 1개 (육성 65% 이상) | 여야·당사자 발언이 영상으로 다 있는 소재 · 유튜브용 | `render_political_v2_2.py` (`v2_2`) |
   | **V3.0** | 인물 1명 프로필 다큐 — 훅만 육성, 무음 B-roll + 전체 TTS, 흰 캔버스·궁서 제목·인물 배지, BGM 없음, 구독형 CTA | 지금 화제인 인물의 이력·배경 | `render_profile_v3.py` (`profile_v3`) |
   | **V4.0** | 영상 없이 사진 슬라이드(3.4초 고정) + 전체 TTS, BGM 없음, **정치 전용**, 완료 시 제목 A/B+3줄요약+해시태그 | 육성 영상이 없는 소재 (SNS 글·성명·기사만 있는 경우) | `render_news_v4.py` (`news_v4`) |
+  | **V5.0** | 여성 TTS 조롱 논평 + 원본 육성·캡처를 증거로 끼워 모순을 터뜨림, 60~66초, 한쪽 진영 공격 허용(대신 fact_sources 필수) | 세금 금액·내 지갑·'과거 발언 vs 현재 행동' 모순에 증거(육성/캡처)가 있는 소재 | `render_evidence_v5.py` (`evidence_v5`) |
 
-  추천 기준: 육성 영상이 있으면 V2.2(+V2.1 병행) / 인물 소개면 V3.0 / 육성이 없으면 V4.0.
+  추천 기준: 육성 영상이 있으면 V2.2(+V2.1 병행) / 인물 소개면 V3.0 / 육성이 없으면 V4.0 /
+  모순·세금 증거(육성 한 컷이나 캡처)를 쥐고 한쪽을 강하게 치는 소재면 V5.0.
   비정치 소재(경제·사회·연예)에는 V4.0 을 권하지 않는다(렌더러가 차단한다). 레거시 파이프라인
   (027 jpolitics 모먼트 직캠, 030 하이브리드, 009 political-pro 3기획안)은 선택지에 넣지
   않는다 — 사용자가 이름을 대면 그때 쓴다. 버전을 정한 뒤에 039 돌파 3문항과 040 대칭 검토로
@@ -303,6 +305,23 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 043 쇼츠 V5.0 증거 삽입형 TTS 논평 (2026-10-01, 사용자 확정):
+  - 벤치마크 = 틱톡 @lkbhop(폴리버스) 504편 전수(중앙 11,600) + 상위 10편·중앙 3편. 흥행작 공통점은
+    **증거(육성·캡처) + 시청자 이해관계/모순** — 상위 10/10 vs 중앙 0/3. 컷 속도·자막·톤은 차이 없음.
+  - `scripts/render_evidence_v5.py` + 순수 함수 `scripts/evidence_v5_timeline.py`, 템플릿
+    `_template_evidence_v5.json`, 포맷 키 **`evidence_v5`**. **V2.2 엔진 재사용**(clip/tts 혼합), 육성 비율만
+    10~25% 로 뒤집고 첫 씬 clip 강제 없음. 상세는 README 043 절.
+  - 사용자 확정 5건: ①**V5 만 70초 캡**(권장 60~66초, `FormatRules.max_final_sec` → `political_length.max_final_sec`)
+    ②**한쪽 진영 공격 허용**(040 대칭 침묵, 편성·039 유지) ③**여성 TTS `Kore`** ④**효과음 없음**
+    ⑤**CTA 는 우리 지침**. 대가로 **`fact_sources` 필수 차단** + 나무위키 금지.
+  - Remotion 옵트인 `evidenceLayer` (`EvidenceLayer.tsx`): 2줄 투톤 헤드라인(노랑/시안, 도현체)·미디어 박스
+    1080×1280·주황 중앙 자막·강조어 팝업(`pop`)·증거 카드(`evidence` + 원/밑줄 마커)·반전 플래시(`flash`).
+    **미지정 시 기존 still 6장 바이트 동일.**
+  - 검증: pytest **2208 passed / 1 skipped**(신규 76), tsc 통과, **기존 config 140개 스캔 = 차단 4·경고 580
+    변경 전후 완전 동일**.
+  - **파일럿 1호 렌더 완료** (조희대 조의금 × 박지원 '인지도 작업', 59.6초). 실렌더로 고친 것: 미디어 하단 340px
+    블러 띠(방송 번인 자막 가림), 씬별 `zoom`/`focus_x` 프레이밍(16:9 를 박스 높이에 채움), 3줄요약 `text` 폴백,
+    `render --reuse-tts`(화면만 고칠 때 Gemini TTS 재사용 — 문구 바꿨으면 금지). pytest 2223 passed.
 - 042 쇼츠 V4.0 사진 슬라이드 뉴스 카드 (2026-09-30, 사용자 확정):
   - 벤치마크 = 경쟁 채널 @gokorea012 틱톡 1편(29.3초). **영상 클립 0개** — 사진을
     **3.4초 고정 타이머**(실측 컷 간격)로 넘기며 줌, 전 구간 Charon TTS, **BGM 없음(코드

@@ -17,6 +17,8 @@ import { SplitScreenScene } from "./components/SplitScreenScene";
 import { PersonBadge } from "./components/PersonBadge";
 import { NewsCardLayer, NEWS_BOX_TOP } from "./components/NewsCardLayer";
 import type { NewsCardData } from "./components/NewsCardLayer";
+import { EvidenceLayer, EvidenceMedia } from "./components/EvidenceLayer";
+import type { EvidenceLayerData } from "./components/EvidenceLayer";
 import { Outro } from "./components/Outro";
 import type { ShortsScriptData, TransitionType } from "./types";
 import { GRADIENT_THEMES } from "./types";
@@ -67,6 +69,9 @@ interface ShortsCompositionProps {
   badgeBoxed?: boolean | null;
   // 사진 슬라이드 뉴스 카드. 지정 시 씬별 비주얼 대신 NewsCardLayer 가 그린다.
   newsCard?: NewsCardData;
+  // 043 V5.0 증거 삽입형. 지정 시 씬 영상은 미디어 박스에만 깔리고 헤드라인·자막·
+  // 증거 카드는 EvidenceLayer 가 그린다. 미지정이면 기존 경로와 완전히 동일.
+  evidenceLayer?: EvidenceLayerData;
 }
 
 export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
@@ -87,6 +92,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
   headlinePlain = false,
   badgeBoxed = null,
   newsCard,
+  evidenceLayer,
 }) => {
   const emotion =
     (scriptData.metadata as any).emotionType ||
@@ -172,7 +178,15 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         const isSplit = visualLayout === "split" && !!videoFile;
 
         // 연속 배경 영상이 깔린 경우 씬별 영상/이미지는 건너뛰고 자막만 오버레이.
-        const content = useContinuousVideo ? (
+        const content = evidenceLayer ? (
+          <EvidenceMedia
+            videoFile={videoFile}
+            imageFile={imageFile}
+            durationFrames={durationFrames}
+            zoom={evidenceLayer.framing?.find((f) => f.sceneId === scene.id)?.zoom}
+            focusX={evidenceLayer.framing?.find((f) => f.sceneId === scene.id)?.focusX}
+          />
+        ) : useContinuousVideo ? (
           <SceneText scene={scene} emotion={emotion} />
         ) : isSplit ? (
           <SplitScreenScene
@@ -222,17 +236,24 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
         />
       )}
 
-      {/* Fixed title bar at top — visible during all content scenes */}
-      <Sequence from={0} durationInFrames={contentEndFrame}>
-        <TitleBar
-          title={title}
-          fontFamily={headlineFont}
-          letterSpacing={headlineLetterSpacing}
-          primaryColor={headlineColor}
-          boxed={overlayBoxes}
-          plain={headlinePlain}
-        />
-      </Sequence>
+      {evidenceLayer && (
+        <EvidenceLayer layer={evidenceLayer} contentEndFrame={contentEndFrame} />
+      )}
+
+      {/* Fixed title bar at top — visible during all content scenes.
+          043: EvidenceLayer 는 자기 2줄 투톤 헤드라인을 그린다. */}
+      {!evidenceLayer && (
+        <Sequence from={0} durationInFrames={contentEndFrame}>
+          <TitleBar
+            title={title}
+            fontFamily={headlineFont}
+            letterSpacing={headlineLetterSpacing}
+            primaryColor={headlineColor}
+            boxed={overlayBoxes}
+            plain={headlinePlain}
+          />
+        </Sequence>
+      )}
 
       {/* 041 V3.0: 인물 배지 — 엔딩 아웃트로 전까지 유지 */}
       {personBadge && (

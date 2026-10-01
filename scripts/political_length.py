@@ -82,8 +82,22 @@ def final_video_sec(timeline_sec: float) -> float:
     return timeline_sec + OUTRO_SEC
 
 
+def max_final_sec(cfg: dict) -> float:
+    """포맷별 최종 길이 캡. 포맷 규칙에 값이 없으면(0) 기본 캡(TARGET_MAX_SEC).
+
+    043 V5.0 만 70초 — 다른 포맷은 035 캡 그대로다. 포맷 오타는 렌더러의
+    validate 가 따로 잡으므로 여기서는 기본 캡으로 물러선다.
+    """
+    from scripts.shorts_format import rules_for_config
+    try:
+        cap = rules_for_config(cfg).max_final_sec
+    except ValueError:
+        return TARGET_MAX_SEC
+    return cap or TARGET_MAX_SEC
+
+
 def _cut_hint(final_sec: float, cfg: dict) -> str:
-    over = final_sec - TARGET_MAX_SEC
+    over = final_sec - max_final_sec(cfg)
     return (f"약 {excess_chars(over, _speed(cfg))}자(≈{over:.1f}초)를 줄이거나 "
             f"씬 1개를 빼세요")
 
@@ -93,10 +107,11 @@ def length_warnings(cfg: dict) -> list[str]:
     if cfg.get("duration_gate") == "off":
         return []
     final = final_video_sec(estimate_total_sec(cfg))
-    if final <= TARGET_MAX_SEC:
+    cap = max_final_sec(cfg)
+    if final <= cap:
         return []
     return [f"예상 최종 길이 {final:.1f}초 (씬 {final - OUTRO_SEC:.1f}s + 아웃트로 "
-            f"{OUTRO_SEC:.0f}s) > 캡 {TARGET_MAX_SEC:.0f}초 — "
+            f"{OUTRO_SEC:.0f}s) > 캡 {cap:.0f}초 — "
             f"{_cut_hint(final, cfg)} (035, 추정 오차 ±15%)"]
 
 
@@ -105,13 +120,14 @@ def enforce_length(timeline_sec: float, cfg: dict) -> None:
     if cfg.get("duration_gate") == "off":
         return
     final = final_video_sec(timeline_sec)
-    if final <= TARGET_MAX_SEC:
+    cap = max_final_sec(cfg)
+    if final <= cap:
         return
     raise ValueError(
         f"최종 길이 {final:.1f}초 (씬 {timeline_sec:.1f}s + 아웃트로 {OUTRO_SEC:.0f}s) "
-        f"> 캡 {TARGET_MAX_SEC:.0f}초 (035 완주율 게이트) — "
+        f"> 캡 {cap:.0f}초 (035 완주율 게이트) — "
         f"{_cut_hint(final, cfg)}. "
-        f"권장 구간 {TARGET_MIN_SEC:.0f}~{TARGET_MAX_SEC:.0f}초. "
+        f"권장 구간 {TARGET_MIN_SEC:.0f}~{cap:.0f}초. "
         '우회: config에 "duration_gate": "off"'
     )
 
@@ -119,5 +135,5 @@ def enforce_length(timeline_sec: float, cfg: dict) -> None:
 __all__ = [
     "CHARS_PER_SEC_1X", "DEFAULT_TTS_SPEED", "TARGET_MIN_SEC", "TARGET_MAX_SEC",
     "enforce_length", "estimate_total_sec", "estimate_tts_sec", "excess_chars",
-    "hook_offset_sec", "length_warnings", "scene_duration_estimates",
+    "hook_offset_sec", "length_warnings", "max_final_sec", "scene_duration_estimates",
 ]

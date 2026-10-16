@@ -1,0 +1,201 @@
+{
+  "_comment": "V4.0 기획 (2026-10-12) — 탑 20년 팬사이트 '최승현닷컴' 폐쇄 + 소속사 사과. 044 소재 추천기 연예 2위(텐아시아 조회 739,035). 첫 연예 V4.0(연예 허용 2026-10-12 사용자 확정). 039: 당사자 연예인(civilian) · ②이미 잃음(20년 팬사이트 폐쇄·소속사 공식 사과) · ③종결. 구조 = '열애 때문'이라는 통념 → 운영진 스스로 '연애 때문 아니다' 반박 → 진짜 이유(창구 부재·비용·예매율 대응) → 소속사 사과 → 본인 입장 미확인. 팬사이트 내용은 전부 '주장'으로 간접화법. 나나는 1문장 이름만, 사진 미사용(갈등 당사자 아님). 2문장 마약 집행유예는 사용자 확정(스타뉴스 108/0003477668). 10문장 '본인 입장 미확인'은 렌더 직전 재확인. 입장문 캡처 5장은 조선 410/0001142868 게재 원문 이미지 크롭.",
+  "format": "news_v4",
+  "slug": "20261012_top_fansite_news_v4",
+  "category": "entertainment",
+  "subject_type": "civilian",
+  "headline": [
+    "20년 지킨 팬사이트",
+    "탑에게 등 돌렸다"
+  ],
+  "tag": "팬사이트 폐쇄 입장문",
+  "title": "20년 지킨 팬사이트 탑에게 등 돌렸다",
+  "yt_title": "마약 사건도 버틴 20년 팬, 열애 인정 열흘 만에 떠난 진짜 이유",
+  "yt_title_alt": "필요할 때 이용하고 외면… 20년 팬이 탑에게 남긴 마지막 말",
+  "hashtags": [
+    "#탑",
+    "#최승현닷컴",
+    "#탑스팟픽쳐스",
+    "#빅뱅"
+  ],
+  "persons": [
+    "탑"
+  ],
+  "source_channel": "탑 SNS · 마이데일리 · 최승현닷컴 · 스타뉴스 · OSEN · 탑스팟픽쳐스",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "[전문] '나나♥' 탑, 공개 열애 8일 만에 폭로 터졌다…\"이용하고 외면\" 팬사이트 폐쇄",
+      "url": "https://m.entertain.naver.com/article/312/0000779371",
+      "outlet": "텐아시아"
+    },
+    {
+      "title": "[전문] \"마지막으로 전한다\" 나나 열애 후폭풍..탑 '20년 팬덤'의 충격 폭로 '탈덕문'",
+      "url": "https://m.entertain.naver.com/article/108/0003477528",
+      "outlet": "스타뉴스"
+    },
+    {
+      "title": "\"우리는 직원이 아니다\"…탑 20년 팬사이트, 대화 내역까지 공개한 작심 비판",
+      "url": "https://m.entertain.naver.com/article/410/0001142868",
+      "outlet": "조선일보"
+    },
+    {
+      "title": "'마약 스캔들'도 버텼는데..탑, 20년 팬심 등 돌리자 뒤늦은 외양간 고치기",
+      "url": "https://m.entertain.naver.com/article/108/0003477668",
+      "outlet": "스타뉴스"
+    },
+    {
+      "title": "[공식] 탑 측, 20년 팬 탈덕 논란에…\"서운함 드린 점 깊이 사과\" [전문]",
+      "url": "https://m.entertain.naver.com/article/117/0004113902",
+      "outlet": "마이데일리"
+    },
+    {
+      "title": "'나나♥' 탑, 해외 투어 홍보→팬페이지 폐쇄에는 침묵…\"20년 팬심 끝\"",
+      "url": "https://m.entertain.naver.com/article/468/0001271647",
+      "outlet": "스포츠서울"
+    },
+    {
+      "title": "\"♥나나 열애 문제 아냐\"…20년 팬덤 등돌린 탑, 무성의 사과",
+      "url": "https://m.entertain.naver.com/article/076/0004454779",
+      "outlet": "스포츠조선"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/01_top_insta.jpg",
+      "credit": "탑 SNS",
+      "_comment": "photos[0] = 1문장(사건 요약) 대표 컷. 뉴시스 003/0014244409 게재 인스타그램 캡처"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/02_top_mydaily.jpg",
+      "credit": "마이데일리",
+      "_comment": "2문장(20년·2017) — 과거 활동기 사진"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/03_stmt_privacy.jpg",
+      "credit": "최승현닷컴",
+      "fit": "contain",
+      "_comment": "3문장 근거 — 입장문 2항 '유튜브 촬영 전부터 두 사람의 연애를 알고 있었지만'"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/04_top_starnews.jpg",
+      "credit": "스타뉴스"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/05_stmt_noinquiry.jpg",
+      "credit": "최승현닷컴",
+      "fit": "contain",
+      "_comment": "4문장 근거 — 입장문 1항 '기본적인 창구조차 마련하지 않았다'"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/06_stmt_budget.jpg",
+      "credit": "최승현닷컴",
+      "fit": "contain",
+      "_comment": "5문장 근거 — 첫 주 20명·부담 700만"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/07_top_stage.jpg",
+      "credit": "스타뉴스"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/08_stmt_reply.jpg",
+      "credit": "최승현닷컴",
+      "fit": "contain",
+      "_comment": "6문장 근거 — '공지에 예매율을 기재했다는 사실에만 집중'"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/09_osen_chat.jpg",
+      "credit": "OSEN",
+      "fit": "contain",
+      "_comment": "팬사이트 공개 소속사 대화 캡처 합성 (OSEN 109/0005621613)"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/10_stmt_lastword.jpg",
+      "credit": "최승현닷컴",
+      "fit": "contain",
+      "_comment": "8문장 무렵 — 입장문 마지막 문단 '마지막으로 T.O.P에게 전합니다'"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/11_agency_apology.jpg",
+      "credit": "탑스팟픽쳐스",
+      "fit": "contain",
+      "_comment": "9문장 근거 — 4개 언어 사과문"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/12_top_osen.jpg",
+      "credit": "OSEN"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/13_top_sns.jpg",
+      "credit": "탑 SNS"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/14_top_stage2.jpg",
+      "credit": "스타뉴스"
+    },
+    {
+      "path": "data/political_pro/20261012_top_fansite_news_v4/photos/15_top_sns2.jpg",
+      "credit": "탑 SNS"
+    }
+  ],
+  "cta": {
+    "text": "①소속사 불통\nVS ②팬덤 과욕",
+    "voice": "누구 탓일까요? 1번 소속사, 2번 팬덤. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "빅뱅 출신 탑의 20년 된 팬사이트가, 나나와 열애를 인정한 지 열흘도 안 돼 문을 닫았습니다.",
+      "hl": [
+        "20년"
+      ]
+    },
+    {
+      "voice": "2017년 마약 혐의로 집행유예를 받았을 때도 곁을 지킨 팬들이었습니다.",
+      "hl": [
+        "2017년"
+      ]
+    },
+    {
+      "voice": "다들 열애 탓이라 했지만, 운영진은 교제는 진작 알고 있었다며 연애 때문이 아니라고 선을 그었습니다.",
+      "hl": [
+        "아니라고"
+      ]
+    },
+    {
+      "voice": "진짜 이유로는 공식 문의 창구조차 없어 해외 팬 응대까지 떠안아 왔다는 점을 꼽았습니다.",
+      "hl": [
+        "창구"
+      ]
+    },
+    {
+      "voice": "이달 말 전시는 첫 주 신청자가 20명뿐이라, 운영자 두 명의 부담이 700만 원까지 불어나 취소됐습니다.",
+      "hl": [
+        "700만 원"
+      ]
+    },
+    {
+      "voice": "그런데 소속사는 공지에 예매율을 적은 점부터 문제 삼았다고 주장했습니다.",
+      "hl": [
+        "예매율"
+      ]
+    },
+    {
+      "voice": "팬들의 사랑은 필요할 때 이용하고 불편할 때 외면하는 것이 아니라고 직격했습니다.",
+      "hl": [
+        "외면"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "소속사는 당일, 소통이 충분히 닿지 못했다며 깊이 사과했습니다.",
+      "hl": [
+        "사과"
+      ]
+    },
+    {
+      "voice": "다만 탑 본인의 입장은 아직 확인되지 않았습니다."
+    }
+  ]
+}

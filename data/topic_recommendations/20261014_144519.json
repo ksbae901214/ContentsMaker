@@ -1,0 +1,192 @@
+{
+  "dates": [
+    "20261014",
+    "20261013"
+  ],
+  "news": [
+    {
+      "label": "“대형참사 날뻔”…중국 국적 버스기사 ‘마약 투약 후 운전’, 2년 6개월형",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 580,
+      "score": 18.062391868188442,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "실형",
+        "징역"
+      ],
+      "titles": [
+        "“대형참사 날뻔”…중국 국적 버스기사 ‘마약 투약 후 운전’, 2년 6개월형",
+        "[속보]'마약 투약' 경기 안산 버스운전 기사, 징역 2년6개월 실형 받아",
+        "[속보] \"비번에만 했다\"더니 필로폰 투약 후 운전…中국적 버스기사 징역 2년 6개월"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/029/0003053050",
+        "https://n.news.naver.com/article/658/0000158409",
+        "https://n.news.naver.com/article/215/0001269127"
+      ],
+      "article_count": 3,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "강남 결혼식 밥값만 2048만원…지방 예식 전체 치르고도 남는다 [숫자 뒤의 진실]",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 247,
+      "score": 11.787175234126284,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "진실"
+      ],
+      "titles": [
+        "강남 결혼식 밥값만 2048만원…지방 예식 전체 치르고도 남는다 [숫자 뒤의 진실]",
+        "서울 결혼식 밥값 8만원…\"마음만 전할게요\""
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/022/0004166093",
+        "https://n.news.naver.com/article/665/0000008347"
+      ],
+      "article_count": 2,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "우크라, 한국 '공식 사과' 요구 사실상 거절…\"北포로 갈등, 이미 종결\"",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 243,
+      "score": 11.691342951089922,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "요구",
+        "사과"
+      ],
+      "titles": [
+        "우크라, 한국 '공식 사과' 요구 사실상 거절…\"北포로 갈등, 이미 종결\""
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/008/0005425171"
+      ],
+      "article_count": 1,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "[단독] “제발 하지말라” 해도…병원 동료 성추행한 40대 남성 불구속기소",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 123,
+      "score": 8.317902379807062,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "구속"
+      ],
+      "titles": [
+        "[단독] “제발 하지말라” 해도…병원 동료 성추행한 40대 남성 불구속기소"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/056/0012273325"
+      ],
+      "article_count": 1,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "편의점 진열대에 몸 붙이더니 '부르르'⋯소변만 보고 홀연히 떠난 남성",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 111,
+      "score": 7.901740314639554,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "떠난"
+      ],
+      "titles": [
+        "편의점 진열대에 몸 붙이더니 '부르르'⋯소변만 보고 홀연히 떠난 남성"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/031/0001065367"
+      ],
+      "article_count": 1,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    }
+  ],
+  "entertainment": [
+    {
+      "label": "이영지, 결국 자책→고개 숙여 사과…\"원래 안 이러는데 미안해\" [RE:스타]",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 153427,
+      "score": 293.77319057395283,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "사과"
+      ],
+      "titles": [
+        "이영지, 결국 자책→고개 숙여 사과…\"원래 안 이러는데 미안해\" [RE:스타]"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/213/0001404257"
+      ],
+      "article_count": 1,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "tvN, 또 일냈다…'넷플 1위'→'시청률 17.4%' 남녀배우 만남으로 반응 폭발한 韓 드라마 ('나의 유죄인간')",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 47669,
+      "score": 163.74923663944207,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "유죄"
+      ],
+      "titles": [
+        "tvN, 또 일냈다…'넷플 1위'→'시청률 17.4%' 남녀배우 만남으로 반응 폭발한 韓 드라마 ('나의 유죄인간')"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/213/0001404448"
+      ],
+      "article_count": 1,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "'26억 전세 사기' 서현진 근황 전해졌다 \"몸 안 좋아져 건강 신경 많이 써\"",
+      "category": "entertainment",
+      "tier": "C",
+      "tier_note": "조건 미충족 — 실측 돌파율 7% (밴드 1,000~2,200에 갇힘)",
+      "demand": 325135,
+      "score": 59.87164082435022,
+      "money": true,
+      "followup": false,
+      "hits": [],
+      "titles": [
+        "'26억 전세 사기' 서현진 근황 전해졌다 \"몸 안 좋아져 건강 신경 많이 써\""
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/076/0004455112"
+      ],
+      "article_count": 1,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 치른 대가가 아직 없다 — 결말이 난 뒤 다룰 것"
+    }
+  ]
+}

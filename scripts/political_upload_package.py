@@ -420,13 +420,16 @@ def generate_upload_package(cfg: dict, video_path: Path, out_dir: Path,
 
     from scripts.shorts_format import record_format, resolve_config_format
     path = ledger_path or CATEGORY_LEDGER_PATH
-    title = cfg.get("yt_title") or cfg["title"]
+    # 044: B안(yt_title_alt)으로 올린 편도 원장에서 찾도록 두 제목을 다 기록한다
+    titles = dict.fromkeys(
+        t for t in (cfg.get("yt_title") or cfg["title"], cfg.get("yt_title_alt")) if t)
     try:
-        record_category(path, title, resolve_config_category(cfg),
-                        slug=cfg.get("slug", ""))
-        # 041: 포맷 축도 같은 원장에 기록한다 — V3.0 파일럿 판정의 유일한 근거
-        record_format(path, title, resolve_config_format(cfg),
-                      slug=cfg.get("slug", ""))
+        for title in titles:
+            record_category(path, title, resolve_config_category(cfg),
+                            slug=cfg.get("slug", ""))
+            # 041: 포맷 축도 같은 원장에 기록한다 — V3.0 파일럿 판정의 유일한 근거
+            record_format(path, title, resolve_config_format(cfg),
+                          slug=cfg.get("slug", ""))
     except OSError as e:
         print(f"   ⚠️ 성과 원장 기록 실패 (계측만 영향): {e}")
     return pkg

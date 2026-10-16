@@ -24,6 +24,10 @@ import unicodedata
 from datetime import datetime
 from pathlib import Path
 
+from scripts.channel_trends import (
+    FOLLOWUP_RATIO, followup_candidates, period_comparison, subscriber_change,
+    trend_report_lines,
+)
 from scripts.shorts_category import UNKNOWN, load_ledger, resolve_category
 from scripts.shorts_format import UNKNOWN_FORMAT, load_formats, resolve_format
 
@@ -212,12 +216,17 @@ def compare_snapshots(prev: list[dict], cur: list[dict], top_n: int = 10) -> lis
 
 
 def build_report_md(channel: str, summary: dict, gaps: list[dict],
-                    deltas: list[dict], generated_at: str) -> str:
+                    deltas: list[dict], generated_at: str, *,
+                    subscribers: dict | None = None,
+                    periods: list[dict] | None = None,
+                    hit_views: int | None = None,
+                    followups: list[dict] | None = None) -> str:
     lines = [
         f"# 채널 쇼츠 성과 리포트 — {generated_at}",
         "",
         f"채널: `{channel}` / 분석 대상 {summary['count']}편 / "
         f"**전체 중앙값 {summary['median_views']:,}회**",
+        *trend_report_lines(subscribers, periods, hit_views, followups),
         "",
         "## 제목 유형별 (hook형 vs 보도형)",
         "",
@@ -279,9 +288,53 @@ def build_report_md(channel: str, summary: dict, gaps: list[dict],
     return "\n".join(lines)
 
 
+# ── 원제 복원 (044) ────────────────────────────────────────────────
+# flat-playlist 는 YouTube 자동 번역 제목을 돌려준다(2026-10 실측: 174편 중 93편
+# 영문). 업로드 원제는 전부 한글이라 원장(제목 키) 매칭이 깨져 포맷·카테고리가
+# unknown 으로 빠졌고, 039 의 "한글판 vs 영문판" 비교도 같은 원인의 착시였다.
+# 개별 조회(-J watch URL)는 원제를 준다 — 한 번 받은 원제는 다음 회차에 이어받는다.
+def apply_detail(entry: dict, detail: dict) -> dict:
+    """개별 조회 결과로 원제·업로드일·길이·조회수를 덮은 새 entry."""
+    original = detail.get("title") or entry.get("title", "")
+    out = {**entry,
+           "title": original,
+           "upload_date": detail.get("upload_date") or entry.get("upload_date"),
+           "duration": detail.get("duration") or entry.get("duration"),
+           "view_count": detail.get("view_count", entry.get("view_count")),
+           "title_source": "detail"}
+    if original != entry.get("title"):
+        out["title_flat"] = entry.get("title", "")
+    return out
+
+
+def carry_details(entries: list[dict], prev: list[dict]) -> list[dict]:
+    """직전 스냅샷에서 개별 조회로 받은 원제·날짜·길이를 이어받는다 (조회수는 최신 유지)."""
+    known = {e["id"]: e for e in prev
+             if e.get("id") and e.get("title_source") == "detail"}
+    out = []
+    for e in entries:
+        k = known.get(e.get("id"))
+        if not k:
+            out.append(e)
+            continue
+        out.append({**e, "title": k["title"], "title_source": "detail",
+                    "upload_date": e.get("upload_date") or k.get("upload_date"),
+                    "duration": e.get("duration") or k.get("duration"),
+                    **({"title_flat": e["title"]} if e["title"] != k["title"] else {})})
+    return out
+
+
+def needs_detail(index: int, entry: dict, n: int) -> bool:
+    """최근 n편은 날짜·조회수 갱신을 위해 항상, 그 외에는 원제가 없을 때만 조회."""
+    return index < n or entry.get("title_source") != "detail"
+
+
 # ── 수집 (yt-dlp) ──────────────────────────────────────────────────
-def collect_flat(channel: str) -> list[dict]:
-    """쇼츠 탭 flat-playlist 1회 조회 — id/title/view_count(/duration)."""
+def collect_flat(channel: str) -> tuple[list[dict], int | None]:
+    """쇼츠 탭 flat-playlist 1회 조회 — (entries, 구독자 수).
+
+    entries 의 title 은 자동 번역본일 수 있다 → `enrich_details` 로 원제 복원.
+    """
     url = f"https://www.youtube.com/channel/{channel}/shorts"
     r = subprocess.run(
         [sys.executable, "-m", "yt_dlp", url, "--flat-playlist", "-J",
@@ -291,19 +344,26 @@ def collect_flat(channel: str) -> list[dict]:
     if r.returncode != 0:
         raise RuntimeError(f"yt-dlp flat-playlist 실패: {r.stderr[:300]}")
     data = json.loads(r.stdout)
-    return [
+    entries = [
         {"id": e.get("id"), "title": e.get("title") or "",
          "view_count": e.get("view_count"), "duration": e.get("duration"),
          "upload_date": e.get("upload_date")}
         for e in (data.get("entries") or []) if e
     ]
+    return entries, data.get("channel_follower_count")
 
 
 def enrich_details(entries: list[dict], n: int) -> list[dict]:
-    """최근 n편 개별 조회로 upload_date·duration 보강 (편당 ~1-2초 소요)."""
+    """개별 조회로 원제·upload_date·duration 보강 (편당 ~1-2초 소요).
+
+    최근 n편은 항상, 그 외는 원제를 아직 못 받은 편만 (`needs_detail`).
+    첫 회차는 전 편을 조회하고, 이후엔 신규 편만 조회한다.
+    """
     out = []
+    todo = sum(needs_detail(i, e, n) for i, e in enumerate(entries))
+    done = 0
     for i, e in enumerate(entries):
-        if i >= n or (e.get("upload_date") and e.get("duration")):
+        if not needs_detail(i, e, n):
             out.append(e)
             continue
         r = subprocess.run(
@@ -313,29 +373,28 @@ def enrich_details(entries: list[dict], n: int) -> list[dict]:
         )
         if r.returncode == 0:
             try:
-                d = json.loads(r.stdout)
-                e = {**e,
-                     "upload_date": d.get("upload_date") or e.get("upload_date"),
-                     "duration": d.get("duration") or e.get("duration"),
-                     "view_count": d.get("view_count", e.get("view_count"))}
+                e = apply_detail(e, json.loads(r.stdout))
             except json.JSONDecodeError:
                 pass
         out.append(e)
-        print(f"   상세 {i+1}/{min(n, len(entries))}: {e.get('title', '')[:40]}", flush=True)
+        done += 1
+        print(f"   상세 {done}/{todo}: {e.get('title', '')[:40]}", flush=True)
     return out
 
 
-def load_latest_snapshot(out_dir: Path) -> list[dict]:
+def load_latest_snapshot(out_dir: Path) -> dict:
+    """직전 스냅샷 전체 (channel/collected_at/subscribers/entries). 없으면 {}."""
     snaps = sorted(out_dir.glob("*_snapshot.json"))
     if not snaps:
-        return []
-    return json.loads(snaps[-1].read_text(encoding="utf-8")).get("entries", [])
+        return {}
+    return json.loads(snaps[-1].read_text(encoding="utf-8"))
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--channel", default=DEFAULT_CHANNEL)
-    ap.add_argument("--details", type=int, default=30)
+    ap.add_argument("--details", type=int, default=30,
+                    help="최근 N편은 항상 재조회 (그 외는 원제 미확보 편만)")
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--ledger", type=Path, default=None,
                     help="카테고리 원장 (기본 <out>/category_ledger.json)")
@@ -343,18 +402,22 @@ def main() -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     print(f"📡 채널 쇼츠 수집 중: {args.channel}", flush=True)
-    entries = collect_flat(args.channel)
-    print(f"✅ {len(entries)}편 수집", flush=True)
+    entries, subs = collect_flat(args.channel)
+    print(f"✅ {len(entries)}편 수집 (구독자 {subs if subs is not None else '?'})",
+          flush=True)
+    prev_snap = load_latest_snapshot(args.out)
+    prev = prev_snap.get("entries", [])
+    entries = carry_details(entries, prev)
     if args.details > 0:
-        print(f"🔍 최근 {args.details}편 상세 보강 중...", flush=True)
+        print(f"🔍 상세 보강 중 (최근 {args.details}편 + 원제 미확보 편)...", flush=True)
         entries = enrich_details(entries, args.details)
 
-    prev = load_latest_snapshot(args.out)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     snapshot = args.out / f"{stamp}_snapshot.json"
     snapshot.write_text(
         json.dumps({"channel": args.channel, "collected_at": stamp,
-                    "entries": entries}, ensure_ascii=False, indent=2),
+                    "subscribers": subs, "entries": entries},
+                   ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
 
@@ -364,13 +427,23 @@ def main() -> int:
     summary = summarize(entries, ledger=ledger, formats=formats)
     gaps = upload_gaps([e.get("upload_date") or "" for e in entries])
     deltas = compare_snapshots(prev, entries) if prev else []
+    today = stamp[:8]
+    hit_views = int(summary["median_views"] * FOLLOWUP_RATIO)
+    subscribers = subscriber_change(prev_snap, subs, stamp)
+    periods = period_comparison(entries, today, hit_views=hit_views)
+    followups = followup_candidates(entries, today, summary["median_views"])
     report = args.out / f"{stamp}_report.md"
     report.write_text(
         build_report_md(args.channel, summary, gaps, deltas,
-                        datetime.now().strftime("%Y-%m-%d %H:%M")),
+                        datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        subscribers=subscribers, periods=periods,
+                        hit_views=hit_views, followups=followups),
         encoding="utf-8",
     )
     print(f"\n📊 전체 중앙값 {summary['median_views']:,}회 ({summary['count']}편)")
+    for line in trend_report_lines(subscribers, periods, hit_views, followups):
+        if line:
+            print(f"   {line}")
     for k, v in summary["by_title_type"].items():
         print(f"   {k:8s}: {v['count']:3d}편, 중앙값 {v['median_views']:,}회")
     print(f"\n🏷️  카테고리별 (원장 {len(ledger)}건)")

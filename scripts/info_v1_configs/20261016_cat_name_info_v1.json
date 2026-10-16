@@ -1,0 +1,114 @@
+{
+  "format": "info_v1",
+  "slug": "cat_name_ignore",
+  "title": "고양이가 이름을 알면서 무시하는 이유",
+  "watermark": "made by 호기심 도감",
+  "topic_type": "paper",
+  "fact_sources": [
+    {
+      "label": "Scientific Reports, Domestic cats (Felis catus) discriminate their names from other words, 2019",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6449508/"
+    },
+    {
+      "label": "Animal Cognition, Vocal recognition of owners by domestic cats, 2013",
+      "url": "https://www.u-tokyo.ac.jp/focus/en/articles/a_00138.html"
+    },
+    {
+      "label": "PLOS ONE, Socio-spatial cognition in cats: Mentally mapping owner's location from voice, 2021",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8580247/"
+    },
+    {
+      "label": "Nature Ecology & Evolution, The palaeogenetics of cat dispersal in the ancient world, 2017",
+      "url": "https://doi.org/10.1038/s41559-017-0139"
+    }
+  ],
+  "yt_title": "고양이는 자기 이름을 다 알아듣습니다. 대답을 안 할 뿐",
+  "description": "비슷한 단어 네 개엔 시큰둥하던 고양이가 자기 이름에만 귀를 돌렸습니다.\n그런데 움직인 건 귀와 고개뿐, 다가오는 고양이는 거의 없었습니다.\n고양이는 이름을 모르는 게 아니라, 갈지 말지를 스스로 정합니다.",
+  "hashtags": [
+    "#고양이",
+    "#고양이이름",
+    "#동물상식",
+    "#호기심도감"
+  ],
+  "image_mood": "adorable kawaii storybook cat, the same chubby little tabby kitten in every image, oversized round head, big sparkling round eyes, tiny pink nose, rosy cheeks, short stubby legs, soft simplified rounded shapes, gentle happy expression, cozy and heartwarming",
+  "tts_speed": 1.3,
+  "chapters": [
+    {
+      "image_prompt": "a single tabby kitten sitting with its back turned, body perfectly still, only one ear swiveled backward as if listening",
+      "sentences": [
+        "고양이를 불렀는데 귀만 까딱했다면 그건 무시당한 겁니다.",
+        "이름은 정확히 알아들었기 때문입니다."
+      ]
+    },
+    {
+      "image_prompt": "a tabby kitten lying in front of a small vintage speaker, yawning widely, little sound waves coming from the speaker",
+      "sentences": [
+        "2019년 일본 연구진이 고양이 78마리로 실험을 했습니다.",
+        "이름과 길이도 억양도 비슷한 단어 네 개를 먼저 차례로 들려줍니다.",
+        "처음엔 귀를 쫑긋 세우던 고양이도 세 번, 네 번째엔 시큰둥해집니다.",
+        "그때 다섯 번째로 자기 이름을 들려줬습니다."
+      ],
+      "zoom_at": 2
+    },
+    {
+      "image_prompt": "a tabby kitten suddenly lifting its head with both ears perked up toward a small vintage speaker, eyes wide open",
+      "sentences": [
+        "이름에서 반응이 되살아났습니다.",
+        "지루해하던 고양이들이 이름이 나오자 다시 귀와 고개를 소리 쪽으로 돌렸습니다.",
+        "목소리를 처음 듣는 낯선 사람이 불러도 결과는 같았습니다.",
+        "게임으로 치면 수많은 알림 중에 내 닉네임만 골라 읽는 셈입니다."
+      ],
+      "zoom_at": 1
+    },
+    {
+      "image_prompt": "a tabby kitten lying on a rug with its body facing away from a person's feet in the doorway, both ears turned back toward the person, tail resting still",
+      "sentences": [
+        "그런데 반응의 종류가 이상합니다.",
+        "2013년 같은 연구진이 주인 목소리로 실험했을 때도 고양이는 주인 목소리를 구별했습니다.",
+        "하지만 움직인 건 귀와 고개뿐이었습니다.",
+        "울거나 꼬리를 흔들거나 다가오는 고양이는 거의 없었습니다.",
+        "들었다는 표시는 하지만 답장은 안 하는 셈입니다."
+      ],
+      "zoom_at": 2
+    },
+    {
+      "image_prompt": "a cozy cat cafe with several kittens of different colors lounging on shelves and cushions, all looking blank and relaxed, ignoring the room",
+      "sentences": [
+        "카페 고양이는 조금 달랐습니다.",
+        "여러 마리가 함께 사는 고양이 카페에서는 자기 이름과 친구 이름을 잘 구별하지 못했습니다.",
+        "연구진은 손님들이 여러 이름을 섞어 부르기 때문일 거라고 봤습니다.",
+        "단톡방 전체 호출에 아무도 대답 안 하는 것과 비슷합니다."
+      ],
+      "zoom_at": 1
+    },
+    {
+      "image_prompt": "a startled tabby kitten with puffed-up fur jumping slightly, staring at a small speaker on the far side of a room, a closed door on the other side",
+      "sentences": [
+        "안 보는 척해도 귀는 주인을 따라갑니다.",
+        "2021년 실험에서는 방 밖에서 들리던 주인 목소리가 갑자기 방 안쪽에서 들리게 했습니다.",
+        "고양이들은 이때 가장 크게 놀랐습니다.",
+        "보이지 않는 주인의 위치를 소리로 머릿속에 그리고 있었다는 뜻입니다."
+      ],
+      "zoom_at": 2
+    },
+    {
+      "image_prompt": "an ancient grain storehouse with clay jars and sacks of wheat, a tabby kitten crouching and watching a tiny mouse near the sacks",
+      "sentences": [
+        "무시하는 이유는 조상에게 있습니다.",
+        "개는 사냥과 목축을 하며 사람 신호에 반응하도록 길러졌습니다.",
+        "고양이는 곡식 창고의 쥐를 잡으러 스스로 사람 곁에 온 동물입니다.",
+        "부를 때마다 달려갈 이유가 처음부터 없었던 셈입니다."
+      ],
+      "zoom_at": 2
+    },
+    {
+      "image_prompt": "a tabby kitten napping on a sofa cushion with eyes closed and a content smile, one ear tip twitching, a small speech-bubble-shaped musical note floating near the ear",
+      "sentences": [
+        "정리하면 고양이는 이름을 모르는 게 아닙니다.",
+        "다 알아듣고, 귀까지 돌려 놓고, 갈지 말지를 스스로 정할 뿐입니다.",
+        "고양이에게 이름은 호출 버튼이 아니라 알림음인 셈입니다."
+      ],
+      "zoom_at": 1
+    }
+  ]
+}

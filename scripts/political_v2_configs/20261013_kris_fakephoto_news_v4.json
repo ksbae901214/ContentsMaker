@@ -1,0 +1,191 @@
+{
+  "_comment": "V4.0 기획 (2026-10-12, 10/13 아침 업로드) — 엑소 출신 크리스(우이판) 수감 중 '후덕샷' 조작 확산. 044 소재 추천기 연예 1위(스포츠서울 조회 660,031). 039: 당사자 연예인(civilian) · ②이미 잃음(징역 13년 복역) · ③종결(형 확정). 구조 = 감옥에서 살쪘다는 사진 → 원본은 2015년 소후 인터뷰(체크 셔츠·짧은 머리 일치, 얼굴만 부풀림) → 작년 11월 사망설·죄수복 합성 사진 + 공안 '가짜·처벌' 경고 → 형 확정·추방. 판결 사실은 '강간죄 등 징역 13년'까지만 — 기사마다 '미성년자'·'강제 거세' 서술이 엇갈려(중국 법원 판결문 근거 없음) 넣지 않는다. 조작 방식은 'AI'와 '편집'으로 보도가 갈려 '얼굴과 몸집을 부풀린 조작'으로만 쓴다. 판결 연도: 1심 2022-11(엑스포츠뉴스), 일부 기사의 '지난해 11월'은 2023년 기사 문구 복붙. 사망설·공안 반박은 2025-11-11 장쑤성 공안 웨이보(코리아중앙데일리·텐아시아 2025-11-14).",
+  "format": "news_v4",
+  "slug": "20261013_kris_fakephoto_news_v4",
+  "category": "entertainment",
+  "subject_type": "civilian",
+  "headline": [
+    "감옥서 살찐 크리스?",
+    "사진 알고 보니 가짜"
+  ],
+  "tag": "수감 근황 사진 조작",
+  "title": "감옥서 살찐 크리스? 사진 알고 보니 가짜",
+  "yt_title": "징역 13년 크리스 두 배 된 옥중 얼굴, 원본 찾아보니 2015년 영상",
+  "yt_title_alt": "사망설 이어 또 가짜… 감옥 속 크리스 사진의 소름 돋는 정체",
+  "hashtags": [
+    "#크리스",
+    "#우이판",
+    "#엑소",
+    "#가짜뉴스"
+  ],
+  "persons": [
+    "크리스"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "‘성범죄 징역 13년’ 엑소 출신 크리스, 후덕샷 확산…알고 보니 조작",
+      "url": "https://m.entertain.naver.com/article/468/0001271650",
+      "outlet": "스포츠서울"
+    },
+    {
+      "title": "[차이나뮤즈] 前 엑소 크리스, ‘징역 13년’ 수감생활 편했나…몰라보게 후덕해진 얼굴 알고 보니",
+      "url": "https://m.entertain.naver.com/article/112/0003809614",
+      "outlet": "헤럴드뮤즈"
+    },
+    {
+      "title": "엑소 출신 크리스, 성범죄 복역 중 후덕해진 근황? 또 가짜 뉴스…알고 보니 AI",
+      "url": "https://m.entertain.naver.com/article/609/0001177395",
+      "outlet": "뉴스엔"
+    },
+    {
+      "title": "엑소 출신 크리스, 옥중 사망설 이어 '후덕' 근황도 가짜 [엑's 이슈]",
+      "url": "https://m.entertain.naver.com/article/311/0002067600",
+      "outlet": "엑스포츠뉴스"
+    },
+    {
+      "title": "엑소 출신 크리스, 수감 중 사망설 이어 조작 사진까지..'후덕' 사진 가짜였다",
+      "url": "https://m.entertain.naver.com/article/109/0005621742",
+      "outlet": "OSEN"
+    },
+    {
+      "title": "Alleged Prison Photo Of Kris Wu Goes Viral",
+      "url": "https://www.koreaboo.com/news/alleged-prison-photo-kris-wu-goes-viral/",
+      "outlet": "Koreaboo"
+    },
+    {
+      "title": "Despite rumors, former EXO member Kris Wu not dead, authorities say",
+      "url": "https://www.koreajoongangdaily.com/korea/despite-rumors-former-exo-member-kris-wu-not-dead-authorities-say/12221751",
+      "outlet": "코리아중앙데일리"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/01_compare_ss.jpg",
+      "credit": "스포츠서울",
+      "fit": "contain",
+      "_comment": "photos[0] = 1문장. 과거 모습 vs 퍼진 조작본 나란히 (468/0001271650 001, 캡션 SNS)"
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/02_fake_ss.jpg",
+      "credit": "스포츠서울",
+      "fit": "contain",
+      "_comment": "2문장 — 퍼진 조작본 단독 (01 우측 크롭)"
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/06_fake_closeup.jpg",
+      "credit": "이데일리",
+      "_comment": "조작본 얼굴 클로즈업 (241/0003534667 우측 크롭)"
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/03_compare_closeup.jpg",
+      "credit": "이데일리",
+      "fit": "contain",
+      "_comment": "3문장 반전 — 진짜 vs 조작 얼굴 비교",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/04_sohu_2015.jpg",
+      "credit": "소후닷컴",
+      "fit": "contain",
+      "dur": 4.5,
+      "_comment": "4문장 근거 — 2015 소후 인터뷰 원본 화면 (Koreaboo 게재 캡처)"
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/05_sohu_face.jpg",
+      "credit": "소후닷컴",
+      "_comment": "5문장 — 원본의 체크 셔츠·짧은 머리",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/10_compare_herald.jpg",
+      "credit": "헤럴드뮤즈",
+      "fit": "contain",
+      "_comment": "원본 vs 조작 비교 (112/0003809614)",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/08_real_closeup.jpg",
+      "credit": "이데일리"
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/07_kris_yna.jpg",
+      "credit": "연합뉴스",
+      "_comment": "스포츠서울 기사 게재 연합뉴스 사진",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/09_real_herald.jpg",
+      "credit": "헤럴드뮤즈"
+    },
+    {
+      "path": "data/political_pro/20261013_kris_fakephoto_news_v4/photos/11_kris_yna_face.jpg",
+      "credit": "연합뉴스"
+    }
+  ],
+  "cta": {
+    "text": "①그냥 장난\nVS ②처벌해야",
+    "voice": "가짜 사진, 어떻게 볼까요? 1번 장난, 2번 처벌. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "성범죄로 징역 13년을 살고 있는 엑소 출신 크리스가, 감옥에서 몰라보게 살쪘다는 사진이 퍼졌습니다.",
+      "hl": [
+        "징역 13년"
+      ]
+    },
+    {
+      "voice": "두 배가 된 얼굴로, 옥중 근황이라며 SNS와 커뮤니티를 달궜습니다.",
+      "hl": [
+        "두 배"
+      ]
+    },
+    {
+      "voice": "그런데 이 사진, 감옥에서 찍힌 게 아니었습니다.",
+      "hl": [
+        "아니었습니다"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "원본은 2015년 중국 매체 소후와 했던 인터뷰 영상이었습니다.",
+      "hl": [
+        "2015년"
+      ]
+    },
+    {
+      "voice": "빨간 체크 셔츠와 짧은 머리는 그대로 두고, 얼굴과 몸집만 부풀려 바꾼 겁니다.",
+      "hl": [
+        "체크 셔츠"
+      ]
+    },
+    {
+      "voice": "수감자가 죄수복이 아닌 사복을 입은 것부터 이상하다는 지적도 나왔습니다.",
+      "hl": [
+        "사복"
+      ]
+    },
+    {
+      "voice": "가짜는 처음이 아닙니다. 작년 11월엔 옥중 사망설과 함께 죄수복 합성 사진이 돌았습니다.",
+      "hl": [
+        "사망설"
+      ]
+    },
+    {
+      "voice": "당시 중국 공안은 옛 뉴스 속 다른 수감자 얼굴을 바꿔 붙인 가짜라며, 퍼뜨리면 처벌받는다고 경고했습니다.",
+      "hl": [
+        "처벌"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "크리스는 강간죄 등으로 징역 13년이 확정됐고, 형기를 마치면 추방됩니다.",
+      "hl": [
+        "추방"
+      ]
+    }
+  ],
+  "source_channel": "스포츠서울 · 이데일리 · 소후닷컴 · 헤럴드뮤즈 · 연합뉴스"
+}

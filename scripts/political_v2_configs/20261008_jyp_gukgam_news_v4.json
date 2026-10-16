@@ -1,0 +1,201 @@
+{
+  "_comment": "V4.0 기획 (2026-10-08) — 박진영 국감(10/7 문체위). 댓글 1·3위 기사(한경 '얼굴 감싸며 헛웃음' 157, 서경 '대통령 윗분' 142)를 축으로, 화제성은 시스루·얼굴 감싼 장면이 끌고 본론은 패노메논 상표권 + 무보수 경비. 039: 당사자 민간인(civilian) · ②이미 잃음(상표 출원 '정상적이지 않은 방법' 자인, 경비 '몰랐다') · ③당내 절차 아님. 040 대칭: 여권(이 대통령 '보수도 없이' ↔ 월 200만원 경비) / 야권(배현진 비공개 계약서 공개 ↔ 민주당은 유출 경로만 추궁)을 같은 잣대로. 특혜 여부는 판정하지 않는다(CTA로 넘김). 사진 15장은 기사 본문 사진+캡션 대조로 선정(이 대통령 X 원문 캡처는 미확보 → 인물 사진으로 대체).",
+  "format": "news_v4",
+  "slug": "20261008_jyp_gukgam_news_v4",
+  "category": "political",
+  "subject_type": "civilian",
+  "headline": [
+    "시스루 입고 국감 간",
+    "박진영 얼굴 감싼 이유"
+  ],
+  "tag": "국정감사 현장",
+  "title": "시스루 입고 국감 간 박진영 얼굴 감싼 이유",
+  "yt_title": "시스루 입고 국감 간 박진영, 두 손으로 얼굴 감싼 그 질문",
+  "yt_title_alt": "무보수라더니 월 200만원… 박진영이 인정한 '비정상'의 실체",
+  "hashtags": [
+    "#박진영",
+    "#국정감사",
+    "#패노메논",
+    "#JYP"
+  ],
+  "persons": [
+    "박진영"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "박진영, 얼굴 감싸며 헛웃음 \"李 대통령 위해 일 안 해\" [영상]",
+      "url": "https://n.news.naver.com/mnews/article/015/0005340476",
+      "outlet": "한국경제"
+    },
+    {
+      "title": "'정면 대응' 박진영, 얼굴 감싸며 실소…어떤 질문했길래",
+      "url": "https://n.news.naver.com/mnews/article/018/0006383196",
+      "outlet": "이데일리"
+    },
+    {
+      "title": "정권 홍보라고?…박진영 \"대통령 윗분이 와도 나라 위한 일 아니면 안 해\"",
+      "url": "https://n.news.naver.com/mnews/article/011/0004669188",
+      "outlet": "서울경제"
+    },
+    {
+      "title": "\"JYP에 남는 것 없다\"…박진영 해명에도 남은 패노메논 과제 [종합]",
+      "url": "https://n.news.naver.com/mnews/article/015/0005340116",
+      "outlet": "한국경제"
+    },
+    {
+      "title": "박진영 \"저는 대통령·민주당 위해 일하는 사람 아냐\" [2026 국정감사]",
+      "url": "https://n.news.naver.com/mnews/article/022/0004164836",
+      "outlet": "세계일보"
+    },
+    {
+      "title": "이 대통령, 박진영 '국감 증인 출석'에 \"합당한 예우 못해 미안\"",
+      "url": "https://n.news.naver.com/mnews/article/009/0005744704",
+      "outlet": "매일경제"
+    },
+    {
+      "title": "'특혜'라는 배현진, '오히려 손해'라는 박진영…패노메논 따져보니",
+      "url": "https://n.news.naver.com/mnews/article/033/0000052583",
+      "outlet": "주간경향"
+    },
+    {
+      "title": "국감장에 '시스루' 입고 나온 박진영… \"파격적\" vs \"직분과 안 맞아\"",
+      "url": "https://n.news.naver.com/mnews/article/022/0004165083",
+      "outlet": "세계일보"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/01_face_cover.jpg",
+      "credit": "국회 의사중계",
+      "_comment": "조은희 질의 중 얼굴 감싼 박진영 (이데일리 018/0006383196)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/03_mexico_lee.jpg",
+      "credit": "연합뉴스",
+      "_comment": "멕시코시티 콘서트 이 대통령 부부와 기념촬영 (매경 009/0005744724)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/04_face_split.jpg",
+      "credit": "국회방송",
+      "_comment": "얼굴 감싼 장면 NATV 캡처 (서울신문 081/0003687145)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/05_jyp_answer.jpg",
+      "credit": "주간경향",
+      "_comment": "답변하는 박진영 (033/0000052583, 박민규 선임기자)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/06_jyp_mic.jpg",
+      "credit": "연합뉴스",
+      "_comment": "패노메논 기획 배경 설명 (연합 001/0016363814)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/07_contract_screen.jpg",
+      "credit": "국회방송",
+      "_comment": "배현진 의원이 띄운 상표권 계약서 화면 (TV조선 448/0000643749)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/08_jyp_paper.jpg",
+      "credit": "뉴스1",
+      "_comment": "서류 들고 답변 (한경 015/0005340116)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/10_lee.jpg",
+      "credit": "연합뉴스",
+      "_comment": "이재명 대통령 (매경 009/0005744704)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/09_jyp_answer2.jpg",
+      "credit": "아시아경제",
+      "_comment": "답변하는 박진영 (277/0005825766, 윤동주 기자)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/11_jyp_laugh.jpg",
+      "credit": "연합뉴스",
+      "_comment": "답변 중 웃는 박진영 (서경 011/0004669188)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/13_bae_jyp.jpg",
+      "credit": "국회방송",
+      "_comment": "배현진 질의 ↔ 박진영 (TV조선 448/0000643749)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/14_coachella_screen.jpg",
+      "credit": "국회방송",
+      "_comment": "배현진 의원 '코첼라 vs 패노메논' 화면 (TV조선 448/0000643749)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/02_seethrough_walk.jpg",
+      "credit": "뉴시스",
+      "_comment": "시스루 상의로 국회 입장 (머니투데이 008/0005423728)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/12_jyp_answer3.jpg",
+      "credit": "MBC",
+      "_comment": "답변하는 박진영 (MBC 214/0001527699)"
+    },
+    {
+      "path": "data/political_pro/20261008_jyp_gukgam_news_v4/photos/15_oath.jpg",
+      "credit": "연합뉴스",
+      "_comment": "증인 선서 (연합 001/0016363814)"
+    }
+  ],
+  "cta": {
+    "text": "①나라 위한 희생\nVS ②JYP 특혜",
+    "voice": "희생일까요, 특혜일까요? 1번 희생, 2번 특혜. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "시스루 상의를 입고 국감에 나온 박진영 대중문화교류위원회 공동위원장이, 한 질문에 두 손으로 얼굴을 감쌌습니다.",
+      "hl": [
+        "얼굴을 감쌌습니다"
+      ]
+    },
+    {
+      "voice": "대통령과 찍은 사진 때문에 이 정권과 흥망을 같이 가는 것 아니냐는 국민의힘 조은희 의원의 질문이었습니다.",
+      "hl": [
+        "흥망"
+      ]
+    },
+    {
+      "voice": "박 위원장은 이재명 대통령을 위해 일한다는 생각은 1초도 해본 적 없다고 받아쳤습니다.",
+      "hl": [
+        "1초도"
+      ]
+    },
+    {
+      "voice": "진짜 쟁점은 한국판 코첼라, 패노메논의 해외 상표를 박 위원장 회사인 JYP 명의로 먼저 출원한 것.",
+      "hl": [
+        "JYP 명의"
+      ]
+    },
+    {
+      "voice": "박 위원장은 누가 뺏어갈까 봐 그랬다며, 정상적이지 않은 방법이었다고 인정했습니다.",
+      "hl": [
+        "정상적이지 않은"
+      ]
+    },
+    {
+      "voice": "이 대통령은 전날, 보수도 없이 애쓰는데 예우를 못 해 미안하다고 적었지만,",
+      "hl": [
+        "보수도 없이"
+      ]
+    },
+    {
+      "voice": "위원장직엔 매달 약 200만 원의 경비가 나가고 있었고, 본인은 받는 줄 몰랐다고 했습니다.",
+      "hl": [
+        "200만 원"
+      ]
+    },
+    {
+      "voice": "국민의힘은 비공개 계약서를 국감장 화면에 띄웠고, 민주당은 계약서 유출 경로부터 따졌습니다.",
+      "hl": [
+        "계약서"
+      ]
+    }
+  ],
+  "_photos_order_comment": "실측 TTS 타이밍(47.1s)에 맞춰 재배열 — 이재명 사진이 '이 대통령은 전날' 줄(≈28s)에 오도록. 14·15번은 예비."
+}

@@ -58,6 +58,10 @@ from src.analyzer.script_models import (
 )
 
 POLITICAL = "political"
+# 2026-09-30 정치 전용으로 시작 → 2026-10-12 연예 허용(사용자 확정, 044 — 탑 팬사이트 편).
+# 2026-10-13 사회 허용(사용자 확정 — 구월동 홈플러스 흉기난동 편, 040 범죄 제외 방침의 예외).
+# 정치 요소 없는 연예 편을 political 로 등록해 우회하면 카테고리 통계가 오염된다.
+ALLOWED_CATEGORIES = (POLITICAL, "entertainment", "society")
 # 벤치마크는 6장(합성 1 + 캡처 1 + 사진 4). 4장 미만이면 3.4초 타이머가 같은
 # 사진을 금방 다시 꺼내 슬라이드가 짧아 보인다.
 MIN_PHOTOS = 4
@@ -109,10 +113,10 @@ def validate_config(cfg: dict) -> None:
     for key in ("slug", "photos", "scenes"):
         if not cfg.get(key):
             raise ValueError(f"config에 '{key}' 누락")
-    if (cfg.get("category") or POLITICAL) != POLITICAL:
+    if (cfg.get("category") or POLITICAL) not in ALLOWED_CATEGORIES:
         raise ValueError(
-            f"V4.0 은 정치 전용입니다 (category={cfg['category']!r}) — "
-            "사용자 확정 2026-09-30")
+            f"V4.0 은 정치·연예·사회 전용입니다 (category={cfg['category']!r}) — "
+            "사용자 확정 2026-09-30 / 연예 허용 2026-10-12 / 사회 허용 2026-10-13")
     _validate_photos(cfg["photos"])
     for i, sc in enumerate(cfg["scenes"]):
         if not sc.get("voice"):
@@ -324,14 +328,28 @@ def cmd_photos_sheet(cfg: dict) -> int:
     return 0
 
 
-def _synthesize(cfg: dict, script: ShortsScript, wd: Path) -> tuple[Path, list[dict]]:
+def _tts_raw(script: ShortsScript, wd: Path, reuse: bool) -> tuple[Path, list[dict]]:
+    """reuse: 직전 TTS 원본 재사용(044). 나레이션 문구를 바꿨다면 쓰지 말 것 —
+    V5 와 같은 판정(씬 id 비교)이라 문구 변경은 감지하지 못한다."""
+    if reuse:
+        from scripts.render_evidence_v5 import find_reusable_tts
+        found = find_reusable_tts(wd, {sc.id for sc in script.scenes if sc.voice_text})
+        if found:
+            print(f"♻️ TTS 재사용: {found[0].name} (Gemini 호출 없음)", flush=True)
+            return found
+        print("⚠️ 재사용할 TTS 없음 — 새로 합성합니다", flush=True)
     print("🎙️ Gemini Charon TTS 합성 중 (V2.1 과 같은 뉴스캐스터 톤)...", flush=True)
     from src.tts.gemini_tts_generator import generate_voice_with_timing_gemini
-    from src.tts.silence_align import align_timings_to_silence
-    audio, timings = generate_voice_with_timing_gemini(
+    return generate_voice_with_timing_gemini(
         script, output_dir=wd, voice_name="Charon",
         style_prompt=V2_1_TTS_STYLE_PROMPT, temperature=0.5, include_outro=False,
     )
+
+
+def _synthesize(cfg: dict, script: ShortsScript, wd: Path,
+                reuse: bool = False) -> tuple[Path, list[dict]]:
+    from src.tts.silence_align import align_timings_to_silence
+    audio, timings = _tts_raw(script, wd, reuse)
     audio, timings = align_timings_to_silence(audio, timings, out_dir=wd)
     speed = float(cfg.get("tts_speed", DEFAULT_TTS_SPEED))
     if abs(speed - 1.0) > 1e-3:
@@ -341,11 +359,11 @@ def _synthesize(cfg: dict, script: ShortsScript, wd: Path) -> tuple[Path, list[d
     return audio, timings
 
 
-def cmd_render(cfg: dict) -> int:
+def cmd_render(cfg: dict, reuse_tts: bool = False) -> int:
     _require_photos(cfg)
     wd = work_dir(cfg)
     script = build_script(cfg)
-    audio, timings = _synthesize(cfg, script, wd)
+    audio, timings = _synthesize(cfg, script, wd, reuse=reuse_tts)
     total_ms = max(t["end_ms"] for t in _content(timings))
     print(f"✅ 합성·정렬 완료: {total_ms / 1000:.1f}s, {len(script.scenes)}문장", flush=True)
     from scripts.political_length import enforce_length
@@ -403,10 +421,13 @@ COMMANDS = {"validate": lambda cfg: 0, "photos-sheet": cmd_photos_sheet,
 
 
 def main() -> int:
-    if len(sys.argv) != 3 or sys.argv[2] not in COMMANDS:
-        print(f"사용법: render_news_v4.py <config.json> {{{'|'.join(COMMANDS)}}}")
+    if len(sys.argv) not in (3, 4) or sys.argv[2] not in COMMANDS:
+        print(f"사용법: render_news_v4.py <config.json> {{{'|'.join(COMMANDS)}}} "
+              "[--reuse-tts]")
         return 2
     cfg = load_config(Path(sys.argv[1]))
+    if sys.argv[2] == "render":
+        return cmd_render(cfg, reuse_tts=("--reuse-tts" in sys.argv))
     return COMMANDS[sys.argv[2]](cfg)
 
 

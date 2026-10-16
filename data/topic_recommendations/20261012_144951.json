@@ -1,0 +1,210 @@
+{
+  "dates": [
+    "20261012",
+    "20261011"
+  ],
+  "news": [
+    {
+      "label": "[속보] ‘역사 왜곡 논란’ 영화 ‘암살자(들)’ 전국 17개교 단체관람 추진…8곳 관람 마쳐·6곳 취소",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 3517,
+      "score": 44.47822500954821,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "추진",
+        "취소"
+      ],
+      "titles": [
+        "[속보] ‘역사 왜곡 논란’ 영화 ‘암살자(들)’ 전국 17개교 단체관람 추진…8곳 관람 마쳐·6곳 취소",
+        "“살상·고문·욕설·흡연 보여줘 아동학대”…‘암살자(들) 단체관람’ 초중고·교육감도 피고발",
+        "'패륜 영화' 낙인... 대구서 '암살자(들)' 보기 쉽지 않은 까닭"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/021/0002824138",
+        "https://n.news.naver.com/article/029/0003052383",
+        "https://n.news.naver.com/article/047/0002531762"
+      ],
+      "article_count": 5,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "\"공부 왜 그렇게 못해\"…교실서 9살 몰아세운 담임 결국",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 1218,
+      "score": 26.17489254992272,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "벌금"
+      ],
+      "titles": [
+        "\"공부 왜 그렇게 못해\"…교실서 9살 몰아세운 담임 결국",
+        "제자에게 “공부를 그렇게 못하면 어짜노”… 초등 담임 벌금 500만원 확정",
+        "친구들 앞에서 \"공부 못하면 되겠냐\"…23년차 담임의 훈계, 결국 아동학대"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/015/0005341077",
+        "https://n.news.naver.com/article/366/0001197143",
+        "https://n.news.naver.com/article/661/0000084687"
+      ],
+      "article_count": 3,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "슈퍼마켓 업주 살해한 40대 중국인, 무기징역 확정",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 743,
+      "score": 20.443519755658517,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "징역"
+      ],
+      "titles": [
+        "슈퍼마켓 업주 살해한 40대 중국인, 무기징역 확정",
+        "제주 길거리서 40대 여성 살해한 60대 긴급체포",
+        "제주 길거리서 40대 여성 흉기로 살해한 60대 남성 검거"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/666/0000126964",
+        "https://n.news.naver.com/article/005/0001878066",
+        "https://n.news.naver.com/article/082/0001402006"
+      ],
+      "article_count": 5,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "\"사과를 왜 우리한테 합니까?\" 김영광, 보복운전 '무혐의' 강조 사과문에 네티즌들 분노",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 402,
+      "score": 15.037453241822567,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "사과"
+      ],
+      "titles": [
+        "\"사과를 왜 우리한테 합니까?\" 김영광, 보복운전 '무혐의' 강조 사과문에 네티즌들 분노"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/014/0005587291"
+      ],
+      "article_count": 1,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "국힘 주진우 \"이 대통령, 대구 상가 사고 때 태릉서 골프\"",
+      "category": "political",
+      "tier": "C",
+      "tier_note": "조건 미충족 — 실측 돌파율 7% (밴드 1,000~2,200에 갇힘)",
+      "demand": 37712,
+      "score": 13.593704425210959,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "공방"
+      ],
+      "titles": [
+        "국힘 주진우 \"이 대통령, 대구 상가 사고 때 태릉서 골프\"",
+        "\"붕괴 사고 날 대통령 골프 쳤다\"…청와대 \"정치 공방 유감\"",
+        "靑 \"李대통령 골프장서 대구사고 신속수습지시\"…주진우 \"황제골프\"(종합)"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/214/0001528295",
+        "https://n.news.naver.com/article/437/0000515117",
+        "https://n.news.naver.com/article/001/0016369280"
+      ],
+      "article_count": 70,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0",
+      "angle_hint": "정치인 공방 말고 이 사건으로 잃거나 다친 사람을 주인공으로(044)"
+    }
+  ],
+  "entertainment": [
+    {
+      "label": "‘성범죄 징역 13년’ 엑소 출신 크리스, 후덕샷 확산…알고 보니 조작",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 648630,
+      "score": 604.031766548747,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "징역"
+      ],
+      "titles": [
+        "‘성범죄 징역 13년’ 엑소 출신 크리스, 후덕샷 확산…알고 보니 조작",
+        "前 엑소 크리스, 강제 거세 가능성→감옥서 사망설 이어 또 수감사진 조작 논란 [스타이슈]"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/468/0001271650",
+        "https://m.entertain.naver.com/article/108/0003477639"
+      ],
+      "article_count": 2,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "[전문] '나나♥' 탑, 공개 열애 8일 만에 폭로 터졌다…\"이용하고 외면\" 팬사이트 폐쇄",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 353391,
+      "score": 445.85024111241654,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "폐쇄",
+        "중단"
+      ],
+      "titles": [
+        "[전문] '나나♥' 탑, 공개 열애 8일 만에 폭로 터졌다…\"이용하고 외면\" 팬사이트 폐쇄",
+        "'활동 중단' 조세호, 아내 운영 추정 SNS 근황 공개 \"하루 만에 계폭위기\"",
+        "김용지, 열애 공개 없이 깜짝 결혼"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/312/0000779371",
+        "https://m.entertain.naver.com/article/477/0000632515",
+        "https://m.entertain.naver.com/article/003/0014245638"
+      ],
+      "article_count": 3,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "'나혼산 하차' 성훈, 자취 감추더니 깜짝 근황…3년 만에 드라마 '보스의'로 안방극장 복귀",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 234709,
+      "score": 363.3508118884558,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "하차"
+      ],
+      "titles": [
+        "'나혼산 하차' 성훈, 자취 감추더니 깜짝 근황…3년 만에 드라마 '보스의'로 안방극장 복귀"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/312/0000779420"
+      ],
+      "article_count": 1,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    }
+  ]
+}

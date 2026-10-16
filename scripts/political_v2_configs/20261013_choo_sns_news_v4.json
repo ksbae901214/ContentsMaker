@@ -1,0 +1,182 @@
+{
+  "_comment": "V4.0 기획 (2026-10-13) — 추성훈 지인 비보로 SNS 전면 중단. 044 소재 추천기 연예 1위(스포티비뉴스 조회 1,438,695). 039: 당사자 연예인(civilian) · ②이미 잃음(지인 별세·한 달 전 삼촌 별세·SNS 중단) · ③종결. ⚠️ 자살 관련 소재 — 보건복지부·기자협회 자살보도 권고기준 3.0 적용: 제목·자막·나레이션에 '자살/스스로' 표현 금지, 고인 신원 추측 금지(추성훈이 밝히지 않음), 경위·방법 언급 금지, 마지막에 상담전화 109 고지. 그래서 이 편만 제목 톤을 '충격'이 아닌 '호기심'으로 낮추고, CTA 는 편가르기 대신 응원형(선택지 경고는 감수). 기사 '블랙컴백 17'(이데일리)은 오기 — 정식 명칭 '블랙컴뱃 17'(스포티비뉴스).",
+  "format": "news_v4",
+  "slug": "20261013_choo_sns_news_v4",
+  "category": "entertainment",
+  "subject_type": "civilian",
+  "headline": [
+    "한 달 새 두 번 이별",
+    "추성훈 SNS 멈췄다"
+  ],
+  "tag": "추성훈 SNS 글",
+  "title": "한 달 새 두 번 이별 추성훈 SNS 멈췄다",
+  "yt_title": "은퇴전 39일 앞둔 추성훈, 모든 SNS를 멈춘 이유",
+  "yt_title_alt": "한 달 새 두 번의 이별… 추성훈이 남긴 마지막 글",
+  "hashtags": [
+    "#추성훈",
+    "#블랙컴뱃",
+    "#은퇴전",
+    "#SNS중단"
+  ],
+  "persons": [
+    "추성훈"
+  ],
+  "source_channel": "추성훈 SNS · 스포티비뉴스 · 이데일리 · 스포츠조선 · 스포츠서울 · 텐아시아 · 뉴시스 · OSEN · iMBC연예 · JTBC · 헤럴드뮤즈",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "\"너무 가슴 아프고 슬퍼, 활동 중단할 것\" 추성훈, 지인 사망 비보에 SNS 활동 모두 접는다",
+      "url": "https://m.entertain.naver.com/article/477/0000632511",
+      "outlet": "스포티비뉴스"
+    },
+    {
+      "title": "추성훈, 지인 사망에 큰 충격…잇단 비보 속 “당분간 모든 SNS 중단”",
+      "url": "https://m.entertain.naver.com/article/241/0003534723",
+      "outlet": "이데일리"
+    },
+    {
+      "title": "추성훈, 삼촌상 한 달 만에 또 비보 '큰 충격'..\"SNS 활동 중단하겠다\"",
+      "url": "https://m.entertain.naver.com/article/076/0004454991",
+      "outlet": "스포츠조선"
+    },
+    {
+      "title": "추성훈 SNS 중단 선언… 지인 비보 속 당분간 휴식",
+      "url": "https://m.entertain.naver.com/article/468/0001271921",
+      "outlet": "스포츠서울"
+    },
+    {
+      "title": "추성훈, 은퇴전 앞두고 방송 활동 중단…\"훈련 집중\" [공식]",
+      "url": "https://m.entertain.naver.com/article/311/0002047241",
+      "outlet": "엑스포츠뉴스"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/01_choo_sns_portrait.jpg",
+      "credit": "추성훈 SNS",
+      "_comment": "photos[0] = 1문장 대표 컷. 이데일리 241/0003534723 게재 SNS 캡처의 인물 부분만 크롭(무거운 표정)"
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/02_choo_sns_post.jpg",
+      "credit": "추성훈 SNS",
+      "fit": "contain",
+      "_comment": "2~3문장 근거 — 11일 게시글. 스포티비 477/0000632511 게재 원본에서 '스스로 생을 마감' 첫 줄을 잘라냄(권고기준 3.0)",
+      "dur": 6.0
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/03_choo_tenasia.jpg",
+      "credit": "텐아시아",
+      "_comment": "텐아시아 312/0000779525 DB",
+      "dur": 4.6
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/04_choo_sportschosun.jpg",
+      "credit": "스포츠조선",
+      "_comment": "5문장(삼촌상) 무렵 — 스포츠조선 076/0004454991",
+      "dur": 4.6
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/05_choo_newsis.jpg",
+      "credit": "뉴시스",
+      "_comment": "뉴시스 003/0014245653",
+      "dur": 4.6
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/06_blackcombat17_poster.jpg",
+      "credit": "추성훈 SNS",
+      "fit": "contain",
+      "dur": 4.5,
+      "_comment": "6문장 근거 — 블랙컴뱃 17 포스터(NOV 21 2026 GOCHEOK SKY DOME). 스포츠서울 468/0001271921 게재(캡션: 추성훈 SNS)"
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/07_choo_osen_fighter.jpg",
+      "credit": "OSEN",
+      "_comment": "7문장(마지막 경기 준비) — OSEN 109/0005622070, 글러브 든 경기장 사진",
+      "dur": 4.6
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/08_choo_imbc.jpg",
+      "credit": "iMBC연예",
+      "_comment": "408/0000324070 게재",
+      "dur": 4.6
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/09_choo_jtbc.jpg",
+      "credit": "JTBC 엔터뉴스",
+      "_comment": "437/0000515131",
+      "dur": 4.6
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/10_choo_heraldmuse.jpg",
+      "credit": "헤럴드뮤즈",
+      "_comment": "112/0003809664",
+      "dur": 4.6
+    },
+    {
+      "path": "data/political_pro/20261013_choo_sns_news_v4/photos/11_choo_sns_walk.jpg",
+      "credit": "추성훈 SNS",
+      "_comment": "스포츠서울 468/0001271921 게재(캡션: 추성훈 SNS)",
+      "dur": 5.0
+    }
+  ],
+  "cta": {
+    "text": "추성훈에게\n응원 한마디",
+    "voice": "마지막 경기를 앞둔 추성훈에게, 응원 한마디 댓글로 남겨주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "격투기 선수 출신 방송인 추성훈이, 당분간 모든 SNS 활동을 중단하겠다고 밝혔습니다.",
+      "hl": [
+        "모든 SNS"
+      ]
+    },
+    {
+      "voice": "지난 11일, 너무나 사랑하고 존경하던 분이 40대의 이른 나이에 세상을 떠났다는 글을 올리면서입니다.",
+      "hl": [
+        "40대"
+      ]
+    },
+    {
+      "voice": "추성훈은 아직도 믿기지 않는다며, 다시 한번 만나 뵙고 싶다고 적었습니다.",
+      "hl": [
+        "믿기지 않는다"
+      ]
+    },
+    {
+      "voice": "고인이 누구인지는 밝히지 않았습니다."
+    },
+    {
+      "voice": "불과 한 달 전에는 자신을 물심양면 지원해 온 삼촌의 별세 소식을 전하기도 했습니다.",
+      "hl": [
+        "한 달 전"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "추성훈은 다음 달 21일 고척스카이돔에서 열리는 블랙컴뱃 17에서 은퇴전을 치릅니다.",
+      "hl": [
+        "은퇴전"
+      ]
+    },
+    {
+      "voice": "이미 예능과 방송 활동을 멈추고, 마지막 경기 준비에 들어간 상태였습니다.",
+      "hl": [
+        "마지막 경기"
+      ]
+    },
+    {
+      "voice": "한 달 새 두 번의 이별, 그의 마지막 경기는 이제 39일 남았습니다.",
+      "hl": [
+        "39일"
+      ]
+    },
+    {
+      "voice": "말하기 어려운 고민이 있다면, 자살예방 상담전화 109에서 24시간 상담받을 수 있습니다.",
+      "hl": [
+        "109"
+      ]
+    }
+  ]
+}

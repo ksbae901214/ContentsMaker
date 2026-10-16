@@ -382,6 +382,320 @@
       "slug": "20261001_johd_joeuigeum_v5",
       "recorded_at": "2026-10-01 14:09",
       "format": "evidence_v5"
+    },
+    "정치가 싸웠는데… 유해진 집 앞에 한 달 집회 신고": {
+      "category": "political",
+      "slug": "20261002_assassins_actors_news_v4",
+      "recorded_at": "2026-10-02 11:11",
+      "format": "news_v4"
+    },
+    "'난 기어갈 테니 대대장 모셔라'… 그런데 대통령은 '불의의 사고'": {
+      "category": "political",
+      "slug": "20261002_dmz_unforeseen_news_v4",
+      "recorded_at": "2026-10-02 11:28",
+      "format": "news_v4"
+    },
+    "국감서 밝히겠다더니 선서부터 거부한 대법원장": {
+      "category": "political",
+      "slug": "20261006_johd_gukgam_v5",
+      "recorded_at": "2026-10-06 14:59",
+      "format": "evidence_v5"
+    },
+    "결국 경찰이 스마트워치를… 유해진 집 앞에서 벌어진 일": {
+      "category": "political",
+      "slug": "20261006_assassins_smartwatch_news_v4",
+      "recorded_at": "2026-10-06 18:31",
+      "format": "news_v4"
+    },
+    "감히 노무현을? 탄핵 찬성표 던진 추미애의 영정 사진": {
+      "category": "political",
+      "slug": "20261007_chumiae_nohtanhaek_v5",
+      "recorded_at": "2026-10-07 14:53",
+      "format": "evidence_v5"
+    },
+    "시스루 입고 국감 간 박진영, 두 손으로 얼굴 감싼 그 질문": {
+      "category": "political",
+      "slug": "20261008_jyp_gukgam_news_v4",
+      "recorded_at": "2026-10-08 14:06",
+      "format": "news_v4"
+    },
+    "김여정이 증거로 꺼낸 정동영 한마디": {
+      "category": "political",
+      "slug": "20261008_jdy_gorani_v5",
+      "recorded_at": "2026-10-08 14:48",
+      "format": "evidence_v5"
+    },
+    "지뢰 밟으면 목발 경품이라던 그 사람, 이번엔 한동훈 전담팀": {
+      "category": "political",
+      "slug": "20261008_jbj_moksal_v5",
+      "recorded_at": "2026-10-08 15:31",
+      "format": "evidence_v5"
+    },
+    "윤석열 땐 '거짓말', 이재명 땐 '골프 외교'… 자리만 바뀐 여야": {
+      "category": "political",
+      "slug": "20261012_lee_golf_news_v4",
+      "recorded_at": "2026-10-12 10:57",
+      "format": "news_v4"
+    },
+    "이준석 한마디에 민주당 발끈": {
+      "category": "political",
+      "slug": "ljs_daebeopgwan_v2_2",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "\"송영길은 여우\" 문자까지 나온 로비": {
+      "category": "political",
+      "slug": "20260909_kimms_hdh_v2_2",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "총리도 있던 단체방서 짜여진 질문": {
+      "category": "political",
+      "slug": "20260911_hdh_chongrisil_v2_2",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "\"재밌는 분이시네요\" 정체 들킨 총리실 간부": {
+      "category": "political",
+      "slug": "20260910_hanhoon_ilbanin_v2_2",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "까도 까도 또 나오는 박위, 2시간에 1500만원": {
+      "category": "entertainment",
+      "format": "v2_1",
+      "slug": "20260914_parkwi_gangyeonryo_v2_2",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "까도 까도 나오던 박위, 이번 껍질은 가짜": {
+      "category": "entertainment",
+      "format": "v2_1",
+      "slug": "20260914_parkwi_pamyo_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "서로 \"내 자료 내놔\", 김승원·한동훈의 내로남불": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260915_kimsw_charyo_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "겸직 후보 내보냈는데 지지율 38% 최저": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260916_leejm_jijiyul_v2_2",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "지지율 38% 최저, 겸직 후보 2주 만에 사퇴": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260916_leejm_jijiyul_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "재정 비상이라더니 7700만원 새 차": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260916_choo_sanhujori_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "노인이 옷깃 잡자, 여성의 발길질": {
+      "category": "society",
+      "format": "v2_1",
+      "slug": "20260917_noyakja_2hoseon_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "350만이 본 2호선 교통약자석": {
+      "category": "society",
+      "format": "v2_1",
+      "slug": "20260917_noyakja_2hoseon_v2_2",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "이중잣대 논란, 8분 44초의 카메라": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260918_kimsw_docchal_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "이중잣대 논란, 뒤에선 '찰칵'": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260918_kimsw_docchal_v2_2",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "남 탓 비웃던 그 입으로, 다시 남 탓": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260918_lee_namtat_v2_2",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "지지율 33% 추락, 그래도 '전 정권 탓'": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260918_lee_namtat_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "지지할 땐 똑똑하다더니, 돌아서자 썩은 내": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260921_yusimin_8months_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "대통령 때린 추미애, 돌아온 건 노무현 탄핵": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260921_choo_jungsuchung_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "지뢰 묻는 북한, '평화' 외치는 이재명 정권": {
+      "category": "political",
+      "format": "v2_1",
+      "slug": "20260922_dmz_jiroe_v2_1",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "장병 3명 다쳤는데 '자작극'이라는 김여정": {
+      "category": "political",
+      "format": "news_v4",
+      "slug": "20260930_dmz_mine_kimyj_news_v4",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "부고도 숨긴 대법원장에게 인지도 작업 프레임": {
+      "category": "political",
+      "format": "evidence_v5",
+      "slug": "20261001_johd_joeuigeum_v5",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "'북한상'에 불매·집회까지… 암살자들 배우들의 수난": {
+      "category": "political",
+      "format": "news_v4",
+      "slug": "20261002_assassins_actors_news_v4",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "북한 책임은 한마디도 없었다… 국군의날 '불의의 사고' 논란": {
+      "category": "political",
+      "format": "news_v4",
+      "slug": "20261002_dmz_unforeseen_news_v4",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "증언 대신 A4로 읽은 증언 거부 사유": {
+      "category": "political",
+      "format": "evidence_v5",
+      "slug": "20261006_johd_gukgam_v5",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "광고 종료에 시상식 불참… 집 앞 집회 뒤 유해진이 잃은 것": {
+      "category": "political",
+      "format": "news_v4",
+      "slug": "20261006_assassins_smartwatch_news_v4",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "노무현 지켜드리지 못해 죄송하다던 탄핵 찬성파의 정체": {
+      "category": "political",
+      "format": "evidence_v5",
+      "slug": "20261007_chumiae_nohtanhaek_v5",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "무보수라더니 월 200만원… 박진영이 인정한 '비정상'의 실체": {
+      "category": "political",
+      "format": "news_v4",
+      "slug": "20261008_jyp_gukgam_news_v4",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "발목 잃은 건 우리 장병인데… 북한 선전물이 된 장관 답변": {
+      "category": "political",
+      "format": "evidence_v5",
+      "slug": "20261008_jdy_gorani_v5",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "장병 발목 잃은 날… 목발 경품 발언자의 '팀 정봉주'": {
+      "category": "political",
+      "format": "evidence_v5",
+      "slug": "20261008_jbj_moksal_v5",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "38명 다친 날 골프장에 있던 대통령, 2년 전 그 해명 그대로": {
+      "category": "political",
+      "format": "news_v4",
+      "slug": "20261012_lee_golf_news_v4",
+      "recorded_at": "2026-10-12 14:19"
+    },
+    "마약 사건도 버틴 20년 팬, 열애 인정 열흘 만에 떠난 진짜 이유": {
+      "category": "entertainment",
+      "slug": "20261012_top_fansite_news_v4",
+      "recorded_at": "2026-10-12 15:20",
+      "format": "news_v4"
+    },
+    "필요할 때 이용하고 외면… 20년 팬이 탑에게 남긴 마지막 말": {
+      "category": "entertainment",
+      "slug": "20261012_top_fansite_news_v4",
+      "recorded_at": "2026-10-12 15:20",
+      "format": "news_v4"
+    },
+    "징역 13년 크리스 두 배 된 옥중 얼굴, 원본 찾아보니 2015년 영상": {
+      "category": "entertainment",
+      "slug": "20261013_kris_fakephoto_news_v4",
+      "recorded_at": "2026-10-12 18:53",
+      "format": "news_v4"
+    },
+    "사망설 이어 또 가짜… 감옥 속 크리스 사진의 소름 돋는 정체": {
+      "category": "entertainment",
+      "slug": "20261013_kris_fakephoto_news_v4",
+      "recorded_at": "2026-10-12 18:53",
+      "format": "news_v4"
+    },
+    "범행 직전 보호관찰소 직원과 점심, 전자발찌 찬 50대의 흉기 난동": {
+      "category": "society",
+      "slug": "20261013_guwol_homeplus_news_v4",
+      "recorded_at": "2026-10-13 17:15",
+      "format": "news_v4"
+    },
+    "지난달 흉기로 입건됐던 남자, 한 달 뒤 인천 식당가의 참극": {
+      "category": "society",
+      "slug": "20261013_guwol_homeplus_news_v4",
+      "recorded_at": "2026-10-13 17:15",
+      "format": "news_v4"
+    },
+    "은퇴전 39일 앞둔 추성훈, 모든 SNS를 멈춘 이유": {
+      "category": "entertainment",
+      "slug": "20261013_choo_sns_news_v4",
+      "recorded_at": "2026-10-13 17:29",
+      "format": "news_v4"
+    },
+    "한 달 새 두 번의 이별… 추성훈이 남긴 마지막 글": {
+      "category": "entertainment",
+      "slug": "20261013_choo_sns_news_v4",
+      "recorded_at": "2026-10-13 17:29",
+      "format": "news_v4"
+    },
+    "18년 만에 대사까지 불렀는데… 우크라이나의 충격적인 답": {
+      "category": "political",
+      "slug": "20261014_ukraine_pow_apology_news_v4",
+      "recorded_at": "2026-10-14 14:58",
+      "format": "news_v4"
+    },
+    "북한군 포로 2명이 갈라놓은 한국과 우크라이나, 사과 거절의 전말": {
+      "category": "political",
+      "slug": "20261014_ukraine_pow_apology_news_v4",
+      "recorded_at": "2026-10-14 14:58",
+      "format": "news_v4"
+    },
+    "10년 부려먹고 9600만원 꿀꺽, 신안 염전 업주가 받은 형량": {
+      "category": "society",
+      "slug": "20261015_sinan_salt_news_v4",
+      "recorded_at": "2026-10-15 16:18",
+      "format": "news_v4"
+    },
+    "미국 대사관까지 조사 나선 염전 노예, 충격적인 첫 처벌 벌금 300만원": {
+      "category": "society",
+      "slug": "20261015_sinan_salt_news_v4",
+      "recorded_at": "2026-10-15 16:18",
+      "format": "news_v4"
+    },
+    "살인미수에도 집행유예, 법원이 두 번 풀어준 인천 흉기 난동범": {
+      "category": "society",
+      "slug": "20261016_guwol_jipyu_news_v4",
+      "recorded_at": "2026-10-16 10:25",
+      "format": "news_v4"
+    },
+    "1심 징역 5년이 2심에서 집행유예로, 전과 9범 흉기 난동범의 판결문": {
+      "category": "society",
+      "slug": "20261016_guwol_jipyu_news_v4",
+      "recorded_at": "2026-10-16 10:25",
+      "format": "news_v4"
     }
   }
 }

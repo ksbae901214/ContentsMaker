@@ -154,3 +154,109 @@ def test_report_is_immutable(data_dir: Path):
     report = CleanupReport(targets=(), total_bytes=0)
     with pytest.raises(Exception):
         report.total_bytes = 1  # type: ignore[misc]
+
+
+# ── 프로젝트 폴더 정리 (data/political_pro/*, data/info_v1/*) ──────────────
+# 마지막 작업 후 7일이 지난 프로젝트는 완성본 mp4(최신 1개)·썸네일·텍스트만 남긴다.
+
+
+def _project(data_dir: Path, name: str, age_days: float, now: float) -> Path:
+    root = data_dir / "political_pro" / name
+    _make_file(root / "20261001_100000_제목.mp4", age_days * DAY + 60, now)  # 이전 렌더
+    _make_file(root / "20261001_100000_제목.thumb.png", age_days * DAY + 60, now)
+    _make_file(root / "20261001_110000_제목.mp4", age_days * DAY, now)  # 최신 렌더
+    _make_file(root / "20261001_110000_제목.thumb.png", age_days * DAY, now)
+    _make_file(root / "20261001_110000_제목.mp3", age_days * DAY, now)
+    _make_file(root / "20261001_110000_제목.timing.json", age_days * DAY, now)
+    _make_file(root / "scene_1_00.mp4", age_days * DAY, now)
+    _make_file(root / "src_news.mp4", age_days * DAY, now)
+    _make_file(root / "src_news.title.txt", age_days * DAY, now)
+    _make_file(root / "upload_package.md", age_days * DAY, now)
+    _make_file(root / "_verify" / "f1.png", age_days * DAY, now)
+    _make_file(root / "thumb_candidates" / "c.png", age_days * DAY, now)
+    return root
+
+
+def test_old_project_keeps_only_final_video_and_text(data_dir: Path):
+    now = time.time()
+    root = _project(data_dir, "20261001_topic_v2_2", age_days=8, now=now)
+
+    targeted = {t.path for t in scan_cleanup_targets(data_dir, now=now).targets}
+
+    kept = {
+        root / "20261001_110000_제목.mp4",
+        root / "20261001_110000_제목.thumb.png",
+        root / "20261001_110000_제목.timing.json",
+        root / "src_news.title.txt",
+        root / "upload_package.md",
+    }
+    removed = {
+        root / "20261001_100000_제목.mp4",
+        root / "20261001_100000_제목.thumb.png",
+        root / "20261001_110000_제목.mp3",
+        root / "scene_1_00.mp4",
+        root / "src_news.mp4",
+        root / "_verify" / "f1.png",
+        root / "thumb_candidates" / "c.png",
+    }
+    assert removed <= targeted
+    assert not (kept & targeted)
+
+
+def test_recent_project_untouched(data_dir: Path):
+    now = time.time()
+    _project(data_dir, "20261014_topic_v5", age_days=3, now=now)
+
+    report = scan_cleanup_targets(data_dir, now=now)
+
+    assert report.targets == ()
+
+
+def test_project_age_uses_newest_file(data_dir: Path):
+    """오래된 파일이 있어도 최근에 재렌더한 프로젝트는 건드리지 않는다."""
+    now = time.time()
+    root = _project(data_dir, "20261001_rerender", age_days=20, now=now)
+    _make_file(root / "20261016_090000_제목.mp4", 1 * DAY, now)
+
+    report = scan_cleanup_targets(data_dir, now=now)
+
+    assert report.targets == ()
+
+
+def test_underscore_dirs_and_info_v1_handled(data_dir: Path):
+    now = time.time()
+    channel = _make_file(data_dir / "info_v1" / "_channel" / "logo.png", 90 * DAY, now)
+    info = data_dir / "info_v1" / "octopus"
+    final = _make_file(info / "octopus.mp4", 10 * DAY, now)
+    img = _make_file(info / "images" / "01.png", 10 * DAY, now)
+    tts = _make_file(info / "tts_raw.mp3", 10 * DAY, now)
+
+    targeted = {t.path for t in scan_cleanup_targets(data_dir, now=now).targets}
+
+    assert channel not in targeted
+    assert final not in targeted
+    assert {img, tts} <= targeted
+
+
+def test_project_keep_days_parameter(data_dir: Path):
+    now = time.time()
+    _project(data_dir, "20261010_topic", age_days=4, now=now)
+
+    report = scan_cleanup_targets(data_dir, now=now, project_keep_days=3)
+
+    assert report.targets != ()
+
+
+def test_execute_removes_emptied_project_subdirs(data_dir: Path):
+    now = time.time()
+    root = _project(data_dir, "20261001_topic", age_days=8, now=now)
+    clips = data_dir / "political_pro" / "topic_123_clips"
+    _make_file(clips / "scenes" / "s.mp4", 30 * DAY, now)
+
+    execute_cleanup(scan_cleanup_targets(data_dir, now=now))
+
+    assert not (root / "_verify").exists()
+    assert not (root / "thumb_candidates").exists()
+    assert (root / "20261001_110000_제목.mp4").exists()
+    assert not clips.exists()
+    assert (data_dir / "political_pro").is_dir()

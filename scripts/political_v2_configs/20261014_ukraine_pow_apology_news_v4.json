@@ -1,0 +1,159 @@
+{
+  "_comment": "V4.0 기획 (2026-10-14) — 우크라이나, 북한군 포로 송환 공개에 대한 한국의 공식 사과 요구를 사실상 거절. 044 추천기 뉴스 3위(뉴스1 008/0005425171, 댓글 243). 사용자가 버전(V4.0) 지정. 039: 당사자 = 양국 정부(institution) — ①분노에 진영이 필요함(여야 정면 충돌) ②한국 측이 대사 소환이라는 대가를 치렀으나 우크라는 잃은 것 없음 ③당내 절차 아님 → C등급 예상, 사용자 지정으로 진행. 040: 한 편에 정부·민주당(소환 옹호)과 국민의힘(소환 비판)을 같은 분량·같은 화법으로 배치하고 CTA 는 판정을 넘기는 질문. 육성은 V4 라 쓰지 않음 — 모든 발언은 간접화법.",
+  "format": "news_v4",
+  "slug": "20261014_ukraine_pow_apology_news_v4",
+  "category": "political",
+  "subject_type": "institution",
+  "headline": [
+    "북한군 포로 갈등",
+    "우크라 사과 거절"
+  ],
+  "tag": "외무장관 인터뷰",
+  "title": "북한군 포로 갈등 우크라 사과 거절",
+  "yt_title": "18년 만에 대사까지 불렀는데… 우크라이나의 충격적인 답",
+  "yt_title_alt": "북한군 포로 2명이 갈라놓은 한국과 우크라이나, 사과 거절의 전말",
+  "hashtags": [
+    "#우크라이나",
+    "#북한군포로",
+    "#대사소환",
+    "#젤렌스키"
+  ],
+  "persons": [
+    "젤렌스키",
+    "이재명",
+    "나경원",
+    "김민석"
+  ],
+  "source_channel": "뉴스1 · 연합뉴스 · 동아일보 · 중앙일보 · 데일리안 · 뉴시스 · 채널A",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "우크라, 한국 '공식 사과' 요구 사실상 거절…\"北포로 갈등, 이미 종결\"",
+      "url": "https://n.news.naver.com/article/008/0005425171",
+      "outlet": "뉴스1"
+    },
+    {
+      "title": "우크라 \"北포로 송환은 종결된 사안\"…韓 \"사과 요구 유효\"",
+      "url": "https://n.news.naver.com/mnews/article/001/0016374495",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "정부, 주우크라 대사 본국 소환…北포로 송환 놓고 진실공방 격화",
+      "url": "https://n.news.naver.com/mnews/article/025/0003556702",
+      "outlet": "중앙일보"
+    },
+    {
+      "title": "우크라, 韓대사 소환에 \"감정보다 외교 우선\"",
+      "url": "https://n.news.naver.com/mnews/article/020/0003753951",
+      "outlet": "동아일보"
+    },
+    {
+      "title": "대사 소환까지 꺼냈지만…李정부, 우크라 '공개 사과' 못 끌어내",
+      "url": "https://n.news.naver.com/mnews/article/119/0003141258",
+      "outlet": "데일리안"
+    },
+    {
+      "title": "나경원, '젤렌스키 서한' 비판하는 김민석에 \"침략자에 굴종하는 매국\"",
+      "url": "https://n.news.naver.com/mnews/article/003/0014246810",
+      "outlet": "뉴시스"
+    },
+    {
+      "title": "소환 하루 만에 우크라 대사 출발",
+      "url": "https://n.news.naver.com/mnews/article/449/0000363560",
+      "outlet": "채널A"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261014_ukraine_pow_apology_news_v4/photos/01_sybiha_news1.jpg",
+      "credit": "뉴스1",
+      "_comment": "1문장 — 시비하 외무장관(로이터=뉴스1, 421/0009225048 본문). photos[0] 은 첫 문장 끝까지 자동 유지"
+    },
+    {
+      "path": "data/political_pro/20261014_ukraine_pow_apology_news_v4/photos/02_zelensky_un.jpg",
+      "credit": "뉴스1",
+      "dur": 6.9,
+      "_comment": "2문장 — 젤렌스키 유엔총회 연설(뉴욕 로이터=뉴스1, 008/0005425171)"
+    },
+    {
+      "path": "data/political_pro/20261014_ukraine_pow_apology_news_v4/photos/03_lee_zelensky.jpg",
+      "credit": "연합뉴스",
+      "dur": 7.5,
+      "_comment": "3문장 — 7/8 앙카라 한-우크라 정상회담 악수(025/0003556702)"
+    },
+    {
+      "path": "data/political_pro/20261014_ukraine_pow_apology_news_v4/photos/04_sybiha_podium.jpg",
+      "credit": "연합뉴스",
+      "dur": 4.5,
+      "_comment": "4문장 — 시비하(EPA 연합뉴스, 437/0000515355)"
+    },
+    {
+      "path": "data/political_pro/20261014_ukraine_pow_apology_news_v4/photos/05_nakyungwon.jpg",
+      "credit": "뉴스1",
+      "dur": 6.6,
+      "_comment": "5문장 — 나경원(사진=뉴스1, 015/0005341484). 040: 06과 같은 분량"
+    },
+    {
+      "path": "data/political_pro/20261014_ukraine_pow_apology_news_v4/photos/06_kimminseok.jpg",
+      "credit": "연합뉴스",
+      "dur": 5.6,
+      "_comment": "6문장 — 김민석 10/12 최고위원회의 발언(001 PYH2026101203100001300)"
+    },
+    {
+      "path": "data/political_pro/20261014_ukraine_pow_apology_news_v4/photos/07_fm_meeting.jpg",
+      "credit": "외교부",
+      "_comment": "7문장+CTA — 한-우크라 외교장관회담(외교부 제공, 001/0016374495). 끝까지 유지",
+      "dur": 14.0
+    }
+  ],
+  "cta": {
+    "text": "①당연한 항의\nVS ②과한 대응",
+    "voice": "대사 소환, 어떠세요? 1번 당연, 2번 과했다. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "우크라이나 외무장관이 북한군 포로 송환 공개 논란은 이미 종결된 사안이라며, 한국 정부의 공식 사과 요구를 사실상 거절했습니다.",
+      "hl": [
+        "종결된 사안"
+      ]
+    },
+    {
+      "voice": "지난달 젤렌스키 대통령이 유엔총회에서 포로 2명의 한국행을 공개하자, 정부는 비공개 합의 위반이라며 사과를 요구해 왔습니다.",
+      "hl": [
+        "비공개 합의"
+      ]
+    },
+    {
+      "voice": "이재명 대통령은 상대국 국가원수를 거짓말쟁이로 만들었다며 추가 조치를 예고했고, 정부는 18년 만에 주우크라이나 대사를 불러들였습니다.",
+      "hl": [
+        "18년 만에"
+      ]
+    },
+    {
+      "voice": "하지만 우크라이나는 비밀유지 해석이 달랐을 뿐, 의무는 모두 다했다는 입장입니다.",
+      "hl": [
+        "의무는 모두"
+      ]
+    },
+    {
+      "voice": "국민의힘은 포로를 보내준 은혜를 원수로 갚는다고 비판했고, 나경원 의원은 젤렌스키 대통령에게 감사 서한까지 보냈습니다.",
+      "hl": [
+        "감사 서한"
+      ]
+    },
+    {
+      "voice": "반면 민주당 김민석 대표는 국가 간 합의를 깬 나라에 감사 서한을 보내는 게 정상이냐며 맞받았습니다.",
+      "hl": [
+        "합의를 깬 나라"
+      ]
+    },
+    {
+      "voice": "외교부는 사과 요구가 아직 유효하다는 입장이라, 갈등은 길어질 전망입니다.",
+      "hl": [
+        "아직 유효"
+      ]
+    }
+  ]
+}

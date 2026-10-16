@@ -1,0 +1,152 @@
+{
+  "_comment": "V4.0 기획 (2026-10-07) — 조희대 국감. 같은 소재의 V5(20261006_johd_gukgam_v5, '국감서 밝히겠다 vs 선서 거부' 한쪽 공격)와 각도를 나눈다: V4는 댓글 1위 기사(연합 '위헌 4차례 직격', 2,150댓글)를 축으로 '작년 100분 침묵 → 올해 A4 6분 작심발언'(과거 vs 현재) + 여야를 같은 잣대로. 039: ②이미 잃음(업추비 사과) ③당내 절차 아님. 040 대칭: 민주당 '탄핵 사유' ↔ 국민의힘 '대통령이 나와야', 그리고 양쪽이 똑같이 '관례는 상대가 먼저 깼다'고 말한 장면을 나란히. 재제청 거부의 위헌 여부는 판정하지 않는다(CTA로 넘김).",
+  "format": "news_v4",
+  "slug": "20261007_johd_wihun_news_v4",
+  "category": "political",
+  "subject_type": "institution",
+  "headline": [
+    "침묵하던 대법원장",
+    "위헌 4번 작심발언"
+  ],
+  "tag": "국정감사 현장",
+  "title": "침묵하던 대법원장 위헌 4번 작심발언",
+  "yt_title": "작년엔 100분 침묵… A4 꺼내 '위헌' 4번 외친 대법원장",
+  "yt_title_alt": "선서는 거부, 위헌은 4번… 대법원장이 대통령에 날린 경고장",
+  "hashtags": [
+    "#조희대",
+    "#국정감사",
+    "#대법원장",
+    "#삼권분립"
+  ],
+  "persons": [
+    "조희대"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "조희대 대법원장, 국감서 '위헌' 4차례 언급…국회·대통령 직격",
+      "url": "https://n.news.naver.com/mnews/article/001/0016360496",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "180도 달라진 조희대...\"제2의 윤석열? 모욕적\" 반박",
+      "url": "https://n.news.naver.com/mnews/article/052/0002415413",
+      "outlet": "YTN"
+    },
+    {
+      "title": "조희대, '업추비 인원 부풀리기' 논란 사과 \"국민께 송구\"",
+      "url": "https://n.news.naver.com/mnews/article/214/0001527412",
+      "outlet": "MBC"
+    },
+    {
+      "title": "법사위 국감 충돌…與 \"조희대 탄핵 사유\" 野 \"대통령 대법관 쇼핑\"(종합2보)",
+      "url": "https://n.news.naver.com/mnews/article/003/0014236463",
+      "outlet": "뉴시스"
+    },
+    {
+      "title": "[국감현장] 재제청 거부 '조희대 충돌'…10시간 뒤 복귀 \"국민께 송구\"(종합3보)",
+      "url": "https://n.news.naver.com/mnews/article/421/0009212951",
+      "outlet": "뉴스1"
+    },
+    {
+      "title": "국감 첫날 '조희대 이석' 막은 與… 국힘 \"이재명이 나오라\" 반발",
+      "url": "https://n.news.naver.com/mnews/article/366/0001196304",
+      "outlet": "조선비즈"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261007_johd_wihun_news_v4/photos/01_johd_answer.jpg",
+      "credit": "연합뉴스",
+      "_comment": "대표 컷 — 국감장에서 답변하는 조희대 (연합 001/0016360496 첫 사진)"
+    },
+    {
+      "path": "data/political_pro/20261007_johd_wihun_news_v4/photos/02_oath_refuse.jpg",
+      "credit": "연합뉴스",
+      "_comment": "기관장 선서 중 혼자 앉아 있는 조희대 (연합 001/0016360496 둘째 사진)"
+    },
+    {
+      "path": "data/political_pro/20261007_johd_wihun_news_v4/photos/03_a4_paper.jpg",
+      "credit": "뉴스1",
+      "_comment": "A4 용지를 펴 들고 읽는 컷 — 뉴스1 421/0009212951 또는 KBS 현장영상 캡처"
+    },
+    {
+      "path": "data/political_pro/20261007_johd_wihun_news_v4/photos/04_kim_park_clash.jpg",
+      "credit": "뉴시스",
+      "_comment": "김의겸 vs 박형수 간사 언쟁 (뉴시스 003/0014236463 첫 사진) — 여야 대칭 컷"
+    },
+    {
+      "path": "data/political_pro/20261007_johd_wihun_news_v4/photos/05_picket.jpg",
+      "credit": "조선비즈",
+      "_comment": "국민의힘 '사법 파괴 중단하라' 피켓 (366/0001196304)"
+    },
+    {
+      "path": "data/political_pro/20261007_johd_wihun_news_v4/photos/06_johd_leave.jpg",
+      "credit": "연합뉴스",
+      "_comment": "정회 후 국감장을 나서는 조희대 (연합 001/0016360496 셋째 사진)"
+    },
+    {
+      "path": "data/political_pro/20261007_johd_wihun_news_v4/photos/07_bow.jpg",
+      "credit": "MBC",
+      "_comment": "업추비 사과 장면 (MBC 214/0001527412)"
+    }
+  ],
+  "cta": {
+    "text": "①사법 독립 수호\nVS ②선 넘은 월권",
+    "voice": "위헌 발언 어떻게 보세요? 1번 독립, 2번 월권. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "작년 국감에선 100분 동안 입을 닫았던 조희대 대법원장이, 올해는 A4 용지를 꺼내 6분 동안 작심 발언을 쏟아냈습니다.",
+      "hl": [
+        "6분",
+        "작심 발언"
+      ]
+    },
+    {
+      "voice": "증인 선서는 끝내 거부했는데, 정작 그 거부 이유를 설명하며 위헌이라는 단어만 네 번 썼습니다.",
+      "hl": [
+        "위헌",
+        "네 번"
+      ]
+    },
+    {
+      "voice": "요지는 국회와 대통령은 대법관 제청에 전혀 관여할 수 없다는 것. 청와대의 재제청 요청을 정면으로 받아친 셈입니다.",
+      "hl": [
+        "관여할 수 없다"
+      ]
+    },
+    {
+      "voice": "민주당은 재제청 거부가 대통령 임명권을 부정한 것이라며 탄핵 사유라고 맞섰고,",
+      "hl": [
+        "탄핵 사유"
+      ]
+    },
+    {
+      "voice": "국민의힘은 근거 없는 재제청을 요구한 이재명 대통령이 증인으로 나와야 한다고 받아쳤습니다.",
+      "hl": [
+        "대통령"
+      ]
+    },
+    {
+      "voice": "그런데 양쪽 다 같은 말을 했습니다. 관례를 먼저 깬 건 상대라는 겁니다.",
+      "hl": [
+        "관례"
+      ]
+    },
+    {
+      "voice": "제2의 윤석열을 꿈꾸냐는 질문엔 모욕적이고 서글프다던 조 대법원장,",
+      "hl": [
+        "모욕적"
+      ]
+    },
+    {
+      "voice": "업무추진비 인원 부풀리기 논란에는 결국 국민께 송구하다며 사과했습니다.",
+      "hl": [
+        "사과"
+      ]
+    }
+  ]
+}

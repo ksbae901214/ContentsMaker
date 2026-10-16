@@ -58,10 +58,16 @@ class TestValidate:
         with pytest.raises(ValueError, match=key):
             validate_config(_without(key))
 
-    def test_political_only(self):
-        """사용자 확정 2026-09-30 — V4.0 은 정치만."""
-        with pytest.raises(ValueError, match="정치"):
+    def test_economic_blocked(self):
+        """2026-09-30 정치 전용 → 10-12 연예 허용(044) → 10-13 사회 허용(구월동 편). 경제는 그대로 차단."""
+        with pytest.raises(ValueError, match="정치·연예·사회"):
             validate_config({**BASE, "category": "economic"})
+
+    def test_entertainment_allowed(self):
+        validate_config({**BASE, "category": "entertainment"})
+
+    def test_society_allowed(self):
+        validate_config({**BASE, "category": "society"})
 
     def test_category_default_is_political(self):
         validate_config(_without("category"))
@@ -290,3 +296,39 @@ class TestPackagingWarnings:
     def test_complete_package_silent(self):
         ws = config_warnings(PKG)
         assert not any("yt_title_alt" in w or "해시태그" in w for w in ws)
+
+
+class TestReuseTts:
+    """044: V4 도 `render --reuse-tts` — 환경 문제로 Remotion 만 실패해 재렌더할 때
+    Gemini TTS(일 10회)를 다시 쓰지 않는다. 판정 로직은 V5 find_reusable_tts 재사용."""
+
+    def _setup(self, tmp_path, monkeypatch):
+        import json as _json
+
+        import scripts.render_news_v4 as v4
+        import src.tts.gemini_tts_generator as gen
+        import src.tts.silence_align as sa
+        (tmp_path / "prev.mp3").write_bytes(b"ID3")
+        script = v4.build_script(BASE)
+        ids = [sc.id for sc in script.scenes if sc.voice_text]
+        (tmp_path / "prev.timing.json").write_text(_json.dumps(
+            [{"scene_id": i, "start_ms": n * 1000, "end_ms": n * 1000 + 900}
+             for n, i in enumerate(ids)]))
+        calls = []
+        monkeypatch.setattr(gen, "generate_voice_with_timing_gemini",
+                            lambda *a, **k: calls.append(1) or (tmp_path / "new.mp3", []))
+        monkeypatch.setattr(sa, "align_timings_to_silence", lambda a, t, out_dir: (a, t))
+        monkeypatch.setattr(v4, "_speed_audio", lambda a, s, out: a)
+        return v4, script, calls
+
+    def test_reuse_skips_gemini(self, tmp_path, monkeypatch):
+        v4, script, calls = self._setup(tmp_path, monkeypatch)
+        audio, timings = v4._synthesize(BASE, script, tmp_path, reuse=True)
+        assert calls == []
+        assert audio.name == "prev.mp3"
+        assert timings
+
+    def test_default_still_synthesizes(self, tmp_path, monkeypatch):
+        v4, script, calls = self._setup(tmp_path, monkeypatch)
+        v4._synthesize(BASE, script, tmp_path)
+        assert calls == [1]

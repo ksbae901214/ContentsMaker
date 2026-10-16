@@ -96,7 +96,7 @@ Input (screenshot/URL/text/topic) → BlindPost or TopicInput JSON (data/raw/)
 | `jpolitics/` | 정치쇼츠 V3 (Feature 027) | Self-contained: `main.py` CLI (detect/cut/render/run), `analyzer/moment_detector.py`, `models/`, `video/` (clip_maker, captions, renderer), `api_bridge.py` for the web UI. "모먼트 직캠" — detect viral moments in a YouTube clip → cut → Remotion render |
 | `briefing/` | Daily Briefing | `naver_news_collector.py` + `youtube_collector.py` → `issue_clusterer.py` → `scorer.py` → `plan_runner.py`. Collects yesterday's (KST) political issues, clusters, scores, drafts plans. Frozen dataclasses in `models.py` |
 | `dem_shorts/` | Dem-Shorts Studio | Largest subsystem, **SQLite-backed** (`db/` + migrations). Pipeline: source collection → STT (`diarization.py`) → speaker ID → `scoring.py` (dem_score) → `ranking/` (Google Trends / Naver DataLab / Wikipedia / YouTube metrics) → `compliance/` gate (election guard + keyword/LLM guardrails) → `editor/` → `renderer.py`. Own CLI `cli.py`, frozen dataclasses in `models/` |
-| `maintenance/` | Housekeeping | `cleanup.py` — prunes `data/` artifacts (backs the `cleanup` CLI command) |
+| `maintenance/` | Housekeeping | `cleanup.py` — prunes `data/` artifacts (backs the `cleanup` CLI command). **launchd `com.contentsmaker.cleanup` 가 매일 04:00 `cleanup --apply` 실행** (2026-10-16 사용자 지시): `political_pro/*`·`info_v1/*` 는 마지막 파일 기준 7일 경과 시 최신 완성본 mp4·썸네일·.md/.txt/.json 만 남김(`_` 폴더 제외), images/videos/audio 7일. 7일 지난 편은 `--reuse-tts`·소스 재사용 불가 — 재렌더는 소스부터 다시. 로그 `~/Library/Logs/contentsmaker-cleanup.log` |
 | `config/settings.py` | Global paths & constants | `PROJECT_ROOT`, `DATA_*_DIR`, `CLAUDE_TIMEOUT_SECONDS=1800`, `MAX_SCENE_DURATION_SECONDS=5.0` |
 
 ### Remotion Video (`src/video/remotion/`)
@@ -157,12 +157,13 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
   | **V2.1** | 원본 육성 훅 1컷 + TTS 논평 브리핑 (육성 약 35%) | 인물의 한 마디가 센 소재 · 틱톡용 | `render_political_v2_1.py` (`v2_1`) |
   | **V2.2** | 원본 육성 클립 2~5개 릴레이 + 마지막 TTS 정리 1개 (육성 65% 이상) | 여야·당사자 발언이 영상으로 다 있는 소재 · 유튜브용 | `render_political_v2_2.py` (`v2_2`) |
   | **V3.0** | 인물 1명 프로필 다큐 — 훅만 육성, 무음 B-roll + 전체 TTS, 흰 캔버스·궁서 제목·인물 배지, BGM 없음, 구독형 CTA | 지금 화제인 인물의 이력·배경 | `render_profile_v3.py` (`profile_v3`) |
-  | **V4.0** | 영상 없이 사진 슬라이드(3.4초 고정) + 전체 TTS, BGM 없음, **정치 전용**, 완료 시 제목 A/B+3줄요약+해시태그 | 육성 영상이 없는 소재 (SNS 글·성명·기사만 있는 경우) | `render_news_v4.py` (`news_v4`) |
+  | **V4.0** | 영상 없이 사진 슬라이드(3.4초 고정) + 전체 TTS, BGM 없음, **정치·연예·사회 전용**(연예 2026-10-12 · 사회 2026-10-13 허용), 완료 시 제목 A/B+3줄요약+해시태그 | 육성 영상이 없는 소재 (SNS 글·성명·기사만 있는 경우) | `render_news_v4.py` (`news_v4`) |
   | **V5.0** | 여성 TTS 조롱 논평 + 원본 육성·캡처를 증거로 끼워 모순을 터뜨림, 60~66초, 한쪽 진영 공격 허용(대신 fact_sources 필수) | 세금 금액·내 지갑·'과거 발언 vs 현재 행동' 모순에 증거(육성/캡처)가 있는 소재 | `render_evidence_v5.py` (`evidence_v5`) |
+  | **정보쇼츠 V1.0** | 크림 캔버스 + ChatGPT 판화 일러스트 8장 + 여성 Kore TTS 약 2분 지식 썰, BGM·CTA 없음 (045, **정치 포맷과 독립**) | 동물·과학·사물 이야기, 논문 1편 썰(출처 필수) — 시사·정치 소재 아님 | `render_info_v1.py` (`info_v1`, config 는 `scripts/info_v1_configs/`) |
 
   추천 기준: 육성 영상이 있으면 V2.2(+V2.1 병행) / 인물 소개면 V3.0 / 육성이 없으면 V4.0 /
   모순·세금 증거(육성 한 컷이나 캡처)를 쥐고 한쪽을 강하게 치는 소재면 V5.0.
-  비정치 소재(경제·사회·연예)에는 V4.0 을 권하지 않는다(렌더러가 차단한다). 레거시 파이프라인
+  경제 소재에는 V4.0 을 권하지 않는다(렌더러가 차단한다 — 연예 2026-10-12 · 사회 2026-10-13 사용자 확정으로 허용). 레거시 파이프라인
   (027 jpolitics 모먼트 직캠, 030 하이브리드, 009 political-pro 3기획안)은 선택지에 넣지
   않는다 — 사용자가 이름을 대면 그때 쓴다. 버전을 정한 뒤에 039 돌파 3문항과 040 대칭 검토로
   넘어간다.
@@ -174,6 +175,13 @@ Uses manual `to_dict()`/`from_dict()` for serialization (not `dataclasses.asdict
   유명 정치인이라는 이유로 소재를 고르지 말 것 — 인물 인지도는 실측상 변수가
   아니다. 한 편이 뚫리면 새 소재보다 **후속을 먼저** 붙인다. 근거표는
   `political_v2_configs/README.md` 039 절.
+- **소재 후보는 추천기에서 고른다 (044, 2026-10-12 사용자 지시)** — "소재 추천해줘" /
+  기획 요청이 오면 먼저 `PYTHONPATH=. .venv311/bin/python scripts/recommend_topics.py`
+  를 돌려 상위 소재를 제시한다(네이버 '댓글 많은 뉴스' + 연예 조회수 랭킹, API 키 불필요,
+  약 30초). 점수 = √반응 × 039 등급 실측 돌파율 × 내 돈 1.5 × 후속편 2.0 — 당내
+  정치(DEAD)·강력범죄는 제외되고, 정치 소재는 차단하지 않고 점수로만 거른다(사용자 확정).
+  리포트는 `data/topic_recommendations/` 에 md+json 으로 남는다(추천 vs 실조회수 보정용).
+  등급은 제목 키워드 판정이라 틀릴 수 있다 — 고른 뒤 039 3문항으로 다시 확인한다.
 - **정치편은 한 편 안에서 대칭이어야 한다 (040)** — 실측 133편의 진영 감사는
   여권만 21편(중앙 1,400) / 야권만 22편(1,300) / 양쪽 32편(1,297)로 **채널
   전체로는 이미 균형인데 셋 다 1,300**이다. 균형이 133편 단위로만 있고 한 편
@@ -305,6 +313,27 @@ Hard requirements enforced in code:
 Do not enable the upload toggles or post these videos publicly without verifying Naver image copyright + subject publicity rights independently.
 
 ## Recent Changes
+- 045 정보쇼츠 V1.0 — 판화 일러스트 지식 스토리텔링 (2026-10-14, 사용자 확정):
+  - 벤치마크 = 인스타 @hamster.743606 공개 12편 실측(`reports/hamster743606 인스타 계정 분석.md`).
+    **V4.0 확장이 아니라 독립 포맷**(사용자 지시) — `scripts/render_info_v1.py` + 순수 함수
+    `scripts/info_v1_timeline.py`, 전용 Remotion 컴포지션 **`InfoShorts`**(`src/video/remotion/src/info/`),
+    전용 렌더러 `src/video/info_renderer.py`, config 폴더 `scripts/info_v1_configs/`(README 에 규칙).
+    정치 게이트(039/040/044)·카테고리 원장·BlindShorts 를 쓰지 않는다.
+  - 사용자 확정: TTS **Gemini Kore 1회 호출**(기본 1.3배속 — Kore 1.0배 실측 5.63음절/초) · 일러스트
+    **chatgpt.com 브라우저 자동화**(ChatGPT Plus, `python3 -m src.main chatgpt_login` 1회) · 모션은 **코드 줌**(장당 3.5초 1회).
+  - chatgpt.com 은 `data-testid` 가 거의 없다 → 선택자는 aria-label(`chatgpt_web_selectors.py`), 이미지는 blob: URL 이라
+    페이지 안 fetch 로 원본(1254×1254) 저장. 실패 장은 프롬프트 출력 → 수동 투입, `images` 재실행은 빠진 장만.
+  - 폰트 Black Han Sans·Pretendard SemiBold(OFL)는 `src/video/remotion/fonts/` → 렌더 시 public 으로 복사.
+  - 파일럿 1호(문어, 92.0초) 렌더 완료. pytest 2326 passed / 1 skipped.
+- 044 채널 방향 재조정 (2026-10-12, 사용자 승인) — 상세 `prompt_plan.md` 044:
+  - **진단**: 2주 창 중앙값 2,356(8/15–28) → 1,318(9/26–10/9). 9/4 이후 config 42개 중 38개가
+    political — 정점 창은 민간인·대가·내 돈(박위·배정남·박수홍·금감원 이전), 침체 창은 정치인 13/15.
+  - **정정**: flat-playlist 제목은 YouTube **자동 번역**이다(업로드 원제는 전부 한글). 039 의
+    "한글판 1,200 / 영문판 1,300 언어 무관"은 착시였다. `analyze_channel_performance.py` 가 개별
+    조회로 원제를 복원(`title_source: detail`, 다음 회차 이어받기)하고, 원장은 `yt_title_alt` 도 기록.
+  - `scripts/channel_trends.py` — 구독자 증감·14일 창 추세·후속 제작 후보(7일 내 중앙값 1.5배+).
+  - `scripts/topic_scoring.py` + `scripts/recommend_topics.py` — 소재 추천기(위 Key Conventions).
+    공인 이름 사전은 040 진영 사전 재사용 + 보강(직함 없는 정치인이 민간인 A 로 오판되던 문제).
 - 043 쇼츠 V5.0 증거 삽입형 TTS 논평 (2026-10-01, 사용자 확정):
   - 벤치마크 = 틱톡 @lkbhop(폴리버스) 504편 전수(중앙 11,600) + 상위 10편·중앙 3편. 흥행작 공통점은
     **증거(육성·캡처) + 시청자 이해관계/모순** — 상위 10/10 vs 중앙 0/3. 컷 속도·자막·톤은 차이 없음.
@@ -327,7 +356,7 @@ Do not enable the upload toggles or post these videos publicly without verifying
     **3.4초 고정 타이머**(실측 컷 간격)로 넘기며 줌, 전 구간 Charon TTS, **BGM 없음(코드
     고정)**. `scripts/render_news_v4.py`(validate/photos-sheet/render), 템플릿
     `_template_news_v4.json`, 포맷 키 **`news_v4`**, 상세는 README 042 절.
-  - **정치 전용**(category≠political 차단). 사진은 네이버 뉴스·검색 캡처, `photos[*].credit`
+  - **정치 전용**(category≠political 차단 — **2026-10-12 연예 허용**, 044). 사진은 네이버 뉴스·검색 캡처, `photos[*].credit`
     필수(하단 `출처 : A · B` 자동 조립). fact_sources·나무위키 차단은 041 과 동일.
   - **사진과 자막은 다른 시계** — `scripts/news_v4_timeline.py`(순수 함수): photos[0]=첫 문장
     끝까지, 이후 3.4초 고정 / 자막은 나레이션을 어절 경계 16자로 쪼개 글자 수 비례.
@@ -340,7 +369,7 @@ Do not enable the upload toggles or post these videos publicly without verifying
     `render` 가 `news_v4_chat_block()` 을 출력하고 채팅엔 그 블록을 그대로 인용한다.
     config 에 `yt_title`·`yt_title_alt`(공포·충격·호기심 톤, 명사로 닫기)·`hashtags` 3~4개를
     적는다 — 누락 시 경고. 1호 DMZ 지뢰×김여정 편(`20260930_dmz_mine_kimyj_news_v4.json`) 렌더 완료.
-  - 미착수: Phase E(사진 수집 보조) · `render --reuse-tts`(지금은 TTS 캐시를 429 때만 읽어 재렌더마다 Gemini 1회 소모).
+  - 미착수: Phase E(사진 수집 보조). `render --reuse-tts` 는 2026-10-12 추가(V5 `find_reusable_tts` 재사용 — 화면만 고칠 때 Gemini 0회, 문구 바꿨으면 금지).
 - 041 쇼츠 V3.0 인물 프로필 다큐멘터리 — Phase A (2026-09-14, 사용자 확정):
   - 외부 지침(Click Shortform "뉴스 3.0") 2종을 이 레포의 V2.1 파이프라인 위로
     옮긴 신규 포맷. **`scripts/render_profile_v3.py`**, 템플릿

@@ -1,0 +1,183 @@
+{
+  "_comment": "V4.0 기획 (2026-10-12) — 이 대통령 대구 붕괴사고 당일 태릉CC 방문. 주말(10/10~11) 네이버 댓글 2위 클러스터(41건 29,492댓글). 039: 당사자 정치인(politician)+반칙형(재난 당일 골프장) → B · ②대가: 청와대가 회견 직전 방문 사실 인정(아직 사과·징계 없음) · ③당내 절차 아님. 040 대칭: '과거 vs 현재' 프레임 — 2024.11 윤석열 대통령실 '트럼프 골프 외교 대비 연습' 해명에 민주당은 '거짓말'·국민의힘은 '골프 치면 안 되나' 엄호, 2026.10 같은 해명을 민주당이 쓰고 국민의힘이 공격. 양쪽 모두 같은 잣대로 다루고 판정은 CTA로 넘긴다. 사고 당시 '골프를 쳤는지'는 청와대가 '골프장을 찾았다'로만 확인 → 나레이션은 '골프장에 있었다'로 쓰고 '황제 골프'는 주진우 주장으로만 옮긴다.",
+  "format": "news_v4",
+  "slug": "20261012_lee_golf_news_v4",
+  "category": "political",
+  "subject_type": "politician",
+  "headline": [
+    "윤석열 땐 거짓말",
+    "이재명 땐 골프외교"
+  ],
+  "tag": "청와대 이례적 공개",
+  "title": "윤석열 땐 거짓말 이재명 땐 골프 외교",
+  "yt_title": "윤석열 땐 '거짓말', 이재명 땐 '골프 외교'… 자리만 바뀐 여야",
+  "yt_title_alt": "38명 다친 날 골프장에 있던 대통령, 2년 전 그 해명 그대로",
+  "hashtags": [
+    "#이재명골프",
+    "#주진우",
+    "#대구붕괴사고",
+    "#내로남불"
+  ],
+  "persons": [
+    "이재명",
+    "주진우"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "천장 붕괴된 대구 상가, 32년 됐지만 안전점검 대상서 빠졌다",
+      "url": "https://n.news.naver.com/mnews/article/020/0003754091",
+      "outlet": "동아일보"
+    },
+    {
+      "title": "靑 \"李대통령 골프장서 대구사고 신속수습지시\"…주진우 \"황제골프\"(종합2보)",
+      "url": "https://n.news.naver.com/mnews/article/001/0016369557",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "\"이 대통령, 골프장서 대구 사고 보고받아\"…청, 주진우 \"황제 골프\" 공세에 '선공개'",
+      "url": "https://n.news.naver.com/mnews/article/032/0003475630",
+      "outlet": "경향신문"
+    },
+    {
+      "title": "\"대형 참사 때 황제 골프?\"…李대통령 휴일 행적 놓고 여야 충돌",
+      "url": "https://n.news.naver.com/mnews/article/586/0000139722",
+      "outlet": "시사저널"
+    },
+    {
+      "title": "野 주진우 \"李, 대구사고 당일 가족과 골프\"…'영상·사진'까지 공개",
+      "url": "https://n.news.naver.com/mnews/article/448/0000644223",
+      "outlet": "TV조선"
+    },
+    {
+      "title": "윤 대통령의 골프 연습…\"트럼프 당선 대비\" vs \"거짓말\"",
+      "url": "https://n.news.naver.com/mnews/article/057/0001853450",
+      "outlet": "MBN"
+    },
+    {
+      "title": "정쟁에 박세리까지 끌어들이다니…\"골프는 죄가 없다\" [이슈+]",
+      "url": "https://n.news.naver.com/mnews/article/015/0005060831",
+      "outlet": "한국경제"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/01_collapse.jpg",
+      "credit": "연합뉴스",
+      "_comment": "무너진 대구 상가 2층 천장 (연합 001/0016369601)"
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/02_taereung.jpg",
+      "credit": "연합뉴스",
+      "_comment": "태릉골프장 전경 (매일신문 088/0001033567 캡션 '태릉골프장. 연합뉴스')"
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/03_cheongwadae.jpg",
+      "credit": "연합뉴스",
+      "_comment": "청와대 (연합 001/0016369280 '[연합뉴스 자료사진]')"
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/04_lee.jpg",
+      "credit": "뉴스1",
+      "_comment": "국무회의 발언하는 이 대통령 (조선 023/0004003152 캡션 /뉴스1)"
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/05_joo_board.jpg",
+      "credit": "연합뉴스",
+      "_comment": "경호차량 사진 패널 든 주진우 회견 (연합 001/0016369280, 배재만 기자)",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/06_joo.jpg",
+      "credit": "뉴스1",
+      "_comment": "주진우 기자회견 (뉴스1 421/0009220675)"
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/07_lee_trump.jpg",
+      "credit": "연합뉴스",
+      "_comment": "이 대통령과 트럼프 대통령 (매일신문 088/0001033567 캡션 연합뉴스)"
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/13_trump_golf.jpg",
+      "credit": "연합뉴스",
+      "_comment": "골프장의 트럼프 대통령 (매일신문 088/0001033567 캡션 연합뉴스)"
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/08_yoon.jpg",
+      "credit": "대통령실사진기자단",
+      "_comment": "윤석열 전 대통령 (한경 015/0005060831 캡션) — 야구 시구 장면이라 골프로 오인되지 않음",
+      "dur": 6.0
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/11_collapse2.jpg",
+      "credit": "뉴시스",
+      "_comment": "붕괴 현장 합동감식 (뉴시스 003/0014244887) — 예비"
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/10_lee2.jpg",
+      "credit": "연합뉴스",
+      "_comment": "이 대통령 (시사저널 586/0000139722 ⓒ연합뉴스)"
+    },
+    {
+      "path": "data/political_pro/20261012_lee_golf_news_v4/photos/14_lee3.jpg",
+      "credit": "뉴시스",
+      "_comment": "이 대통령 (동아 020/0003754056 캡션 뉴시스)"
+    }
+  ],
+  "cta": {
+    "text": "①재난 날 골프 부적절\nVS ②과한 정치 공세",
+    "voice": "어떻게 보시나요? 1번 부적절, 2번 정치 공세. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "노인 서른여덟 명이 다친 대구 상가 천장 붕괴 사고 날, 이재명 대통령은 가족과 함께 태릉 골프장에 있었습니다.",
+      "hl": [
+        "골프장"
+      ]
+    },
+    {
+      "voice": "국민의힘 주진우 의원이 기자회견을 예고하자, 청와대가 이례적으로 먼저 방문 사실을 공개한 겁니다.",
+      "hl": [
+        "먼저"
+      ]
+    },
+    {
+      "voice": "청와대는 현장에서 보고를 받고 수습을 지시했다며, 사적인 일정을 정치 공방에 쓰는 데 유감을 표했습니다.",
+      "hl": [
+        "유감"
+      ]
+    },
+    {
+      "voice": "주 의원은 경호 차량 사진을 공개하며, 1차 구조가 끝나고 두 시간 뒤에야 청와대 입장이 나왔다고 반박했습니다.",
+      "hl": [
+        "두 시간 뒤"
+      ]
+    },
+    {
+      "voice": "민주당은 트럼프 대통령과의 골프 외교에 대비한 연습이라고 엄호했습니다.",
+      "hl": [
+        "골프 외교"
+      ]
+    },
+    {
+      "voice": "그런데 재작년 11월, 윤석열 대통령실도 트럼프와의 골프 외교에 대비해 연습을 재개했다고 똑같이 해명했습니다.",
+      "hl": [
+        "똑같이"
+      ]
+    },
+    {
+      "voice": "그때 민주당은 뻔한 거짓말이라고 몰아붙였고, 국민의힘에선 대통령은 골프 치면 안 되냐는 말이 나왔습니다.",
+      "hl": [
+        "거짓말"
+      ]
+    },
+    {
+      "voice": "같은 해명을 두고 자리만 뒤바뀐, 여야 모두의 내로남불입니다.",
+      "hl": [
+        "내로남불"
+      ]
+    }
+  ]
+}

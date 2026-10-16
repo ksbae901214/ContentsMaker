@@ -58,6 +58,16 @@ class TestLedgerRecording:
             ledger_path=ledger)
         assert load_ledger(ledger) == {"결국 동결된 금리": "economic"}
 
+    def test_records_alt_title_too(self, tmp_path):
+        """044: 업로드 때 B안(yt_title_alt)을 고른 편도 원장에서 찾을 수 있어야 한다."""
+        ledger = tmp_path / "category_ledger.json"
+        generate_upload_package(
+            _cfg(yt_title_alt="금리 또 묶였다", category="economic"),
+            video_path=tmp_path / "missing.mp4", out_dir=tmp_path,
+            ledger_path=ledger)
+        assert load_ledger(ledger) == {"결국 동결된 금리": "economic",
+                                       "금리 또 묶였다": "economic"}
+
     def test_package_file_still_written(self, tmp_path):
         pkg = generate_upload_package(
             _cfg(category="economic"), video_path=tmp_path / "missing.mp4",

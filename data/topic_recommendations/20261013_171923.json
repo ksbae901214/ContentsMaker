@@ -1,0 +1,206 @@
+{
+  "dates": [
+    "20261013",
+    "20261012"
+  ],
+  "news": [
+    {
+      "label": "\"사과를 왜 우리한테 합니까?\" 김영광, 보복운전 '무혐의' 강조 사과문에 네티즌들 분노",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 410,
+      "score": 15.18634254848744,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "사과"
+      ],
+      "titles": [
+        "\"사과를 왜 우리한테 합니까?\" 김영광, 보복운전 '무혐의' 강조 사과문에 네티즌들 분노"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/014/0005587291"
+      ],
+      "article_count": 1,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "\"붕괴 사고 날 대통령 골프 쳤다\"…청와대 \"정치 공방 유감\"",
+      "category": "political",
+      "tier": "C",
+      "tier_note": "조건 미충족 — 실측 돌파율 7% (밴드 1,000~2,200에 갇힘)",
+      "demand": 24115,
+      "score": 10.870303583617158,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "공방",
+        "주장"
+      ],
+      "titles": [
+        "\"붕괴 사고 날 대통령 골프 쳤다\"…청와대 \"정치 공방 유감\"",
+        "민주, 이진숙 '대통령 부모 묘소' 방문에 \"막장 정치\" 맹공",
+        "이진숙 \"대통령 부모 묘소 불법\" 주장…청와대는 무응답"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/437/0000515117",
+        "https://n.news.naver.com/article/214/0001528467",
+        "https://n.news.naver.com/article/437/0000515129"
+      ],
+      "article_count": 38,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0",
+      "angle_hint": "정치인 공방 말고 이 사건으로 잃거나 다친 사람을 주인공으로(044)"
+    },
+    {
+      "label": "강남 결혼식 밥값만 2048만원…지방 예식 전체 치르고도 남는다 [숫자 뒤의 진실]",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 205,
+      "score": 10.738365797457265,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "진실"
+      ],
+      "titles": [
+        "강남 결혼식 밥값만 2048만원…지방 예식 전체 치르고도 남는다 [숫자 뒤의 진실]",
+        "서울 결혼식 밥값 8만원…\"마음만 전할게요\""
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/022/0004166093",
+        "https://n.news.naver.com/article/665/0000008347"
+      ],
+      "article_count": 2,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "\"음식값 물어놓고선 떠났다\"…이천 고깃집서 '먹튀' 주장 신고 나와",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 172,
+      "score": 9.836157786453,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "주장",
+        "떠났"
+      ],
+      "titles": [
+        "\"음식값 물어놓고선 떠났다\"…이천 고깃집서 '먹튀' 주장 신고 나와"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/215/0001268791"
+      ],
+      "article_count": 1,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "“여자도 군대 가나”…양성 징병제 꺼내자 병무청장 답변은",
+      "category": "society",
+      "tier": "B",
+      "tier_note": "정치인 + 진영 무관 반칙 — 실측 돌파율 25%",
+      "demand": 1532,
+      "score": 9.785192895390463,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "병역"
+      ],
+      "titles": [
+        "“여자도 군대 가나”…양성 징병제 꺼내자 병무청장 답변은",
+        "국감서 나온 ‘女징병제’…병무청장 “사회 파장 커, 국민 공감대 먼저”",
+        "\"BTS는 모두 군대 갔다\"…병역특례 논란에 병무청장 '쓴소리'"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/018/0006386451",
+        "https://n.news.naver.com/article/020/0003754275",
+        "https://n.news.naver.com/article/015/0005341437"
+      ],
+      "article_count": 5,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "'과거 발언 vs 현재 행동' 대조 — 양쪽 진영에 같은 잣대(040)"
+    }
+  ],
+  "entertainment": [
+    {
+      "label": "\"너무 가슴 아프고 슬퍼, 활동 중단할 것\" 추성훈, 지인 사망 비보에 SNS 활동 모두 접는다",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 1438695,
+      "score": 899.5920950630903,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "중단"
+      ],
+      "titles": [
+        "\"너무 가슴 아프고 슬퍼, 활동 중단할 것\" 추성훈, 지인 사망 비보에 SNS 활동 모두 접는다",
+        "'활동 중단' 조세호, 아내 운영 추정 SNS 근황 공개 \"하루 만에 계폭위기\"",
+        "추성훈, 지인 사망에 큰 충격…잇단 비보 속 “당분간 모든 SNS 중단”"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/477/0000632511",
+        "https://m.entertain.naver.com/article/477/0000632515",
+        "https://m.entertain.naver.com/article/241/0003534723"
+      ],
+      "article_count": 3,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "[단독]'조세호 발각시 계폭' 아내 정수지였다..활동 뜸한 남편 위한 '재치 내조'",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 201973,
+      "score": 337.0605472315026,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "발각"
+      ],
+      "titles": [
+        "[단독]'조세호 발각시 계폭' 아내 정수지였다..활동 뜸한 남편 위한 '재치 내조'",
+        "조세호 아내, 멈추지 않고 또 올렸다…그간 어떻게 참은 거야, 계정 개설 하루만 '영상 7개' [엑's 이슈]",
+        "사라진 조세호 ♥정수지가 직접 띄웠다…‘44세 전업주부의 기막힌 내조’"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/108/0003477988",
+        "https://m.entertain.naver.com/article/311/0002068020",
+        "https://m.entertain.naver.com/article/468/0001272093"
+      ],
+      "article_count": 4,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "김민종, '미우새'서 솔직 고백 \"MC몽에 멘탈 안 좋았다…사과 진정성 有\" [종합]",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 121687,
+      "score": 261.6274784880212,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "사과"
+      ],
+      "titles": [
+        "김민종, '미우새'서 솔직 고백 \"MC몽에 멘탈 안 좋았다…사과 진정성 有\" [종합]"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/440/0000048418"
+      ],
+      "article_count": 1,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    }
+  ]
+}

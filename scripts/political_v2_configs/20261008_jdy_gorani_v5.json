@@ -1,0 +1,202 @@
+{
+  "_comment": "V5.0 기획 (2026-10-08) — DMZ 지뢰 클러스터(10/8 네이버 랭킹 27건·댓글 8,340, 1위). 사용자 확정 앵글: 정동영 '아직 지뢰 공격으로 특정 못해'(10/7 외통위 국감) → 하루 뒤 김여정 담화가 '정동영도 스스로 고백'으로 그대로 인용 + 93억 의료장비 '광대극 2부' + 1조5천억 남북 도로사업 재추진(한국일보 단독). 한쪽(정부) 공격, 정동영 측 논리(고의성 미확인·사과 요구 중)는 한 줄 병기. 1조5천억은 '사업 추산액'으로만 쓴다(실계약은 연구용역 1.6억). 육성 타이밍: 채널A 현장영상 VTT 단어 타임스탬프 — 한동훈 '고라니' 39.92~42.44(다음 단어 43.04), 정동영 58.24~61.76(다음 62.08), 한동훈 '심판' 214.56~219.44(다음 220.32). 증거 01 = YTN 속보 자막 프레임(88.5초), 02 = 한국일보 단독 헤드라인 인용 카드(자체 제작).",
+  "format": "evidence_v5",
+  "slug": "20261008_jdy_gorani_v5",
+  "category": "political",
+  "subject_type": "politician",
+  "headline": [
+    "우리 장관 한마디가",
+    "김여정 담화에?"
+  ],
+  "title": "우리 장관 한마디가 김여정 담화에",
+  "yt_title": "김여정이 증거로 꺼낸 정동영 한마디",
+  "yt_title_alt": "발목 잃은 건 우리 장병인데… 북한 선전물이 된 장관 답변",
+  "hashtags": [
+    "#정동영",
+    "#김여정",
+    "#DMZ지뢰",
+    "#한동훈"
+  ],
+  "persons": [
+    "정동영",
+    "김여정",
+    "한동훈"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "한동훈 “北이 고라니 잡으려고 지뢰 심었겠나”…정동영 “아직 공격으로 특정 못해”",
+      "url": "https://n.news.naver.com/mnews/article/005/0001877265",
+      "outlet": "국민일보"
+    },
+    {
+      "title": "김여정, 정부 대북 의료장비 지원 방침에 \"또다른 광대극\" 막말 (정동영 발언 인용)",
+      "url": "https://n.news.naver.com/mnews/article/001/0016365791",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "김여정 \"의료장비 지원, 지뢰폭발 이은 광대극 2부…음흉한 정치적 타산\" (93억 규모)",
+      "url": "https://n.news.naver.com/mnews/article/437/0000514692",
+      "outlet": "JTBC"
+    },
+    {
+      "title": "[단독] 北은 도로 폭파했는데… 李 정부, '1조5000억' 남북 도로사업 재추진",
+      "url": "https://n.news.naver.com/mnews/article/469/0000958319",
+      "outlet": "한국일보"
+    },
+    {
+      "title": "유엔사도 DMZ 북한 지뢰 폭발 사고 '정전협정 위반' 판단",
+      "url": "https://n.news.naver.com/mnews/article/421/0009199758",
+      "outlet": "뉴스1"
+    }
+  ],
+  "sources": {
+    "ca": {
+      "url": "https://www.youtube.com/watch?v=fZXo_Znb26A",
+      "channel": "채널A",
+      "_comment": "10/7 외통위 국감 현장영상 — 한동훈·정동영 육성 3컷"
+    },
+    "ytn": {
+      "url": "https://www.youtube.com/watch?v=Z9k4IOWmfmM",
+      "channel": "YTN",
+      "_comment": "10/8 김여정 담화 리포트 — 김여정·국방부 발표·폭발지점·헬기 구조 B-roll"
+    },
+    "kbs": {
+      "url": "https://www.youtube.com/watch?v=Nw-1BfRSrps",
+      "channel": "KBS",
+      "_comment": "10/7 9시 뉴스 — 국감 B-roll"
+    },
+    "yna": {
+      "url": "https://www.youtube.com/watch?v=48zNUvK3Y6E",
+      "channel": "연합뉴스",
+      "_comment": "2024-10 경의선·동해선 도로 폭파 B-roll"
+    }
+  },
+  "scenes": [
+    {
+      "mode": "clip",
+      "source": "ca",
+      "start_sec": 39.8,
+      "duration": 3.05,
+      "text": "한동훈: 지뢰가 고라니 잡으려고 설치해 놓은 건 아닐 거 아니에요",
+      "pop": "고라니?"
+    },
+    {
+      "mode": "clip",
+      "source": "ca",
+      "start_sec": 58.1,
+      "duration": 3.75,
+      "text": "아직은 그렇게 지뢰 공격으로 특정할 수는 없다"
+    },
+    {
+      "mode": "tts",
+      "source": "ca",
+      "start_sec": 92.0,
+      "voice": "어제 국감에서 정동영 장관이 한 답변입니다. 고의성이 확인되지 않았다는 이유였죠.",
+      "hl": [
+        "정동영"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "ytn",
+      "start_sec": 98.0,
+      "voice": "지난달 DMZ 지뢰 폭발로 대대장 등 두 명이 발목 절단 중상을 입었습니다. 군은 북한이 묻은 지뢰라고 최종 발표했고, 유엔사도 정전협정 위반으로 판단했습니다.",
+      "hl": [
+        "발목 절단",
+        "북한"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "ytn",
+      "start_sec": 85.0,
+      "flash": true,
+      "pop": "스스로 고백?",
+      "voice": "그런데 오늘 김여정 담화에 이 답변이 그대로 나옵니다. 정동영도 공격으로 단정하기 어렵다고 스스로 고백했다.",
+      "hl": [
+        "스스로 고백"
+      ],
+      "evidence": {
+        "image": "data/political_pro/20261008_jdy_gorani_v5/evidence/01_kimyj_confess.png",
+        "marks": [
+          {
+            "kind": "circle",
+            "x": 0.05,
+            "y": 0.77,
+            "w": 0.24,
+            "h": 0.16
+          },
+          {
+            "kind": "underline",
+            "x": 0.46,
+            "y": 0.89,
+            "w": 0.4,
+            "h": 0.04
+          }
+        ]
+      }
+    },
+    {
+      "mode": "tts",
+      "source": "ytn",
+      "start_sec": 75.0,
+      "voice": "지뢰 폭발을 자작극이라 우기는 근거로, 우리 장관 답변을 쓴 겁니다.",
+      "hl": [
+        "자작극"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "ytn",
+      "start_sec": 30.0,
+      "voice": "약 93억 원 대북 의료장비 지원 구상엔, 광대극 2부, 개조불능한 바보들이란 답이 왔습니다.",
+      "hl": [
+        "93억",
+        "바보들"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "yna",
+      "start_sec": 8.0,
+      "voice": "북한이 이미 폭파한 남북 도로엔, 추산액 1조 5천억 원 사업의 재개 연구가 시작됐다는 단독 보도도 나왔습니다.",
+      "hl": [
+        "1조 5천억"
+      ],
+      "evidence": {
+        "image": "data/political_pro/20261008_jdy_gorani_v5/evidence/02_road_1_5jo.png",
+        "marks": [
+          {
+            "kind": "underline",
+            "x": 0.23,
+            "y": 0.47,
+            "w": 0.28,
+            "h": 0.04
+          }
+        ]
+      }
+    },
+    {
+      "mode": "clip",
+      "source": "ca",
+      "start_sec": 214.4,
+      "duration": 5.8,
+      "text": "서로 주장이 다르다는 것은 심판 볼 때 하는 것이고, 정 장관은 대한민국 통일부 장관입니다"
+    },
+    {
+      "mode": "tts",
+      "source": "ytn",
+      "start_sec": 95.0,
+      "voice": "발목을 잃은 건 우리 장병인데, 심판석에 앉은 건 우리 장관이었습니다.",
+      "hl": [
+        "심판석"
+      ]
+    }
+  ],
+  "cta": {
+    "voice": "장관 답변 어떻게 보세요? 1번 신중, 2번 빌미. 댓글로 알려주세요.",
+    "text": "① 신중한 판단\n② 북한에 빌미"
+  }
+}

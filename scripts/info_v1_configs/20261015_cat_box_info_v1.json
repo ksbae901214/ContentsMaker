@@ -1,0 +1,107 @@
+{
+  "format": "info_v1",
+  "slug": "cat_box_reason",
+  "title": "고양이가 상자에 집착하는 이유",
+  "watermark": "made by 호기심 도감",
+  "topic_type": "paper",
+  "fact_sources": [
+    {
+      "label": "Applied Animal Behaviour Science, Will a hiding box provide stress reduction for shelter cats?, 2014",
+      "url": "https://research-portal.uu.nl/en/publications/will-a-hiding-box-provide-stress-reduction-for-shelter-cats/"
+    },
+    {
+      "label": "Applied Animal Behaviour Science, If I fits I sits: illusory contour susceptibility in domestic cats, 2021",
+      "url": "https://www.smithsonianmag.com/smart-news/if-i-fits-i-sits-experiment-shows-felines-also-sit-illusory-boxes-180977681"
+    },
+    {
+      "label": "Veterinary Ireland Journal, The heat is on: the feline thermoneutral zone",
+      "url": "https://www.veterinaryirelandjournal.com/small-animal/333-the-heat-is-on-the-feline-tnz"
+    }
+  ],
+  "yt_title": "고양이가 캣타워 대신 택배 상자에 들어가는 진짜 이유",
+  "description": "보호소 고양이에게 상자를 줬더니 2주 걸릴 적응이 사흘로 줄었습니다.\n바닥에 테이프로 그린 네모, 착시로만 보이는 네모에도 들어가 앉는 고양이.\n상자는 고양이에게 은신처이자 난방실이자 자기 구역입니다.",
+  "hashtags": [
+    "#고양이",
+    "#고양이상자",
+    "#동물상식",
+    "#호기심도감"
+  ],
+  "image_mood": "adorable kawaii storybook cat, the same chubby little tabby kitten in every image, oversized round head, big sparkling round eyes, tiny pink nose, rosy cheeks, short stubby legs, soft simplified rounded shapes, gentle happy expression, cozy and heartwarming",
+  "chapters": [
+    {
+      "image_prompt": "a tabby cat sitting inside an open cardboard box, only its head and front paws visible over the edge",
+      "sentences": [
+        "고양이는 비싼 캣타워보다 그게 담겨 온 상자를 더 좋아합니다.",
+        "이게 단순한 취향 문제가 아니라는 연구가 있습니다."
+      ]
+    },
+    {
+      "image_prompt": "a quiet animal shelter room with two cages side by side, in one a tabby cat calmly resting inside a small cardboard hiding box, in the other a tense cat crouched in an empty corner",
+      "sentences": [
+        "2014년 네덜란드 위트레흐트 대학 연구팀이 보호소에 새로 들어온 고양이 19마리로 실험을 했습니다.",
+        "10마리에게는 숨을 수 있는 상자를 주고, 9마리에게는 주지 않았습니다.",
+        "상자를 받은 쪽은 사흘 만에 스트레스 점수가 안정됐습니다.",
+        "상자가 없던 쪽이 같은 수준까지 내려오는 데는 2주가 걸렸습니다."
+      ],
+      "zoom_at": 2
+    },
+    {
+      "image_prompt": "a tabby cat peeking out from a cardboard box, eyes fixed on a small toy mouse on the floor, a dotted line showing its line of sight",
+      "sentences": [
+        "숨는 데에는 이유가 있습니다.",
+        "고양이는 쫓아가서 잡기보다, 숨어 있다가 덮치는 매복형 사냥꾼입니다.",
+        "동시에 더 큰 동물에게는 먹잇감이기도 합니다.",
+        "삼면이 막힌 상자는 들키지 않으면서 앞만 지켜볼 수 있는 자리입니다.",
+        "게임으로 치면 시작하자마자 최고 엄폐물을 선점한 셈입니다."
+      ],
+      "zoom_at": 3
+    },
+    {
+      "image_prompt": "a tabby cat curled up asleep in a snug cardboard box, soft warm air waves rising around it, an old-fashioned thermometer standing beside the box",
+      "sentences": [
+        "온도도 한몫합니다.",
+        "고양이가 체온 유지에 따로 에너지를 쓰지 않는 온도는 30도에서 38도 사이로 알려져 있습니다.",
+        "사람에게 딱 좋은 실내가 고양이에게는 꽤 서늘한 셈입니다.",
+        "좁은 골판지 상자는 몸에서 나온 열을 가둬 두는 작은 난방실이 됩니다."
+      ],
+      "zoom_at": 3
+    },
+    {
+      "image_prompt": "a tabby cat sitting inside a square outline made of tape on a wooden floor, no box, an otherwise empty room",
+      "sentences": [
+        "더 이상한 실험도 있습니다.",
+        "2021년 미국 헌터 칼리지 연구팀은 바닥에 테이프로 네모만 그려 놓았습니다.",
+        "벽도 바닥도 없는, 그냥 선입니다.",
+        "그런데도 고양이들은 그 안에 들어가 앉았습니다."
+      ],
+      "zoom_at": 3
+    },
+    {
+      "image_prompt": "four black circles placed at the corners of an imaginary square on a wooden floor, each circle missing a quarter wedge that faces the center so the cut-outs suggest an invisible square (the Kanizsa illusion), a tabby cat sitting exactly in the middle of the illusory square",
+      "sentences": [
+        "연구팀은 한발 더 나갔습니다.",
+        "팩맨 모양 네 개를 모서리에 놓아서, 선이 없는데도 네모가 보이는 착시를 만들었습니다.",
+        "고양이들은 이 가짜 네모에도 진짜 네모만큼 자주 들어가 앉았습니다.",
+        "다만 실험을 끝까지 마친 30마리 중 실제로 자리를 고른 건 9마리였습니다."
+      ],
+      "zoom_at": 2
+    },
+    {
+      "image_prompt": "a tabby cat standing proudly inside a square room drawn on an old architectural floor plan blueprint, a measuring tape lying nearby",
+      "sentences": [
+        "연구팀은 고양이가 테두리로 둘러싸인 공간을 실제 상자처럼 대할 수 있다고 해석했습니다.",
+        "벽이 없어도 경계선만 있으면 일단 들어가 보는 겁니다.",
+        "부동산으로 치면 도면만 보고 계약부터 하는 셈입니다."
+      ],
+      "zoom_at": 1
+    },
+    {
+      "image_prompt": "a fancy cat tower and an unwrapped gift ignored in the background, a tabby cat happily squeezed into the empty cardboard box they came in",
+      "sentences": [
+        "정리하면 상자는 고양이에게 은신처이고, 난방실이고, 자기 구역입니다.",
+        "그러니 비싼 선물을 사 줘도, 고양이가 결국 고르는 건 그 선물이 담겨 온 상자입니다."
+      ],
+      "zoom_at": 1
+    }
+  ]
+}

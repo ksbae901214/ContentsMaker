@@ -1,0 +1,86 @@
+{
+  "format": "info_v1",
+  "slug": "octopus_arms_brain",
+  "title": "문어는 다리로 생각한다",
+  "watermark": "made by 정보쇼츠",
+  "topic_type": "story",
+  "fact_sources": [],
+  "caption": "문어는 다리로 생각한다",
+  "chapters": [
+    {
+      "image_prompt": "a common octopus with its eight arms gracefully curled",
+      "sentences": [
+        "문어는 뇌가 아홉 개라는 말이 있습니다.",
+        "반은 맞고 반은 틀린 말입니다."
+      ]
+    },
+    {
+      "image_prompt": "an octopus whose eight arms each carry faint glowing nerve patterns, a circular magnified inset with a leader line showing nerve cells inside one arm",
+      "sentences": [
+        "문어의 신경세포는 약 5억 개입니다.",
+        "그런데 그중 3분의 2가 머리가 아니라 다리에 들어 있습니다.",
+        "다리 하나하나가 어느 정도 알아서 판단을 내린다는 뜻입니다.",
+        "게임으로 치면 본체 하나에 자동 사냥 캐릭터 여덟 개를 돌리는 구조입니다."
+      ]
+    },
+    {
+      "image_prompt": "anatomical cutaway of an octopus showing three small hearts with dotted arrows for blood flow, the octopus crawling along the sea floor",
+      "sentences": [
+        "심장 구조도 이상합니다.",
+        "문어는 심장이 세 개입니다.",
+        "두 개는 아가미로 피를 보내고, 나머지 하나가 온몸에 피를 돌립니다.",
+        "문제는 헤엄을 치는 동안 이 온몸 담당 심장이 멈춘다는 겁니다.",
+        "그래서 문어는 웬만하면 헤엄 대신 바닥을 기어 다닙니다.",
+        "달리기만 하면 엔진이 꺼지는 차를 받은 셈입니다."
+      ],
+      "zoom_at": 3
+    },
+    {
+      "image_prompt": "a glass laboratory vial filled with blue blood standing beside an octopus, a copper coin floating nearby, cold deep sea",
+      "sentences": [
+        "피 색깔도 남다릅니다.",
+        "문어의 피는 파란색입니다.",
+        "철이 아니라 구리로 산소를 나르기 때문입니다.",
+        "차갑고 산소가 적은 바다에서는 이쪽이 유리하다는 설명이 있습니다."
+      ],
+      "zoom_at": 1
+    },
+    {
+      "image_prompt": "an octopus squeezing its boneless body through a narrow drain pipe opening, its parrot-like beak visible, an aquarium tank in the background",
+      "sentences": [
+        "몸에는 뼈가 하나도 없습니다.",
+        "단단한 부분은 앵무새 부리처럼 생긴 입 하나뿐입니다.",
+        "그래서 부리만 들어가는 구멍이면 몸 전체가 빠져나갑니다.",
+        "2016년 뉴질랜드의 한 수족관에서는 문어 잉키가 수조를 빠져나와 배수관을 타고 바다로 탈출했습니다."
+      ],
+      "zoom_at": 3
+    },
+    {
+      "image_prompt": "an octopus half-camouflaged on a rocky coral reef, its skin pattern blending into rocks and seaweed, a circular magnified inset showing skin pigment cells",
+      "sentences": [
+        "변장 실력은 거의 사기 캐릭터입니다.",
+        "피부의 색소 세포를 조절해서 눈 깜짝할 사이에 색과 무늬를 바꿉니다.",
+        "그런데 정작 문어 눈은 색을 거의 구분하지 못하는 것으로 알려져 있습니다.",
+        "색을 못 보는 선수가 위장 대회 우승을 하는 셈입니다."
+      ],
+      "zoom_at": 1
+    },
+    {
+      "image_prompt": "a mother octopus guarding long clusters of white eggs hanging from the ceiling of a rocky den, tiny hatchlings drifting away",
+      "sentences": [
+        "이렇게 스펙을 몰아 받았는데 수명은 짧습니다.",
+        "대부분의 문어는 1년에서 2년밖에 살지 못합니다.",
+        "암컷은 알을 낳으면 먹이를 끊고 알만 지키다가, 새끼가 깨어날 즈음 생을 마칩니다."
+      ],
+      "zoom_at": 2
+    },
+    {
+      "image_prompt": "an octopus resting on the sea floor surrounded by symbolic objects: three small hearts, a blue droplet and a tiny brain, soft light from above",
+      "sentences": [
+        "정리하면 문어는 다리마다 판단력이 있고, 심장 세 개로 파란 피를 돌리는 동물입니다.",
+        "만렙 스펙을 다 찍어 놓고, 플레이 타임만 2년으로 잡아 둔 캐릭터인 셈입니다."
+      ],
+      "zoom_at": 1
+    }
+  ]
+}

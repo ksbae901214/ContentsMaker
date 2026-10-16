@@ -1,0 +1,107 @@
+{
+  "_comment": "사회쇼츠 V2.1 (036 category=society). 2026-09-16 서울 지하철 2호선 교통약자석 몸싸움. [039] 당사자가 민간인이라 A등급 — 진영 밖 인물. [035] 사건 '발생' 소재라 결과어가 없다(경고 예상, 차단 아님) — 판정을 시청자에게 넘기는 CTA로 상쇄. [037] 클립 컷은 SBS 자동자막 단어 타임스탬프로 문장 끝맺음까지 잡음. 신원은 SBS 방송분이 이미 모자이크 처리한 화면만 사용.",
+  "category": "society",
+  "subject_type": "civilian",
+  "slug": "20260917_noyakja_2hoseon_v2_1",
+  "title": "2호선 교통약자석 몸싸움",
+  "yt_title": "\"내려!\" 소리에 날아든 발길질",
+  "yt_title_alt": "노인이 옷깃 잡자, 여성의 발길질",
+  "persons": [
+    "교통약자석",
+    "지하철2호선"
+  ],
+  "source_channel": "SBS 모닝와이드",
+  "source_title": "지하철 노약자석 몸싸움 (모닝 핫토픽)",
+  "youtube_url": "https://www.youtube.com/watch?v=CztHyPNFe0Q",
+  "emotion_type": "touching",
+  "_emotion_type_comment": "BGM 스위치 (036). 어두운 트랙 = touching — 실측상 touching_2/_3 는 고역이 46~53dB 낮아(저역-고역 26~30dB) 9개 트랙 중 가장 어둡다. angry 는 저역만 크고 고역이 밝아 '긴장'이지 '어두움'이 아니다. 화면색은 씬별 color / highlight_category 로 고정해 두었으므로 이 값은 BGM 만 바꾼다.",
+  "tts_speed": 1.1,
+  "fallback_source": "sbs",
+  "cta": {
+    "text": "이거 누구 잘못?\n① 노인  ② 여성",
+    "voice": "이건 누가 잘못한 걸까요? 1번 노인, 2번 여성. 댓글로 알려주세요.",
+    "hl": [
+      "누구 잘못"
+    ],
+    "subtitle_position": "bottom",
+    "highlight_category": "criticism"
+  },
+  "hook": {
+    "_comment": "[037] 46.44s~50.64s — '이에 여성은 (악! 뭐야!) 하면서 강하게 저항을 했습니다.' 다음 문장 첫 단어가 50.64s라 그 직전에서 끊음. 화면은 노인이 옷깃 잡아끄는 절정 구간.",
+    "source": "sbs",
+    "start_sec": 46.44,
+    "duration": 4.2,
+    "text": "노인 \"내려!\"\n여성 \"악! 뭐야!\"",
+    "hl": [
+      "내려",
+      "악! 뭐야"
+    ],
+    "subtitle_position": "bottom",
+    "highlight_category": "criticism"
+  },
+  "sources": {
+    "sbs": {
+      "url": "https://www.youtube.com/watch?v=CztHyPNFe0Q",
+      "dur_max": 200,
+      "dur_min": 30,
+      "verify_frac": 0.56
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "source": "sbs",
+      "frac": 0.3,
+      "text": "서울 지하철 2호선\n교통약자석",
+      "voice": "어제 온라인에 퍼진 서울 지하철 2호선 영상입니다.",
+      "subtitle_position": "bottom"
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "sbs",
+      "frac": 0.37,
+      "text": "손가락질에\n\"그냥 가세요\"",
+      "voice": "중절모를 쓴 노인이 교통약자석에 앉은 여성에게 손가락질을 했습니다. 여성이 그냥 가시라며 손을 내젓자, 노인은 내려, 라고 소리쳤습니다.",
+      "hl": [
+        "손가락질",
+        "그냥 가세요"
+      ],
+      "subtitle_position": "bottom",
+      "highlight_category": "criticism"
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "sbs",
+      "frac": 0.58,
+      "_comment": "[037] frac 0.58 = 48.7초. 화면에 SBS 카드 '여성이 손짓 거부하자 강제로 끌어내리려 시도'가 떠 있어 자막을 그 장면과 맞춰 둔다(수치 자막을 올리면 카드와 어긋난다).",
+      "text": "기둥 붙잡고 비명\n허벅지에 발길질",
+      "voice": "옷깃을 잡아끌자 여성은 기둥을 붙잡고 비명을 질렀고, 노인의 허벅지를 향해 여러 차례 발길질했습니다. 이 영상은 하루 만에 삼백오십만 회를 넘겼습니다.",
+      "hl": [
+        "비명",
+        "발길질"
+      ],
+      "subtitle_position": "bottom",
+      "highlight_category": "fact"
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "sbs",
+      "frac": 0.7,
+      "_comment": "[035] 마지막 씬은 팩트 정리. 양쪽 지적을 같은 무게로 담아 CTA가 판정이 되게 한다.",
+      "text": "노인석이 아니라\n교통약자석",
+      "voice": "교통약자석은 노인 전용이 아닙니다. 장애인과 임산부, 겉으로 멀쩡해 보여도 아픈 사람이 앉을 수 있습니다. 반대로 발길질까지 한 건 지나쳤다는 지적도 함께 나왔습니다.",
+      "hl": [
+        "교통약자석",
+        "지나쳤다"
+      ],
+      "subtitle_position": "bottom",
+      "highlight_category": "criticism"
+    }
+  ]
+}

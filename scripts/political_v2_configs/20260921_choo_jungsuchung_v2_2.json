@@ -1,0 +1,109 @@
+{
+  "_comment": "추미애발 중수청장 내부 전면전 (2026-09-12~16). 야권 컷 없음 — 사용자 지시로 여권 내부 싸움만. 040 '여권만' 경고는 감수. 클립 경계는 037 규격대로 auto-sub 단어 타임스탬프로 확정(_sub/vtt_timeline.py).",
+  "slug": "20260921_choo_jungsuchung_v2_2",
+  "title": "12억 관사까지 꺼냈다",
+  "yt_title": "12억 관사까지 꺼냈다, 민주당 내부 전면전",
+  "yt_title_alt": "대통령 때린 추미애, 돌아온 건 노무현 탄핵",
+  "_yt_title_comment": "[039] 제목에 당대표·전당대회·계파·청원을 넣으면 즉시 DEAD(실측 0%). '민주당 내부 전면전'은 당내 어휘 사전에 없어 통과한다.",
+  "persons": [
+    "추미애",
+    "김민석",
+    "박지원",
+    "이재명"
+  ],
+  "category": "political",
+  "source_channel": "채널A 뉴스A CITY / 정치9단 박지원",
+  "source_title": "김민석, '盧 탄핵 주도' 추미애 향한 경고 · 박지원 추미애 작심비판",
+  "youtube_url": "https://www.youtube.com/watch?v=6aZQF3pr8hI",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "choo",
+  "cta": {
+    "_comment": "[2026-09-17] 질문까지 읽는다, 5초(약 41자) 상한, '댓글로 알려주세요'로 닫는다. 선택지에 '지도부'를 쓰면 039 자막 경고가 붙어 인물명으로 뒀다.",
+    "text": "누가 문제일까?\n① 추미애  ② 김민석",
+    "voice": "누가 문제일까요? 1번 추미애, 2번 김민석. 댓글로 알려주세요.",
+    "hl": [
+      "누가 문제"
+    ],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "choo": {
+      "url": "https://www.youtube.com/watch?v=6aZQF3pr8hI",
+      "dur_max": 900,
+      "verify_frac": 0.42
+    },
+    "pjw": {
+      "_comment": "원본 스튜디오에 제3자 보험 광고판(전화번호)이 계속 잡히고 하단 번인 카드가 우리 자막과 겹쳐서, 다운로드 후 src_pjw.mp4 를 crop=880:562:400:0 으로 잘라 교체했다(원본은 src_pjw_orig.mp4 로 보관). --force 로 재다운로드하면 크롭이 날아가므로 주의.",
+      "url": "https://www.youtube.com/watch?v=vnMWqXT4nHE",
+      "dur_max": 900,
+      "verify_frac": 0.62
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "_comment": "[2026-09-15 기본 지침] 등장인물이 셋이라 맥락 없이 육성부터 틀면 이탈한다. 한 문장·4초 이내.",
+      "source": "choo",
+      "frac": 0.1,
+      "text": "민주당이 안에서\n서로를 때리고 있습니다",
+      "voice": "민주당이 안에서 서로를 때리고 있습니다.",
+      "mode": "tts"
+    },
+    {
+      "_comment": "[036] 훅 = 가장 센 컷. 74.72 '왜' → 77.80 '것입니까?' 다음 단어 79.88 에서 컷.",
+      "mode": "clip",
+      "source": "choo",
+      "start_sec": 74.72,
+      "duration": 5.16,
+      "speaker": "추미애",
+      "highlight_category": "criticism",
+      "text": "추미애, 대통령 직격\n\"왜 업혀서 전전긍긍합니까\"",
+      "hl": [
+        "전전긍긍"
+      ]
+    },
+    {
+      "_comment": "98.36 '노무현' → 107.36 '아닌가' 다음 단어 107.92 에서 컷. 한 문장이 길어 앞의 '어떻게 보면'만 덜어냈다.",
+      "mode": "clip",
+      "source": "choo",
+      "start_sec": 98.36,
+      "duration": 9.56,
+      "speaker": "김민석",
+      "highlight_category": "criticism",
+      "text": "당에서 돌아온 답\n\"노무현 탄핵 전조\"",
+      "hl": [
+        "탄핵 전조"
+      ]
+    },
+    {
+      "_comment": "[039] 관사·관용차는 '진영 무관 반칙(특권)'이라 자막에 특권을 명시한다 — 이 한 줄이 등급을 C(7%)에서 B(25%)로 올린다. 168.56 '왜' → 172.44 '예.' 다음 단어 173.16 에서 컷.",
+      "mode": "clip",
+      "source": "pjw",
+      "start_sec": 168.56,
+      "duration": 4.6,
+      "speaker": "박지원",
+      "highlight_category": "fact",
+      "text": "박지원은 특권을 꺼냈다\n12억 관사 · 7천만원 관용차",
+      "hl": [
+        "특권",
+        "12억 관사"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "choo",
+      "frac": 0.75,
+      "color": "yellow",
+      "emph": true,
+      "highlight_category": "fact",
+      "_comment": "[035] 마지막 씬은 팩트 정리. [040] 원래 '셋이 갈라섰다'였는데 기록 대조 프레임이 없다는 경고가 떴고, 실제로 김민석이 왜 하필 '노무현'을 꺼냈는지가 대본에 빠져 있었다 — 2004년 그 탄핵을 주도한 사람이 추미애 본인이다(채널A 리포트가 같은 분석). 이걸 넣으면 경고도 사라지고 씬2 육성도 비로소 이해된다.",
+      "text": "그때는 탄핵을 주도했던 추미애\n지금은 대통령을 지키라 한다",
+      "voice": "김민석 대표가 하필 노무현을 꺼낸 이유가 있습니다. 2004년 그 탄핵을 주도했던 사람이, 바로 추미애였습니다.",
+      "hl": [
+        "그때는",
+        "지금은"
+      ]
+    }
+  ]
+}

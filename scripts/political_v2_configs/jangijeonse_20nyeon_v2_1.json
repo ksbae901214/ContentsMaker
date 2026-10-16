@@ -1,0 +1,47 @@
+{
+  "category": "economic",
+  "slug": "20260902_jangijeonse_20nyeon_v2_1",
+  "title": "장기전세 20년 만기, 퇴거 갈등",
+  "yt_title": "3억 내고 20년 살았더니 돌아온 대답",
+  "yt_title_alt": "20년 채웠는데 못 나간다는 사람들",
+  "persons": ["서울시", "SH"],
+  "source_channel": "SBS / 이슈 저격",
+  "source_title": "\"절대 못 나가\" vs \"헛소리 마\"..20년 만기 앞둔 장기전세 '갈등 폭발'",
+  "youtube_url": "https://www.youtube.com/watch?v=n0P_QcGiQxs",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "sbs",
+  "cta": {
+    "text": "이 갈등, 누구 편?\n① 세입자  ② 서울시",
+    "voice": "1번 세입자, 2번 서울시. 댓글로 알려주세요.",
+    "hl": ["누구 편"]
+  },
+  "hook": {
+    "source": "sbs",
+    "start_sec": 487.0,
+    "duration": 3.0,
+    "text": "\"늙은 사람은\n시골 가서 죽으란 거냐\"",
+    "hl": ["시골 가서"]
+  },
+  "sources": {
+    "sbs": { "url": "https://www.youtube.com/watch?v=n0P_QcGiQxs", "dur_max": 1400, "verify_frac": 0.35 }
+  },
+  "scenes": [
+    { "type": "body", "color": "white", "source": "sbs", "frac": 0.25,
+      "text": "2007년 도입된\n서울시 장기전세(시프트)",
+      "voice": "2007년 서울시가 내놓은 장기전세, 시프트입니다. 시세보다 낮은 보증금으로 2년마다 계약을 갱신하며 최장 20년까지 거주할 수 있는 공공임대입니다.",
+      "hl": ["20년"] },
+    { "type": "body", "color": "red", "emph": true, "source": "sbs", "frac": 0.45,
+      "text": "3억 보증금으로\n강남 10억대 아파트 20년",
+      "voice": "내년부터 초기 입주자들의 20년 만기가 순차적으로 돌아옵니다. 3억 보증금으로 시세 10억대 아파트에 살아온 세입자들은 연장이나 분양전환을 요구하고 있습니다.",
+      "hl": ["3억", "10억대"] },
+    { "type": "body", "color": "red", "emph": true, "source": "sbs", "frac": 0.68,
+      "text": "임차인 측\n\"정부가 먼저 계약 어겼다\"",
+      "voice": "임차인 측은 오히려 정부가 계약 조건을 먼저 어겼다며, 이번 기회에 정부에 책임을 묻겠다고 나섰습니다.",
+      "hl": ["정부가 먼저"] },
+    { "type": "body", "color": "yellow", "emph": true, "source": "sbs", "frac": 0.6,
+      "text": "서울시·SH\n\"퇴거가 원칙\"",
+      "voice": "그러나 서울시와 SH는 20년 만기 후 퇴거가 원칙이라는 입장을 재확인했습니다. 응하지 않으면 명도소송까지 예고했고, 만기 도래 가구는 내년 310가구에서 2030년엔 2,452세대로, 3년 만에 8배로 늘어납니다.",
+      "hl": ["명도소송", "8배"] }
+  ]
+}

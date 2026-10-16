@@ -1,0 +1,126 @@
+{
+  "_comment": "V2.2 와 같은 소재의 V2.1 판 (034 플랫폼 분리 — V2.1은 틱톡). 훅만 원본 육성, 본문은 TTS 논평. body 씬은 start_sec 을 안 받으므로 b-roll 위치를 frac 으로 지정한다.",
+  "slug": "20260921_yusimin_8months_v2_1",
+  "title": "8개월 만에 등 돌렸다",
+  "yt_title": "극찬 8개월 만에 썩은 내, 유시민에게 무슨 일이",
+  "yt_title_alt": "지지할 땐 똑똑하다더니, 돌아서자 썩은 내",
+  "persons": [
+    "유시민",
+    "이재명",
+    "한동훈",
+    "장동혁"
+  ],
+  "subject_type": "civilian",
+  "_subject_type_comment": "[039] V2.2 판과 동일 — 유시민은 전 장관·전 의원 이력이 있어 미지정이면 politician 추정(C등급). 현재 무당적 작가·방송인이라 civilian 으로 명시한다.",
+  "category": "political",
+  "source_channel": "채널A 뉴스A / JTBC 지금 이 뉴스 / KBS 9시 뉴스",
+  "source_title": "유시민 '필연적 실패' 직격 · 2025년 12월 '사람이 똑똑해' 극찬",
+  "youtube_url": "https://www.youtube.com/watch?v=qXV-zYe-vyg",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "ysm_now",
+  "cta": {
+    "text": "돌아선 건 뭘까?\n① 소신  ② 배신",
+    "voice": "이건 소신일까요 배신일까요? 1번 소신, 2번 배신. 댓글로 알려주세요.",
+    "hl": [
+      "돌아선 건"
+    ],
+    "at_frac": 0.4
+  },
+  "hook": {
+    "_comment": "단어 경계 23.96 '대통령의' → 29.52 '있다.' 다음 단어 30.20 에서 컷 (037).",
+    "source": "ysm_now",
+    "start_sec": 23.96,
+    "duration": 6.24,
+    "text": "\"필연적인 실패의 길로\n가고 있다\"",
+    "hl": [
+      "필연적인 실패"
+    ]
+  },
+  "sources": {
+    "ysm_now": {
+      "url": "https://www.youtube.com/watch?v=qXV-zYe-vyg",
+      "dur_max": 900,
+      "verify_frac": 0.2
+    },
+    "ysm_past": {
+      "url": "https://www.youtube.com/watch?v=f0_paRb73I4",
+      "dur_max": 900,
+      "verify_frac": 0.1
+    },
+    "han": {
+      "url": "https://www.youtube.com/watch?v=dfAdJV6W4Yk",
+      "dur_max": 900,
+      "verify_frac": 0.35
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "_comment": "[2026-09-15 기본 지침] 훅 앞 한 줄. 한 문장·4초 이내.",
+      "source": "ysm_now",
+      "frac": 0.15,
+      "text": "유시민이 이재명 대통령을\n정면 비판했습니다",
+      "voice": "유시민 작가가 이재명 대통령을 정면으로 비판했습니다."
+    },
+    {
+      "_comment": "과거 축 — b-roll 은 ysm_past 의 극찬 구간(6~12초 / 125초 영상 ≈ 0.07).",
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "highlight_category": "fact",
+      "source": "ysm_past",
+      "frac": 0.07,
+      "text": "8개월 전엔\n\"우선 사람이 똑똑하다\"",
+      "voice": "그런데 여덟 달 전, 같은 사람을 두고 유시민은 이렇게 말했습니다. 이재명 대통령은 우선 사람이 똑똑하다.",
+      "hl": [
+        "8개월 전",
+        "똑똑하다"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "highlight_category": "criticism",
+      "_comment": "[037] 이 구간(134.5s)은 박지원 의원 얼굴이 깔린다. 처음엔 '친명 의원들 저주의 언어'로 썼는데 박지원은 친명계도 아니고 그 발언자도 아니라 오귀속이었다. 대안으로 0.783(무기명 본회의장)을 썼더니 원본 번인 자막 바가 우리 자막과 같은 높이에서 겹쳤다 — 이 소스(채널A)는 거의 모든 구간에 인용 카드가 박혀 있고 이 구간만 카드가 없다. 그래서 화면 인물에 맞춰 사실대로 다시 썼다.",
+      "source": "ysm_now",
+      "frac": 0.85,
+      "text": "박지원\n\"과유불급, 큰 상처\"",
+      "voice": "민주당 안에서도 반발이 나왔습니다. 박지원 의원은 과유불급이라며, 당에 너무 큰 상처를 줬다고 했습니다.",
+      "hl": [
+        "과유불급"
+      ]
+    },
+    {
+      "_comment": "[040] 야권 대칭 — b-roll 은 한동훈 회견 구간(42~51초 / 131초 ≈ 0.35).",
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "highlight_category": "fact",
+      "source": "han",
+      "frac": 0.35,
+      "text": "야권도 똑같다\n한동훈 \"저를 찍어내기\"",
+      "voice": "야권도 다르지 않습니다. 한동훈은 자기 당 대표가 자신을 찍어내려 한다고 했습니다.",
+      "hl": [
+        "야권도 똑같다",
+        "찍어내기"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "highlight_category": "fact",
+      "_comment": "[035] 마지막 씬은 팩트 정리 — 댓글 유도는 cta 블록이 담당.",
+      "source": "ysm_now",
+      "frac": 0.6,
+      "text": "극찬이 8개월 만에\n뒤집혔다",
+      "voice": "같은 사람을 두고 평가가 여덟 달 만에 뒤집혔습니다. 돌아선 쪽은 배신자가 되고, 그건 여야가 똑같습니다.",
+      "hl": [
+        "8개월",
+        "뒤집혔다"
+      ]
+    }
+  ]
+}

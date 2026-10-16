@@ -1,0 +1,119 @@
+{
+  "_comment": "이진숙 '5·18 재조명' 국회 포럼 강행 (2026-08-13) — V2.2 원본 육성 릴레이. 훅은 시간순이 아니라 세기순 1등(청중 난동 육성). [사용자 지시 2026-08-14] 댓글 CTA를 40% 자동삽입이 아니라 **맨 마지막 씬**에 둔다 → top-level cta 블록을 쓰지 않고 scenes 마지막에 tts 씬으로 직접 작성, pinned_comment 는 명시. 이로 인해 render 시 trailing_cta_warnings 경고 1줄이 뜨는 것은 의도된 동작이다.",
+  "slug": "20260814_ljs_518_forum_v2_2",
+  "title": "국힘도 말렸는데, 결국 강행",
+  "yt_title": "국힘도 말렸는데 결국 강행한 이진숙",
+  "yt_title_alt": "이진숙 강행 끝에 국힘 전원 불참",
+  "_yt_title_comment": "[035] 결과 프레임 — '결국'(결과어) 보유, 공방 프레임 아님. [034] 보도체·해시태그 0 (gate_yt_title PASS 확인).",
+  "persons": [
+    "이진숙",
+    "이영훈",
+    "한병도"
+  ],
+  "category": "political",
+  "source_channel": "SBS·채널A·MBC 뉴스",
+  "source_title": "이진숙 주최 '5·18 민주화운동의 재조명 국회 공개포럼' (2026-08-13)",
+  "youtube_url": "https://www.youtube.com/watch?v=8u_S6swP4oA",
+  "emotion_type": "angry",
+  "_emotion_type_comment": "BGM 스위치 — 규탄·대립 소재라 angry(=data/bgm/angry_N.mp3) 명시. political 기본값과 같지만, 하영 편 코믹 BGM 사고 재발 방지로 명시한다.",
+  "tts_speed": 1.1,
+  "fallback_source": "sbs",
+  "pinned_comment": "국민의힘 지도부는 취소를 권했지만 이진숙 의원은 포럼을 강행했고, 소속 의원은 아무도 참석하지 않았습니다. 민주당은 제명 촉구 결의안을, 조국혁신당은 윤리특위 제소를 예고했습니다. 전두환의 내란·내란목적살인죄는 1997년 대법원에서 유죄가 확정된 사안입니다. 이진숙 의원 제명, 어느 쪽인가요? ① 당장 제명 ② 과하다 — 번호로 답글 남겨주세요 👇",
+  "sources": {
+    "chaos": {
+      "url": "https://www.youtube.com/watch?v=9Qo912IBf0k",
+      "_comment": "채널A 현장영상 441s — 고성·물병·멱살, 경찰 출동",
+      "dur_max": 900,
+      "verify_frac": 0.3
+    },
+    "sbs": {
+      "url": "https://www.youtube.com/watch?v=8u_S6swP4oA",
+      "_comment": "SBS 리포트 159s — 이영훈 '소요 사태', 이진숙 '특정 진영의 소유물', 주동식 발언",
+      "dur_max": 900,
+      "verify_frac": 0.4
+    },
+    "mbc": {
+      "url": "https://www.youtube.com/watch?v=nAmouViXRcQ",
+      "_comment": "MBC 뉴스데스크 172s — 규탄대회 '사퇴하라' 구호, 한병도 '제명 촉구 결의안'",
+      "dur_max": 900,
+      "verify_frac": 0.35
+    }
+  },
+  "scenes": [
+    {
+      "mode": "clip",
+      "source": "chaos",
+      "start_sec": 158.4,
+      "duration": 6.5,
+      "_start_sec_comment": "실측 — 채널A 자동자막 158.6/162.8 \"가족을 잃어봤냐?\" 반복 구간. 이 구간은 고성이 끊이지 않아 silencedetect 무음 0개(경계는 자막 타임스탬프로 확정).",
+      "speaker": "토론회 청중",
+      "text": "\"가족을 잃어봤냐!\"\n고성·주먹질에 경찰 출동",
+      "hl": [
+        "가족을 잃어봤냐"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "sbs",
+      "start_sec": 52.6,
+      "duration": 5.4,
+      "_start_sec_comment": "실측 — 무음 52.06~52.68 직후 시작, \"소요 사태입니다\" 뒤 무음 57.89~58.25 앞에서 종료.",
+      "speaker": "이영훈 / 새역사국민운동",
+      "text": "\"광주에서 있었던\n열흘 간의 소요 사태\"",
+      "hl": [
+        "소요 사태"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "sbs",
+      "start_sec": 33.3,
+      "duration": 4.4,
+      "_start_sec_comment": "실측 — 무음 32.68~33.42 직후 시작, \"돼서는 안 됩니다\" 뒤 무음 37.37~38.55 앞에서 종료.",
+      "speaker": "이진숙 / 국민의힘",
+      "text": "\"5·18은 특정 진영의\n소유물이 돼선 안 됩니다\"",
+      "hl": [
+        "특정 진영"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "mbc",
+      "start_sec": 64.0,
+      "duration": 6.4,
+      "_start_sec_comment": "실측 — 무음 63.78~64.03 직후 시작(\"형제들이 친구들이 쓰러져 나간 사건입니다\"), \"제출하겠습니다\" 뒤 무음 70.09~71.39 앞에서 종료.",
+      "speaker": "한병도 / 민주당 원내대표",
+      "text": "\"쓰러져 나간 사건입니다\"\n민주 \"즉각 제명 결의안\"",
+      "hl": [
+        "제명 결의안"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "mbc",
+      "frac": 0.6,
+      "color": "red",
+      "emph": true,
+      "_comment": "팩트 정리 — 왜곡 발언을 4씬 중 2씬에서 그대로 인용했으므로, 여기서 사법적으로 확정된 사실을 반드시 박는다.",
+      "text": "당은 취소 권고\n국힘 의원 전원 불참",
+      "voice": "국민의힘은 취소를 권했지만 이 의원은 강행했고, 소속 의원은 아무도 안 왔습니다. 전두환 내란죄는 1997년 대법원에서 확정된 사실입니다.",
+      "hl": [
+        "전원 불참",
+        "1997년"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "chaos",
+      "frac": 0.5,
+      "color": "yellow",
+      "emph": true,
+      "_comment": "[사용자 지시 2026-08-14] 댓글 CTA를 맨 마지막에 배치. 40% 자동삽입(top-level cta 블록)을 쓰지 않는 대신 여기에 직접 둔다.",
+      "text": "이진숙 제명, 어느 쪽?\n① 당장 제명  ② 과하다",
+      "voice": "1번 제명, 2번 과하다. 번호로 답글.",
+      "hl": [
+        "어느 쪽"
+      ]
+    }
+  ]
+}

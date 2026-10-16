@@ -1,0 +1,192 @@
+{
+  "_comment": "V4.0 기획 초안 (2026-10-02) — 네이버 랭킹 10/1~10/2 '암살자(들)' 클러스터 77건·댓글 31,030 (1위). 앵글: 정치권이 '표현의 자유'로 싸우는 사이 불똥은 배우(민간인)에게 — 광고 댓글창 폐쇄·자택 앞 집회 신고·BIFF 행사 취소(039 ①민간인 ②이미 잃음). 040 대칭: 민주당 '영화는 영화로' / 장동혁 '박정희 모욕은 표현의 자유냐' / 주진우 '나는 표현의 자유 없나' — 양쪽 모두 같은 단어를 자기 편일 때만 쓰는 장면을 같은 잣대로 나란히. 영화 내용 자체(배후설 진위)는 판정하지 않는다. 사진 14장 수집(2026-10-02).",
+  "format": "news_v4",
+  "slug": "20261002_assassins_actors_news_v4",
+  "category": "political",
+  "subject_type": "civilian",
+  "headline": [
+    "암살자들 불똥",
+    "유해진 집 앞까지"
+  ],
+  "tag": "여야 '표현의 자유' 공방",
+  "title": "암살자들 불똥 유해진 집 앞까지",
+  "yt_title": "정치가 싸웠는데… 유해진 집 앞에 한 달 집회 신고",
+  "yt_title_alt": "'북한상'에 불매·집회까지… 암살자들 배우들의 수난",
+  "persons": [
+    "유해진",
+    "주진우",
+    "장동혁"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "[속보] '정치 논란'속 암살자(들), 1위 재탈환…주연 이민호, 부국제 '톡콘' 별안간 취소 논란",
+      "url": "https://n.news.naver.com/mnews/article/002/0002459251",
+      "outlet": "프레시안"
+    },
+    {
+      "title": "영화제작가협회 \"'암살자(들)' 창작자 향한 과도한 비난 우려\"",
+      "url": "https://n.news.naver.com/mnews/article/001/0016352101",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "“유해진 집 앞에서 집회”…‘암살자들’ 논란 일파만파",
+      "url": "https://n.news.naver.com/mnews/article/016/0002704626",
+      "outlet": "헤럴드경제"
+    },
+    {
+      "title": "\"영화는 영화로 봐라\" \"'공산주의자 문재인'도 괜찮나\"…여야 《암살자(들)》 격돌",
+      "url": "https://n.news.naver.com/mnews/article/586/0000139185",
+      "outlet": "시사저널"
+    },
+    {
+      "title": "주진우, 유해진에 “북한상”…“나는 표현의 자유 없나, 영화는 토할 것 같아 안 봐”",
+      "url": "https://n.news.naver.com/mnews/article/016/0002704503",
+      "outlet": "헤럴드경제"
+    },
+    {
+      "title": "배우 얼굴이 \"북한상\"…인신공격도 서슴지 않는 국힘",
+      "url": "https://n.news.naver.com/mnews/article/437/0000513491",
+      "outlet": "JTBC"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/01_poster.jpg",
+      "credit": "연합뉴스",
+      "_comment": "9/28 서울 영화관 포스터 — 연합 001/0016352101",
+      "dur": 6.7
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/02_yoo_haejin.jpg",
+      "credit": "연합뉴스",
+      "_comment": "9/8 언론시사회 유해진 — 헤럴드 016/0002704626",
+      "dur": 2.2
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/03_burger_ad.jpg",
+      "credit": "유튜브 캡처",
+      "_comment": "유해진 버거 광고 — 조선 023/0004001681",
+      "dur": 2.6
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/05_rally_notice.png",
+      "credit": "SNS 캡처",
+      "fit": "contain",
+      "_comment": "옥외집회 신고서 — TV조선 448/0000642605. 주소 칸 원출처에서 블러 처리됨 확인",
+      "dur": 5.6
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/07_biff_cancel.jpg",
+      "credit": "부산국제영화제 SNS",
+      "fit": "contain",
+      "_comment": "'액터스 하우스: 이민호' 취소 공지 — 한경 015/0005338384",
+      "dur": 2.3
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/08_lee_minho.jpg",
+      "credit": "뉴스1",
+      "_comment": "9/21 VIP 시사회 이민호 — 한국일보 469/0000957281",
+      "dur": 2.3
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/09_choi_minhee.jpg",
+      "credit": "뉴스1",
+      "_comment": "10/2 최민희 최고위원 발언 — 뉴스1 421/0009205697",
+      "dur": 2.7
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/10_kim_seungsu.jpg",
+      "credit": "연합뉴스",
+      "_comment": "9/29 문체위 김승수 '감독 국감 참고인' 요구 — 시사저널 586/0000139185",
+      "dur": 2.8
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/11_jang.jpg",
+      "credit": "뉴스1",
+      "_comment": "장동혁 — 채널A 449/0000362191",
+      "dur": 4.3
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/12_still.jpg",
+      "credit": "하이브미디어코프",
+      "_comment": "영화 스틸 — 노컷 079/0004193250",
+      "dur": 3.2
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/13_joo.jpg",
+      "credit": "연합뉴스",
+      "_comment": "주진우 — 헤럴드 016/0002704503",
+      "dur": 3.8
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/06_yoo_wave.jpg",
+      "credit": "헤럴드경제",
+      "_comment": "9/8 언론시사회 — 헤럴드 016/0002704503",
+      "dur": 3.8
+    },
+    {
+      "path": "data/political_pro/20261002_assassins_actors_news_v4/photos/14_poster_wide.jpg",
+      "credit": "연합뉴스",
+      "_comment": "영화관 홍보물 — 연합 001/0016352101",
+      "dur": 8.0
+    }
+  ],
+  "cta": {
+    "text": "①출연했으면 책임\nVS ②배우가 무슨 죄",
+    "voice": "배우도 책임질까요? 1번 책임, 2번 무슨 죄. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "육영수 여사 피격 사건을 다룬 영화 암살자들이 관객 182만 명으로 1위를 되찾았지만, 불똥은 배우들에게 튀었습니다.",
+      "hl": [
+        "182만",
+        "불똥"
+      ]
+    },
+    {
+      "voice": "주연 유해진 씨가 모델인 햄버거 광고에는 항의가 쏟아져, 글쓰기 기능까지 막혔습니다.",
+      "hl": [
+        "항의"
+      ]
+    },
+    {
+      "voice": "한 보수단체 대표는 유해진 씨 집 앞에 이달 3일부터 한 달간 규탄 집회를 신고했다고 밝혔습니다.",
+      "hl": [
+        "집 앞"
+      ]
+    },
+    {
+      "voice": "주연 이민호 씨의 부산국제영화제 단독 토크 행사도, 사유 공개 없이 취소됐습니다.",
+      "hl": [
+        "취소"
+      ]
+    },
+    {
+      "voice": "민주당은 영화는 영화로 보라며, 감독을 국정감사에 부르자는 국민의힘을 정치공세라고 비판했습니다.",
+      "hl": [
+        "영화는 영화로"
+      ]
+    },
+    {
+      "voice": "장동혁 국민의힘 대표는 노무현 대통령을 건드리면 고소당하는데, 박정희 대통령 모욕은 표현의 자유냐며 여권의 이중잣대를 꼬집었습니다.",
+      "hl": [
+        "이중잣대"
+      ]
+    },
+    {
+      "voice": "그런데 유해진 씨를 북한상이라 부른 주진우 의원은, 제작진은 언젠가 감옥에 갈 거라면서 자신에겐 표현의 자유가 없느냐고 반문했습니다.",
+      "hl": [
+        "북한상"
+      ]
+    }
+  ],
+  "hashtags": [
+    "#암살자들",
+    "#유해진",
+    "#표현의자유",
+    "#주진우"
+  ]
+}

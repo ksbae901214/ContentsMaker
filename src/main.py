@@ -803,12 +803,17 @@ def cmd_cleanup(args: argparse.Namespace) -> int:
     """Handle the 'cleanup' subcommand — data/ 산출물 정리 (dry-run 기본).
 
     temp/tmp 24시간, 중간산출물(images/videos/audio/natv_clips) keep_days 경과
-    파일만 대상. outputs/raw/scripts/tts_cache 등은 절대 건드리지 않음.
+    파일, political_pro/info_v1 프로젝트는 project_keep_days 경과 시 완성본만 남김.
+    outputs/raw/scripts/tts_cache 등은 절대 건드리지 않음.
     """
     from src.config.settings import DATA_DIR
     from src.maintenance.cleanup import execute_cleanup, scan_cleanup_targets
 
-    report = scan_cleanup_targets(DATA_DIR, keep_days=args.keep_days)
+    report = scan_cleanup_targets(
+        DATA_DIR,
+        keep_days=args.keep_days,
+        project_keep_days=args.project_keep_days,
+    )
     if not report.targets:
         print("✅ 정리 대상 없음")
         return 0
@@ -1607,15 +1612,19 @@ def build_parser() -> argparse.ArgumentParser:
     # cleanup subcommand (Feature 026) — data/ 산출물 정리
     cleanup_parser = subparsers.add_parser(
         "cleanup",
-        help="data/ 정리 — temp 24시간, 중간산출물 30일 경과 파일 삭제 (dry-run 기본)",
+        help="data/ 정리 — temp 24시간, 중간산출물·프로젝트 폴더 7일 경과 파일 삭제 (dry-run 기본)",
     )
     cleanup_parser.add_argument(
         "--apply", action="store_true",
         help="실제 삭제 실행 (미지정 시 dry-run으로 대상만 출력)",
     )
     cleanup_parser.add_argument(
-        "--keep-days", type=int, default=30, dest="keep_days",
-        help="중간산출물(images/videos/audio/natv_clips) 보관 일수 (default: 30)",
+        "--keep-days", type=int, default=7, dest="keep_days",
+        help="중간산출물(images/videos/audio/natv_clips) 보관 일수 (default: 7)",
+    )
+    cleanup_parser.add_argument(
+        "--project-keep-days", type=int, default=7, dest="project_keep_days",
+        help="political_pro/info_v1 프로젝트 보관 일수 — 경과 시 완성본 mp4·썸네일·텍스트만 남김 (default: 7)",
     )
 
     subparsers.add_parser("crawl", help="블라인드 URL 자동 크롤링 (미구현)")
@@ -1636,6 +1645,12 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "gemini_login",
         help="gemini.google.com 1회 수동 로그인 (Imagen 4 / Veo 3 자동화용)",
+    )
+
+    # chatgpt_login subcommand (045 정보쇼츠 V1.0 일러스트 — chatgpt.com 자동화)
+    subparsers.add_parser(
+        "chatgpt_login",
+        help="chatgpt.com 1회 수동 로그인 (정보쇼츠 일러스트 자동화용)",
     )
 
     # gems subcommand — Gemini Gems 프롬프트 프리셋 관리
@@ -1724,6 +1739,10 @@ def main() -> int:
     if args.command == "gemini_login":
         from src.illustrator.gemini_web_login import run_interactive_login as gemini_login
         return gemini_login()
+
+    if args.command == "chatgpt_login":
+        from src.illustrator.chatgpt_web_login import run_interactive_login as chatgpt_login
+        return chatgpt_login()
 
     if args.command == "gems":
         return _cmd_gems(args)

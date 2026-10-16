@@ -1,0 +1,130 @@
+{
+  "_comment": "조희대 대법원장 '국가권력의 자의적 행사 통제' 발언(2026-08-24, 대한변협 축사) + 여야 공방 V2.1. V2.2와 같은 사건, 구성만 다르다 — 훅은 V2.1 표준대로 조희대 본인의 원 발언(가장 대립·충격적인 원본 구간)을 그대로 쓰고, 이후는 TTS 나레이션으로 여야 반응을 정리한다. 040 대칭: 김민석(여권)·장동혁(야권) 반응을 각각 배경 클립 위에 TTS로 얹어 자막에 양쪽 진영을 명시한다.",
+  "category": "political",
+  "slug": "20260909_johuidae_gukgawonryeok_v2_1",
+  "title": "대법원장 발언 파장",
+  "subject_type": "institution",
+  "_subject_type_comment": "039 — V2.2와 동일 판단(institution). 예상 TIER_C(7%) — 대법관 재제청 미해결로 settled=False.",
+  "yt_title": "이재명 재판을 흔든 대법원장의 한마디",
+  "yt_title_alt": "국가권력 발언 하나에 갈라진 여야",
+  "_yt_title_comment": "V2.2와 동일 제목 후보 — 같은 사건이라 검색 노출을 나누지 않는다. 034/039 게이트 통과 확인은 V2.2 config 주석 참조.",
+  "persons": [
+    "조희대",
+    "김민석",
+    "장동혁"
+  ],
+  "hashtags": [
+    "#조희대",
+    "#이재명",
+    "#대법원장",
+    "#여야공방"
+  ],
+  "source_channel": "JTBC · 미디어F",
+  "source_title": "조희대 대법원장 \"국가권력 자의적 행사 통제하는 법의 지배 가치 소중\" (JTBC) / 장동혁 최고위원회의 발언 (미디어F)",
+  "youtube_url": "https://www.youtube.com/watch?v=Pl6J-TQJjVI",
+  "emotion_type": "angry",
+  "_emotion_type_comment": "036 — BGM. V2.2와 동일 톤.",
+  "tts_speed": 1.1,
+  "fallback_source": "cho",
+  "hook": {
+    "source": "cho",
+    "start_sec": 19.7,
+    "duration": 9.5,
+    "text": "\"국가권력의 자의적 행사를\n통제하고 있다\"",
+    "hl": [
+      "국가권력의 자의적 행사"
+    ],
+    "subtitle_position": "bottom",
+    "_발화": "V2.2 config의 cho 소스 _발화 주석과 동일 — 화면 번인 캡션 카드 전환 시점(0.5s 정밀 프레임) 기준 추정치. download 단계에서 반드시 청음 재확인."
+  },
+  "sources": {
+    "cho": {
+      "url": "https://www.youtube.com/watch?v=Pl6J-TQJjVI",
+      "dur_max": 70,
+      "verify_frac": 0.3,
+      "_확인": "조희대 대법원장 \"국가권력 자의적 행사 통제하는 법의 지배 가치 소중\" / JTBC News 쇼츠 67s (2026-08-24 축사, 2026-09-09 확인)."
+    },
+    "kim": {
+      "url": "https://www.youtube.com/watch?v=zfXeCYyeIu0",
+      "dur_max": 510,
+      "verify_frac": 0.95,
+      "_확인": "[현장영상] \"조희대 씨\" \"얻다 대고 못된 짓을!\" 김민석 발언 수위가 / JTBC News 505s (2026-09-09 확인). 배경 클립 용도(TTS 나레이션, 육성 아님)."
+    },
+    "jang": {
+      "url": "https://www.youtube.com/watch?v=UC13sWIyohg",
+      "dur_max": 225,
+      "verify_frac": 0.02,
+      "_확인": "장동혁, 조희대 탄압 집어치우고 이재명 재판이나 재개하라..최고위원회의 난리 / 미디어F 222s (2026-09-09 확인). 배경 클립 용도(TTS 나레이션, 육성 아님)."
+    }
+  },
+  "_scenes_comment": "hook + 4씬(전부 tts) + CTA(top-level cta, 자동 마지막 삽입). 예상 약 33~37초. 040 대칭: scene2 여권(김민석) / scene3 야권(장동혁) — 자막에 이름·소속 명시.",
+  "scenes": [
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "cho",
+      "frac": 0.05,
+      "subtitle_position": "bottom",
+      "text": "조희대 대법원장\n8월 24일 변호사대회 축사",
+      "voice": "지난달 24일, 조희대 대법원장이 대한변호사협회 축사에서 이런 말을 했습니다.",
+      "hl": [
+        "8월 24일"
+      ],
+      "_comment": "훅 직후 브리지 — 언제·어디서 나온 발언인지 먼저 짚는다."
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "cho",
+      "frac": 0.55,
+      "subtitle_position": "bottom",
+      "text": "대법관 후보 서면 제청을 두고\n청와대와 갈등하던 시점",
+      "voice": "대법관 후보를 청와대와 사전 협의 없이 서면으로 제청해 갈등을 빚던 바로 그 시점이라, 정치권은 이 발언을 대통령을 향한 메시지로 읽었습니다.",
+      "hl": [
+        "청와대와 갈등"
+      ],
+      "_comment": "맥락 설명 — 왜 이 발언이 '저격'으로 읽혔는지."
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "kim",
+      "frac": 0.95,
+      "subtitle_position": "bottom",
+      "text": "\"조희대 같은 대법원장은 없어야\"\n김민석 (더불어민주당 대표)",
+      "voice": "더불어민주당 김민석 대표는 조희대 같은 대법원장은 없어야 한다며, 당장 물러나라고 요구했습니다.",
+      "hl": [
+        "당장 물러나라"
+      ],
+      "_comment": "040 대칭 ① 여권. 배경은 kim 소스(김민석 발언 영상), 나레이션은 TTS."
+    },
+    {
+      "type": "body",
+      "color": "blue",
+      "emph": true,
+      "source": "jang",
+      "frac": 0.02,
+      "subtitle_position": "bottom",
+      "text": "\"사법부가 나서서 재판을\n재개해야 한다\" 장동혁 (국민의힘)",
+      "voice": "국민의힘 장동혁 대표는 정반대로, 사법부가 스스로 나서서 이재명 대통령 재판을 재개하고 시작해야 한다고 맞섰습니다.",
+      "hl": [
+        "정반대로"
+      ],
+      "_comment": "040 대칭 ② 야권. 배경은 jang 소스."
+    }
+  ],
+  "cta": {
+    "text": "① 사법부 독립 선언이다\n② 정치적 메시지다",
+    "voice": "1번 독립 선언, 2번 정치적 메시지. 댓글로 알려주세요.",
+    "hl": [
+      "② 정치적 메시지다"
+    ],
+    "source": "cho",
+    "frac": 0.85,
+    "_cta_comment": "V2.1 표준 — top-level cta 블록을 apply_cta()가 038 규칙대로 마지막에 붙인다. 040 — 판정을 시청자에게 넘긴다."
+  },
+  "pinned_comment": "조희대 대법원장의 발언, 어느 쪽으로 들리세요? 1번 사법부 독립 선언, 2번 정치적 메시지. 댓글로 알려주세요."
+}

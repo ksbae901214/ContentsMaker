@@ -3,8 +3,20 @@ import { Composition } from "remotion";
 import { ShortsComposition } from "./ShortsComposition";
 import { DemShortsComposition } from "./DemShortsComposition";
 import type { ShortsScriptData } from "./types";
+import { InfoShortsComposition } from "./info/InfoShortsComposition";
+import type { InfoShortsProps } from "./info/InfoShortsComposition";
 
 const FPS = 30;
+
+const defaultInfoProps: InfoShortsProps = {
+  titleLines: ["정보쇼츠 미리보기"],
+  watermark: "made by 정보쇼츠",
+  canvasColor: "#F6EFE1",
+  images: [],
+  captions: [{ lines: ["자막 미리보기입니다."], startMs: 0, endMs: 5000 }],
+  durationMs: 5000,
+  audioFile: "",
+};
 
 const defaultDemShortsPreset = {
   id: "default",
@@ -84,6 +96,16 @@ export const RemotionRoot: React.FC = () => {
           bgmFile: undefined,
           sourceLabelText: "NATV 국회방송",
         }}
+      />
+      {/* 045 정보쇼츠 V1.0 — 길이는 props.durationMs 로 정하고 렌더러가 --frames 로 자른다 */}
+      <Composition
+        id="InfoShorts"
+        component={InfoShortsComposition}
+        durationInFrames={FPS * 200}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={defaultInfoProps}
       />
     </>
   );

@@ -1,0 +1,124 @@
+{
+  "_comment": "추미애 경기도지사 — 산후조리비 폐지 vs 12억 관사·7765만원 관용차. 클립 경계는 yt-dlp 자동자막 단어 타임스탬프로 잡았고(037), download 후 _verify/ 청음 재확인 필요.",
+  "slug": "20260916_choo_sanhujori_v2_1",
+  "title": "산후조리비 끊은 경기도, 관사는 12억",
+  "yt_title": "9월생은 50만원, 10월생은 0원",
+  "yt_title_alt": "재정 비상이라더니 7700만원 새 차",
+  "category": "political",
+  "persons": [
+    "추미애",
+    "김동연"
+  ],
+  "source_channel": "JTBC News",
+  "source_title": "'혼란' 예비부모…산후조리비 지원 종료",
+  "youtube_url": "https://www.youtube.com/watch?v=30Ny9bZn78w",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "yonhap",
+  "cta": {
+    "text": "이거 누구 책임?\n① 추미애  ② 김동연",
+    "voice": "1번 추미애, 2번 김동연. 댓글로 알려주세요.",
+    "hl": [
+      "누구 책임"
+    ]
+  },
+  "hook": {
+    "_comment": "채널A 현장영상 6.90~13.00 — '안 쫓겨납니다'+웃음+'며느리 쫓아내려고' 완결. 프레임 실측: 13.00 까지 클로즈업, 13.25 블러 전환.",
+    "source": "chA",
+    "start_sec": 6.9,
+    "duration": 6.1,
+    "text": "\"저 추미애가\n안 쫓겨납니다\"",
+    "hl": [
+      "안 쫓겨납니다"
+    ]
+  },
+  "sources": {
+    "jtbc": {
+      "url": "https://www.youtube.com/watch?v=30Ny9bZn78w",
+      "dur_max": 600,
+      "verify_frac": 0.35
+    },
+    "chA": {
+      "url": "https://www.youtube.com/watch?v=dM4SSuv4Jfs",
+      "dur_max": 900,
+      "verify_frac": 0.02
+    },
+    "yonhap": {
+      "url": "https://www.youtube.com/watch?v=r1sXkCh0ods",
+      "dur_max": 600,
+      "verify_frac": 0.4
+    },
+    "sbs": {
+      "url": "https://www.youtube.com/watch?v=ONyhGQQKVus",
+      "dur_max": 600,
+      "verify_frac": 0.3
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "source": "sbs",
+      "frac": 0.15,
+      "text": "경기도, 산후조리비\n이달 말 폐지",
+      "voice": "경기도가 산후조리비 지원을 이달 말로 끊습니다.",
+      "subtitle_position": "bottom"
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "sbs",
+      "frac": 0.32,
+      "text": "9월생까지만 50만원\n10월생부터 0원",
+      "voice": "출생아 한 명당 오십만 원. 구월에 태어나면 받고, 시월에 태어나면 못 받습니다.",
+      "hl": [
+        "9월생",
+        "10월생"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "yonhap",
+      "frac": 0.35,
+      "text": "재정 비상 37일 전\n7765만원 관용차",
+      "voice": "그런데 재정 비상을 선언하기 서른일곱 날 전, 도지사는 칠천칠백육십오만 원짜리 새 관용차를 샀습니다. 관사는 도 예산으로 십이억 이천만 원입니다.",
+      "hl": [
+        "37일 전",
+        "7765만원"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "jtbc",
+      "frac": 0.48,
+      "text": "도청 내부서도 \"내로남불\"\n노조 \"전임은 자비로 살았다\"",
+      "voice": "직원 복지 예산까지 깎인 도청 안에서는 내로남불이라는 반발이 나왔고, 노조는 김동연 전 지사가 자비로 전세 아파트에 살았다고 지적했습니다.",
+      "hl": [
+        "내로남불",
+        "자비로"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "jtbc",
+      "frac": 0.79,
+      "text": "국민의힘 \"채무 7조\"\n민주당 도의회는 예산 되살리기",
+      "voice": "국민의힘은 채무가 칠조 원이 맞다며 재정 위기의 실체를 밝히라 했고, 민주당이 다수인 도의회는 깎인 예산을 되살리고 있습니다. 경기도 채무 비율은 십이점팔육 퍼센트로 전국 평균보다 낮습니다.",
+      "hl": [
+        "국민의힘",
+        "민주당"
+      ],
+      "subtitle_position": "bottom",
+      "_comment": "b-roll: JTBC 229s 채무 현황 표. 청원 화면(연합 73.9s)은 자막(여야·채무)과 어긋나 교체."
+    }
+  ]
+}

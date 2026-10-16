@@ -2,8 +2,51 @@
 from __future__ import annotations
 
 from scripts.analyze_channel_performance import (
-    classify_title, compare_snapshots, duration_bucket, summarize, upload_gaps,
+    build_report_md, category_mix_warnings, classify_title, compare_snapshots,
+    duration_bucket, summarize, upload_gaps,
 )
+from scripts.shorts_format import PROFILE_V3, UNKNOWN_FORMAT, V2_2
+
+
+class TestSummarizeByFormat:
+    """041: 포맷별 슬라이스 — V3.0 파일럿 판정의 유일한 근거."""
+
+    ENTRIES = [
+        {"title": "이해민은 누구인가", "view_count": 3000},
+        {"title": "용혜인은 누구인가", "view_count": 1000},
+        {"title": "장동혁 눈물", "view_count": 1500},
+    ]
+    FORMATS = {"이해민은 누구인가": PROFILE_V3, "용혜인은 누구인가": PROFILE_V3}
+
+    def test_groups_by_format(self):
+        by_format = summarize(self.ENTRIES, formats=self.FORMATS)["by_format"]
+        assert by_format[PROFILE_V3] == {"count": 2, "median_views": 2000}
+
+    def test_unrecorded_editions_are_unknown(self):
+        """과거 107편은 포맷 기록이 없다 — 추론하지 않는다."""
+        by_format = summarize(self.ENTRIES, formats=self.FORMATS)["by_format"]
+        assert by_format[UNKNOWN_FORMAT]["count"] == 1
+
+    def test_without_formats_everything_is_unknown(self):
+        by_format = summarize(self.ENTRIES)["by_format"]
+        assert by_format == {UNKNOWN_FORMAT: {"count": 3, "median_views": 1500}}
+
+    def test_report_renders_format_table(self):
+        summary = summarize(self.ENTRIES, formats=self.FORMATS)
+        md = build_report_md("ch", summary, [], [], "2026-09-14 10:00")
+        assert "## 포맷별" in md
+        assert PROFILE_V3 in md
+
+    def test_report_omits_format_table_when_no_record(self):
+        """포맷 기록이 하나도 없으면 unknown 한 줄짜리 표는 노이즈다."""
+        md = build_report_md("ch", summarize(self.ENTRIES), [], [], "2026-09-14")
+        assert "## 포맷별" not in md
+
+    def test_mixed_formats_are_separated(self):
+        formats = {**self.FORMATS, "장동혁 눈물": V2_2}
+        by_format = summarize(self.ENTRIES, formats=formats)["by_format"]
+        assert by_format[V2_2] == {"count": 1, "median_views": 1500}
+        assert UNKNOWN_FORMAT not in by_format
 
 
 class TestClassifyTitle:
@@ -145,3 +188,74 @@ class TestNfcNormalization:
         t = unicodedata.normalize(
             "NFD", "윤석열 397억은 1심인데 재판조차 안 한다 #정점식")
         assert classify_title(t) == "report"
+
+
+# ── 036 Phase 0: 카테고리 축 계측 ──────────────────────────────────
+class TestSummarizeByCategory:
+    def test_groups_by_inferred_category(self):
+        entries = [
+            _entry("a", "끝내 부결된 특검법", 1000),
+            _entry("b", "결국 동결된 금리", 3000),
+            _entry("c", "본회의 표결 뒤집혔다", 500),
+        ]
+        s = summarize(entries)
+        assert s["by_category"]["political"]["count"] == 2
+        assert s["by_category"]["political"]["median_views"] == 750
+        assert s["by_category"]["economic"]["median_views"] == 3000
+
+    def test_ledger_overrides_inference(self):
+        entries = [_entry("a", "끝내 부결된 특검법", 1000)]
+        s = summarize(entries, ledger={"끝내 부결된 특검법": "economic"})
+        assert "political" not in s["by_category"]
+        assert s["by_category"]["economic"]["count"] == 1
+
+    def test_unclassifiable_goes_to_unknown(self):
+        s = summarize([_entry("a", "그냥 아무 말", 100)])
+        assert s["by_category"]["unknown"]["count"] == 1
+
+    def test_backward_compatible_without_ledger(self):
+        # 기존 호출부(인자 1개)가 그대로 동작해야 한다
+        s = summarize([_entry("a", "국회 표결", 100)])
+        assert s["count"] == 1
+
+
+class TestCategoryMixWarnings:
+    def test_flags_diluting_category(self):
+        by_category = {
+            "political": {"count": 20, "median_views": 1200},
+            "entertainment": {"count": 5, "median_views": 400},
+        }
+        warnings = category_mix_warnings(by_category, overall_median=1100)
+        assert any("entertainment" in w and "희석" in w for w in warnings)
+        assert not any("political" in w for w in warnings)
+
+    def test_flags_breakout_category(self):
+        by_category = {
+            "political": {"count": 20, "median_views": 1100},
+            "economic": {"count": 6, "median_views": 3000},
+        }
+        warnings = category_mix_warnings(by_category, overall_median=1200)
+        assert any("economic" in w and "확대" in w for w in warnings)
+
+    def test_ignores_small_samples(self):
+        by_category = {"entertainment": {"count": 2, "median_views": 10}}
+        assert category_mix_warnings(by_category, overall_median=1100) == []
+
+    def test_ignores_unknown_bucket(self):
+        by_category = {"unknown": {"count": 50, "median_views": 10}}
+        assert category_mix_warnings(by_category, overall_median=1100) == []
+
+    def test_no_warning_when_median_zero(self):
+        by_category = {"economic": {"count": 5, "median_views": 3000}}
+        assert category_mix_warnings(by_category, overall_median=0) == []
+
+
+class TestReportIncludesCategory:
+    def test_category_section_rendered(self):
+        entries = [
+            _entry("a", "끝내 부결된 특검법", 1000),
+            _entry("b", "결국 동결된 금리", 3000),
+        ]
+        md = build_report_md("UC123", summarize(entries), [], [], "2026-08-13 10:00")
+        assert "## 카테고리별" in md
+        assert "economic" in md

@@ -173,3 +173,48 @@ class TestCutSegmentErrorReporting:
         assert "Invalid" in msg or "moov" in msg or "Error" in msg or "error" in msg, (
             f"Error doesn't contain ffmpeg's actual failure reason: {msg}"
         )
+
+
+class TestPadColor:
+    """041: 9:16 패딩 색 — 흰 캔버스 포맷(V3.0)에서 검정 띠가 보이지 않도록."""
+
+    def _vf(self, cmd: list[str]) -> str:
+        return cmd[cmd.index("-vf") + 1]
+
+    def test_default_is_black(self, tmp_path):
+        """기존 V2.1/V2.2·dem_shorts 동작이 바뀌면 안 된다."""
+        cmd = build_ffmpeg_cmd(
+            input_path=tmp_path / "in.mp4", output_path=tmp_path / "out.mp4",
+            start_sec=0.0, end_sec=3.0,
+        )
+        assert self._vf(cmd).endswith(":black")
+
+    def test_custom_color(self, tmp_path):
+        cmd = build_ffmpeg_cmd(
+            input_path=tmp_path / "in.mp4", output_path=tmp_path / "out.mp4",
+            start_sec=0.0, end_sec=3.0, pad_color="#F5F5F5",
+        )
+        assert self._vf(cmd).endswith(":#F5F5F5")
+
+    def test_cut_segment_forwards_pad_color(self, tmp_path):
+        captured: dict = {}
+
+        def fake_build(**kw):
+            captured.update(kw)
+            return ["ffmpeg", "-y", "-i", "x", str(kw["output_path"])]
+
+        src = tmp_path / "in.mp4"
+        src.write_bytes(b"0" * 2000)
+        out = tmp_path / "out.mp4"
+        with mock.patch("src.dem_shorts.editor.segment_cutter.build_ffmpeg_cmd",
+                        side_effect=fake_build), \
+             mock.patch("src.dem_shorts.editor.segment_cutter.shutil.which",
+                        return_value="/usr/bin/ffmpeg"), \
+             mock.patch("src.dem_shorts.editor.segment_cutter._probe_duration",
+                        return_value=100.0), \
+             mock.patch("src.dem_shorts.editor.segment_cutter.subprocess.run") as run:
+            run.return_value = mock.Mock(returncode=0, stderr="")
+            out.write_bytes(b"0" * 2000)
+            cut_segment(input_path=src, output_path=out, start_sec=0.0,
+                        end_sec=3.0, pad_color="#F5F5F5")
+        assert captured["pad_color"] == "#F5F5F5"

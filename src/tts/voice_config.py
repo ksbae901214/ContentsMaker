@@ -52,6 +52,21 @@ BGM_FILES: dict[str, list[str]] = {
     "celebrity": ["celebrity_1.mp3", "celebrity_2.mp3", "celebrity_3.mp3"],
 }
 
+# 정치쇼츠(source_type="political_pro")는 어두운 트랙만 쓴다 (사용자 지시 2026-09-18).
+# 밝은 BGM 이 규탄·논란 소재를 가볍게 만든다는 지적이 반복돼 지침으로 고정했다.
+#
+# 왜 emotion_type 지정으로는 부족한가 — 고역(4kHz+) mean_volume 실측(40초):
+#   relatable_1 -36.9 / angry_3 -39.0 / angry_2 -43.2 / relatable_3 -43.2
+#   touching_1  -44.6 / relatable_2 -45.2 / touching_3 -56.7 / touching_2 -65.7
+# `angry` 는 저역만 크고 고역이 밝아 '긴장'이지 '어두움'이 아니고, `touching` 도
+# 인덱스 0(`touching_1`)은 relatable_2 와 밝기가 사실상 같다. 트랙 번호는 씬 수·
+# 강조 비율·길이로 계산된 에너지 점수가 고르므로 emotion 만으로는 보장이 안 된다.
+# → 풀 자체를 어두운 두 트랙으로 좁힌다. 에너지 점수는 그 안에서만 고른다.
+DARK_BGM_FILES: list[str] = ["touching_2.mp3", "touching_3.mp3"]
+
+# 이 source_type 들은 BGM 풀이 emotion 이 아니라 위 어두운 풀로 고정된다.
+DARK_BGM_SOURCE_TYPES: frozenset[str] = frozenset({"political_pro"})
+
 HIGHLIGHT_COLORS: dict[str, str] = {
     "funny": "#FFD700",
     "touching": "#FF69B4",
@@ -186,8 +201,13 @@ def select_bgm_for_script(script: "ShortsScript") -> str:  # type: ignore[name-d
     is_celebrity = source_type == "celebrity"
 
     emotion = (script.metadata.emotion_type or DEFAULT_EMOTION)
-    pool_key = "celebrity" if is_celebrity else emotion
-    tracks = BGM_FILES.get(pool_key, BGM_FILES[DEFAULT_EMOTION])
+    if is_celebrity:
+        tracks = BGM_FILES["celebrity"]
+    elif source_type in DARK_BGM_SOURCE_TYPES:
+        # 정치쇼츠는 emotion 과 무관하게 어두운 트랙만 (2026-09-18 지침)
+        tracks = DARK_BGM_FILES
+    else:
+        tracks = BGM_FILES.get(emotion, BGM_FILES[DEFAULT_EMOTION])
 
     # 존재하는 파일만 후보로
     try:

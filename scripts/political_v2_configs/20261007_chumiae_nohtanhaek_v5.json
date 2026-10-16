@@ -1,0 +1,233 @@
+{
+  "_comment": "V5.0 기획 (2026-10-07) — 한동훈·노무현 공방(10/6~7 댓글 합계 15,275, 3위 클러스터). 사용자 확정: 민주당·추미애 공격. 프레임 = '감히 노무현을'(김어준 10/5) vs 추미애의 2004 탄핵 찬성('탄핵사유 책자로 만들 정도') → 2016 '지켜드리지 못해 죄송' → 2020 징계위 전날 노무현 영정 사진. 노무현 시계 의혹은 진위를 판정하지 않는다 — '한동훈 의원이 팩트라고 주장'으로만 처리(사자명예훼손 회피, 노무현재단 반박 병기). 육성 타이밍: JTBC 김어준 = silencedetect 28.37~30.32, 채널A 추미애 2016 = 134.77~140.86(Gemini 전사 타임스탬프는 이 영상에서 30초+ 밀려 사용 안 함). 증거 4장은 KNN·채널A 프레임 추출.",
+  "format": "evidence_v5",
+  "slug": "20261007_chumiae_nohtanhaek_v5",
+  "category": "political",
+  "subject_type": "politician",
+  "headline": [
+    "감히 노무현을?",
+    "탄핵 찬성했던 그 사람"
+  ],
+  "title": "감히 노무현을 탄핵 찬성했던 그 사람",
+  "yt_title": "감히 노무현을? 탄핵 찬성표 던진 추미애의 영정 사진",
+  "yt_title_alt": "노무현 지켜드리지 못해 죄송하다던 탄핵 찬성파의 정체",
+  "hashtags": [
+    "#추미애",
+    "#노무현",
+    "#김어준",
+    "#한동훈"
+  ],
+  "persons": [
+    "추미애",
+    "김어준",
+    "한동훈"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "김어준 \"어디서 감히 노무현을\"…한동훈 \"팩트 없는 거만한 가스라이팅\"",
+      "url": "https://n.news.naver.com/mnews/article/009/0005744199",
+      "outlet": "매일경제"
+    },
+    {
+      "title": "\"시계는 팩트\" 한동훈 겨냥 노무현재단 \"고인 모욕…정쟁에도 금도 있어\"",
+      "url": "https://n.news.naver.com/mnews/article/028/0002826220",
+      "outlet": "한겨레"
+    },
+    {
+      "title": "한동훈, 추미애에 \"盧, 왜 죽일 듯 증오했나\"…탄핵 찬성 전력 소환",
+      "url": "https://n.news.naver.com/mnews/article/011/0004668318",
+      "outlet": "서울경제"
+    },
+    {
+      "title": "노무현 탄핵 앞장 추미애, 盧센터서 간담회… \"코미디냐\" (2004 '탄핵사유 책자로 만들 정도')",
+      "url": "https://n.news.naver.com/mnews/article/023/0003775660",
+      "outlet": "조선일보"
+    },
+    {
+      "title": "'탄핵 원죄' 추미애는 왜 노무현 영정사진 올렸나",
+      "url": "https://n.news.naver.com/mnews/article/023/0003580688",
+      "outlet": "조선일보"
+    },
+    {
+      "title": "추미애, 노무현 영정사진 올리며 \"살 떨리는 공포…검찰개혁 해낼 것\"",
+      "url": "https://n.news.naver.com/mnews/article/025/0003058041",
+      "outlet": "중앙일보"
+    }
+  ],
+  "sources": {
+    "jtbc": {
+      "url": "https://www.youtube.com/watch?v=42zeimeCjpA",
+      "channel": "JTBC",
+      "_comment": "10/5 이가혁 라이브 — 김어준 '노무현 함부로 들먹이지 마세요' 육성(증거 1) + 한동훈 토론회 B-roll(13~25초)"
+    },
+    "knn": {
+      "url": "https://www.youtube.com/watch?v=z-xnMguc8p0",
+      "channel": "KNN",
+      "_comment": "10/6 '추미애가 노무현 탄핵에 찬성?' — 2004 신문 사진·한동훈 페북 B-roll"
+    },
+    "ca2026": {
+      "url": "https://www.youtube.com/watch?v=6aZQF3pr8hI",
+      "channel": "채널A",
+      "_comment": "9/14 김종석의 리포트 — 삼보일배 사진(120~130초) + 추미애 2016 당대표 후보 연설 육성(증거 2)"
+    },
+    "ca2020": {
+      "url": "https://www.youtube.com/watch?v=B0tw34Yxzr0",
+      "channel": "채널A",
+      "_comment": "2020-12-03 여랑야랑 — 영정 사진 게시·2004 발언 카드 B-roll"
+    }
+  },
+  "scenes": [
+    {
+      "mode": "clip",
+      "source": "jtbc",
+      "start_sec": 28.2,
+      "duration": 2.4,
+      "text": "노무현 함부로 들먹이지 마세요",
+      "pop": "함부로?"
+    },
+    {
+      "mode": "tts",
+      "source": "jtbc",
+      "start_sec": 13.0,
+      "voice": "한동훈 의원이 노무현 시계 의혹을 팩트라고 주장하자 김어준 씨가 한 말입니다. 노무현재단도 고인 모욕이라 반발했죠.",
+      "hl": [
+        "함부로"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "knn",
+      "start_sec": 7.0,
+      "flash": true,
+      "voice": "그런데 한동훈 의원이 올린 사진 한 장에 분위기가 묘해집니다.",
+      "evidence": {
+        "image": "data/political_pro/20261007_chumiae_nohtanhaek_v5/evidence/01_hdh_fb.png",
+        "marks": [
+          {
+            "kind": "underline",
+            "x": 0.19,
+            "y": 0.47,
+            "w": 0.33,
+            "h": 0.04
+          }
+        ]
+      }
+    },
+    {
+      "mode": "tts",
+      "source": "knn",
+      "start_sec": 1.0,
+      "pop": "2004년",
+      "voice": "2004년, 노무현 탄핵 가결 신문을 읽는 이 사람. 지금의 경기도지사 추미애입니다.",
+      "hl": [
+        "추미애"
+      ],
+      "evidence": {
+        "image": "data/political_pro/20261007_chumiae_nohtanhaek_v5/evidence/02_newspaper.png",
+        "marks": [
+          {
+            "kind": "circle",
+            "x": 0.02,
+            "y": 0.55,
+            "w": 0.62,
+            "h": 0.17
+          }
+        ]
+      }
+    },
+    {
+      "mode": "tts",
+      "source": "ca2020",
+      "start_sec": 90.0,
+      "voice": "당시 새천년민주당 지도부였던 추 지사는 탄핵 사유가 책자로 만들 정도라며 찬성했습니다.",
+      "hl": [
+        "책자로 만들 정도"
+      ],
+      "evidence": {
+        "image": "data/political_pro/20261007_chumiae_nohtanhaek_v5/evidence/03_quote_2004.png",
+        "marks": [
+          {
+            "kind": "underline",
+            "x": 0.1,
+            "y": 0.7,
+            "w": 0.4,
+            "h": 0.04
+          },
+          {
+            "kind": "circle",
+            "x": 0.6,
+            "y": 0.79,
+            "w": 0.27,
+            "h": 0.11
+          }
+        ]
+      }
+    },
+    {
+      "mode": "tts",
+      "source": "ca2026",
+      "start_sec": 120.0,
+      "voice": "탄핵 기각 뒤 역풍이 불자 삼보일배로 사과했고, 총선에선 낙선했죠. 그리고 12년 뒤 당대표 선거에선요.",
+      "hl": [
+        "삼보일배",
+        "낙선"
+      ]
+    },
+    {
+      "mode": "clip",
+      "source": "ca2026",
+      "start_sec": 134.7,
+      "duration": 6.4,
+      "text": "노무현 대통령님만 생각하면 가슴이 아파옵니다. 지켜드리지 못한 것, 정말 죄송합니다",
+      "pop": "지켜드리지 못해?"
+    },
+    {
+      "mode": "tts",
+      "source": "ca2020",
+      "start_sec": 10.0,
+      "flash": true,
+      "voice": "반전은 또 있습니다. 2020년 법무장관 땐 윤석열 징계위 전날, 노무현 영정 사진을 올리며 검찰개혁을 외쳤죠.",
+      "hl": [
+        "영정 사진"
+      ],
+      "evidence": {
+        "image": "data/political_pro/20261007_chumiae_nohtanhaek_v5/evidence/04_yeongjeong.png",
+        "marks": [
+          {
+            "kind": "circle",
+            "x": 0.73,
+            "y": 0.08,
+            "w": 0.17,
+            "h": 0.37
+          }
+        ]
+      }
+    },
+    {
+      "mode": "tts",
+      "source": "jtbc",
+      "start_sec": 34.0,
+      "voice": "김어준 씨 말대로면, 함부로 들먹인 원조는 따로 있는 셈이죠.",
+      "hl": [
+        "원조"
+      ]
+    },
+    {
+      "mode": "tts",
+      "source": "ca2026",
+      "start_sec": 125.0,
+      "voice": "탄핵표를 던진 사람이 꺼내면 검찰개혁, 남이 꺼내면 감히. 노무현에도 주인이 따로 있나 봅니다.",
+      "hl": [
+        "주인"
+      ]
+    }
+  ],
+  "cta": {
+    "voice": "누가 더 문제일까요? 1번 한동훈, 2번 추미애. 댓글로 알려주세요.",
+    "text": "① 한동훈\n② 추미애",
+    "source": "ca2026",
+    "frac": 0.7
+  }
+}

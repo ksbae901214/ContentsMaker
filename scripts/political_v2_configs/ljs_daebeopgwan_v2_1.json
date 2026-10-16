@@ -1,0 +1,48 @@
+{
+  "_comment": "이준석 페이스북 '피고인이 대법관 고르나' vs 민주당 이용우 대변인 반박. 당사자 육성 영상 없음(이준석=페이스북 글, 이용우=브리핑이나 확인 가능한 영상 없음) — 사용자 결정(2026-08-21)으로 기사 캡처 이미지 + TTS로 대체. sources의 src_ljs.mp4/src_lyw.mp4는 capture_article.py로 만든 무음 팬 영상(선다운로드 배치, download 단계에서 재다운로드 생략).",
+  "slug": "ljs_daebeopgwan_v2_1",
+  "title": "대법관 인사, 이준석 vs 민주당",
+  "yt_title": "피고인이 대법관을 고른다고?",
+  "yt_title_alt": "이준석 한마디에 민주당 발끈",
+  "persons": ["이준석", "이용우", "조희대"],
+  "source_channel": "문화일보 · 채널A (기사 캡처)",
+  "source_title": "이준석 페이스북 발언 · 민주당 이용우 대변인 브리핑 반박",
+  "youtube_url": "",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "ljs",
+  "cta": {
+    "text": "이 논리, 누가 맞다고 보세요?\n① 이준석  ② 민주당",
+    "voice": "1번 이준석, 2번 민주당. 댓글로 알려주세요.",
+    "hl": ["누가 맞다"],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "ljs": { "url": "https://n.news.naver.com/article/021/0002812493", "verify_frac": 0.1,
+             "_comment": "문화일보 — 이준석 페이스북 인용 기사 캡처(무음 팬 mp4, 사전 배치됨)" },
+    "lyw": { "url": "https://n.news.naver.com/mnews/article/449/0000357549", "verify_frac": 0.1,
+             "_comment": "채널A — 이용우 대변인 브리핑 인용 기사 캡처(무음 팬 mp4, 사전 배치됨)" }
+  },
+  "scenes": [
+    { "type": "body", "color": "yellow", "emph": true, "source": "ljs", "frac": 0.05,
+      "text": "\"피고인이 감히\n대법관을 고르나\"\n이준석의 직격",
+      "voice": "이준석 대표가 페이스북에, 어떤 형사 피고인이 감히 대법관을 고르냐고 적었습니다.",
+      "hl": ["피고인", "대법관"] },
+    { "type": "body", "color": "white", "emph": false, "source": "ljs", "frac": 0.35,
+      "text": "조희대 대법원장\n대통령 상의 없이\n서면 통보",
+      "voice": "발단은 조희대 대법원장입니다. 대통령과 상의 없이 후보자 두 명을 서면으로만 통보했습니다.",
+      "hl": ["조희대", "서면"] },
+    { "type": "body", "color": "red", "emph": true, "source": "ljs", "frac": 0.65,
+      "text": "이재명 대통령도\n5건 형사재판\n피고인",
+      "voice": "이재명 대통령도 다섯 건의 형사재판 피고인이라, 지금 앉히는 대법관이 나중에 그 재판을 맡는다는 논리입니다.",
+      "hl": ["5건", "형사재판"] },
+    { "type": "body", "color": "blue", "emph": true, "source": "lyw", "frac": 0.1,
+      "text": "민주당 발끈\n\"조희대 하수인인가\"",
+      "voice": "민주당은 곧바로 맞받았습니다. 이 대표는 조희대의 하수인이냐, 대통령 임명권을 부정하냐고 반박했습니다.",
+      "hl": ["하수인"] },
+    { "type": "body", "color": "white", "emph": false, "source": "lyw", "frac": 0.5,
+      "text": "대법관 임기 6년\n대통령 임기 5년",
+      "voice": "대법관 임기는 6년, 대통령 임기는 5년입니다. 물러난 대통령이 훗날 자기 재판을 받는다는 게 논란의 핵심입니다.",
+      "hl": ["6년", "5년"] }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "_comment": "사회쇼츠 V2.2 원본 육성 릴레이 (036 category=society). 같은 소재의 V2.1 병행편(political-shorts-v2-2-relay-format). [037] 클립 경계는 SBS 자동자막 단어 타임스탬프로 확정 — 각 컷은 문장 끝 단어가 끝난 뒤 다음 문장 첫 단어 직전에서 끊었다. [036] scenes[1] 훅 = 가장 센 컷(끌어내림+저항 절정), 이후는 시간순이 아니라 아크순. 사건 화면은 SBS 방송분(모자이크 완료) 21~62.5초 구간만 사용 — 63초부터는 스튜디오.",
+  "category": "society",
+  "subject_type": "civilian",
+  "slug": "20260917_noyakja_2hoseon_v2_2",
+  "title": "2호선 교통약자석 몸싸움",
+  "yt_title": "노인이 옷깃 잡자 날아든 발길질",
+  "yt_title_alt": "350만이 본 2호선 교통약자석",
+  "persons": [
+    "교통약자석",
+    "지하철2호선"
+  ],
+  "source_channel": "SBS 모닝와이드",
+  "source_title": "지하철 노약자석 몸싸움 (모닝 핫토픽)",
+  "youtube_url": "https://www.youtube.com/watch?v=CztHyPNFe0Q",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "sbs",
+  "cta": {
+    "text": "이거 누구 잘못?\n① 노인  ② 여성",
+    "voice": "이건 누가 잘못한 걸까요? 1번 노인, 2번 여성. 댓글로 알려주세요.",
+    "hl": [
+      "누구 잘못"
+    ],
+    "subtitle_position": "bottom",
+    "highlight_category": "criticism"
+  },
+  "sources": {
+    "sbs": {
+      "url": "https://www.youtube.com/watch?v=CztHyPNFe0Q",
+      "dur_max": 200,
+      "dur_min": 30,
+      "verify_frac": 0.56
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "mode": "tts",
+      "source": "sbs",
+      "frac": 0.3,
+      "_comment": "[038] 이 자막이 upload_package 3줄요약의 1행이 된다 — 인트로가 scenes[0]이라 훅 클립 대신 여기서 뽑힌다. 밋밋하게 쓰면 요약이 밋밋해진다.",
+      "text": "하루 만에 350만 조회\n2호선 교통약자석",
+      "voice": "어제 온라인에 퍼진 지하철 2호선 영상입니다.",
+      "subtitle_position": "bottom"
+    },
+    {
+      "mode": "clip",
+      "_comment": "[훅] 46.44~50.64 — '이에 여성은 (악! 뭐야!) 하면서 강하게 저항을 했습니다.' 화면은 옷깃을 잡아끄는 절정.",
+      "source": "sbs",
+      "start_sec": 46.44,
+      "duration": 4.2,
+      "text": "노인 \"내려!\"\n여성 \"악! 뭐야!\"",
+      "hl": [
+        "내려",
+        "악! 뭐야"
+      ],
+      "subtitle_position": "bottom",
+      "highlight_category": "criticism"
+    },
+    {
+      "mode": "clip",
+      "_comment": "[발단] 25.56~33.16 — '중절모를 쓴 노인이 교통약자석에 앉아 있는 여성을 향해서 삿대질을 하고 있네요.'",
+      "source": "sbs",
+      "start_sec": 25.56,
+      "duration": 7.6,
+      "text": "중절모 쓴 노인의\n삿대질",
+      "hl": [
+        "삿대질"
+      ],
+      "subtitle_position": "bottom",
+      "highlight_category": "criticism"
+    },
+    {
+      "mode": "clip",
+      "_comment": "[전개] 40.12~46.44 — '그런 모습을 보이고, 그렇더니 노인은요, 옷을 잡고 강제로 끌어내리려고 했고요.' 클립 비중을 올리려 한 문장 앞에서 시작(40.12 = 단어 경계).",
+      "source": "sbs",
+      "start_sec": 40.12,
+      "duration": 6.32,
+      "text": "손짓 거부하자\n옷을 잡고 끌어내려",
+      "hl": [
+        "끌어내려"
+      ],
+      "subtitle_position": "bottom",
+      "highlight_category": "criticism"
+    },
+    {
+      "mode": "clip",
+      "_comment": "[대립 인용] 55.2~60.84 — '어르신 오면 비켜주는 게 맞다. 발길질까지 하는 건 지나친…'. [037] 50.64~53.5 구간은 화면 카드가 아직 '끌어내리려 시도'라 '엇갈린 반응' 자막과 어긋나 통째로 뺐다 — 카드는 53.5초에 양쪽 인용으로 바뀌고 62.5초까지 유지된다(63초부터 스튜디오).",
+      "source": "sbs",
+      "start_sec": 55.2,
+      "duration": 5.64,
+      "text": "\"어르신 오면 비켜줘야\"\n\"양보는 의무 아니다\"",
+      "hl": [
+        "비켜줘야",
+        "의무 아니다"
+      ],
+      "subtitle_position": "bottom",
+      "highlight_category": "criticism"
+    },
+    {
+      "mode": "tts",
+      "source": "sbs",
+      "frac": 0.42,
+      "color": "yellow",
+      "emph": true,
+      "_comment": "[035] 마지막 씬은 팩트 정리. 양쪽을 같은 무게로 두어 CTA가 판정이 되게 한다.",
+      "text": "노인석이 아니라\n교통약자석",
+      "voice": "교통약자석은 노인 전용이 아닙니다. 장애인과 임산부, 겉으로 멀쩡해 보여도 아픈 사람이 앉을 수 있습니다. 반대로 발길질까지 한 건 지나쳤다는 지적도 나왔습니다.",
+      "hl": [
+        "교통약자석",
+        "지나쳤다"
+      ],
+      "subtitle_position": "bottom",
+      "highlight_category": "criticism"
+    }
+  ],
+  "_emotion_type_comment": "BGM 스위치 (036). 어두운 트랙 = touching — 실측상 touching_2/_3 는 고역이 46~53dB 낮아(저역-고역 26~30dB) 9개 트랙 중 가장 어둡다. angry 는 저역만 크고 고역이 밝아 '긴장'이지 '어두움'이 아니다. 화면색은 씬별 color / highlight_category 로 고정해 두었으므로 이 값은 BGM 만 바꾼다."
+}

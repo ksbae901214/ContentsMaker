@@ -1,0 +1,188 @@
+{
+  "_comment": "V4.0 (2026-10-02) — DMZ 지뢰 후속편(1호 20260930_dmz_mine_kimyj_news_v4 의 후속, 039 '뚫린 소재는 후속 먼저'). 네이버 랭킹 10/1~10/2 클러스터 37건·댓글 17,767 (2위). 앵글: 장병의 희생(부사관 '대대장 먼저') vs 국군의날 '불의의 사고' 표현 공방. 040 대칭: 대통령 발언·청와대 해명·통일부(여권) / 장동혁·한동훈(야권) 을 같은 무게로, 마지막은 정쟁 밖 부상 군인의 목소리. 판정은 CTA 로 시청자에게.",
+  "format": "news_v4",
+  "slug": "20261002_dmz_unforeseen_news_v4",
+  "category": "political",
+  "subject_type": "politician",
+  "headline": [
+    "대대장 먼저 모셔라",
+    "그런데 '불의의 사고'"
+  ],
+  "tag": "국군의날 기념사 공방",
+  "title": "대대장 먼저 모셔라 그런데 불의의 사고",
+  "yt_title": "'난 기어갈 테니 대대장 모셔라'… 그런데 대통령은 '불의의 사고'",
+  "yt_title_alt": "북한 책임은 한마디도 없었다… 국군의날 '불의의 사고' 논란",
+  "persons": [
+    "이재명",
+    "장동혁",
+    "한동훈"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "지뢰 폭발에 부상 당한 부사관 “난 기어서 갈테니 대대장 모셔라”",
+      "url": "https://n.news.naver.com/mnews/article/023/0004001453",
+      "outlet": "조선일보"
+    },
+    {
+      "title": "李대통령, 지뢰폭발에 北 언급 없이 “불의의 사고, 마음 아프다”",
+      "url": "https://n.news.naver.com/mnews/article/023/0004001515",
+      "outlet": "조선일보"
+    },
+    {
+      "title": "李 “DMZ서 불의의 사고”... 국힘 “대한민국 대통령 맞나”",
+      "url": "https://n.news.naver.com/mnews/article/023/0004001580",
+      "outlet": "조선일보"
+    },
+    {
+      "title": "한동훈, 李 국군의날 기념사에 \"불의의 사고? 北지뢰공격=교통사고 취급\"",
+      "url": "https://n.news.naver.com/mnews/article/088/0001031663",
+      "outlet": "매일신문"
+    },
+    {
+      "title": "靑 \"李대통령 '불의의 사고' 표현, 부상장병 위로한 것\"",
+      "url": "https://n.news.naver.com/mnews/article/001/0016352398",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "정동영 “(지뢰 폭발로) 한반도 평화 노력 폄훼·왜곡 빌미돼선 안 돼”",
+      "url": "https://n.news.naver.com/mnews/article/449/0000362611",
+      "outlet": "채널A"
+    },
+    {
+      "title": "지뢰 폭발로 왼발 잃은 이 대위 \"나라 지키다 다치면 적어도..\"",
+      "url": "https://n.news.naver.com/mnews/article/437/0000513691",
+      "outlet": "JTBC"
+    },
+    {
+      "title": "유엔사도 DMZ 북한 지뢰 폭발 사고 '정전협정 위반' 판단",
+      "url": "https://n.news.naver.com/mnews/article/421/0009199758",
+      "outlet": "뉴스1"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/01_hoist.jpg",
+      "credit": "합동참모본부",
+      "_comment": "1호 재사용 — 9/28 합참 공개 환자결속(호이스트). 상처·혈흔 없음 확인됨",
+      "dur": 3.1
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/02_site.jpg",
+      "credit": "합동참모본부",
+      "_comment": "폭발 현장(화구 표시) — 조선 023/0004001453",
+      "dur": 3.1
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/03_lee_speech.jpg",
+      "credit": "연합뉴스",
+      "_comment": "10/1 국군의날 기념사 — 연합 001/0016352398",
+      "dur": 3.3
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/04_lee_face.jpg",
+      "credit": "뉴시스",
+      "_comment": "10/1 국군의날 기념식 — 문화 021/0002822592",
+      "dur": 3.3
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/05_mine_found.jpg",
+      "credit": "합동참모본부",
+      "_comment": "1호 재사용 — 9/29 추가 발견 북한 반보병지뢰",
+      "dur": 3.0
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/06_unc_survey.jpg",
+      "credit": "합동참모본부",
+      "_comment": "1호 재사용 — 군·유엔사 현장조사",
+      "dur": 3.0
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/07_jang.jpg",
+      "credit": "뉴스1",
+      "_comment": "장동혁 — 암살자 편 재사용(채널A 449/0000362191)",
+      "dur": 3.7
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/08_hdh_facebook.jpg",
+      "credit": "한동훈 페이스북",
+      "fit": "contain",
+      "_comment": "'교통사고 취급' 원문 — 매일 088/0001031663",
+      "dur": 3.7
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/09_sung_kihong.jpg",
+      "credit": "연합뉴스",
+      "_comment": "성기홍 홍보소통수석 — 연합 001/0016352398",
+      "dur": 4.8
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/10_jung_dongyoung.jpg",
+      "credit": "뉴스1",
+      "_comment": "정동영 통일부 장관 — 채널A 449/0000362611",
+      "dur": 4.85
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/11_mine_sign.jpg",
+      "credit": "연합뉴스",
+      "_comment": "9/30 연천 DMZ 지뢰 경고 표지판 — 국민 005/0001876111",
+      "dur": 6.85
+    },
+    {
+      "path": "data/political_pro/20261002_dmz_unforeseen_news_v4/photos/13_lee_parade.jpg",
+      "credit": "연합뉴스",
+      "_comment": "10/1 국군의날 사열 — 조선 023/0004001515",
+      "dur": 8.0
+    }
+  ],
+  "cta": {
+    "text": "①부적절한 표현\nVS ②위로의 맥락",
+    "voice": "불의의 사고, 맞는 말일까요? 1번 부적절, 2번 위로. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "비무장지대에서 지뢰 두 발이 터진 날, 다친 부사관은 자신은 기어갈 테니 대대장부터 모시라고 했습니다.",
+      "hl": [
+        "대대장"
+      ]
+    },
+    {
+      "voice": "그런데 이재명 대통령은 국군의 날 기념사에서 이 일을 불의의 사고라고 했고, 북한의 책임은 말하지 않았습니다.",
+      "hl": [
+        "불의의 사고"
+      ]
+    },
+    {
+      "voice": "합참이 북한군 지뢰일 가능성이 매우 높다고 발표하고, 유엔사도 정전협정 위반으로 판단한 뒤였습니다.",
+      "hl": [
+        "정전협정 위반"
+      ]
+    },
+    {
+      "voice": "국민의힘 장동혁 대표는 대한민국 대통령이 아니라고 했고, 한동훈 의원은 북한 지뢰 공격을 교통사고 취급했다고 직격했습니다.",
+      "hl": [
+        "교통사고"
+      ]
+    },
+    {
+      "voice": "청와대는 부상 장병을 위로한 맥락이라며 북한에 면죄부를 주려는 게 아니라고 해명했고, 정동영 통일부 장관은 평화 노력을 폄훼할 빌미가 돼선 안 된다고 했습니다.",
+      "hl": [
+        "면죄부"
+      ]
+    },
+    {
+      "voice": "7년 전 지뢰로 왼발을 잃은 예비역 대위는, 정쟁에 가려진 부상 장병을 국가가 끝까지 책임져야 한다고 말했습니다.",
+      "hl": [
+        "끝까지"
+      ]
+    }
+  ],
+  "hashtags": [
+    "#불의의사고",
+    "#DMZ지뢰",
+    "#국군의날",
+    "#이재명"
+  ]
+}

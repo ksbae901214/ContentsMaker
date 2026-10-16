@@ -1,0 +1,121 @@
+{
+  "_comment": "V2.1 (틱톡용) — V2.2 와 동일 소재·동일 앵글, 훅만 육성 + TTS 논평. 훅은 '박원순 탓하는 분도 계시더군요'(같은 답변에서 남의 남 탓을 비웃는 대목)로 잡았다. [039] 정치인이라 A 불가, '이중잣대'(진영 무관 반칙)로 B등급. [040] 이재명(여) + 윤석열·오세훈·국민의힘(야) 양쪽 등장. 주의: 이 대통령의 인허가·착공 반토막 주장은 통계상 사실에 가깝다 — '거짓말'로 단정하지 말 것. 칼끝은 '틀린 말'이 아니라 '남 탓하지 말라던 사람의 남 탓'.",
+  "slug": "20260918_lee_namtat_v2_1",
+  "title": "아직도 전 정권 탓",
+  "yt_title": "남 탓 비웃던 이재명, 본인도 전 정권 탓 내로남불",
+  "yt_title_alt": "지지율 33% 추락, 그래도 '전 정권 탓'",
+  "persons": [
+    "이재명",
+    "윤석열",
+    "오세훈"
+  ],
+  "category": "political",
+  "subject_type": "politician",
+  "source_channel": "춘천MBC뉴스",
+  "source_title": "[자막] \"사는 집이 100억? 저도 상상이 안 갑니다\" 이재명 대통령, 집값 부동산 폭등 질문에 작심하고 쏟아낸 솔직 고백",
+  "youtube_url": "https://www.youtube.com/watch?v=1e5AzeYsq1s",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "broll",
+  "cta": {
+    "text": "집값 폭등, 누구 책임?\n① 이 정부  ② 전 정권",
+    "voice": "누구 책임일까요? 1번 이 정부, 2번 전 정권. 댓글로 알려주세요.",
+    "hl": [
+      "누구 책임"
+    ],
+    "at_frac": 0.4
+  },
+  "hook": {
+    "source": "mbc",
+    "start_sec": 294.6,
+    "duration": 4.3,
+    "text": "\"박원순 시장 때문이라고\n핑계 대는 분도 계시더군요\"",
+    "hl": [
+      "핑계"
+    ]
+  },
+  "sources": {
+    "mbc": {
+      "url": "https://www.youtube.com/watch?v=1e5AzeYsq1s",
+      "dur_max": 900,
+      "verify_frac": 0.41
+    },
+    "_broll_comment": "src_broll.mp4 는 mbc 소스의 320~380초 구간을 세로 70%로 크롭해 만든 파일(번인 자막 제거). TTS 씬 자막이 원본 번인 자막과 겹쳐 안 읽히는 문제 때문에 분리했다. 재생성: ffmpeg -ss 320 -t 60 -i src_mbc.mp4 -vf crop=iw:ih*0.70:0:0 -an src_broll.mp4",
+    "broll": {
+      "url": "https://www.youtube.com/watch?v=1e5AzeYsq1s",
+      "dur_max": 900,
+      "verify_frac": 0.5
+    }
+  },
+  "scenes": [
+    {
+      "intro": true,
+      "source": "broll",
+      "frac": 0.08,
+      "text": "9월 18일\n이재명 대통령 기자회견",
+      "voice": "9월 18일, 이재명 대통령 기자회견입니다."
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "source": "broll",
+      "frac": 0.26,
+      "text": "집값 왜 올랐나 묻자\n\"단기적 원인은 2022년\"",
+      "voice": "집값이 왜 이렇게 올랐냐는 질문에, 대통령은 단기적 원인으로 2022년을 짚었습니다.",
+      "hl": [
+        "2022년"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "highlight_category": "fact",
+      "source": "broll",
+      "frac": 0.44,
+      "text": "윤석열 정권·오세훈 시장\n\"그해부터 허가·착공 절반\"",
+      "voice": "윤석열 정권이 들어서고 오세훈 시장이 당선된 그해부터 허가와 착공이 절반으로 줄었다는 겁니다.",
+      "hl": [
+        "절반"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "highlight_category": "fact",
+      "source": "broll",
+      "frac": 0.62,
+      "_comment": "[040] 같은 잣대 — 지적 자체는 통계와 맞는다는 사실을 명시. 이게 빠지면 '거짓말 프레임'이 되어 반박당한다.",
+      "text": "서울 착공, 2023년 67% 급감\n지적 자체는 통계와 맞다",
+      "voice": "실제로 서울의 2023년 착공 물량은 전년보다 67% 줄어, 이 지적 자체는 통계와 맞습니다.",
+      "hl": [
+        "67% 급감",
+        "맞다"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "highlight_category": "criticism",
+      "emph": true,
+      "source": "broll",
+      "frac": 0.8,
+      "text": "지지율 9주 연속 하락 33.8%\n부정평가 1위 이유는 부동산",
+      "voice": "그 사이 지지율은 9주 연속 떨어져 33.8%, 부정평가 1위 이유는 부동산이었습니다.",
+      "hl": [
+        "9주 연속",
+        "부동산"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "source": "broll",
+      "frac": 0.94,
+      "text": "국민의힘\n\"반성 없이 자화자찬·남 탓만\"",
+      "voice": "국민의힘은 반성 없이 자화자찬과 남 탓만 했다고 논평했습니다.",
+      "hl": [
+        "남 탓만"
+      ]
+    }
+  ]
+}

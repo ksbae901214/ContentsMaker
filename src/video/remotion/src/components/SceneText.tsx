@@ -155,19 +155,37 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
   const v2Color = (scene.subtitleColor || scene.subtitle_color || "").toLowerCase().trim();
   const v2Emphasis = scene.subtitleEmphasis || scene.subtitle_emphasis || false;
 
-  const baseFontSize = style?.font_size ?? DEFAULT_FONT_SIZE;
+  // renderer.py 의 _convert_to_camel_case 가 프롭을 camelCase 로 바꾸므로
+  // subtitle_style 의 하위 키도 fontSize/fontFamily 로 도착한다. snake_case 만
+  // 읽으면 CLI 렌더 경로에서 subtitle_style 이 통째로 무시된다(웹 Player 경로는
+  // 변환을 안 타서 snake_case). 양쪽을 다 본다.
+  const st = style as (SubtitleStyle & Record<string, any>) | undefined;
+  const sFontSize: number | undefined = st?.font_size ?? st?.fontSize;
+  const sFontFamily: string | undefined = st?.font_family ?? st?.fontFamily;
+  const sFontWeight: string | undefined = st?.font_weight ?? st?.fontWeight;
+  const sPositionY: number | undefined = st?.position_y ?? st?.positionY;
+  const sBgColor: string | null | undefined = st?.bg_color ?? st?.bgColor;
+  const sBgOpacity: number | undefined = st?.bg_opacity ?? st?.bgOpacity;
+  const sStrokeColor: string | undefined = st?.stroke_color ?? st?.strokeColor;
+  const sStrokeWidth: number | undefined = st?.stroke_width ?? st?.strokeWidth;
+
+  const baseFontSize = sFontSize ?? DEFAULT_FONT_SIZE;
   // QW-01: hook 씬은 1.25x 폰트 (이전 1.4x → 너무 커서 2줄 넘김 → 1.25x).
   // V2: subtitle_emphasis도 동일.
-  const fontSize = (isHook || v2Emphasis) ? Math.round(baseFontSize * 1.25) : baseFontSize;
-  const fontWeight = (isHook || v2Emphasis) ? "900" : (style?.font_weight ?? "700");
-  const fontFamily = style?.font_family ?? "Noto Sans KR, sans-serif";
+  // subtitle_style.font_size 가 명시되면 그 값을 그대로 쓴다 — 헤드라인 크기를
+  // 고정하려고 넘긴 값에 1.25배가 또 붙으면 씬마다 크기가 달라진다.
+  const fontSize = sFontSize
+    ? baseFontSize
+    : (isHook || v2Emphasis) ? Math.round(baseFontSize * 1.25) : baseFontSize;
+  const fontWeight = (isHook || v2Emphasis) ? "900" : (sFontWeight ?? "700");
+  const fontFamily = sFontFamily ?? "Noto Sans KR, sans-serif";
   // V2 색이 white가 아닌 경우 우선 적용. white이거나 비어있으면 기존 textColor.
   const v2HexColor = v2Color && v2Color !== "white" ? V2_SUBTITLE_COLOR_HEX[v2Color] : undefined;
-  const textColor = v2HexColor || style?.color || "#FFFFFF";
+  const textColor = v2HexColor || st?.color || "#FFFFFF";
   // QW-03: 기존 `style.shadow`는 drop shadow로 흡수. 외곽선은 별도 합성.
-  const dropShadow = style?.shadow ?? DEFAULT_DROP_SHADOW;
-  const strokeColor = style?.stroke_color ?? DEFAULT_STROKE_COLOR;
-  const strokeWidth = style?.stroke_width ?? DEFAULT_STROKE_WIDTH;
+  const dropShadow = st?.shadow ?? DEFAULT_DROP_SHADOW;
+  const strokeColor = sStrokeColor ?? DEFAULT_STROKE_COLOR;
+  const strokeWidth = sStrokeWidth ?? DEFAULT_STROKE_WIDTH;
   const textShadow = buildSubtitleTextShadow(
     strokeWidth,
     strokeColor,
@@ -180,9 +198,9 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, emotion }) => {
     .toLowerCase().trim();
   const positionY = subtitlePosition === "bottom"
     ? 0.78
-    : isHook ? 0.5 : (style?.position_y ?? 0.652);
-  const bgColor = style?.bg_color ?? null;
-  const bgOpacity = style?.bg_opacity ?? 0;
+    : isHook ? 0.5 : (sPositionY ?? 0.652);
+  const bgColor = sBgColor ?? null;
+  const bgOpacity = sBgOpacity ?? 0;
 
   // Convert position_y (0-1) to pixel offset from center
   // 0.5 = center, 0 = top, 1 = bottom

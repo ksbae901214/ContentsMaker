@@ -1,0 +1,53 @@
+{
+  "_comment": "국민의힘 내홍 — 당원 2만2천 명 사퇴 촉구 서명. 035 게이트 적용(42초 캡·cta 40% 삽입·결과형 제목). 팩트: 한국일보 [단독] 2만2000명 서명(469/0000946276), 데일리안 선관위 특검법 통과 후 퇴진론(119/0003117810). 훅 타임스탬프는 유튜브 ko 자동자막으로 확정(JTBC 8/5 조경태 회견 534.5~543.9s '장동혁 당대표 개인을 지키는 정당이 아니라'). 배포: 틱톡 (034 플랫폼 분리 — 유튜브는 V2.2).",
+  "slug": "20260805_jang_danwon_seomyeong_v2_1",
+  "title": "당원 2만2천 명 서명",
+  "yt_title": "당원 2만2천 명 서명, 결국 벼랑 끝 장동혁",
+  "yt_title_alt": "6·3 참패에도 안 내려온 장동혁, 결국 당원이 나섰다",
+  "persons": ["장동혁", "조경태"],
+  "hashtags": ["#장동혁", "#국민의힘", "#조경태", "#정치쇼츠"],
+  "description": "6·3 지방선거 참패에도 자리를 지킨 장동혁 대표. 한 달간 모인 당원 2만2천 명의 사퇴 촉구 서명이 다음 주 3선 이상 중진 33명에게 전달된다.",
+  "source_channel": "JTBC / KBS / 춘천MBC",
+  "source_title": "조경태 기자회견(8/5) · 장동혁 긴급 기자회견(8/4) · 책임당원 퇴진 촉구 성명",
+  "youtube_url": "https://www.youtube.com/watch?v=qeSaNeihSms",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "jang",
+  "cta": {
+    "text": "장동혁 사퇴해야 하나?\n① 사퇴  ② 유임",
+    "voice": "사퇴해야 할까요? 1번 사퇴, 2번 유임.",
+    "hl": ["사퇴"],
+    "at_frac": 0.4
+  },
+  "hook": {
+    "source": "jokt",
+    "start_sec": 534.3,
+    "duration": 9.6,
+    "_verify": "JTBC 8/5 조경태 — '국민의힘은 장동혁 당대표 개인을 지키는 정당이 아니라 대한민국의 헌정질서와 위대한 국민을 지키는 정당이어야 합니다' (자막 534.5~543.7s, 문장 완결 확인)",
+    "text": "\"장동혁 개인을 지키는\n정당이 아니다\"",
+    "hl": ["장동혁 개인"]
+  },
+  "_source_note": "춘천MBC 당원 성명 영상(uwVErYvYbFc)은 번인 자막이 크고 내용이 '전국 재선거 주장'이라 나레이션과 어긋나 제외함 (2026-08-05 프레임 검증).",
+  "sources": {
+    "jokt": { "url": "https://www.youtube.com/watch?v=qeSaNeihSms", "dur_max": 4000, "dur_min": 30, "verify_frac": 0.9 },
+    "jang": { "url": "https://www.youtube.com/watch?v=gwkJKp9nt7A", "dur_max": 4000, "dur_min": 30, "verify_frac": 0.32 }
+  },
+  "scenes": [
+    { "type": "body", "color": "white", "emph": false, "source": "jang", "frac": 0.12,
+      "text": "한 달 만에\n2만2천 명",
+      "voice": "한 달 전 시작된 서명이 이만 이천 명. 온라인 이만, 오프라인 이천. 대다수가 책임당원입니다.",
+      "hl": ["2만2천", "책임당원"] },
+    { "type": "body", "color": "red", "emph": true, "source": "jokt", "frac": 0.45,
+      "text": "3선 이상 33명에게\n서명 전달",
+      "voice": "다음 주 삼선 이상 서른세 명에게 전달됩니다. 삼선은 십칠일, 사선 이상도 이달 안에 거취를 논의합니다.",
+      "hl": ["33명", "거취"] },
+    { "type": "body", "color": "yellow", "emph": true, "source": "jang", "frac": 0.25,
+      "text": "여당은 악재 연속인데\n반사이익 0",
+      "voice": "여당이 악재를 쏟아내는데도 국민의힘 지지율은 내려갔습니다. 반사이익이 없습니다.",
+      "hl": ["반사이익"] },
+    { "type": "body", "color": "white", "emph": false, "source": "jang", "frac": 0.32,
+      "text": "그래도 안 내려온다\n선관위 특검 업고",
+      "voice": "장 대표는 선관위 특검을 업고 버팁니다. 책임을 물을 자리에, 버텨낸 사람이 서 있습니다.",
+      "hl": ["선관위 특검", "버티고"] }
+  ]
+}

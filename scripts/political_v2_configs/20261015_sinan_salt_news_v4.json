@@ -1,0 +1,204 @@
+{
+  "_comment": "V4.0 기획 (2026-10-15) — 신안 염전 지적장애인 10년 임금 착취, 업주 항소심도 징역 3년(광주지법 형사2부, 10/14). 044 추천기 뉴스 3위(654/0000205387, 댓글 267). 사용자가 버전(V4.0) 지정. 039: 당사자 민간인(civilian) · ②실형(징역 3년) · ③당내 아님 → A등급. 040 범죄 제외 방침은 V4 사회 예외(구월동 편과 동일). 앵글 = '10년 착취·9600만원 → 첫 처벌은 벌금 300만원 집유 → 2심 징역 3년, 적당한가'. [사실 정리] ①업주 나이: 2심 기사 59세 vs 1심 기사 61세 충돌 → 나레이션 제외. ②요양병원 인출액: 뉴스1·이데일리 9000만원 vs 경향 '1억여원'(합계 추정) → 9000만원. ③美 강제노동 관세 12.5% 는 신안 사건이 원인이라는 근거 없음(서울신문도 물음표) → 제외. ④CBP 반입보류는 태평염전(다른 염전) → 이 사건과 연결 금지, 엔딩 항공사진은 장소만. ⑤'발톱 다 빠지도록'은 뉴스1 단독 → 제외. 피해자·업주 실명·얼굴 금지(구속심사 출석 사진 제외).",
+  "format": "news_v4",
+  "slug": "20261015_sinan_salt_news_v4",
+  "category": "society",
+  "subject_type": "civilian",
+  "headline": [
+    "지적장애인 10년 착취",
+    "염전 업주 징역 3년"
+  ],
+  "tag": "항소심 판결",
+  "title": "지적장애인 10년 착취 염전 업주 징역 3년",
+  "yt_title": "10년 부려먹고 9600만원 꿀꺽, 신안 염전 업주가 받은 형량",
+  "yt_title_alt": "미국 대사관까지 조사 나선 염전 노예, 충격적인 첫 처벌 벌금 300만원",
+  "hashtags": [
+    "#신안염전",
+    "#염전노예",
+    "#지적장애인",
+    "#솜방망이처벌"
+  ],
+  "persons": [],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "[속보] 신안 염전서 지적장애인 10년간 임금 착취…업주 항소심도 징역 3년",
+      "url": "https://n.news.naver.com/article/654/0000205387",
+      "outlet": "강원도민일보"
+    },
+    {
+      "title": "지적장애인 10년 착취 염전업주…2심도 징역 3년",
+      "url": "https://n.news.naver.com/mnews/article/001/0016376290",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "\"신안 염전서 10년 노예 살이\"…장애인 착취한 업주, 결국",
+      "url": "https://n.news.naver.com/mnews/article/018/0006388183",
+      "outlet": "이데일리"
+    },
+    {
+      "title": "10년간 일 시키고 임금 9600만원 떼먹었다…신안 염전업주 2심도 징역 3년",
+      "url": "https://n.news.naver.com/mnews/article/011/0004671371",
+      "outlet": "서울경제"
+    },
+    {
+      "title": "발톱 다 빠진 '염전노예' 10년…수급자 복지까지 훔친 잔혹한 형제",
+      "url": "https://n.news.naver.com/mnews/article/421/0008905878",
+      "outlet": "뉴스1"
+    },
+    {
+      "title": "'염전 노예' 장애인 10년간 착취한 죄 징역 3년…피해자 측 \"솜방망이…인신매매 처벌 법 한계\"",
+      "url": "https://n.news.naver.com/mnews/article/032/0003441531",
+      "outlet": "경향신문"
+    },
+    {
+      "title": "\"왜 이걸 미국이? 나라망신\"…美대사관, '신안 염전노예' 조사",
+      "url": "https://n.news.naver.com/mnews/article/015/0005213240",
+      "outlet": "한국경제"
+    },
+    {
+      "title": "\"북한 아닌 남한서 벌어진 일이라니\" 경악…염전노예 편에 선 한 사람",
+      "url": "https://n.news.naver.com/mnews/article/011/0004623131",
+      "outlet": "서울경제"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/01_chain_salt_pg.jpg",
+      "credit": "연합뉴스",
+      "_comment": "1문장 — 염전 노동착취 PG 합성(001/0016376290 2심 기사). photos[0] 은 첫 문장 끝까지 자동 유지"
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/02_sinan_saltfarm_yna.jpg",
+      "credit": "연합뉴스",
+      "_comment": "2문장 1988 실종 — 신안군 한 염전(연합뉴스, 중앙 025 '나라 망신' 기사 게재본). 인물 원거리·식별 불가",
+      "dur": 4.6
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/03_bound_illust.jpg",
+      "credit": "머니투데이",
+      "_comment": "3문장 통장 관리 — 묶인 손 일러스트(임종철 디자인기자, 008/0005347763)",
+      "dur": 4.7
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/05_saltfarm_hani.jpg",
+      "credit": "한겨레",
+      "_comment": "4문장 2023 전수조사 — 신안 한 염전(장현은 기자, 028/0002779195). 인물 원거리·식별 불가",
+      "dur": 4.6
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/06_salt_shovel.jpg",
+      "credit": "뉴스1",
+      "_comment": "5문장 요양병원 9000만원 — 소금 수확 근접(조태형 기자, 421/0008904739). 얼굴 없음",
+      "dur": 3.4
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/07_mokpo_prosecutor.jpg",
+      "credit": "연합뉴스TV",
+      "_comment": "6문장 벌금 300만원 집유 — 광주지검 목포지청(001/0014901559)",
+      "dur": 4.8
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/08_audit_2025.jpg",
+      "credit": "연합뉴스",
+      "_comment": "8문장 국감 질타 — 2025.10.21 법사위 법원 국정감사(001/0015691418)",
+      "dur": 3.5
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/09_protest_2014.jpg",
+      "credit": "서울경제",
+      "_comment": "9문장 2014 동종 전력 — 2014.2.25 염전 노예장애인 사건 엄벌 촉구 기자회견(011/0004656327)",
+      "dur": 4.0
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/10_us_tip_report.jpg",
+      "credit": "중앙일보",
+      "_comment": "10문장 美대사관 조사 — 미 국무부 2025 인신매매 보고서 한국편 캡처(025/0003528088)",
+      "dur": 4.0
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/11_lawyer_choi.jpg",
+      "credit": "한겨레",
+      "_comment": "11문장 '징역 20년' — 최정규 변호사 기자회견(2018, 028/0002433542)",
+      "dur": 4.3
+    },
+    {
+      "path": "data/political_pro/20261015_sinan_salt_news_v4/photos/01_chain_salt_pg.jpg",
+      "credit": "연합뉴스",
+      "_comment": "CTA — 오프닝 PG 재사용(출처 줄 7개 이내 유지: 서울신문·뉴시스 컷 대체)",
+      "dur": 12.0
+    }
+  ],
+  "cta": {
+    "text": "①적당한 형량\nVS ②너무 가볍다",
+    "voice": "징역 3년, 어떠세요? 1번 적당, 2번 가볍다. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "지적장애인을 10년 동안 염전에서 부리고 9600만원을 가로챈 업주가, 2심에서도 징역 3년을 받았습니다.",
+      "hl": [
+        "징역 3년"
+      ]
+    },
+    {
+      "voice": "피해자는 1988년 실종된 뒤, 신안의 한 염전에서 먹고 자며 일해 왔습니다.",
+      "hl": [
+        "1988년"
+      ]
+    },
+    {
+      "voice": "업주는 피해자 통장에 월급을 넣고, 그 통장을 직접 관리하며 돈을 빼 썼습니다.",
+      "hl": [
+        "직접 관리"
+      ]
+    },
+    {
+      "voice": "2023년 전수조사로 피해가 드러났지만, 피해자는 1년 가까이 더 일했습니다.",
+      "hl": [
+        "1년 가까이"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "이후 옮겨 간 요양병원에서도 9000만원이 빠져나갔습니다.",
+      "hl": [
+        "9000만원"
+      ]
+    },
+    {
+      "voice": "그런데 업주가 이 사건으로 처음 받은 처벌은, 벌금 300만원에 집행유예였습니다.",
+      "hl": [
+        "벌금 300만원"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "국정감사에선 국민 법 감정과 동떨어졌다는 질타가 나왔습니다.",
+      "hl": [
+        "국정감사"
+      ]
+    },
+    {
+      "voice": "게다가 업주는 2014년에도 동종 범죄로 처벌받은 전력이 있었습니다.",
+      "hl": [
+        "2014년"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "미국대사관까지 진상 조사에 나서자, 나라 망신이라는 말이 나왔습니다.",
+      "hl": [
+        "미국대사관"
+      ]
+    },
+    {
+      "voice": "피해자 측 변호사는 미국이었다면 징역 20년은 나왔을 거라고 말했습니다.",
+      "hl": [
+        "징역 20년"
+      ]
+    }
+  ],
+  "_photos_safety": "업주 구속영장 심사 출석 사진(연합)은 제외 — 피의자 얼굴. 염전 작업자 사진은 원거리·얼굴 미식별본만 사용(피해자로 오인 방지). 태평염전 명칭은 화면·나레이션 어디에도 쓰지 않는다(CBP 건은 별개 염전)."
+}

@@ -1,0 +1,53 @@
+{
+  "category": "economic",
+  "slug": "20260902_jangijeonse_20nyeon_v2_2",
+  "title": "장기전세 20년 만기, 퇴거 갈등",
+  "yt_title": "3억 내고 20년 살았더니 돌아온 대답",
+  "yt_title_alt": "20년 채웠는데 못 나간다는 사람들",
+  "persons": ["서울시", "SH"],
+  "source_channel": "SBS / 이슈 저격",
+  "source_title": "\"절대 못 나가\" vs \"헛소리 마\"..20년 만기 앞둔 장기전세 '갈등 폭발'",
+  "youtube_url": "https://www.youtube.com/watch?v=n0P_QcGiQxs",
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fallback_source": "sbs",
+  "cta": {
+    "text": "이 갈등, 누구 편?\n① 세입자  ② 서울시",
+    "voice": "1번 세입자, 2번 서울시. 댓글로 알려주세요.",
+    "hl": ["누구 편"]
+  },
+  "sources": {
+    "sbs": { "url": "https://www.youtube.com/watch?v=n0P_QcGiQxs", "dur_max": 1400, "verify_frac": 0.35 },
+    "toron": { "url": "https://www.youtube.com/watch?v=ircKYHydzSE", "dur_max": 1200, "verify_frac": 0.3 }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "sbs", "start_sec": 487.0, "duration": 3.0,
+      "speaker": "입주민",
+      "text": "\"늙은 사람은\n시골 가서 죽으란 거냐\"",
+      "hl": ["시골 가서"] },
+    { "mode": "clip", "source": "toron", "start_sec": 822.1, "duration": 2.8,
+      "speaker": "입주민",
+      "text": "\"암 수술하고도\n버텨온 세월인데\"",
+      "hl": ["암 수술"] },
+    { "mode": "clip", "source": "sbs", "start_sec": 519.2, "duration": 4.7,
+      "speaker": "입주민",
+      "text": "\"11년을 살았는데\n이제 와서 어디로 가나요\"",
+      "hl": ["어디로"] },
+    { "mode": "clip", "source": "toron", "start_sec": 483.1, "duration": 3.0,
+      "speaker": "입주민",
+      "text": "\"솔직히 좀\n어리석었다고 말씀드릴게요\"",
+      "hl": ["어리석었다"] },
+    { "mode": "clip", "source": "sbs", "start_sec": 661.6, "duration": 3.9,
+      "speaker": "부동산 전문가",
+      "text": "\"냉정하게 보면\n그동안 산 거거든요\"",
+      "hl": ["냉정하게"] },
+    { "mode": "clip", "source": "toron", "start_sec": 904.7, "duration": 5.5,
+      "speaker": "이광훈 위원장",
+      "text": "\"이번 기회로\n정부에 책임을 묻겠다\"",
+      "hl": ["책임을 묻겠다"] },
+    { "mode": "tts", "source": "sbs", "frac": 0.5, "color": "yellow", "emph": true,
+      "text": "서울시·SH\n\"20년 만기, 퇴거 원칙\"",
+      "voice": "2007년 도입된 장기전세는 시세보다 낮은 보증금으로 최장 20년까지 사는 공공임대입니다. 서울시와 SH는 20년 만기 후 퇴거가 원칙이라는 입장을 재확인했고, 응하지 않으면 명도소송까지 예고했습니다. 만기 도래 가구는 내년 310가구에서 2030년엔 2,452가구로, 3년 만에 8배로 늘어납니다.",
+      "hl": ["명도소송", "8배"] }
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "dates": [
+    "20261015",
+    "20261014"
+  ],
+  "news": [
+    {
+      "label": "“대형참사 날뻔”…중국 국적 버스기사 ‘마약 투약 후 운전’, 2년 6개월형",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 694,
+      "score": 19.757909808479237,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "실형",
+        "징역"
+      ],
+      "titles": [
+        "“대형참사 날뻔”…중국 국적 버스기사 ‘마약 투약 후 운전’, 2년 6개월형",
+        "[속보]'마약 투약' 경기 안산 버스운전 기사, 징역 2년6개월 실형 받아"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/029/0003053050",
+        "https://n.news.naver.com/article/658/0000158409"
+      ],
+      "article_count": 2,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "대법 전원합의체, 22일 김건희 '3대 의혹' 추가 심리…구속 만료는 31일",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 316,
+      "score": 13.332291625973383,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "구속"
+      ],
+      "titles": [
+        "대법 전원합의체, 22일 김건희 '3대 의혹' 추가 심리…구속 만료는 31일",
+        "김건희 풀려날까…보름 남은 구속만료, 대법 전합 선고일은 감감무소식[세상&]"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/437/0000515852",
+        "https://n.news.naver.com/article/016/0002709778"
+      ],
+      "article_count": 2,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "[속보] 신안 염전서 지적장애인 10년간 임금 착취…업주 항소심도 징역 3년",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 267,
+      "score": 12.255100978776143,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "징역"
+      ],
+      "titles": [
+        "[속보] 신안 염전서 지적장애인 10년간 임금 착취…업주 항소심도 징역 3년"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/654/0000205387"
+      ],
+      "article_count": 1,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "하루 만에 뒤집은 강경화…“백악관 소통 문제없다”",
+      "category": "society",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 267,
+      "score": 12.255100978776143,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "뒤집"
+      ],
+      "titles": [
+        "하루 만에 뒤집은 강경화…“백악관 소통 문제없다”"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/449/0000364057"
+      ],
+      "article_count": 1,
+      "version_hint": "V2.2 (+V2.1 병행) — V4.0 은 정치·연예 전용",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "\"은퇴 후 가려던 집, 팔자\" 5.6억→3억대로...지방 집 잇단 '손절'",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 221,
+      "score": 11.149551560488879,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "손절"
+      ],
+      "titles": [
+        "\"은퇴 후 가려던 집, 팔자\" 5.6억→3억대로...지방 집 잇단 '손절'"
+      ],
+      "urls": [
+        "https://n.news.naver.com/article/008/0005426310"
+      ],
+      "article_count": 1,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    }
+  ],
+  "entertainment": [
+    {
+      "label": "tvN, 또 일냈다…'넷플 1위'→'시청률 17.4%' 남녀배우 만남으로 반응 폭발한 韓 드라마 ('나의 유죄인간')",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 585761,
+      "score": 574.0126849643656,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "유죄"
+      ],
+      "titles": [
+        "tvN, 또 일냈다…'넷플 1위'→'시청률 17.4%' 남녀배우 만남으로 반응 폭발한 韓 드라마 ('나의 유죄인간')"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/213/0001404448"
+      ],
+      "article_count": 1,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "유재석, 36년 만에 녹화 취소…주사 맞고 다시 하려니 제작진 퇴근",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 83045,
+      "score": 216.13147040632467,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "취소"
+      ],
+      "titles": [
+        "유재석, 36년 만에 녹화 취소…주사 맞고 다시 하려니 제작진 퇴근"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/410/0001143156"
+      ],
+      "article_count": 1,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    },
+    {
+      "label": "‘왕사남’ 대박→동성애 커밍아웃… 박시영, 돌연 활동 중단 선언",
+      "category": "entertainment",
+      "tier": "A",
+      "tier_note": "민간인 당사자 — 실측 돌파율 75~83%",
+      "demand": 46295,
+      "score": 161.3720468358755,
+      "money": false,
+      "followup": false,
+      "hits": [
+        "중단"
+      ],
+      "titles": [
+        "‘왕사남’ 대박→동성애 커밍아웃… 박시영, 돌연 활동 중단 선언"
+      ],
+      "urls": [
+        "https://m.entertain.naver.com/article/468/0001272669"
+      ],
+      "article_count": 1,
+      "version_hint": "육성 있으면 V2.2 (+V2.1) / 없으면 V4.0 (연예 허용 2026-10-12)",
+      "angle_hint": "당사자가 잃은 것(사과·취소·하차)을 훅으로"
+    }
+  ]
+}

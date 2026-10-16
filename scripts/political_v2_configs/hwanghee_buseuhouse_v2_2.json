@@ -1,0 +1,47 @@
+{
+  "_comment": "정치쇼츠 V2.2 육성 릴레이 — 황희 '버스 하우스'. 황희 본인 육성은 존재하지 않음(제안·해명·사과 모두 페이스북 글, 기자간담회 취소) → 릴레이는 장동혁(공세) ↔ 이주희 원내대변인(수습) 대립 배치로 구성. [034] 클립 3 = 리액션 절정.",
+  "slug": "20260811_hwanghee_buseuhouse_v2_2",
+  "title": "폐버스 청년주택 논란",
+  "yt_title": "장관까지 지낸 황희 입에서 이게",
+  "yt_title_alt": "해프닝이라던 황희, 결국 사과",
+  "_yt_title_comment": "[035] 결과형 — alt는 '해프닝→사과' 번복이 드러남. 본 제목은 호기심형 14자.",
+  "persons": ["황희", "장동혁"],
+  "source_channel": "오마이TV / KBS News",
+  "source_title": "황희 '버스하우스' 제안 논란과 사과",
+  "youtube_url": "https://www.youtube.com/watch?v=QXgzILkK1zg",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "kbs",
+  "cta": {
+    "text": "황희 사과, 이걸로 끝?\n① 사과로 충분  ② 사과로 부족",
+    "voice": "사과로 충분한가요? 1번 충분, 2번 부족. 번호로 답글.",
+    "hl": ["사과로 충분", "사과로 부족"],
+    "at_frac": 0.4
+  },
+  "sources": {
+    "jtbc": { "url": "https://www.youtube.com/watch?v=njOuQ0ehJug", "dur_max": 300, "verify_frac": 0.5 },
+    "kbs": { "url": "https://www.youtube.com/watch?v=CkHKp7MN0hY", "dur_max": 300, "verify_frac": 0.3 }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "jtbc", "start_sec": 1.681, "duration": 3.51,
+      "speaker": "장동혁 국민의힘 대표",
+      "_comment": "훅. JTBC 실측 발화 1.681~4.489s + 휴지. 프레임 검증 완료.",
+      "text": "\"장관까지 지냈던 국회의원 입에서\n이게 나올 말입니까?\"",
+      "hl": ["장관까지 지냈던", "나올 말입니까"] },
+    { "mode": "clip", "source": "kbs", "start_sec": 44.74, "duration": 8.05,
+      "speaker": "이주희 민주당 원내대변인",
+      "_comment": "수습 육성(공세↔수습 대립 배치). KBS 실측 발화 44.74~52.78s, 52.87s에 장면전환 → 8.05s로 컷 직전 종료. 화면 자막 확인 결과 화자는 한정애가 아니라 이주희 원내대변인.",
+      "text": "\"개인의 의견 차원으로\n제시했고…\"",
+      "hl": ["개인의 의견"] },
+    { "mode": "clip", "source": "kbs", "start_sec": 79.68, "duration": 12.0,
+      "speaker": "장동혁 국민의힘 대표",
+      "_comment": "[034] 리액션 절정. KBS 실측 발화 79.68~91.07s + 0.63s 휴지. 12장 프레임 전부 동일 인물, 컷 없음.",
+      "text": "\"민주당사부터\n폐버스로 옮기기 바랍니다\"",
+      "hl": ["민주당사", "폐버스로"] },
+    { "mode": "tts", "source": "kbs", "frac": 0.55, "color": "yellow", "emph": true,
+      "_comment": "[035] 마지막 씬은 팩트 정리로 닫는다 — 댓글 유도는 cta 블록으로 분리.",
+      "text": "사흘 만에\n\"진심으로 사과\"",
+      "voice": "결국 황 의원은 사흘 만에 사과했습니다. 제안도, 해명글도, 기자간담회도 모두 사라진 뒤였습니다.",
+      "hl": ["사흘", "사과"] }
+  ]
+}

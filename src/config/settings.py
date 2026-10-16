@@ -68,6 +68,12 @@ GEMINI_PROFILE_DIR = PROJECT_ROOT / ".cache" / "gemini_profile"
 GEMINI_WEB_URL = "https://gemini.google.com/app"
 GEMINI_HEADLESS = False  # headed during selector tuning; flip after stable
 
+# chatgpt.com browser automation (045 정보쇼츠 V1.0 일러스트, ChatGPT Plus)
+# Sessions persist via Chrome profile — run `python3 -m src.main chatgpt_login` once.
+CHATGPT_PROFILE_DIR = PROJECT_ROOT / ".cache" / "chatgpt_profile"
+CHATGPT_WEB_URL = "https://chatgpt.com/"
+CHATGPT_HEADLESS = False  # Cloudflare 봇 탐지 — 헤드리스는 막힌다
+
 # Premium+ unlimited video models — tried in order, falling back on failure.
 # All three are "unlimited" on Premium+ per freepik.com/가격 (2026-04-08).
 FREEPIK_VIDEO_MODEL_PRIORITY = [

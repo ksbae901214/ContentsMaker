@@ -1,0 +1,204 @@
+{
+  "_comment": "V4.0 기획 (2026-10-13 당일 속보, 17시 기사 기준 갱신) — 인천 남동구 구월동 복합상가 'C&C(씨앤씨)' 2층 식당가 흉기 난동. 040 범죄 제외 방침의 **예외**(사용자 확정 2026-10-13, ALLOWED_CATEGORIES 에 society 추가). 앵글 = '전자발찌 + 지난달 흉기 소지 입건 + 범행 직전 보호관찰소 직원과 점심' → '막을 수 있었나'. 039: 당사자 민간인(civilian) · ②현장 체포 · ③당내 아님. [사실 정정] ①나이: 초기 '60대' → 연합·YTN·이데일리·뉴스1 'A(59)씨' = 50대. ②장소: 홈플러스는 지하 1·2층 입점, 범행은 2층 식당가 — 홈플러스 '매장과 무관'(뉴시스 003/0014250788) → 제목·해시태그에서 홈플러스 제외. ③흉기 수: '가방서 10개 이상'(이데일리·서울신문 '알려졌다') vs 경찰 '2점 압수'(YTN·연합) 충돌 → 나레이션에서 수치 제외. ⚠️ **렌더 직전 심정지 피해자 상태 재확인** — 바뀌면 scenes[1] 수정. 피의자 이름·얼굴 금지(CCTV 사진은 연합 모자이크본), 피해자 신원 금지, 흉기 고정 방법(헝겊)·종류 생략(모방 우려). 단일 출처 '약물 복용 진술'(연합 001/0016374343)·'무좀 시위'는 나레이션 제외.",
+  "format": "news_v4",
+  "slug": "20261013_guwol_homeplus_news_v4",
+  "category": "society",
+  "subject_type": "civilian",
+  "headline": [
+    "전자발찌 찬 50대",
+    "구월동 흉기 난동"
+  ],
+  "tag": "범행 직전 보호관찰소 출석",
+  "title": "전자발찌 찬 50대 구월동 흉기 난동",
+  "yt_title": "범행 직전 보호관찰소 직원과 점심, 전자발찌 찬 50대의 흉기 난동",
+  "yt_title_alt": "지난달 흉기로 입건됐던 남자, 한 달 뒤 인천 식당가의 참극",
+  "hashtags": [
+    "#인천흉기난동",
+    "#구월동",
+    "#전자발찌",
+    "#묻지마범죄"
+  ],
+  "persons": [],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "'8명 부상' 인천 칼부림 50대, 약물 다량 소지…전자발찌도 착용",
+      "url": "https://n.news.naver.com/mnews/article/001/0016374343",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "인천 상업시설 흉기난동에 '아수라장'…\"공격대상 찾아 움직여\"",
+      "url": "https://n.news.naver.com/mnews/article/001/0016374195",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "[단독] 인천 칼부림 용의자, 범행 직전 보호관찰소 출석해 직원과 점심",
+      "url": "https://n.news.naver.com/mnews/article/022/0004166328",
+      "outlet": "세계일보"
+    },
+    {
+      "title": "'인천 칼부림' 50대, 한달 전 흉기 들고 1인 시위도…\"사회 불만 있어 범행\"",
+      "url": "https://n.news.naver.com/mnews/article/421/0009225516",
+      "outlet": "뉴스1"
+    },
+    {
+      "title": "인천 흉기 난동 50대男, 한달 전 흉기 소지 혐의로 입건",
+      "url": "https://n.news.naver.com/mnews/article/018/0006387285",
+      "outlet": "이데일리"
+    },
+    {
+      "title": "[속보] 인천 흉기난동 피의자 59살 남성...살인미수 복역 이력",
+      "url": "https://n.news.naver.com/mnews/article/052/0002418176",
+      "outlet": "YTN"
+    },
+    {
+      "title": "\"의자 들고 뛰어갔죠\"…인천 흉기난동, 층마다 막아선 시민들이 제압",
+      "url": "https://n.news.naver.com/mnews/article/028/0002827253",
+      "outlet": "한겨레"
+    },
+    {
+      "title": "인천 구월동 상가 흉기 난동…홈플러스 \"매장과 무관\"",
+      "url": "https://n.news.naver.com/mnews/article/003/0014250788",
+      "outlet": "뉴시스"
+    }
+  ],
+  "photos": [
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/01_outside_police.jpg",
+      "credit": "연합뉴스",
+      "_comment": "photos[0] = 1문장. 건물 앞 경찰차·구급차 (매일신문 088/0001034050 게재 연합뉴스)"
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/02_crowd_line.jpg",
+      "credit": "연합뉴스",
+      "_comment": "통제선 밖 시민들 (001/0016374195 임순석)"
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/10_street_line.jpg",
+      "credit": "채널A",
+      "_comment": "건물 앞 가로수길 통제선 (449/0000363884)",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/03_cctv_mosaic.jpg",
+      "credit": "연합뉴스",
+      "_comment": "2층 식당가 CCTV 속 피의자 — 연합 얼굴 모자이크본, 흉기 안 보임 (001/0016374195)"
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/04_foodcourt_line.jpg",
+      "credit": "뉴스1",
+      "_comment": "식당가 출입금지 테이프 (조선비즈 366/0001197693 게재 뉴스1)",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/11_foodcourt_police.jpg",
+      "credit": "뉴스1",
+      "_comment": "식당가 통제선 너머 경찰 (중앙일보 025/0003557614 게재, 뉴스1 동일 캡션)",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/06_forensic_line.jpg",
+      "credit": "뉴시스",
+      "dur": 4.5,
+      "_comment": "반전 '전자발찌' — 과학수사대 통제선 (서울신문 081/0003688550 게재 뉴시스)"
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/07_police_foodcourt.jpg",
+      "credit": "뉴스1",
+      "_comment": "식당가 현장의 경찰 (421/0009225516 이호윤)",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/12_corridor_donga.jpg",
+      "credit": "동아일보",
+      "_comment": "통로 통제선 (020/0003754609 공승배)",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/08_corridor_line.jpg",
+      "credit": "조선비즈",
+      "_comment": "통로 폴리스라인 (366/0001197714 강정아)",
+      "dur": 4.5
+    },
+    {
+      "path": "data/political_pro/20261013_guwol_homeplus_news_v4/photos/09_tv_news.jpg",
+      "credit": "조선비즈",
+      "_comment": "입점 가게 직원들이 TV 뉴스 시청 — 얼굴 블러본 (366/0001197714 강정아)",
+      "dur": 4.5
+    }
+  ],
+  "cta": {
+    "text": "①막을 수 있었다\nVS ②어쩔 수 없었다",
+    "voice": "막을 수 있었을까요? 1번 그렇다, 2번 아니다. 댓글로 알려주세요.",
+    "color": "red"
+  },
+  "scenes": [
+    {
+      "voice": "오늘 점심 인천 구월동의 한 대형 상가 건물에서 50대 남성이 흉기를 휘둘러, 8명이 병원으로 옮겨졌습니다.",
+      "hl": [
+        "8명"
+      ]
+    },
+    {
+      "voice": "이 가운데 20대 여성 1명은 심정지 상태로 이송됐습니다.",
+      "hl": [
+        "심정지"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "남성은 양손에 흉기를 묶은 채 에스컬레이터를 타고 층을 오가며, 보이는 사람들을 공격했습니다.",
+      "hl": [
+        "양손"
+      ]
+    },
+    {
+      "voice": "점심 손님으로 붐비던 2층 식당가가 가장 큰 피해를 입었습니다.",
+      "hl": [
+        "식당가"
+      ]
+    },
+    {
+      "voice": "시민들이 의자를 들고 층마다 막아섰고, 결국 3층 에스컬레이터 앞에서 남성을 제압했습니다.",
+      "hl": [
+        "의자"
+      ]
+    },
+    {
+      "voice": "그런데 이 남성, 전자발찌를 찬 상태였습니다.",
+      "hl": [
+        "전자발찌"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "과거 살인미수로 징역 4년을 살았고, 2029년까지 전자발찌를 차야 하는 사람이었습니다.",
+      "hl": [
+        "살인미수"
+      ]
+    },
+    {
+      "voice": "지난달엔 한 병원 앞에서 흉기를 소지한 혐의로 경찰에 입건되기도 했습니다.",
+      "hl": [
+        "지난달"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "게다가 범행 직전에는 보호관찰소에 나가, 담당 직원과 점심까지 함께 먹은 것으로 전해졌습니다.",
+      "hl": [
+        "보호관찰소"
+      ],
+      "color": "red"
+    },
+    {
+      "voice": "법무부는 식사 때까지만 해도 특이사항이 없었다고 밝혔습니다.",
+      "hl": [
+        "특이사항"
+      ]
+    }
+  ],
+  "source_channel": "연합뉴스 · 뉴스1 · 뉴시스 · 채널A · 동아일보 · 조선비즈",
+  "_photos_safety": "제압 시민(나현준씨, 경기일보) 사진은 제외 — 1차 렌더에서 3.4초 타이머가 밀려 '살인미수 징역 4년' 나레이션 위에 떠 시민을 범인으로 오인시킬 위험. 실존 인물 얼굴은 V4 에서 쓰지 않는다."
+}

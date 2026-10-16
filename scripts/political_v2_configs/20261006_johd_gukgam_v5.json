@@ -1,0 +1,197 @@
+{
+  "_comment": "V5.0 2호. 조희대 '국감 통해 이야기하겠다'(9/28, YTN) vs 국감 선서·증언 거부(10/6, KBS) + 뉴스타파 213만 원 회식 인원 부풀리기. 클립 구간은 VTT 단어 타임스탬프 + 음량 포락선으로 확정.",
+  "format": "evidence_v5",
+  "slug": "20261006_johd_gukgam_v5",
+  "category": "political",
+  "subject_type": "institution",
+  "headline": [
+    "국감서 밝히겠다더니",
+    "선서부터 거부?"
+  ],
+  "title": "국감서 밝히겠다더니 선서 거부",
+  "yt_title": "국감서 밝히겠다더니 선서부터 거부한 대법원장",
+  "yt_title_alt": "증언 대신 A4로 읽은 증언 거부 사유",
+  "hashtags": [
+    "#조희대",
+    "#국정감사",
+    "#대법원장",
+    "#업무추진비"
+  ],
+  "persons": [
+    "조희대"
+  ],
+  "emotion_type": "touching",
+  "tts_speed": 1.1,
+  "fact_sources": [
+    {
+      "title": "조희대 \"국정감사서 밝히겠다\"더니‥국감 이틀 앞두고 \"증언 못 해\"",
+      "url": "https://n.news.naver.com/article/214/0001527143",
+      "outlet": "MBC"
+    },
+    {
+      "title": "조희대 국감서 \"재제청 요청 근거 명확치 않아\"…선서·증언은 거부",
+      "url": "https://n.news.naver.com/article/001/0016359102",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "조희대 \"국회·대통령은 대법원장 제청에 관여 못 해\" 작심 발언",
+      "url": "https://n.news.naver.com/article/001/0016359431",
+      "outlet": "연합뉴스"
+    },
+    {
+      "title": "진보당 손솔, 조희대에 \"제2의 윤석열 꿈꾸나\"",
+      "url": "https://n.news.naver.com/article/020/0003752996",
+      "outlet": "동아일보"
+    },
+    {
+      "title": "대법원, 조희대의 213만 원짜리 '소맥 회식'도 은폐",
+      "url": "https://n.news.naver.com/article/607/0000003515",
+      "outlet": "뉴스타파"
+    }
+  ],
+  "sources": {
+    "ytn0928": {
+      "url": "https://www.youtube.com/watch?v=SmDufew1OK0",
+      "channel": "YTN",
+      "_comment": "9/28 '앞으로 국감 통해 이야기하겠다' 현장영상 44초 (증거 1)"
+    },
+    "kbs1006": {
+      "url": "https://www.youtube.com/watch?v=u3Y7dFd7cV8",
+      "channel": "KBS",
+      "_comment": "10/6 증인선서 거부 현장영상 (증거 2 + B-roll)"
+    },
+    "news1": {
+      "url": "https://www.youtube.com/watch?v=lQQy9oDbWMU",
+      "channel": "뉴스1",
+      "_comment": "10/6 '모욕적이고 서글픈 일' (증거 3)"
+    },
+    "newstapa": {
+      "url": "https://www.youtube.com/watch?v=rqHDKogCaOg",
+      "channel": "뉴스타파",
+      "_comment": "소맥 회식 영수증 B-roll"
+    }
+  },
+  "scenes": [
+    {
+      "mode": "clip",
+      "source": "ytn0928",
+      "start_sec": 30.25,
+      "duration": 4.45,
+      "text": "그런 내용들을 앞으로 국정감사나 통해서 이야기하는 거고",
+      "pop": "국감서 말한다!",
+      "focus_x": 0.52
+    },
+    {
+      "mode": "tts",
+      "source": "ytn0928",
+      "voice": "재제청을 거부한 조희대 대법원장, 지난달 궁금한 건 국감에서 말하겠다고 했습니다.",
+      "hl": [
+        "국감에서 말하겠다"
+      ],
+      "start_sec": 5.0
+    },
+    {
+      "mode": "tts",
+      "source": "kbs1006",
+      "flash": true,
+      "voice": "그런데 국감 이틀 전 낸 건, 사법권 독립에 반한다며 증언은 못 하겠다는 의견서.",
+      "hl": [
+        "증언은 못 하겠다"
+      ],
+      "start_sec": 328.0,
+      "focus_x": 0.5
+    },
+    {
+      "mode": "clip",
+      "source": "kbs1006",
+      "start_sec": 365.25,
+      "duration": 2.7,
+      "text": "선서나 증언은 할 수 없음을 말씀드립니다",
+      "focus_x": 0.6
+    },
+    {
+      "mode": "tts",
+      "source": "news1",
+      "flash": true,
+      "pop": "A4 용지?",
+      "voice": "자, 반전입니다. 증언은 안 한다며 A4 용지를 꺼내더니, 읽은 건 증언 거부 이유였습니다. 국감에서 밝힌다던 게 이거였던 셈이죠.",
+      "hl": [
+        "거부하는 이유"
+      ],
+      "start_sec": 150.0,
+      "focus_x": 0.77
+    },
+    {
+      "mode": "tts",
+      "source": "newstapa",
+      "voice": "말 못 할 건 또 있습니다. 뉴스타파에 따르면 6월 한정식 회식비 213만 9천 원이 대법원장 업무추진비로 나갔습니다.",
+      "hl": [
+        "213만 9천 원"
+      ],
+      "evidence": {
+        "image": "data/political_pro/20261006_johd_gukgam_v5/evidence/01_receipt.png",
+        "marks": [
+          {
+            "kind": "circle",
+            "x": 0.31,
+            "y": 0.56,
+            "w": 0.4,
+            "h": 0.3
+          }
+        ]
+      },
+      "start_sec": 116.0
+    },
+    {
+      "mode": "tts",
+      "source": "newstapa",
+      "pop": "35명 → 43명",
+      "voice": "코스 요리는 35인분인데, 국회에 낸 자료엔 참석자가 43명. 43명으로 나누면 1인당 딱 5만 원 밑으로 떨어집니다.",
+      "hl": [
+        "43명",
+        "5만 원"
+      ],
+      "start_sec": 164.0,
+      "evidence": {
+        "image": "data/political_pro/20261006_johd_gukgam_v5/evidence/02_per_person.png",
+        "marks": [
+          {
+            "kind": "underline",
+            "x": 0.12,
+            "y": 0.2,
+            "w": 0.36,
+            "h": 0.1
+          },
+          {
+            "kind": "circle",
+            "x": 0.5,
+            "y": 0.58,
+            "w": 0.4,
+            "h": 0.17
+          }
+        ]
+      }
+    },
+    {
+      "mode": "clip",
+      "source": "news1",
+      "start_sec": 13.1,
+      "duration": 6.6,
+      "text": "그런 말씀은 너무 모욕적이고 또 서글픈 일입니다",
+      "focus_x": 0.77
+    },
+    {
+      "mode": "tts",
+      "source": "news1",
+      "voice": "제2의 윤석열이냐는 말엔 마이크를 당겨 서글프다던 대법원장. 선서는 끝까지 안 하셨습니다.",
+      "start_sec": 100.0,
+      "focus_x": 0.77
+    }
+  ],
+  "cta": {
+    "voice": "증언 거부, 뭘까요? 1번 사법 독립, 2번 특권. 댓글로 알려주세요.",
+    "text": "① 사법 독립\n② 특권",
+    "source": "news1",
+    "frac": 0.041
+  }
+}

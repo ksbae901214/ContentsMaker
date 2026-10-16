@@ -1,0 +1,194 @@
+{
+  "_comment": "연예쇼츠 V2.1 — 박위(위라클) 2탄 '사과 이후'. [예외] 연예는 원칙상 V2.2만 제작(2026-08-13 확정)이나, 1탄과 마찬가지로 사용자 지시로 V2.1도 함께 제작. 원본 육성이 없어 hook 블록 생략 — render_political_v2_1.py 가 TTS 훅(V2 방식)으로 자동 폴백한다. 의혹 2건은 주장 주체(연예 유튜버 이진호)를 나레이션에서 명시 — 단정 금지. 모든 source 는 query 기반 자동 검색이므로 렌더 전 클립이 사건과 일치하는지 육안 확인할 것.",
+  "category": "entertainment",
+  "slug": "20260825_parkwi_yeokpung_v2_1",
+  "title": "박위, 사과 나흘 뒤",
+  "yt_title": "박위, 사과 나흘 만에 강연 줄무산",
+  "yt_title_alt": "댓글창까지 닫은 박위, 강연 2건 무산",
+  "_yt_title_comment": "V2.2와 동일 제목 — 같은 주제 하루 2편 병행 관례. 034 플랫폼 분리에 따라 V2.1은 틱톡용.",
+  "persons": [
+    "박위",
+    "송지은"
+  ],
+  "source_channel": "이진호(연예뒤통령) · iMBC연예뉴스 · YTN star",
+  "source_title": "박위 KTX CCTV 공개 후폭풍 — 강연 취소·댓글창 폐쇄·확보 경위 의혹 보도",
+  "youtube_url": "",
+  "_youtube_url_comment": "원본 CCTV 영상은 비공개 전환됨. sources 의 query 검색(뉴스 리포트 클립)으로 대체 — 확정 URL 없음.",
+  "emotion_type": "angry",
+  "_emotion_type_comment": "1탄과 동일 — 비판 국면이 이어지는 소재. 연예 기본값 funny 는 부적절.",
+  "tts_speed": 1.1,
+  "fallback_source": "cancel_news",
+  "hashtags": [
+    "#박위",
+    "#위라클",
+    "#송지은"
+  ],
+  "_cta_comment": "사용자 지시(2026-08-25)로 CTA를 top-level `cta` 블록이 아니라 **마지막 씬에 직접** 작성. 블록 경로는 cta_insert_index() 가 마지막 씬 뒤를 구조적으로 제외하므로(035 '말미 CTA 회귀 방지') 맨끝 배치가 불가능하다. 자막의 ①/② 기호는 scene_cta_closing_warnings() 검사 대상이므로 지우지 말 것.",
+  "sources": {
+    "anger_clip": {
+      "url": "https://www.youtube.com/watch?v=VrrQiPlgJXE",
+      "dur_max": 900,
+      "verify_frac": 0.25,
+      "_확인": "'너무 화가났다' 박위, 공익 저격에 결국 구독자 100만 '붕괴' [투데이 픽/iMBC연예뉴스] 105s"
+    },
+    "cancel_news": {
+      "url": "https://www.youtube.com/watch?v=7RBoKvu3tiQ",
+      "dur_max": 900,
+      "verify_frac": 0.3,
+      "_확인": "박위, 구독자 100만 타이틀 뺏기고 강연·토크콘서트도 취소됐다 [투데이 '픽'/iMBC연예뉴스] 88s"
+    },
+    "comment_news": {
+      "url": "https://www.youtube.com/watch?v=ZLx10YP4OqI",
+      "dur_max": 900,
+      "verify_frac": 0.3,
+      "_확인": "박위 KTX 논란 일파만파…아내 송지은도 댓글 제한 / YTN star 64s"
+    },
+    "edit_suspicion": {
+      "url": "https://www.youtube.com/watch?v=WUfbmzYJBYA",
+      "dur_max": 1300,
+      "verify_frac": 0.25,
+      "_확인": "박위 분노에 벌벌 떤 코레일 직원들.. 아내 송지은도 놀란 이유 (이진호) 716s"
+    },
+    "kimdw_news": {
+      "url": "https://www.youtube.com/watch?v=9ylr5XLDfks",
+      "dur_max": 900,
+      "verify_frac": 0.25,
+      "_확인": "'그도 장애가 처음이다' 김동완, 박위 논란에 소신 발언 / YTN star 64s"
+    }
+  },
+  "_scenes_comment": "9씬 전부 TTS(마지막이 CTA). V2.2와 같은 순서 — 훅1 강연 취소, 훅2 댓글창 폐쇄. 김혁건 소스가 못 쓰는 화면이라 김동완 반론으로 교체. 예상 약 41초.",
+  "scenes": [
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "cancel_news",
+      "frac": 0.06,
+      "text": "사과 나흘 뒤\n강연 줄줄이 취소",
+      "voice": "사과 나흘 뒤, 서울시청 특강과 토크콘서트가 취소됐습니다.",
+      "hl": [
+        "나흘 뒤",
+        "취소"
+      ],
+      "_comment": "배경 ≈5s. frac 0.30(≈26s)은 강남문화재단 흰 공지화면이라 빨강/노랑 자막이 묻힌다."
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "comment_news",
+      "frac": 0.15,
+      "text": "송지은 이어 박위도\n댓글창 폐쇄",
+      "voice": "악플이 아내에게 번지자, 송지은에 이어 박위도 SNS를 잠갔습니다.",
+      "hl": [
+        "댓글창"
+      ],
+      "_comment": "배경 ≈10s — 화면에 실제 댓글 제한 안내가 뜬다. frac 0.30 은 승강장 b-roll 이라 자막과 무관."
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "anger_clip",
+      "frac": 0.1,
+      "text": "사과 나흘 만에\n구독자 3만 명 이탈",
+      "voice": "구독자는 101만에서 98만 3천 명대로 내려앉았습니다.",
+      "hl": [
+        "3만 명"
+      ],
+      "_comment": "배경 = 구독자 100만 붕괴 카드 구간 (V2.2와 동일 이유)."
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "anger_clip",
+      "frac": 0.22,
+      "text": "발단은 나흘 전\n박위가 올린 CCTV",
+      "voice": "발단은 나흘 전 올린 낙상 CCTV였습니다.",
+      "hl": [
+        "박위가 올린 CCTV"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "edit_suspicion",
+      "frac": 0.72,
+      "text": "\"7일 만에 CCTV 확보\"\n특혜 의혹 제기",
+      "voice": "사고는 14일, 공개는 21일. 유튜버 이진호가 특혜 의혹을 제기했습니다.",
+      "hl": [
+        "7일 만에",
+        "특혜 의혹"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "edit_suspicion",
+      "frac": 0.45,
+      "text": "사과 장면은 빠지고\n\"벌서듯\" 선 직원들",
+      "voice": "같은 방송에서 공익 요원의 사과 장면이 빠졌다는 지적도 나왔습니다.",
+      "hl": [
+        "사과 장면",
+        "지적"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "edit_suspicion",
+      "frac": 0.59,
+      "_comment": "≈423s — 이진호 방송에서 '약 30여 차례 엑스레이를 찍었지만 골절 등 이상 소견은 없었다' 구간. 머니투데이 8/25도 같은 사실 보도.",
+      "text": "엑스레이 30여 차례\n골절은 없었다",
+      "voice": "병원에서 엑스레이를 30여 차례 찍었지만, 골절 소견은 없었습니다.",
+      "hl": [
+        "30여 차례",
+        "골절"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "kimdw_news",
+      "frac": 0.25,
+      "text": "\"그도 장애가 처음이다\"\n김동완의 반론",
+      "voice": "신화 김동완은 그도 장애가 처음이라며, 섣부른 판단은 경계하자고 했습니다.",
+      "hl": [
+        "장애가 처음",
+        "반론"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "comment_news",
+      "frac": 0.6,
+      "text": "사과문에 달린 댓글\n3만 개",
+      "voice": "사과문 아래에는 3만 개의 비판이 쌓였습니다.",
+      "hl": [
+        "3만 개"
+      ]
+    },
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "comment_news",
+      "frac": 0.3,
+      "text": "계속되는 비판\n① 자업자득  ② 지나치다",
+      "voice": "1번 자업자득, 2번 지나치다. 댓글로 알려주세요.",
+      "hl": [
+        "자업자득",
+        "지나치다"
+      ],
+      "_comment": "맨끝 CTA(사용자 지시). ①/② 기호 유지 필수. 배경은 어두운 승강장 컷 — 밝은 배경이면 노랑 자막이 묻힌다."
+    }
+  ],
+  "_length_comment": "길이 실측 이력(2026-08-25): 원안 44.1s(캡 초과) → 25자 축약 시 36.7s(하한 미달) → 14자 복원. 글자당 체감 0.3s 로 추정식(0.12s/자)보다 훨씬 민감했다 — 이 소재는 추정값 믿지 말고 렌더 실측으로 맞출 것."
+}

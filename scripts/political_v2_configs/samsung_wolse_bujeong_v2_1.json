@@ -1,0 +1,133 @@
+{
+  "_comment": "삼성전자 평택 월세지원금 부정수급 파문 (2026-09-08 기획, 뉴스+커뮤니티 종합) V2.1. 육성 영상 없음 — capture_article.py 기사 캡처 배경(무음 팬 mp4) + 전 씬 TTS. 039: 당사자는 익명 다수 '직원들'이라 civilian 명시(경제 카테고리 기본값은 institution이라 그대로 두면 오분류). 040(중도 대칭)은 정치 카테고리 전용이라 미적용 — 이 소재는 진영과 무관하다.",
+  "category": "economic",
+  "slug": "20260908_samsung_wolse_bujeong_v2_1",
+  "title": "삼성전자 월세지원금 부정수급",
+  "subject_type": "civilian",
+  "_subject_type_comment": "039 — 잘못을 저지른 당사자는 직함 없는 익명 직원 다수(civilian). 회사(삼성전자)는 조사 주체이지 규탄 대상이 아니다. civilian 명시 시 A등급(실측 돌파율 75~83%) — 진영 확인 없이 화낼 수 있는 소재.",
+  "yt_title": "성과급 6억인데 월세 70만원 속인 정황 발각",
+  "yt_title_alt": "월세 70만원 속이려 계약서까지 조작",
+  "_yt_title_comment": "25자/20자. 034 보도체·해시태그 게이트 통과(명사 종결 '발각'/'조작'). '성과급 6억' 프레임은 한국경제 기사 헤드라인을 그대로 인용 — 개별 부정수급자가 실제로 6억을 받았다는 단정이 아니라 '억대 성과급이 흔한 회사에서 소액을 속였다'는 대비이므로 나레이션에서는 '억대 성과급'으로 완화해 서술한다.",
+  "persons": [
+    "삼성전자"
+  ],
+  "hashtags": [
+    "#삼성전자",
+    "#평택",
+    "#부정수급",
+    "#주거비지원"
+  ],
+  "source_channel": "한국경제·파이낸셜뉴스·뉴시스·이데일리 (네이버뉴스 캡처 종합)",
+  "source_title": "\"성과급 6억 받으면서 70만원까지?\"…삼성 '발칵' 뒤집혔다 (한국경제) 외 종합",
+  "youtube_url": "https://n.news.naver.com/mnews/article/015/0005329751?sid=101",
+  "emotion_type": "angry",
+  "_emotion_type_comment": "036 — BGM. 경제 카테고리 기본값은 relatable(차분)이지만 이 소재는 '가진 자의 위선'에 대한 공분이 축이라 angry로 직접 지정.",
+  "tts_speed": 1.1,
+  "fallback_source": "hk",
+  "cta": {
+    "_comment": "038 — 마지막 씬으로 자동 삽입. '누구 잘못'이 아니라 원인 진단형 선택지 — 개인 일탈 vs 관리 부실 둘 다 정답이 있을 수 있어 편이 갈린다.",
+    "text": "이거 어떻게 봐야 할까\n① 개인 일탈  ② 관리 부실",
+    "voice": "1번 개인 일탈, 2번 관리 부실. 댓글로 알려주세요.",
+    "hl": [
+      "관리 부실"
+    ]
+  },
+  "sources": {
+    "hk": {
+      "url": "https://n.news.naver.com/mnews/article/015/0005329751?sid=101",
+      "dur_max": 18,
+      "verify_frac": 0.2,
+      "_확인": "한국경제(네이버) '성과급 6억 받으면서 70만원까지?…삼성 발칵 뒤집혔다' (2026-09-07)"
+    },
+    "edaily": {
+      "url": "https://n.news.naver.com/mnews/article/018/0006365288?sid=101",
+      "dur_max": 18,
+      "verify_frac": 0.3,
+      "_확인": "이데일리(네이버) '곧 00명 잘릴 듯 주거비 부정 수급 의혹에 난리 난 삼전' — 직원 커뮤니티 실제 인용문 포함(2026-09-07)"
+    },
+    "nsis": {
+      "url": "https://n.news.naver.com/mnews/article/003/0014174692?sid=101",
+      "dur_max": 18,
+      "verify_frac": 0.3,
+      "_확인": "뉴시스(네이버) '\"투룸 살면서 원룸 다운계약서 제출?\" 삼성전자, 주거비 부정수급 직원 실태 조사' (2026-09-07)"
+    },
+    "fn": {
+      "url": "https://n.news.naver.com/mnews/article/014/0005572526?sid=101",
+      "dur_max": 18,
+      "verify_frac": 0.3,
+      "_확인": "파이낸셜뉴스(네이버) '\"대졸 3년 차 잘릴까 무섭다\"…삼성전자 뒤흔든 월세 70만 원의 꼼수' — 관계자 코멘트·환수징계 전망 포함(2026-09-08)"
+    }
+  },
+  "_scenes_comment": "hook 블록 생략 → scene[0]이 자동으로 TTS 훅이 된다(no-video-source 표준). 마지막 씬은 팩트 정리로 닫고, CTA는 top-level 블록이 뒤에 자동 삽입된다.",
+  "scenes": [
+    {
+      "type": "body",
+      "color": "yellow",
+      "emph": true,
+      "source": "hk",
+      "frac": 0.15,
+      "text": "성과급 6억 받는 삼성인데\n월세 70만원까지 속였다",
+      "voice": "반도체 부문 억대 성과급으로 화제인 삼성전자에서, 일부 직원이 월 70만원 주거비 지원금까지 부풀려 받은 정황이 나왔습니다.",
+      "hl": [
+        "성과급 6억",
+        "70만원"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "edaily",
+      "frac": 0.25,
+      "text": "평택 저연차 직원 대상\n10평 미만 원룸에 최대 70만원",
+      "voice": "삼성전자는 경기 평택 사업장 인근에 사는 저연차 직원에게, 10평 미만 원룸이나 1.5룸 조건으로 월 최대 70만원을 지원해왔습니다.",
+      "hl": [
+        "10평 미만",
+        "70만원"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "type": "body",
+      "color": "red",
+      "emph": true,
+      "source": "nsis",
+      "frac": 0.3,
+      "text": "투룸 살면서\n원룸 다운계약서 제출",
+      "voice": "그런데 일부 직원은 기준보다 넓은 투룸에 살면서, 회사에는 면적을 줄인 다운계약서를 제출한 것으로 알려졌습니다.",
+      "hl": [
+        "다운계약서"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "edaily",
+      "frac": 0.6,
+      "text": "부정수급 최대 100명 추정\n\"퇴사할까 무섭다\" 선처 글",
+      "voice": "온라인 커뮤니티에는 부정수급 인원이 최대 백 명에 이른다는 글과 함께, 대졸 3년 차인데 퇴사할까 무섭다는 선처 호소 글까지 올라와 공분을 샀습니다.",
+      "hl": [
+        "최대 100명",
+        "선처 호소"
+      ],
+      "subtitle_position": "bottom"
+    },
+    {
+      "type": "body",
+      "color": "white",
+      "emph": false,
+      "source": "fn",
+      "frac": 0.5,
+      "text": "삼성전자 \"사실관계 확인 중\"\n환수·징계 여부 검토",
+      "voice": "삼성전자는 제출 서류와 실제 거주지를 대조해 사실관계를 확인하고 있으며, 지원금 환수와 징계 여부를 검토하고 있다고 밝혔습니다.",
+      "hl": [
+        "사실관계 확인 중"
+      ],
+      "subtitle_position": "bottom"
+    }
+  ],
+  "pinned_comment": "1번 개인 일탈, 2번 관리 부실. 댓글로 알려주세요."
+}

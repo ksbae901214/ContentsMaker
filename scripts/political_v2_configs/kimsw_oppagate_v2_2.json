@@ -1,0 +1,44 @@
+{
+  "_comment": "김승원 신약로비 3호 후속 V2.2 — '오빠 게이트' 확전, 양측 원본 육성 릴레이. 한동훈(폭로)·김승원(반박) 둘 다 실제 카메라 육성 확보(로어서드 확인 완료) — 1·2호에 없던 김승원 본인 목소리가 처음 들어간다.",
+  "category": "political",
+  "slug": "20260908_kimsw_oppagate_v2_2",
+  "title": "오빠 게이트 확전",
+  "subject_type": "politician",
+  "_subject_type_comment": "039/040 — kimsw_oppagate_v2_1과 동일 판정. 클립 오디오 비중 목표 65% 이상 — 클립 16.2s / 전체 약 23~24s ≈ 68%.",
+  "yt_title": "'오빠 카르텔' 저격에 입 연 김승원",
+  "yt_title_alt": "최재성·송영길까지 번진 '오빠 게이트'",
+  "persons": ["한동훈", "김승원"],
+  "hashtags": ["#한동훈", "#김승원", "#오빠게이트", "#법무부장관"],
+  "source_channel": "MBN · 연합뉴스TV",
+  "source_title": "한동훈 \"민주당 오빠들 게이트\" 의혹 제기 / 김승원 \"검찰 캐비닛 정치\" 반박",
+  "youtube_url": "https://www.youtube.com/watch?v=XpngeP3JE0k",
+  "emotion_type": "angry",
+  "tts_speed": 1.1,
+  "fallback_source": "han",
+  "sources": {
+    "han": { "url": "https://www.youtube.com/watch?v=XpngeP3JE0k", "dur_max": 200, "verify_frac": 0.503 },
+    "kim": { "url": "https://www.youtube.com/watch?v=dGdXaKkyS_A", "dur_max": 300, "verify_frac": 0.72 }
+  },
+  "scenes": [
+    { "mode": "clip", "source": "han", "start_sec": 75.5, "duration": 6.6,
+      "_comment": "한동훈 실제 육성 (MBN, silencedetect 절 경계 확인). '왜 민주당 오빠 카르텔이...몸으로 보호하고 있는지,' 앞 절은 캡 초과로 제외 — 뒤 절만으로도 완결된 문장.",
+      "text": "\"민주당 오빠 카르텔이\n얼마나 부패했는지...\"",
+      "speaker": "한동훈",
+      "hl": ["오빠 카르텔"] },
+    { "mode": "clip", "source": "kim", "start_sec": 184.3, "duration": 9.6,
+      "_comment": "김승원 실제 육성 (연합뉴스TV, silencedetect 절 경계 확인). '이것은 한동훈 의원이 윤석열과 함께 해왔던 검찰 캐비닛 정치의 전형적인 모습이라 할 것입니다.' 전체 문장, 한동훈·윤석열 실명 모두 포함.",
+      "text": "\"이것은 검찰 캐비닛\n정치의 전형적인 모습\"",
+      "speaker": "김승원",
+      "hl": ["검찰 캐비닛"] },
+    { "mode": "tts", "source": "han", "frac": 0.06, "color": "white", "emph": false,
+      "_comment": "[040] 확전 사실은 자막(text)에 담아 판정 범위(제목+자막) 안에 포함, 나레이션은 짧게 유지해 클립 오디오 비중 65%를 지킨다.",
+      "text": "최재성·송영길까지 번진 게이트\n쟁점은 캐비닛이냐, 부패냐",
+      "voice": "쟁점은 캐비닛 유출이냐, 부패 자체냐로 갈립니다.",
+      "hl": ["캐비닛", "부패"] }
+  ],
+  "cta": {
+    "text": "① 캐비닛 꺼낸 게 잘못\n② 부패하고 나무란 게 잘못",
+    "voice": "1번 캐비닛 문제, 2번 부패가 문제. 댓글로 알려주세요.",
+    "hl": ["잘못"]
+  }
+}
